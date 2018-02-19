@@ -2,7 +2,6 @@
 #include <direct.h>
 
 #include "GlobalParameters.h"
-#include "AnalysisManager.h"
 
 #include <windows.h>
 

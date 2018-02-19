@@ -19,7 +19,7 @@ It is not checked that all of the following steps are required. 'root' is the pa
 
 	5) Add 'root\lib' and 'root\bin' to Linker->General->Additional Library Directories
 
-	6) Add 'root_v5.34.34\lib\*.lib' to Linker->Input->Additional Dependencies
+	6) Add 'root\lib\*.lib' to Linker->Input->Additional Dependencies
 
 3) check code:
 

@@ -21,7 +21,7 @@ bool AnalysisStates::StateChange(int to_ch, int to_exp, Type to_type, int from_c
 	return !((to_ch == from_ch)&&(to_exp==from_exp)&&(to_type==from_type));
 }
 
-bool AnalysisStates::NextType(bool save = true)
+bool AnalysisStates::NextType(bool save)
 {
 	if (!isValid())
 		return false;
@@ -43,7 +43,7 @@ bool AnalysisStates::NextType(bool save = true)
 	return StateChange(current_channel,current_exp_index,current_type,prev_ch,prev_exp,prev_type,save);
 }
 
-bool AnalysisStates::PrevType(bool save = true)
+bool AnalysisStates::PrevType(bool save)
 {
 	if (!isValid())
 		return false;
@@ -65,7 +65,7 @@ bool AnalysisStates::PrevType(bool save = true)
 	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type, save);
 }
 
-bool AnalysisStates::NextCh(bool save = true)
+bool AnalysisStates::NextCh(bool save)
 {
 	if (!isValid())
 		return false;
@@ -89,7 +89,7 @@ bool AnalysisStates::NextCh(bool save = true)
 	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type, save);
 }
 
-bool AnalysisStates::PrevCh(bool save = true)
+bool AnalysisStates::PrevCh(bool save)
 {
 	if (!isValid())
 		return false;
@@ -113,7 +113,7 @@ bool AnalysisStates::PrevCh(bool save = true)
 	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type, save);
 }
 
-bool AnalysisStates::NextExp(bool save = true)
+bool AnalysisStates::NextExp(bool save)
 {
 	if (!isValid())
 		return false;
@@ -124,7 +124,7 @@ bool AnalysisStates::NextExp(bool save = true)
 	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type, save);
 }
 
-bool AnalysisStates::PrevExp(bool save = true)
+bool AnalysisStates::PrevExp(bool save)
 {
 	if (!isValid())
 		return false;

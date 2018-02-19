@@ -22,13 +22,14 @@
 #undef max
 #undef min
 
-#define DATA_PREFIX std::string("../../../Data/results")
+#define DATA_PREFIX std::string("../../../../Data/180201/results_x_ray/")
 #define DATA_NAME_FORMAT "^MPPCs_4_thmV/MPPC_\d{2}/MPPC_33_double_I.dat$"
 #define DATA_MPPC_VERSION "MPPCs_v3"
 #define DATA_PMT_VERSION "PMT_v1"
 
-#define OUTPUT_DIR std::string("../../../Data/results/")
+#define OUTPUT_DIR std::string("../../../../Data/180201/results_x_ray/")
 #define OUTPUT_MPPCS_PICS "MPPCs_v3/MPPCs_"
+#define OUTPUT_PMT_PICS "PMT_v1/PMT_"
 #define OUTPUT_MPPCS "MPPC_"
 
 #define _TEMP_CODE

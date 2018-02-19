@@ -6,9 +6,7 @@
 #include "SignalOperations.h"
 #include "AllExperimentsResults.h"
 #include "GraphicOutputManager.h"
-#include "AnalysisStates.h"
 #include "CalibrationInfo.h"
-#include "EventCut.h"
 #include "HistogramSetups.h"
 
 class PostProcessor : public AnalysisStates {
@@ -65,6 +63,8 @@ protected:
 
 	bool is_TH1D_hist();
 	std::string hist_name();
+	std::string type_name(Type type);
+	void print_hist(void);
 
 public:
 	void update(void); //mandates:	1)update current picture. (only displayed histogram but not a png, as well as TLines and TF1)
@@ -75,11 +75,9 @@ public:
 	PostProcessor(AllExperimentsResults* results); //results must be already processed, e.g. loaded
 	CalibrationInfo calibr_info;
 	
-	void save(int ch);	//saves results such as calibration and Npe(E) (for both PMT and MPPC)
+	void save(int ch);	//TODO: make that it saves results such as calibration and Npe(E) (for both PMT and MPPC). That is updates only one line in calibr. file
 	void save_all(void);
 	
-	//void update(ParameterPile::experiment_area to_update, int type/*{Ss,S2_S,double_I}*/); //updates images and avr_... parameters
-	//void update(std::string experiment, int channel, int type/*{Ss,S2_S,double_I}*/); //updates images and avr_... parameters
 	void plot_N_pe(int ch, GraphicOutputManager* gr_man);
 
 	//TODO: add several default cuts (e.g. from left/right limit)
@@ -89,8 +87,20 @@ public:
 	void unset_as_run_cut(std::string name = "");//deletes current exp,ch and type from current cuts (if present) deletes from back, that is
 	//if a single exp,ch,type produces several EventCuts, unset must be called respective amount of times
 	void do_fit(bool upd_vis = true);
-	//per_point_data process_default(std::string experiment, int ch, int type/*{Ss,S2_S,double_I}*/);
-	//DVECTOR* get_data(int exp_index, int channel, int type);
+
+	void set_N_bins(int N);
+	void set_limits(double left, double right);
+	void set_drawn_limits(double left, double right);
+	void unset_limits(void);
+	void unset_drawn_limits(void);
+
+	void set_fit_gauss(int N);
+	void set_parameter_val(int index, double val);
+	void set_parameter_limits(int index, double left, double right);
+
+	void new_canvas(void);
+
+	void status(bool full);
 };
 
 #endif

@@ -26,8 +26,8 @@ namespace SignalOperations {
 		bool do_account = true;
 		for (auto i = xs.begin(), j = ys.begin(); (i != _end_); ++i, ++j){
 			do_account = true;
-			for (auto pp = peaks.begin(); pp != peaks.end(); pp++)
-				if (!(*i<(*pp).left) && !(*i>(*pp).right)) {
+			for (auto pp = peaks.begin(),pp_end_ = peaks.end(); pp != pp_end_; ++pp)
+				if (!(*i<pp->left) && !(*i>pp->right)) {
 					do_account = false;
 					break;
 				}
@@ -35,6 +35,21 @@ namespace SignalOperations {
 				selected_y.push_back(*j);
 			}
 		}
+		std::sort(selected_y.begin(), selected_y.end());
+		int ind = selected_y.size();
+		if (0 == ind)
+			return approx;
+		if (0 == ind % 2)
+			return selected_y[ind / 2];
+		else
+			return 0.5*(selected_y[ind / 2] + selected_y[1 + (ind / 2)]);
+	}
+
+	double find_baseline_by_median(double approx, DVECTOR &xs, DVECTOR &ys)
+	{
+		if (xs.size() != ys.size())
+			return approx;
+		DVECTOR selected_y=ys;
 		std::sort(selected_y.begin(), selected_y.end());
 		int ind = selected_y.size();
 		if (0 == ind)
@@ -1849,7 +1864,9 @@ namespace SignalOperations {
 	//hint is the distance between 2 point in case they are all at equal distancess
 	DITERATOR find_x_iterator_by_value(DITERATOR &x_left, DITERATOR &x_right, double x, double hint)
 	{
-		DITERATOR approx_left = x_left + (int)((x - *x_left) / hint);
+		DITERATOR approx_left = iter_add(x_left, (int)((x - *x_left) / hint),(x_right+1));
+		if (approx_left==(x_right+1))
+			return find_x_iterator_by_value(x_left, x_right, x); //fallback in case the hint does not work
 		if (!(*approx_left > x) && !(*(approx_left + 1) < x)) {
 			if ((x - *approx_left) > (*(approx_left + 1) - x))
 				return approx_left + 1;
@@ -1980,7 +1997,7 @@ namespace SignalOperations {
 		auto _end_ = xs.end();
 		if (use_fit) {
 			Polynom2Order fitter;
-			auto _begin_ = xs.end();
+			auto _begin_ = xs.begin();
 			std::size_t _size_ = xs.size();
 			for (auto i = minimal_iterator; (i != _end_); ((delta < (_end_ - i)) ? i = i + delta : i = _end_)) {
 				int shift = (int)(_size_ - (i - _begin_) - N_trust) < 0 ? (_size_ - (i - _begin_) - N_trust) : 0; //accounts for the end
@@ -2259,7 +2276,7 @@ namespace SignalOperations {
 				peak pk;
 				pk.left = *x_peak_l;
 				pk.right = *x_peak_r;
-				pk.A = Amp;
+				pk.A = Amp-base_line;
 				SignalOperations::integrate(xs, ys, pk.S, x_peak_l, x_peak_r, delta_x, base_line);
 				if ((pk.S>0) && (pk.A>0)&&(pk.right>=pk.left))
 					peaks.push_back(pk);

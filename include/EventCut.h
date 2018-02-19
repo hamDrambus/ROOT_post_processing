@@ -4,8 +4,6 @@
 #include "GlobalParameters.h"
 #include "AnalysisStates.h"
 
-class AnalysisStates;
-
 //this class can be used in the two modes:
 //1) run selection (based on PMT): based on a single channel and type, applied for all runs and a single experiment
 //2) Histogram selection: for example cuts peaks' S to be > 0 (by default). Applied for the same type and channel as cutted by.
