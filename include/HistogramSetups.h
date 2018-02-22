@@ -7,24 +7,23 @@
 class HistogramSetups //just helper class, has no functionality in itself
 {
 public:
-	HistogramSetups() = default;
-	double left_limit;
-	double right_limit;
-	double bottom_limit;
-	double top_limit;
-	double left_drawn_limit;
-	double right_drawn_limit;
+	Double_t left_limit;
+	Double_t right_limit;
+	Double_t bottom_limit;
+	Double_t top_limit;
+	Double_t left_drawn_limit;
+	Double_t right_drawn_limit;
 	//TODO: figure out displaying of arbitrary cuts. And whether arbitrary cuts are required.
-	STD_CONT<EventCut> display_hist_cuts; //determines what is Filled into histogram =~=left/right_limit
-	STD_CONT<EventCut> phys_hist_cuts;	  //determines which values are used for calculations of physical parameters
+	std::deque<EventCut> display_hist_cuts; //determines what is Filled Int_to histogram =~=left/right_limit
+	std::deque<EventCut> phys_hist_cuts;	  //determines which values are used for calculations of physical parameters
 										  //(after applying display_hist_cuts). =~= left/right_drawn_limit
-	int N_bins;
+	Int_t N_bins;
 	//Fit info:
-	int N_gauss;
-	STD_CONT<double> par_val;
-	STD_CONT<double> par_left_limits;
-	STD_CONT<double> par_right_limits;
-	bool fitted;
+	Int_t N_gauss;
+	std::deque<Double_t> par_val;
+	std::deque<Double_t> par_left_limits;
+	std::deque<Double_t> par_right_limits;
+	Bool_t fitted;
 };
 
 #endif

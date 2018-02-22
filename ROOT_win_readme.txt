@@ -40,4 +40,7 @@ int main(int argc, char *argv[])
 	delete app;
 	return 0;
 }
-	
+
+4) For interactive program: https://root.cern.ch/interacting-shared-libraries-rootcint
+	add  [https://root.cern.ch/interacting-shared-libraries-rootcint] -I$(PATH) is from rootcint -h output
+!!!	{std::function, override, = default} are not supported in CINT!

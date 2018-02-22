@@ -1,77 +1,77 @@
 #include "Savitzky_Golay_filter.h"
 
-SavitzkyGolayFilter::SavitzkyGolayFilter(int n_points, int order, int n_iterations)
+SavitzkyGolayFilter::SavitzkyGolayFilter(Int_t n_poInt_ts, Int_t order, Int_t n_iterations)
 {
 	setOrder(order);
-	setNPoints(n_points);
+	setNPoInt_ts(n_poInt_ts);
 	setNIter(n_iterations);
 }
-void SavitzkyGolayFilter::setNPoints(int n)
+void SavitzkyGolayFilter::setNPoInt_ts(Int_t n)
 {
 	if ((n < 1) || !(_order < n))
-		_n_points = _order + 1;
+		_n_poInt_ts = _order + 1;
 	else
-		_n_points = n;
+		_n_poInt_ts = n;
 }
-void SavitzkyGolayFilter::setOrder(int n)
+void SavitzkyGolayFilter::setOrder(Int_t n)
 {
 	if (n < 0)
 		_order = 4;
 	else
 		_order = n;
 }
-void SavitzkyGolayFilter::setNIter(int n)
+void SavitzkyGolayFilter::setNIter(Int_t n)
 {
 	if (n < 0)
 		_n_iterations = 1;
 	else
 		_n_iterations = n;
 }
-void SavitzkyGolayFilter::setPars(int n_points, int order, int n_iterations)
+void SavitzkyGolayFilter::setPars(Int_t n_poInt_ts, Int_t order, Int_t n_iterations)
 {
 	setOrder(order);
-	setNPoints(n_points);
+	setNPoInt_ts(n_poInt_ts);
 	setNIter(n_iterations);
 }
 
-int SavitzkyGolayFilter::getNPoints(void) const
-{	return _n_points;}
-int SavitzkyGolayFilter::getOrder(void) const
+Int_t SavitzkyGolayFilter::getNPoInt_ts(void) const
+{	return _n_poInt_ts;}
+Int_t SavitzkyGolayFilter::getOrder(void) const
 {	return _order;}
-int SavitzkyGolayFilter::getNIter(void) const
+Int_t SavitzkyGolayFilter::getNIter(void) const
 {	return _n_iterations;}
-void SavitzkyGolayFilter::getPars(int &n_points, int &order, int &n_iterations) const
+void SavitzkyGolayFilter::getPars(Int_t &n_poInt_ts, Int_t &order, Int_t &n_iterations) const
 {
-	n_points = _n_points;
+	n_poInt_ts = _n_poInt_ts;
 	order = _order;
 	n_iterations = _n_iterations;
 }
 
-void SavitzkyGolayFilter::operator ()(const DVECTOR &xs_in, const DVECTOR &ys_in,
-	DVECTOR &xs_out, DVECTOR &ys_out) const
+void SavitzkyGolayFilter::operator ()(const std::vector<Double_t> &xs_in, const std::vector<Double_t> &ys_in,
+	std::vector<Double_t> &xs_out, std::vector<Double_t> &ys_out) const
 {
 	if (xs_in.size() != ys_in.size())
 		return;
 	xs_out = xs_in;
 	ys_out = ys_in;
-	if (xs_in.size() < _n_points)
+	if (xs_in.size() < _n_poInt_ts)
 		return;
-	DVECTOR ys_in_copy;
-	for (int iter = 0; iter < _n_iterations; iter++) {
+	std::vector<Double_t> ys_in_copy;
+	for (Int_t iter = 0; iter < _n_iterations; iter++) {
 		ys_in_copy = ys_out;
-		int start_index = 0;
-		for (int h = 0; h < xs_in.size(); h++) {
-			start_index = h - _n_points / 2;
+		Int_t start_index = 0;
+		for (Int_t h = 0; h < xs_in.size(); h++) {
+			start_index = h - _n_poInt_ts / 2;
 			start_index = start_index < 0 ? 0 : start_index;
-			if (start_index > xs_in.size() - _n_points)
-				start_index = xs_in.size() - _n_points;
+			if (start_index > xs_in.size() - _n_poInt_ts)
+				start_index = xs_in.size() - _n_poInt_ts;
 
 			PolynomialFit fit(_order);
 			TVectorD A;
-			fit(xs_in, ys_in, start_index, _n_points, A, xs_in[h]);
-			ys_out[h] = A[0]; //I moved X coordinates to the point of interest (xs_in[h]) in the matrix construction
+			fit(xs_in, ys_in, start_index, _n_poInt_ts, A, xs_in[h]);
+			ys_out[h] = A[0]; //I moved X coordinates to the poInt_t of Int_terest (xs_in[h]) in the matrix construction
 			/*xs_out[h] = 0;
-			for (int row = 0; row < A.GetNrows(); row++)
+			for (Int_t row = 0; row < A.GetNrows(); row++)
 			xs_out[h] += A[row] * pow(xs_in[h] - xs_in[h], row);*/
 		}
 	}

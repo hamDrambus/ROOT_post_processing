@@ -4,16 +4,37 @@
 #include "TROOT.h"
 
 #include "SignalOperations.h"
+#include "AnalysisStates.h"
 #include "AllExperimentsResults.h"
 #include "GraphicOutputManager.h"
-#include "CalibrationInfo.h"
 #include "HistogramSetups.h"
+#include "CalibrationInfo.h"
+
+//for adding new types of analysis - dependence on AnalysisStates::Type
+//1) AnalysisStates::AnalysisStates (first/last state)
+//2) AnalysisStates::is_PMT_type
+//3) PostProcessor::is_TH1D_hist
+
+//4) void PostProcessor::FillHist(void* p_hist)
+//5) Int_t PostProcessor::numOfFills(void);
+//6) std::pair<Double_t, Double_t> PostProcessor::hist_x_limits(void);
+//7) std::pair<Double_t, Double_t> PostProcessor::hist_y_limits(void);
+
+//8) void PostProcessor::set_default_hist_setups(void);
+//9) std::string PostProcessor::type_name(Type type);
+
+//10) void PostProcessor::update_physical(void);
+//11) void set_limits(Double_t left, Double_t right);
+//12) void set_drawn_limits(Double_t left, Double_t right);
+
 
 class PostProcessor : public AnalysisStates {
+public:
+	enum UpdateState {Histogram=0x1,FitFunction=0x2,Fit=0x4,Results = 0x8, All = Histogram|FitFunction|Fit|Results, AllFit = FitFunction|Fit};
 protected:
 	HistogramSetups* current_setups;
 	TCanvas *current_canvas;
-	int canvas_n;
+	Int_t canvas_n;
 	TF1 *current_fit_func;
 	TH1D *current_hist1;
 	TH2D *current_hist2;
@@ -22,52 +43,52 @@ protected:
 	
 	AllExperimentsResults* data;
 
-	//experiment->channel->{Ss,S2_S,double_I}
-	STD_CONT<STD_CONT<STD_CONT<HistogramSetups*>>> manual_setups;
+	//experiment->channel->{Ss,S2_S,Double_I}
+	std::deque<std::deque<std::deque<HistogramSetups*>>> manual_setups;
 	//experinent->cut array
-	STD_CONT < STD_CONT<EventCut> > RunCuts;
+	std::deque < std::deque<EventCut> > RunCuts;
 
 	//experiment->channel
-	STD_CONT <STD_CONT<double>> avr_S2_S; //initial (automatic) values are set in processAllExperiments
-	STD_CONT <STD_CONT<double>> avr_double_I;
-	STD_CONT <double> PMT3_avr_S2_S;
-	STD_CONT <double> PMT1_avr_S2_S;
+	std::deque <std::deque<Double_t>> avr_S2_S; //initial (automatic) values are set in processAllExperiments
+	std::deque <std::deque<Double_t>> avr_Double_I;
+	std::deque <Double_t> PMT3_avr_S2_S;
+	std::deque <Double_t> PMT1_avr_S2_S;
 
-	/*TH1D* createDefMPPCHist(DVECTOR &what, std::string name, double left_cutoff, double right_cutoff_from_RMS, int N_bins = 0);
-	TH1D* createMPPCHist_peaks_S(STD_CONT<STD_CONT<peak>> &what, std::string name, double left_cutoff, double right_cutoff_from_RMS, int N_bins = 0);
+	/*TH1D* createDefMPPCHist(std::vector<Double_t> &what, std::string name, Double_t left_cutoff, Double_t right_cutoff_from_RMS, Int_t N_bins = 0);
+	TH1D* createMPPCHist_peaks_S(std::deque<std::deque<peak>> &what, std::string name, Double_t left_cutoff, Double_t right_cutoff_from_RMS, Int_t N_bins = 0);
 	TF1* createDefMPPCFitFunc(TH1D* hist, std::string name);
 	*/
-	/*void update_by_manual_setups(std::string experiment, int ch, int type);
-	void update_results(std::string experiment, int channel, Type type);*/
+	/*void update_by_manual_setups(std::string experiment, Int_t ch, Int_t type);
+	void update_results(std::string experiment, Int_t channel, Type type);*/
 	
 
 	
-	virtual bool StateChange(int to_ch, int to_exp, Type to_type, int from_ch, int from_exp, Type from_type,bool save) override;
+	virtual Bool_t StateChange(Int_t to_ch, Int_t to_exp, Type to_type, Int_t from_ch, Int_t from_exp, Type from_type,Bool_t save);
 	
-	void set_hist_setups(HistogramSetups* setups, std::string exp, int channel, Type type);//does not call update
-	HistogramSetups* get_hist_setups(std::string exp, int channel, Type type);//does not call update
+	void set_hist_setups(HistogramSetups* setups, std::string exp, Int_t channel, Type type);//does not call update
+	HistogramSetups* get_hist_setups(std::string exp, Int_t channel, Type type);//does not call update
 
 	void FillHist(void* p_hist);//considers cuts and histogram tipe (void*)==either TH1D* or TH2D*
-	//see function for DVECTOR &vals usage in cuts' picker
-	int numOfFills(void);
-	std::pair<double, double> hist_x_limits(void); //considering cuts
-	std::pair<double, double> hist_y_limits(void); //valid only for 2d plots
+	//see function for std::vector<Double_t> &vals usage in cuts' picker
+	Int_t numOfFills(void);
+	std::pair<Double_t, Double_t> hist_x_limits(void); //considering cuts
+	std::pair<Double_t, Double_t> hist_y_limits(void); //valid only for 2d plots
 	void set_default_hist_setups(void);//
 
 	TF1* create_fit_function(HistogramSetups* func);
 	void update_fit_function(void); //uses current_fit_func and current_setups
-	//TODO: add setting average S2 and double I without manual setups. Maybe as exit() method, which will
-	//set S2 and double integral with NULL HistogramSetups by default and won't touh the calibration
+	//TODO: add setting average S2 and Double_t I without manual setups. Maybe as exit() method, which will
+	//set S2 and Double_t Int_tegral with NULL HistogramSetups by default and won't touh the calibration
 	void update_physical(void); //2nd and 3rd mandates of ::update(void)
 	void update_Npe(void);		//4th part of ::update(void). TODO: actually it is better to move it to CalibrationInfo.
 
-	bool is_TH1D_hist();
+	Bool_t is_TH1D_hist();
 	std::string hist_name();
 	std::string type_name(Type type);
-	void print_hist(void);
+	void prInt_t_hist(void);
 
 public:
-	void update(void); //mandates:	1)update current picture. (only displayed histogram but not a png, as well as TLines and TF1)
+	void update(UpdateState to_update = All); //mandates:	1)update current picture. (only displayed histogram but not a png, as well as TLines and TF1)
 	//								2)update physical parameters obtained from the current hist
 	//								3)in case it is calibration hist (Ss), update calibration
 	//								4)recalibrate Npe.
@@ -75,32 +96,32 @@ public:
 	PostProcessor(AllExperimentsResults* results); //results must be already processed, e.g. loaded
 	CalibrationInfo calibr_info;
 	
-	void save(int ch);	//TODO: make that it saves results such as calibration and Npe(E) (for both PMT and MPPC). That is updates only one line in calibr. file
+	void save(Int_t ch);	//TODO: make that it saves results such as calibration and Npe(E) (for both PMT and MPPC). That is updates only one line in calibr. file
 	void save_all(void);
 	
-	void plot_N_pe(int ch, GraphicOutputManager* gr_man);
+	void plot_N_pe(Int_t ch, GraphicOutputManager* gr_man);
 
 	//TODO: add several default cuts (e.g. from left/right limit)
-	void add_hist_cut(std::function<bool(DVECTOR &vals)> &picker, std::string name = "");
+	void add_hist_cut(FunctionWrapper *picker, std::string name = "");
 	void remove_hist_cut(std::string name = "");
 	void set_as_run_cut(std::string name = "");//adds current drawn_limits in HistogramSetups to runs cut (from current exp, channel and type)
 	void unset_as_run_cut(std::string name = "");//deletes current exp,ch and type from current cuts (if present) deletes from back, that is
 	//if a single exp,ch,type produces several EventCuts, unset must be called respective amount of times
-	void do_fit(bool upd_vis = true);
+	void do_fit(Bool_t upd_vis = kTRUE);
 
-	void set_N_bins(int N);
-	void set_limits(double left, double right);
-	void set_drawn_limits(double left, double right);
+	void set_N_bins(Int_t N);
+	void set_limits(Double_t left, Double_t right);
+	void set_drawn_limits(Double_t left, Double_t right);
 	void unset_limits(void);
 	void unset_drawn_limits(void);
 
-	void set_fit_gauss(int N);
-	void set_parameter_val(int index, double val);
-	void set_parameter_limits(int index, double left, double right);
+	void set_fit_gauss(Int_t N);
+	void set_parameter_val(Int_t index, Double_t val);
+	void set_parameter_limits(Int_t index, Double_t left, Double_t right);
 
 	void new_canvas(void);
 
-	void status(bool full);
+	void status(Bool_t full);
 };
 
 #endif

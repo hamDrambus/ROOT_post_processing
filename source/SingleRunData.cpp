@@ -1,7 +1,7 @@
 #include "SingleRunData.h"
 #include <string>
 
-SingleRunData::SingleRunData(ParameterPile::experiment_area area)
+SingleRunData::SingleRunData(/*ParameterPile::*/experiment_area area)
 {
 	curr_area.channels = area.channels;
 	curr_area.experiments = area.experiments;
@@ -18,7 +18,7 @@ SingleRunResults SingleRunData::processSingleRun_Iter_0(const AllRunsResults *al
 SingleRunResults SingleRunData::processSingleRun_Iter_1(const AllRunsResults *all_runs_results)
 {
 	SingleRunResults _result(this);
-	_result.setValid(true);
+	_result.setValid(kTRUE);
 	_result._current_status = SingleRunResults::Status::Ok;
 	return _result;
 }
@@ -35,4 +35,4 @@ SingleRunResults SingleRunData::processSingleRun(const AllRunsResults *all_runs_
 void SingleRunData::clear_memory(void) //clears only 'input' data, preserves processing results
 {}
 
-ParameterPile::experiment_area SingleRunData::getArea(void) const {	return curr_area;}
+/*ParameterPile::*/experiment_area SingleRunData::getArea(void) const {	return curr_area;}

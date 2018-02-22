@@ -10,23 +10,23 @@
 class SavitzkyGolayFilter
 {
 protected:
-	int _n_points;
-	int _n_iterations;
-	int _order;
+	Int_t _n_poInt_ts;
+	Int_t _n_iterations;
+	Int_t _order;
 public:
-	SavitzkyGolayFilter(int n_points = 10, int order = 4, int n_iterations = 1);
-	void setNPoints(int n);
-	void setOrder(int n);
-	void setNIter(int n);
-	void setPars(int n_points = 10, int order = 4, int n_iterations = 1);
+	SavitzkyGolayFilter(Int_t n_poInt_ts = 10, Int_t order = 4, Int_t n_iterations = 1);
+	void setNPoInt_ts(Int_t n);
+	void setOrder(Int_t n);
+	void setNIter(Int_t n);
+	void setPars(Int_t n_poInt_ts = 10, Int_t order = 4, Int_t n_iterations = 1);
 
-	int getNPoints(void) const;
-	int getOrder(void) const;
-	int getNIter(void) const;
-	void getPars(int &n_points, int &order, int &n_iterations) const;
+	Int_t getNPoInt_ts(void) const;
+	Int_t getOrder(void) const;
+	Int_t getNIter(void) const;
+	void getPars(Int_t &n_poInt_ts, Int_t &order, Int_t &n_iterations) const;
 
-	void operator ()(const DVECTOR &xs_in, const DVECTOR &ys_in,
-		DVECTOR &xs_out, DVECTOR &ys_out) const;
+	void operator ()(const std::vector<Double_t> &xs_in, const std::vector<Double_t> &ys_in,
+		std::vector<Double_t> &xs_out, std::vector<Double_t> &ys_out) const;
 };
 
 #endif

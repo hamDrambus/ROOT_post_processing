@@ -11,17 +11,17 @@
 class AnalysisManager
 {
 public:
-	AnalysisManager(ParameterPile::experiment_area area);
+	AnalysisManager(/*ParameterPile::*/experiment_area area);
 protected:
-	ParameterPile::experiment_area _exp_area;
+	/*ParameterPile::*/experiment_area _exp_area;
 	//ParameterPile::experiment_area first_level_processed;  //per run processed - e.g. filters
 	//ParameterPile::experiment_area second_level_processed; //per experiment processed - averaged per runs.
 	//ParameterPile::experiment_area third_level_processed;  //everything
-	ParameterPile::experiment_area current_under_processing;
+	/*ParameterPile::*/experiment_area current_under_processing;
 
-	STD_CONT<SingleRunData> one_run_data;
-	STD_CONT<SingleRunResults> one_run_results;
-	STD_CONT<AllRunsResults> all_runs_results;
+	std::deque<SingleRunData> one_run_data;
+	std::deque<SingleRunResults> one_run_results;
+	std::deque<AllRunsResults> all_runs_results;
 	AllExperimentsResults all_exp_results;
 
 	TCondition* _cond;
@@ -40,7 +40,7 @@ public:
 	virtual void proceessAllRunsOneThread(void);//there is supposed to be only single experiment //TODO: there is the first and second iterations
 	//after the first one, one_run_data must not be erased for higher perfomance. After the second iteration data should be erased.
 	//In the case of several experements it may be expensive to store data for every one for the second iteration
-	STD_CONT<AllRunsResults>* getAllRunsResults(void);
+	std::deque<AllRunsResults>* getAllRunsResults(void);
 	void setAllRunsResults(AllRunsResults* to_what);
 	void setCondition(TCondition* cond);
 	TCondition* getCondition(void);

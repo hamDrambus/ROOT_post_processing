@@ -16,34 +16,34 @@ class AllExperimentsResults;
 class AllRunsResults
 {
 protected:
-	int N_of_runs;
-	int Iteration_N;
-	ParameterPile::experiment_area _exp;
+	Int_t N_of_runs;
+	Int_t Iteration_N;
+	/*ParameterPile::*/experiment_area _exp;
 	
-	STD_CONT<DVECTOR> mppc_S2_S; //size == mppc channels (depends on experiment area)
-	STD_CONT<DVECTOR> mppc_S2_start_time; //size == mppc channels (depends on experiment area)
-	STD_CONT<DVECTOR> mppc_S2_finish_time; //size == mppc channels (depends on experiment area)
-	//STD_CONT<DVECTOR> mppc_all_peaks_Ss; //size == mppc channels (depends on experiment area)
-	STD_CONT<DVECTOR> mppc_double_Is; //size == mppc channels (depends on experiment area)
-	STD_CONT<int> mppc_channels;
-	STD_CONT<int> pmt_channels;
-	STD_CONT<STD_CONT<STD_CONT<peak>>> mppc_peaks;	//[channel][run#][peaks]
-	STD_CONT<STD_CONT<peak>> PMT3_peaks;			//[run#][peaks]
-	STD_CONT<STD_CONT<peak>> PMT1_peaks;			//[run#][peaks]
+	std::deque<std::vector<Double_t>> mppc_S2_S; //size == mppc channels (depends on experiment area)
+	std::deque<std::vector<Double_t>> mppc_S2_start_time; //size == mppc channels (depends on experiment area)
+	std::deque<std::vector<Double_t>> mppc_S2_finish_time; //size == mppc channels (depends on experiment area)
+	//std::deque<std::vector<Double_t>> mppc_all_peaks_Ss; //size == mppc channels (depends on experiment area)
+	std::deque<std::vector<Double_t>> mppc_Double_Is; //size == mppc channels (depends on experiment area)
+	std::deque<Int_t> mppc_channels;
+	std::deque<Int_t> pmt_channels;
+	std::deque<std::deque<std::deque<peak>>> mppc_peaks;	//[channel][run#][peaks]
+	std::deque<std::deque<peak>> PMT3_peaks;			//[run#][peaks]
+	std::deque<std::deque<peak>> PMT1_peaks;			//[run#][peaks]
 
-	/*TH1D* createMPPCHist(DVECTOR &what, std::string name, double left_cutoff, double right_cutoff_from_RMS, int N_bins = 0);
-	void vector_to_file(DVECTOR &what, std::string fname);
+	/*TH1D* createMPPCHist(std::vector<Double_t> &what, std::string name, Double_t left_cutoff, Double_t right_cutoff_from_RMS, Int_t N_bins = 0);
+	void vector_to_file(std::vector<Double_t> &what, std::string fname);
 	TF1* createMPPCFitFunc(TH1D* hist, std::string name);*/
-	void vector_from_file(DVECTOR &what, std::string fname);
-	void vector_from_file(STD_CONT<STD_CONT<peak>> &pks, std::string fname);
+	void vector_from_file(std::vector<Double_t> &what, std::string fname);
+	void vector_from_file(std::deque<std::deque<peak>> &pks, std::string fname);
 public:
-	AllRunsResults(ParameterPile::experiment_area experiment);//only experiment and channels are important here
-	void processAllRuns(STD_CONT<SingleRunResults> &single_results);
+	AllRunsResults(/*ParameterPile::*/experiment_area experiment);//only experiment and channels are important here
+	void processAllRuns(std::deque<SingleRunResults> &single_results);
 	//For multithreading:
 	void Merge(AllRunsResults* with);
 	void Merged(void);
 	void Clear(void);
-	int Iteration(void) const;
+	Int_t Iteration(void) const;
 
 	friend AnalysisManager;
 	friend SingleRunData;

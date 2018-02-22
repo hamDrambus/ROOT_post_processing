@@ -1,6 +1,6 @@
 #include "AnalysisManager.h"
 
-AnalysisManager::AnalysisManager(ParameterPile::experiment_area exp_area) : all_exp_results(exp_area)
+AnalysisManager::AnalysisManager(/*ParameterPile::*/experiment_area exp_area) : all_exp_results(exp_area)
 {
 	_exp_area = exp_area;
 	curr_run = NextRunIs::Null;
@@ -19,6 +19,7 @@ void AnalysisManager::nextRun(void)
 		current_under_processing.sub_runs.push_back(_exp_area.sub_runs.get_next_index());
 		current_under_processing.channels= _exp_area.channels;
 		curr_run = NextRunIs::FirstRun;//change to NewSubRun ?
+		std::cout << "Exp: " << current_under_processing.experiments.back()<<std::endl;
 		return;
 	}
 	current_under_processing.sub_runs.back() = _exp_area.sub_runs.get_next_index();
@@ -32,6 +33,7 @@ void AnalysisManager::nextRun(void)
 					if (++i != _exp_area.experiments.end()){
 						current_under_processing.experiments.back() = *i;
 						curr_run = NextRunIs::NewExperiment;
+						std::cout << "Exp: " << current_under_processing.experiments.back() << std::endl;
 						return;
 					} else {
 						current_under_processing.experiments.pop_back();
@@ -99,8 +101,8 @@ void AnalysisManager::processAllRuns(void)
 	//	all_runs_results.back().processAllRuns(one_run_results);
 	//	all_runs_results.back().Merged();//all in one thread, so it is already joined. Merge == iteration++
 	//}
-	STD_CONT<SingleRunResults>().swap(one_run_results);
-	STD_CONT<SingleRunData>().swap(one_run_data);
+	std::deque<SingleRunResults>().swap(one_run_results);
+	std::deque<SingleRunData>().swap(one_run_data);
 	nextRun();
 }
 
@@ -135,13 +137,13 @@ void AnalysisManager::proceessAllRunsOneThread(void)
 	//if (ParameterPile::Max_iteration_N == all_runs_results.back().Iteration()) {
 	//	one_run_data.clear();
 	//	one_run_results.clear();
-	//	STD_CONT<SingleRunData>().swap(one_run_data);
-	//	STD_CONT<SingleRunResults>().swap(one_run_results);
+	//	std::deque<SingleRunData>().swap(one_run_data);
+	//	std::deque<SingleRunResults>().swap(one_run_results);
 	//}
 	//std::cout << "finish_proceessAllRunsOneThread" << std::endl;
 }
 
-STD_CONT<AllRunsResults>* AnalysisManager::getAllRunsResults(void)
+std::deque<AllRunsResults>* AnalysisManager::getAllRunsResults(void)
 {	return &all_runs_results;}
 
 AllExperimentsResults* AnalysisManager::getAllExperimentsResults(void)

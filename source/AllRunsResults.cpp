@@ -1,57 +1,64 @@
 #include "AllRunsResults.h"
 
-AllRunsResults::AllRunsResults(ParameterPile::experiment_area experiment)
+AllRunsResults::AllRunsResults(/*ParameterPile::*/experiment_area experiment)
 {
 	_exp = experiment;
 	N_of_runs = 0;
 	Iteration_N = 0;
 	for (auto ex = _exp.experiments.begin(); ex != _exp.experiments.end(); ++ex) {
-		int mppc_ch = 0;
-		for (int ch = _exp.channels.get_next_index(); ch != -1; ch = _exp.channels.get_next_index()){
+		Int_t mppc_ch = 0;
+		for (Int_t ch = _exp.channels.get_next_index(); ch != -1; ch = _exp.channels.get_next_index()){
 			if (ch == 0){
-				std::string prefix = DATA_PREFIX + "/"+ DATA_PMT_VERSION + "/PMT_" + *ex + "/PMT_0/PMT_0_";
+				std::string prefix = DATA_PREFIX + DATA_PMT_VERSION + "/PMT_" + *ex + "/PMT_0/PMT_0_";
 				vector_from_file(PMT3_peaks, prefix + "peaks.dat");
-				if (!PMT3_peaks.empty())
+				if (!PMT3_peaks.empty()){
 					pmt_channels.push_back(ch);
+					std::cout << "Loaded channel " << ch << std::endl;
+				}
 				continue;
 			}
 			if (ch == 1){
-				std::string prefix = DATA_PREFIX + "/" + DATA_PMT_VERSION + "/PMT_" + *ex + "/PMT_1/PMT_1_";
+				std::string prefix = DATA_PREFIX +  DATA_PMT_VERSION + "/PMT_" + *ex + "/PMT_1/PMT_1_";
 				vector_from_file(PMT1_peaks, prefix + "peaks.dat");
-				if (!PMT1_peaks.empty())
+				if (!PMT1_peaks.empty()){
 					pmt_channels.push_back(ch);
+					std::cout << "Loaded channel " << ch << std::endl;
+				}
 				continue;
 			}
 			std::string prefix = DATA_PREFIX+"/"+DATA_MPPC_VERSION + "/MPPCs_" + *ex + "/MPPC_" + std::to_string(ch) + "/MPPC_" + std::to_string(ch) + "_";
 			
-			mppc_peaks.push_back(STD_CONT<STD_CONT<peak>>());
-			mppc_S2_S.push_back(DVECTOR());
-			mppc_S2_start_time.push_back(DVECTOR());
-			mppc_S2_finish_time.push_back(DVECTOR());
-			mppc_double_Is.push_back(DVECTOR());
+			mppc_peaks.push_back(std::deque<std::deque<peak>>());
+			mppc_S2_S.push_back(std::vector<Double_t>());
+			mppc_S2_start_time.push_back(std::vector<Double_t>());
+			mppc_S2_finish_time.push_back(std::vector<Double_t>());
+			mppc_Double_Is.push_back(std::vector<Double_t>());
 			mppc_channels.push_back(ch);
 
 			vector_from_file(mppc_peaks.back(), prefix + "peaks.dat");
 			vector_from_file(mppc_S2_S.back(), prefix + "S2_S.dat");
-			vector_from_file(mppc_double_Is.back(), prefix + "double_I.dat");
+			vector_from_file(mppc_Double_Is.back(), prefix + "Double_I.dat");
 			vector_from_file(mppc_S2_start_time.back(), prefix + "S2_start_t.dat");
 			vector_from_file(mppc_S2_finish_time.back(), prefix + "S2_finish_t.dat");
 
-			if (mppc_peaks.back().empty()|| mppc_S2_S.back().empty() || mppc_double_Is.back().empty()){ //empty files
+			if (mppc_peaks.back().empty()|| mppc_S2_S.back().empty() || mppc_Double_Is.back().empty()
+				||mppc_S2_finish_time.back().empty()||mppc_S2_start_time.back().empty()){ //empty files
 				mppc_peaks.pop_back();
-				mppc_double_Is.pop_back();
+				mppc_Double_Is.pop_back();
 				mppc_S2_S.pop_back();
 				mppc_channels.pop_back();
+				mppc_S2_start_time.pop_back();
+				mppc_S2_finish_time.pop_back();
 			} else {
 				++mppc_ch;
 				std::cout << "Loaded channel " << ch << std::endl;
-				N_of_runs = std::max(N_of_runs, (int)std::max(mppc_double_Is.back().size(), mppc_S2_S.back().size()));
+				N_of_runs = std::max(N_of_runs, (Int_t)std::max(mppc_Double_Is.back().size(), mppc_S2_S.back().size()));
 			}
 		}
 	}
 }
 
-void AllRunsResults::processAllRuns(STD_CONT<SingleRunResults> &single_results)
+void AllRunsResults::processAllRuns(std::deque<SingleRunResults> &single_results)
 {}
 
 
@@ -60,15 +67,15 @@ void AllRunsResults::Merge(AllRunsResults* with)
 	//N_of_runs += with->N_of_runs;
 	////Iteration_N = with->Iteration_N;
 	//
-	//bool empty = false, valid = true;
+	//Bool_t empty = kFALSE, valid = kTRUE;
 	//if (mppc_S2_S.empty())
-	//	empty = true;
+	//	empty = kTRUE;
 	//if ((mppc_S2_S.size() != mppc_all_peaks_Ss.size()) || (mppc_S2_S.size() != mppc_channels.size())
-	//	|| (mppc_S2_S.size() != mppc_double_Is.size()))
-	//	valid = false;
+	//	|| (mppc_S2_S.size() != mppc_Double_Is.size()))
+	//	valid = kFALSE;
 	//if ((with->mppc_S2_S.size() != with->mppc_all_peaks_Ss.size()) || (with->mppc_S2_S.size() != with->mppc_channels.size())
-	//	|| (mppc_S2_S.size() != mppc_double_Is.size()))
-	//	valid = false;
+	//	|| (mppc_S2_S.size() != mppc_Double_Is.size()))
+	//	valid = kFALSE;
 	//if (!valid) {
 	//	std::cout << "AllRunsResults contains invalid MPPC data: channels' size mismatches" << std::endl;
 	//	return;
@@ -81,36 +88,36 @@ void AllRunsResults::Merge(AllRunsResults* with)
 	//	mppc_S2_S = with->mppc_S2_S;
 	//	mppc_all_peaks_Ss = with->mppc_all_peaks_Ss;
 	//	mppc_channels = with->mppc_channels;
-	//	mppc_double_Is = with->mppc_double_Is;
+	//	mppc_Double_Is = with->mppc_Double_Is;
 	//} else {
-	//	for (int ch = 0; ch < mppc_S2_S.size(); ++ch) {
+	//	for (Int_t ch = 0; ch < mppc_S2_S.size(); ++ch) {
 	//		mppc_S2_S[ch].insert(mppc_S2_S[ch].end(), with->mppc_S2_S[ch].begin(), with->mppc_S2_S[ch].end());
 	//		mppc_all_peaks_Ss[ch].insert(mppc_all_peaks_Ss[ch].end(), with->mppc_all_peaks_Ss[ch].begin(), with->mppc_all_peaks_Ss[ch].end());
-	//		mppc_double_Is[ch].insert(mppc_double_Is[ch].end(), with->mppc_double_Is[ch].begin(), with->mppc_double_Is[ch].end());
+	//		mppc_Double_Is[ch].insert(mppc_Double_Is[ch].end(), with->mppc_Double_Is[ch].begin(), with->mppc_Double_Is[ch].end());
 	//	}
 	//}
 }
 
 void AllRunsResults::Merged(void)
 {	
-//	bool valid = true;
+//	Bool_t valid = kTRUE;
 //	if ((mppc_S2_S.size() != mppc_all_peaks_Ss.size()) || (mppc_S2_S.size() != mppc_channels.size())
-//		|| (mppc_S2_S.size() != mppc_double_Is.size()))
-//		valid = false;
+//		|| (mppc_S2_S.size() != mppc_Double_Is.size()))
+//		valid = kFALSE;
 //	if (valid && !(mppc_S2_S.empty())) {
-//		ParameterPile::experiment_area area_(ParameterPile::experiment_area::Type::Point);
+//		ParameterPile::experiment_area area_(ParameterPile::experiment_area::Type::PoInt_t);
 //		area_.experiments.push_back(_exp.experiments.back()); //done: TODO: account for MPPC channel
 //		if (ParameterPile::draw_required(area_)) {
 //			std::string fname = std::string(OUTPUT_DIR) + OUTPUT_MPPCS + area_.experiments.back()+".dat";
 //			std::ofstream output;
 //			open_output_file(fname, output);
-//			output << "MPPC#\tS_1pe_avr\tS_2pe_avr\tS2_S_avr\tdouble_I_avr\tS_1pe_sigma\tS_2pe_sigma\tS2_S_sigma\tdouble_I_sigma\ttime_left_avr\ttime_right_avr" << std::endl;
-//			for (int ch = 0; ch < mppc_peaks_in_S2_area.size(); ++ch) {
+//			output << "MPPC#\tS_1pe_avr\tS_2pe_avr\tS2_S_avr\tDouble_I_avr\tS_1pe_sigma\tS_2pe_sigma\tS2_S_sigma\tDouble_I_sigma\ttime_left_avr\ttime_right_avr" << std::endl;
+//			for (Int_t ch = 0; ch < mppc_peaks_in_S2_area.size(); ++ch) {
 //				std::string Ss_name = area_.experiments.back()+"_MPPC#" + std::to_string(mppc_channels[ch]) + "_peaks_S";
 //				std::string S2_S_name = area_.experiments.back() + "_MPPC#" + std::to_string(mppc_channels[ch]) + "_S2_S";
 //				std::string S2_start_t_name = area_.experiments.back() + "_MPPC#" + std::to_string(mppc_channels[ch]) + "_S2_start_t";
 //				std::string S2_finish_t_name = area_.experiments.back() + "_MPPC#" + std::to_string(mppc_channels[ch]) + "_S2_finish_t";
-//				std::string double_I_name = area_.experiments.back() + "_MPPC#" + std::to_string(mppc_channels[ch]) + "_double_I";
+//				std::string Double_I_name = area_.experiments.back() + "_MPPC#" + std::to_string(mppc_channels[ch]) + "_Double_I";
 //				
 //				//done: TODO: Figure out MPPC channel. And add historam creating function
 //				//TODO: ParameterPile
@@ -118,7 +125,7 @@ void AllRunsResults::Merged(void)
 //				TH1D *hist_S2_S = createMPPCHist(mppc_peaks_in_S2_area[ch], S2_S_name, 0, 4.0, 60);
 //				TH1D *hist_S2_start_t = createMPPCHist(mppc_S2_start_time[ch], S2_start_t_name, ParameterPile::S2_start_time, 4.0, 60);
 //				TH1D *hist_S2_finish_t = createMPPCHist(mppc_S2_finish_time[ch], S2_finish_t_name, ParameterPile::S2_start_time, 6.0, 60);
-//				TH1D *hist_double_I = createMPPCHist(mppc_double_Is[ch], double_I_name, -1, 6.0, 60);
+//				TH1D *hist_Double_I = createMPPCHist(mppc_Double_Is[ch], Double_I_name, -1, 6.0, 60);
 //
 //				/*TF1 *g1 = new TF1("m1", "gaus", hist_S->GetMinimum(), hist_S->GetMaximum());
 //				TF1 *g2 = new TF1("m2", "gaus", hist_S->GetMinimum(), hist_S->GetMaximum());*/
@@ -138,7 +145,7 @@ void AllRunsResults::Merged(void)
 //				TF1 *_S2_S_fit = createMPPCFitFunc(hist_S2_S, S2_S_name);
 //				TF1 *_S2_start_t_fit = createMPPCFitFunc(hist_S2_start_t, S2_start_t_name);
 //				TF1 *_S2_finish_t_fit = createMPPCFitFunc(hist_S2_finish_t, S2_finish_t_name);
-//				TF1 *_double_I_fit = createMPPCFitFunc(hist_double_I, double_I_name);
+//				TF1 *_Double_I_fit = createMPPCFitFunc(hist_Double_I, Double_I_name);
 //
 //#ifdef _TEMP_CODE
 //				if (hist_S2_start_t)
@@ -191,12 +198,12 @@ void AllRunsResults::Merged(void)
 //				//_S2_finish_t_fit->Draw();
 //				c4->Update();		
 //#endif
-//				TCanvas *c5 = new TCanvas(double_I_name.c_str(), double_I_name.c_str());
+//				TCanvas *c5 = new TCanvas(Double_I_name.c_str(), Double_I_name.c_str());
 //				c5->cd();
-//				c5->SetTitle(double_I_name.c_str());
-//				if (hist_double_I) {
-//					hist_double_I->Fit(_double_I_fit,"Q");
-//					hist_double_I->Draw();
+//				c5->SetTitle(Double_I_name.c_str());
+//				if (hist_Double_I) {
+//					hist_Double_I->Fit(_Double_I_fit,"Q");
+//					hist_Double_I->Draw();
 //				}
 //				//_S2_finish_t_fit->Draw();
 //				c5->Update();
@@ -207,20 +214,20 @@ void AllRunsResults::Merged(void)
 //				vector_to_file(mppc_peaks_in_S2_area[ch], output_prefix + "S2_S.dat");
 //				vector_to_file(mppc_S2_start_time[ch], output_prefix + "S2_start_t.dat");
 //				vector_to_file(mppc_S2_finish_time[ch], output_prefix + "S2_finish_t.dat");
-//				vector_to_file(mppc_double_Is[ch], output_prefix + "double_I.dat");
+//				vector_to_file(mppc_Double_Is[ch], output_prefix + "Double_I.dat");
 //				c1->SaveAs((output_prefix + "Ss.png").c_str(),"png");
 //				c2->SaveAs((output_prefix + "S2_S.png").c_str(),"png");
 //#ifndef _TEMP_CODE
 //				c3->SaveAs((output_prefix + "S2_stat_t.png").c_str(),"png");
 //				c4->SaveAs((output_prefix + "S2_finish_t.png").c_str(),"png");
 //#endif
-//				c5->SaveAs((output_prefix + "double_I.png").c_str(),"png");
+//				c5->SaveAs((output_prefix + "Double_I.png").c_str(),"png");
 //#endif
-//				//output << "MPPC#\tS_1pe_avr\tS_2pe_avr\tS2_S_avr\tdouble_I_avr\tS_1pe_sigma\tS_2pe_sigma\tS2_S_sigma\tdouble_I_sigma\ttime_left_avr\ttime_right_avr" << std::endl;
+//				//output << "MPPC#\tS_1pe_avr\tS_2pe_avr\tS2_S_avr\tDouble_I_avr\tS_1pe_sigma\tS_2pe_sigma\tS2_S_sigma\tDouble_I_sigma\ttime_left_avr\ttime_right_avr" << std::endl;
 //				output << mppc_channels[ch] << "\t" << _S_fit->GetParameter(1) << "\t" << _S_fit->GetParameter(4)
-//					<< "\t" << _S2_S_fit->GetParameter(1) << "\t" << _double_I_fit->GetParameter(1)
+//					<< "\t" << _S2_S_fit->GetParameter(1) << "\t" << _Double_I_fit->GetParameter(1)
 //					<< "\t" << _S_fit->GetParameter(2) << "\t" << _S_fit->GetParameter(5) << "\t" << _S2_S_fit->GetParameter(2)
-//					<< "\t" << _double_I_fit->GetParameter(2) << "\t" << _S2_start_t_fit->GetParameter(1)
+//					<< "\t" << _Double_I_fit->GetParameter(2) << "\t" << _S2_start_t_fit->GetParameter(1)
 //					<< "\t" << _S2_finish_t_fit->GetParameter(1) << std::endl;
 //				std::cout << "MPPC " << area_.experiments.back() << " processed" << std::endl;
 //				std::cout << "# of runs " << N_of_runs << std::endl;
@@ -232,20 +239,20 @@ void AllRunsResults::Merged(void)
 	++Iteration_N;
 }
 
-void AllRunsResults::vector_from_file(DVECTOR &what, std::string fname)
+void AllRunsResults::vector_from_file(std::vector<Double_t> &what, std::string fname)
 {
 	what.clear();
 	std::ifstream str;
 	str.open(fname, std::ios_base::binary);
 	if (!str.is_open())
 		return;
-	double val;
+	Double_t val;
 	size_t size;
 	while (!str.eof()) {
 		str.read((char*)&size,sizeof(std::size_t));
 		std::size_t counter = 0;
 		while (!str.eof() && counter != size){
-			str.read((char*)&val,sizeof(double));
+			str.read((char*)&val,sizeof(Double_t));
 			what.push_back(val);
 			++counter;
 		}
@@ -254,7 +261,7 @@ void AllRunsResults::vector_from_file(DVECTOR &what, std::string fname)
 	str.close();
 }
 
-void AllRunsResults::vector_from_file(STD_CONT<STD_CONT<peak>> &pks, std::string fname)
+void AllRunsResults::vector_from_file(std::deque<std::deque<peak>> &pks, std::string fname)
 {
 	pks.clear();
 	std::ifstream str;
@@ -266,16 +273,16 @@ void AllRunsResults::vector_from_file(STD_CONT<STD_CONT<peak>> &pks, std::string
 		str.read((char*)&run_size,sizeof(std::size_t));
 		std::size_t run_counter = 0;
 		while (!str.eof() && run_counter != run_size){
-			pks.push_back(STD_CONT<peak>());
+			pks.push_back(std::deque<peak>());
 			std::size_t size;
 			str.read((char*)&size,sizeof(std::size_t));
 			std::size_t counter = 0;
 			while (!str.eof() && counter != size){
 				peak pk;
-				str.read((char*)&pk.left, sizeof(double));
-				str.read((char*)&pk.right, sizeof(double));
-				str.read((char*)&pk.S, sizeof(double));
-				str.read((char*)&pk.A, sizeof(double));
+				str.read((char*)&pk.left, sizeof(Double_t));
+				str.read((char*)&pk.right, sizeof(Double_t));
+				str.read((char*)&pk.S, sizeof(Double_t));
+				str.read((char*)&pk.A, sizeof(Double_t));
 				pks.back().push_back(pk);
 				++counter;
 			}
@@ -286,17 +293,17 @@ void AllRunsResults::vector_from_file(STD_CONT<STD_CONT<peak>> &pks, std::string
 	str.close();
 }
 
-int AllRunsResults::Iteration(void) const
+Int_t AllRunsResults::Iteration(void) const
 {	return Iteration_N;}
 
 void AllRunsResults::Clear(void)
 {
-	STD_CONT<DVECTOR>().swap(mppc_S2_S);
-	STD_CONT<STD_CONT<STD_CONT<peak>>>().swap(mppc_peaks);
-	STD_CONT<STD_CONT<peak>>().swap(PMT3_peaks);
-	STD_CONT<STD_CONT<peak>>().swap(PMT1_peaks);
-	STD_CONT<DVECTOR>().swap(mppc_double_Is);
-	STD_CONT<int>().swap(mppc_channels);
+	std::deque<std::vector<Double_t>>().swap(mppc_S2_S);
+	std::deque<std::deque<std::deque<peak>>>().swap(mppc_peaks);
+	std::deque<std::deque<peak>>().swap(PMT3_peaks);
+	std::deque<std::deque<peak>>().swap(PMT1_peaks);
+	std::deque<std::vector<Double_t>>().swap(mppc_Double_Is);
+	std::deque<Int_t>().swap(mppc_channels);
 	N_of_runs = 0;
 	//Iteration_N preserved;
 }

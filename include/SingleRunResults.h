@@ -16,14 +16,14 @@ public:
 	enum Status { Ok};
 protected:
 	Status _current_status;
-	ParameterPile::experiment_area curr_area;
+	/*ParameterPile::*/experiment_area curr_area;
 	
-	bool is_valid;
+	Bool_t is_valid;
 public:
 	SingleRunResults(SingleRunData *of_what);
 	SingleRunResults::Status getStatus(void) const;
-	bool isValid(void) const;
-	void setValid(bool val);
+	Bool_t isValid(void) const;
+	void setValid(Bool_t val);
 
 friend SingleRunData;
 friend AnalysisManager;
