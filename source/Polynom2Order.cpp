@@ -3,13 +3,13 @@
 Polynom2Order::Polynom2Order() : PolynomialFit(2), _xs_last(NULL), _ys_last(NULL), _x_left(0), _x_right(0), _x0_in(0)
 {
 }
-void Polynom2Order::operator ()(const std::vector<Double_t> &xs_in, const std::vector<Double_t> &ys_in,
+void Polynom2Order::operator ()(std::vector<Double_t> &xs_in, std::vector<Double_t> &ys_in,
 	TVectorD &pars_out, Double_t in_x0) //in_x0 - in what poInt_t set zero x (In the SG filter it is convinient to set x_in
 	//to the poInt_t in which value is calculated
 {
 	this->operator()(xs_in, ys_in, 0, xs_in.size(), pars_out, in_x0);
 }
-void Polynom2Order::operator ()(const std::vector<Double_t> &xs_in, const std::vector<Double_t> &ys_in,
+void Polynom2Order::operator ()(std::vector<Double_t> &xs_in, std::vector<Double_t> &ys_in,
 	Int_t offset, Int_t N_poInt_ts, TVectorD &pars_out, Double_t in_x0) //only for a part of a vector
 {
 	if (xs_in.size() != ys_in.size())
@@ -32,7 +32,7 @@ void Polynom2Order::setOrder(Int_t n)
 	_order = 2;
 }
 
-void Polynom2Order::FindMaximum(std::vector<Double_t>::const_iterator &x_max, Double_t &x_max_exact, Double_t &y_max_exact)
+void Polynom2Order::FindMaximum(std::vector<Double_t>::iterator &x_max, Double_t &x_max_exact, Double_t &y_max_exact)
 {
 	x_max = _xs_last->end();
 	if (_last_coefs[2] >= 0){ //max at the ends of the range
@@ -70,7 +70,7 @@ void Polynom2Order::FindMaximum(std::vector<Double_t>::const_iterator &x_max, Do
 		}
 	}
 }
-void Polynom2Order::FindMinimum(std::vector<Double_t>::const_iterator &x_min, Double_t &x_min_exact, Double_t &y_min_exact)
+void Polynom2Order::FindMinimum(std::vector<Double_t>::iterator &x_min, Double_t &x_min_exact, Double_t &y_min_exact)
 {
 	x_min = _xs_last->end();
 	if (_last_coefs[2] <= 0){ //min at the ends of the range
@@ -109,7 +109,7 @@ void Polynom2Order::FindMinimum(std::vector<Double_t>::const_iterator &x_min, Do
 	}
 }
 
-void Polynom2Order::FindInt_tersection(std::vector<Double_t>::const_iterator &x_Int_ter, std::vector<Double_t>::const_iterator &x_Int_ter2, Double_t &x_Int_ter_exact, Double_t &x_Int_ter_exact2,
+void Polynom2Order::FindInt_tersection(std::vector<Double_t>::iterator &x_Int_ter, std::vector<Double_t>::iterator &x_Int_ter2, Double_t &x_Int_ter_exact, Double_t &x_Int_ter_exact2,
 	Double_t threshold) //if not found, returns x_iter=xs.end();
 {
 	x_Int_ter = _xs_last->end();
@@ -136,7 +136,7 @@ void Polynom2Order::FindInt_tersection(std::vector<Double_t>::const_iterator &x_
 	}
 }
 
-void Polynom2Order::FindExtremum(std::vector<Double_t>::const_iterator &x_extr, Double_t &x_extr_exact, Double_t &y_extr_exact){
+void Polynom2Order::FindExtremum(std::vector<Double_t>::iterator &x_extr, Double_t &x_extr_exact, Double_t &y_extr_exact){
 	x_extr_exact = -_last_coefs[1] / (2 * _last_coefs[2]);
 	x_extr_exact += _x0_in;
 	if (!(x_extr_exact<_x_left) && !(x_extr_exact>_x_right)){//extremum inside the range
@@ -159,7 +159,7 @@ Double_t Polynom2Order::Derivative(Double_t X){
 	return _last_coefs[1] + _last_coefs[2] * 2 * (X - _x0_in);
 }
 
-std::vector<Double_t>::const_iterator Polynom2Order::find_x_iterator_by_value(Double_t x)
+std::vector<Double_t>::iterator Polynom2Order::find_x_iterator_by_value(Double_t x)
 {
 	for (auto h = _x_start; h != (_x_finish - 1); h++) //find in which poInt_t of the vector the maximum realizes
 		if (!(*h > x) && !(*(h + 1) < x)){

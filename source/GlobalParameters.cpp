@@ -1,9 +1,10 @@
 #include <stdio.h>
+#if defined(__WIN32__)
 #include <direct.h>
+#endif
 
 #include "GlobalParameters.h"
 
-#include <windows.h>
 
 //TODO: some functions must be moved to PostProcessor class. (then I won't need the std::vector<Double_t>* get_data methods)
 
@@ -29,7 +30,7 @@ void open_output_file(std::string name, std::ofstream &str)
 		folder.pop_back();
 	if (!folder.empty())
 		folder.pop_back();
-#ifndef _TEMP_CODE
+#if defined(__WIN32__)
 	if (!folder.empty()){
 		DWORD ftyp = GetFileAttributesA(folder.c_str());
 		if (!(ftyp & FILE_ATTRIBUTE_DIRECTORY) || ftyp == INVALID_FILE_ATTRIBUTES){
@@ -38,24 +39,18 @@ void open_output_file(std::string name, std::ofstream &str)
 					std::cout << "mkdir error: " << GetLastError() << std::endl;
 			}
 	}
-#endif //_TEMP_CODE
-	str.open(name, std::ios_base::trunc);
-	if (!str.is_open()){
-#ifdef _TEMP_CODE
-		str.close();
-		str.clear();
-		if (!folder.empty()){
-			Int_t code = system(("mkdir \"" + folder + "\"").c_str());
+#else
+	struct stat st;
+	stat(folder.c_str(),&st);
+	if(!S_ISDIR(st.st_mode)){
+		Int_t code = system(("mkdir \"" + folder + "\"").c_str());
 			if (code)
 				std::cout << "mkdir error: " << code << std::endl;
-		}
-		str.open(name, std::ios_base::trunc);
-		if (!str.is_open()){
-			std::cout << "Failed to open \"" << name << "\"" << std::endl;
-		}
-#else
+	}
+#endif //_WIN32__
+	str.open(name.c_str(), std::ios_base::trunc);
+	if (!str.is_open()){
 		std::cout << "Failed to open \"" << name << "\"" << std::endl;
-#endif //_TEMP_CODE
 	}
 }
 
@@ -85,19 +80,20 @@ void DrawFileData(std::string name, std::vector<Double_t> xs, std::vector<Double
 			if (mod_name[s] == '\\' || mod_name[s] == '/')
 				mod_name[s] = '.';
 		std::ofstream file;
-		open_output_file("temp_gnuplot_files\\" + mod_name, file);
-		std::cout << "file " << "temp_gnuplot_files\\" + mod_name << ".is_open() " << file.is_open() << std::endl;
+		open_output_file("temp_gnuplot_files/" + mod_name, file);
+		std::cout << "file " << "temp_gnuplot_files/" + mod_name << ".is_open() " << file.is_open() << std::endl;
+#if defined(__WIN32__)
 		if (!file.is_open())
 			std::cout << GetLastError() << std::endl;
+#endif //__WIN32__
 		for (Int_t h = 0; h < xs.size(); h++)
 			file << xs[h] << '\t' << ys[h] << std::endl;
 		file.close();
-		open_output_file("temp_gnuplot_files\\script.sc", file);
-		file << "plot '" << /*ParameterPile::*/this_path + "\\temp_gnuplot_files\\" + mod_name << "' u 1:2" << std::endl;
+		open_output_file("temp_gnuplot_files/script.sc", file);
+		file << "plot '" << /*ParameterPile::*/this_path + "/temp_gnuplot_files/" + mod_name << "' u 1:2" << std::endl;
 		file << "pause -1";
 		file.close();
-		system(("start \"\" \"%GNUPLOT%\\gnuplot.exe\" -c \"" + /*ParameterPile::*/this_path + "\\temp_gnuplot_files\\script.sc\"").c_str());
-		//std::cout << "Gnuplot is not supported yet" << std::endl;
+		INVOKE_GNUPLOT(this_path + "/temp_gnuplot_files/script.sc");
 	}
 }
 
@@ -126,17 +122,32 @@ void DrawFileData(std::string name, std::vector<Double_t> xs, std::vector<Double
 	void Init_globals(void)
 	{
 		char path[FILENAME_MAX];
+#if defined(__WIN32__)
 		this_path = _getcwd(path, FILENAME_MAX);
-
+#else
+		this_path = getcwd(path, FILENAME_MAX);
+#endif //__WIN32__
 		TThread::Initialize();
 		gStyle->SetOptFit();
 		
-		Double_t coeff = (600 / 808.0)*(1.54 / (1.54*1.8 + 1.01*0.4));
-		experiment_fields["X_ray_12kV_SiPM_46V_THGEM_0V_coll_6mm"] = 12;
+		Double_t coeff = (600 / 804.0)*(1.54 / (1.54*1.8 + 1.01*0.4));
+		/*experiment_fields["X_ray_12kV_SiPM_46V_THGEM_0V_coll_6mm"] = 12;
 		experiment_fields["X_ray_14kV_SiPM_46V_THGEM_0V_coll_6mm"] = 14;
 		experiment_fields["X_ray_16kV_SiPM_46V_THGEM_0V_coll_6mm"] = 16;
 		experiment_fields["X_ray_18kV_SiPM_46V_THGEM_0V_coll_6mm"] = 18;
-		experiment_fields["X_ray_20kV_SiPM_46V_THGEM_0V_coll_6mm"] = 20;
+		experiment_fields["X_ray_20kV_SiPM_46V_THGEM_0V_coll_6mm"] = 20;*/
+
+		experiment_fields["event_x-ray_4_thmV"] = 4;
+		experiment_fields["event_x-ray_5_thmV"] = 5;
+		experiment_fields["event_x-ray_6_thmV"] = 6;
+		experiment_fields["event_x-ray_7_thmV"] = 7;
+		experiment_fields["event_x-ray_8_thmV"] = 8;
+		experiment_fields["event_x-ray_9_thmV"] = 9;
+		experiment_fields["event_x-ray_10_thmV_recalib"] = 10;
+		experiment_fields["event_x-ray_12_thmV"] = 12;
+		experiment_fields["event_x-ray_14_thmV"] = 14;
+		experiment_fields["event_x-ray_16_thmV"] = 16;
+
 
 		for (auto j = experiment_fields.begin(); j != experiment_fields.end(); ++j)
 			j->second *= coeff;
@@ -144,11 +155,24 @@ void DrawFileData(std::string name, std::vector<Double_t> xs, std::vector<Double
 		calibaration_poInt_ts = std::pair<Int_t, Int_t>(0, 4);
 
 		areas_to_draw.push_back(experiment_area());
-		areas_to_draw.back().experiments.push_back("X_ray_12kV_SiPM_46V_THGEM_0V_coll_6mm");
+		/*areas_to_draw.back().experiments.push_back("X_ray_12kV_SiPM_46V_THGEM_0V_coll_6mm");
 		areas_to_draw.back().experiments.push_back("X_ray_14kV_SiPM_46V_THGEM_0V_coll_6mm");
 		areas_to_draw.back().experiments.push_back("X_ray_16kV_SiPM_46V_THGEM_0V_coll_6mm");
 		areas_to_draw.back().experiments.push_back("X_ray_18kV_SiPM_46V_THGEM_0V_coll_6mm");
-		areas_to_draw.back().experiments.push_back("X_ray_20kV_SiPM_46V_THGEM_0V_coll_6mm");
+		areas_to_draw.back().experiments.push_back("X_ray_20kV_SiPM_46V_THGEM_0V_coll_6mm");*/
+
+		areas_to_draw.back().experiments.push_back("event_x-ray_4_thmV");
+		areas_to_draw.back().experiments.push_back("event_x-ray_5_thmV");
+		areas_to_draw.back().experiments.push_back("event_x-ray_6_thmV");
+		areas_to_draw.back().experiments.push_back("event_x-ray_7_thmV");
+		areas_to_draw.back().experiments.push_back("event_x-ray_8_thmV");
+		areas_to_draw.back().experiments.push_back("event_x-ray_9_thmV");
+		areas_to_draw.back().experiments.push_back("event_x-ray_10_thmV_recalib");
+		areas_to_draw.back().experiments.push_back("event_x-ray_12_thmV");
+		areas_to_draw.back().experiments.push_back("event_x-ray_14_thmV");
+		areas_to_draw.back().experiments.push_back("event_x-ray_16_thmV");
+
+
 		areas_to_draw.back().runs.push_pair(0, 0);
 		areas_to_draw.back().channels.push_pair(32, 62);
 		areas_to_draw.back().sub_runs.push_pair(0, 0);
@@ -159,10 +183,20 @@ void DrawFileData(std::string name, std::vector<Double_t> xs, std::vector<Double
 		exp_area.runs.push_pair(0, 0);
 		exp_area.sub_runs.push_pair(0, 0);
 
-		exp_area.experiments.push_back("X_ray_12kV_SiPM_46V_THGEM_0V_coll_6mm");
+		//exp_area.experiments.push_back("X_ray_12kV_SiPM_46V_THGEM_0V_coll_6mm");
 		//exp_area.experiments.push_back("X_ray_14kV_SiPM_46V_THGEM_0V_coll_6mm");
 		//exp_area.experiments.push_back("X_ray_16kV_SiPM_46V_THGEM_0V_coll_6mm");
 		//exp_area.experiments.push_back("X_ray_18kV_SiPM_46V_THGEM_0V_coll_6mm");
 		//exp_area.experiments.push_back("X_ray_20kV_SiPM_46V_THGEM_0V_coll_6mm");
+		exp_area.experiments.push_back("event_x-ray_4_thmV");
+		exp_area.experiments.push_back("event_x-ray_5_thmV");
+		exp_area.experiments.push_back("event_x-ray_6_thmV");
+		exp_area.experiments.push_back("event_x-ray_7_thmV");
+		exp_area.experiments.push_back("event_x-ray_8_thmV");
+		exp_area.experiments.push_back("event_x-ray_9_thmV");
+		exp_area.experiments.push_back("event_x-ray_10_thmV_recalib");
+		exp_area.experiments.push_back("event_x-ray_12_thmV");
+		exp_area.experiments.push_back("event_x-ray_14_thmV");
+		exp_area.experiments.push_back("event_x-ray_16_thmV");
 	}
 //};

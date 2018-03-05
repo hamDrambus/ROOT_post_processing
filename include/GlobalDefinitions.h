@@ -1,6 +1,8 @@
 #ifndef GLOBAL_DEFINITIONS_H
 #define GLOBAL_DEFINITIONS_H
 
+//#define __WIN32__
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -8,6 +10,14 @@
 #include <deque>
 #include <string.h>
 #include <sstream>
+
+#if defined(__WIN32__)
+#include <direct.h>
+#else
+#include <dirent.h>
+#include <errno.h>
+#include <sys/stat.h>
+#endif
 
 #include <TROOT.h>
 #include <TThread.h>
@@ -20,21 +30,23 @@
 #include <TF1.h>
 #include <TMath.h>
 #include <Math/Point2D.h>
+#include "TH1D.h"
+#include "TH2D.h"
+#include "TCanvas.h"
+#include "TLine.h"
+#include "TStyle.h"
 #define _TEMP_CODE
-#ifndef _TEMP_CODE
-#include <windows.h>
-#endif //_TEMP_CODE
 
 #undef max
 #undef min
 
-#define DATA_PREFIX std::string("../../../../Data/180201/results_x_ray/")
+#define DATA_PREFIX std::string("../Data/170622/results/")
 #define DATA_NAME_FORMAT "^MPPCs_4_thmV/MPPC_\d{2}/MPPC_33_Double_I.dat$"
 #define DATA_MPPC_VERSION "MPPCs_v3"
 #define DATA_PMT_VERSION "PMT_v1"
-#define CALIBRATION_FILE "PMT_550V_SiPM_46V_v1.dat"
+#define CALIBRATION_FILE "PMT_750V_SiPM_46V_v1.dat"
 
-#define OUTPUT_DIR std::string("../../../../Data/180201/results_x_ray/")
+#define OUTPUT_DIR std::string("../Data/170622/results/")
 #define OUTPUT_MPPCS_PICS "MPPCs_v3/MPPCs_"
 #define OUTPUT_PMT_PICS "PMT_v1/PMT_"
 #define OUTPUT_MPPCS "MPPC_"
@@ -54,6 +66,14 @@
 typedef bool(*CUTTER)(std::vector<double>& pars, void* stat_data);
 
 void open_output_file(std::string name, std::ofstream &str);
+
+
+#if defined(__WIN32__)
+#define INVOKE_GNUPLOT(a) system(("start \"\" \"%GNUPLOT%\\gnuplot.exe\" -c \"" + a + "\"").c_str())
+#else
+#define INVOKE_GNUPLOT(a) system(("konsole -e gnuplot \"" + a +"\"").c_str());
+#endif //__WIN32__
+
 
 class peak
 {

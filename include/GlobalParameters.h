@@ -4,11 +4,6 @@
 #include <algorithm>
 //#include <functional>
 
-#include "TH1D.h"
-#include "TH2D.h"
-#include "TCanvas.h"
-#include "TLine.h"
-#include "TStyle.h"
 #include "GlobalDefinitions.h"
 #include "ExperimentArea.h"
 
@@ -54,6 +49,6 @@ extern PostProcessor* post_processor;
 
 	void Init_globals(void);
 //};
-void DrawFileData(std::string name, std::vector<Double_t> xs, std::vector<Double_t> ys, /*ParameterPile::*/DrawEngine de = /*ParameterPile::*/DrawEngine::ROOT_);
+void DrawFileData(std::string name, std::vector<Double_t> xs, std::vector<Double_t> ys, /*ParameterPile::*/DrawEngine de = /*ParameterPile::*/ ROOT_);
 
 #endif

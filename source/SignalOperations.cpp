@@ -7,6 +7,45 @@
 
 namespace SignalOperations {
 
+	void signal_from_file(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::string fname)
+	{
+		xs.clear();
+		ys.clear();
+		std::ifstream str;
+		str.open(fname);
+		if (!str.is_open())
+			return;
+		Double_t valx,valy;
+		while (!str.eof()&&str.good()) {
+			str>>valx;
+			if ((!str.good())||(str.eof()))
+				break;
+			str>>valy;
+			if ((!str.good())||(str.eof()))
+				break;
+			xs.push_back(valx);
+			ys.push_back(valy);
+		}
+		str.close();
+	}
+
+	void signal_to_file(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::string fname)
+	{
+		if (xs.size()!=ys.size()){
+			std::cout<<"SignalOperations::signal_to_file: x-y size mismatch"<<std::endl;
+			return;
+		}
+		std::ofstream str;
+		open_output_file(fname,str);
+		if (!str.is_open()){
+			std::cout<<"SignalOperations::signal_to_file: Could not open the file \""<<fname<<"\""<<std::endl;
+			return;
+		}
+		for (std::size_t i=0, _end_=xs.size();i!=_end_;++i)
+			str<<xs[i]<<"\t"<<ys[i]<<std::endl;
+		str.close();
+	}
+
 	void invert_y(std::vector<Double_t> &x_in_out, std::vector<Double_t> &y_in_out)
 	{
 		auto _end_ = y_in_out.end();
@@ -134,7 +173,7 @@ namespace SignalOperations {
 		ys_out.resize(ys.size());
 
 		TSpectrum *spec = new TSpectrum();
-		float *f_ys = new float[ys.size()];
+		double *f_ys = new double[ys.size()];
 		for (Int_t h = 0; h != ys.size(); ++h)
 			f_ys[h] = ys[h];
 		spec->Background(f_ys, ys.size(), 60, TSpectrum::kBackDecreasingWindow, TSpectrum::kBackOrder2, kTRUE, TSpectrum::kBackSmoothing3, kFALSE);
@@ -250,7 +289,7 @@ namespace SignalOperations {
 		ys_out.resize(ys.size());
 
 		TSpectrum *spec = new TSpectrum();
-		float *f_ys = new float[ys.size()];
+		double *f_ys = new double[ys.size()];
 		for (Int_t h = 0; h != ys.size(); ++h)
 			f_ys[h] = ys[h];
 		//TODO: ? ParameterPile and as input parameters?
@@ -266,7 +305,7 @@ namespace SignalOperations {
 		ys_out.resize(ys.size());
 
 		TSpectrum *spec = new TSpectrum();
-		float *f_ys = new float[ys.size()];
+		double *f_ys = new double[ys.size()];
 		for (Int_t h = 0; h != ys.size(); ++h)
 			f_ys[h] = ys[h];
 		//TODO: ? ParameterPile and as input parameters?
@@ -299,7 +338,7 @@ namespace SignalOperations {
 		ys_out.resize(ys.size());
 
 		TSpectrum *spec = new TSpectrum();
-		float *f_ys = new float[ys.size()];
+		double *f_ys = new double[ys.size()];
 		for (Int_t h = 0; h != ys.size(); ++h)
 			f_ys[h] = ys[h];
 		//TODO: ? ParameterPile and as input parameters?
@@ -315,7 +354,7 @@ namespace SignalOperations {
 		ys_out.resize(ys.size());
 
 		TSpectrum *spec = new TSpectrum();
-		float *f_ys = new float[ys.size()];
+		double *f_ys = new double[ys.size()];
 		for (Int_t h = 0; h != ys.size(); ++h)
 			f_ys[h] = ys[h];
 		//TODO: ? ParameterPile and as input parameters?
@@ -1767,10 +1806,11 @@ namespace SignalOperations {
 		if ((xs.size() != ys.size()) || x_left >= x_right||!(dx_hInt_t>0)||(xs.empty()))
 			return;
 		auto _end_ = xs.end();
-		std::vector<Double_t>::iterator iterator_left = iter_add(xs.begin(),(Int_t)((x_left - *xs.begin()) / dx_hInt_t),_end_);
+		auto _begin_ = xs.begin();
+		std::vector<Double_t>::iterator iterator_left = iter_add(_begin_,(Int_t)((x_left - *xs.begin()) / dx_hInt_t),_end_);
 		Bool_t left_fallback = kFALSE;
 		if ((iterator_left != _end_) && (iterator_left != (_end_-1))) { // ==end considered that the hInt_t worked
-			if (!((*iterator_left <= x_left) && (*(iterator_left + 1) > x_left))) //hInt_t didn't work
+			if (!((*iterator_left <= x_left) && (*(iterator_left + 1) > x_left))) //hint didn't work
 				left_fallback = kTRUE;
 		} else {
 			if (x_left <= xs.back())
@@ -1781,7 +1821,7 @@ namespace SignalOperations {
 					iterator_left = xs.begin();
 				}
 		}
-		std::vector<Double_t>::iterator iterator_right = iter_add(xs.begin(), (Int_t)((x_right - *xs.begin()) / dx_hInt_t), _end_);
+		std::vector<Double_t>::iterator iterator_right = iter_add(_begin_, (Int_t)((x_right - *xs.begin()) / dx_hInt_t), _end_);
 		Bool_t right_fallback = kFALSE;
 		if ((iterator_right != _end_) && (iterator_right != (_end_ - 1))) { // ==end considered that the hInt_t worked
 			if (!((*iterator_right <= x_right) && (*(iterator_right + 1) > x_right))) //hInt_t didn't work
@@ -1864,7 +1904,8 @@ namespace SignalOperations {
 	//hInt_t is the distance between 2 poInt_t in case they are all at equal distancess
 	std::vector<Double_t>::iterator find_x_iterator_by_value(std::vector<Double_t>::iterator &x_left, std::vector<Double_t>::iterator &x_right, Double_t x, Double_t hInt_t)
 	{
-		std::vector<Double_t>::iterator approx_left = iter_add(x_left, (Int_t)((x - *x_left) / hInt_t),(x_right+1));
+		std::vector<Double_t>::iterator temp = x_right+1;
+		std::vector<Double_t>::iterator approx_left = iter_add(x_left, (Int_t)((x - *x_left) / hInt_t), temp);
 		if (approx_left==(x_right+1))
 			return find_x_iterator_by_value(x_left, x_right, x); //fallback in case the hInt_t does not work
 		if (!(*approx_left > x) && !(*(approx_left + 1) < x)) {
@@ -2115,6 +2156,8 @@ namespace SignalOperations {
 		if (thresh_edges >= thresh_finder)
 			thresh_edges = 0;
 		x_finish = xs.end();
+		Bool_t use_fit = kTRUE;
+		Int_t delta = N_trust / 3;
 		std::vector<Double_t>::iterator minimal_iterator = x_start;
 		std::vector<Double_t>::iterator pk_max;
 		if ((xs.size() != ys.size()) || ((xs.end() - x_start)<N_trust))
@@ -2126,12 +2169,10 @@ namespace SignalOperations {
 		if (pk_max == xs.end())
 			goto bad_return;
 
-		Bool_t use_fit = kTRUE;
 		if (N_trust < 3) {//2nd order polynom
 			N_trust = 1;
 			use_fit = kFALSE;
 		}
-		Int_t delta = N_trust / 3;
 		if (use_fit){ //now extend edges
 			Polynom2Order fitter;
 			auto _end_ = xs.end();

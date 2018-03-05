@@ -1,7 +1,7 @@
 #include "GraphicOutputManager.h"
 
 Drawing::Drawing(std::string name, /*ParameterPile::*/DrawEngine de, Int_t id_index):
-_name(name), _id_index(id_index)
+_name(name), _id_index(id_index), _de(de)
 {
 	for (Int_t s = 0; s < _name.size(); s++)
 		if (_name[s] == '\\' || _name[s] == '/')
@@ -48,17 +48,17 @@ void Drawing::AddToDraw(std::vector<Double_t> &xs, std::vector<Double_t> &ys, st
 		return;
 	
 	_data_fnames.push_back(_name +"_"+ std::to_string(_data_fnames.size()));
-	std::string line = "plot '"+/*ParameterPile::*/this_path + "\\temp_gnuplot_files\\" + _data_fnames.back() +"' u 1:2 title '"+title+"' " + extra_txt;
+	std::string line = "plot '"+/*ParameterPile::*/this_path + "/temp_gnuplot_files/" + _data_fnames.back() +"' u 1:2 title '"+title+"' " + extra_txt;
 	std::vector<std::string> new_lines;
 	if (!prefix_lines.empty())
 		new_lines.push_back(prefix_lines);
 	new_lines.push_back(line);
 	_script_lines.insert(_script_lines.begin() + off, new_lines.begin(), new_lines.end());
 
-	line = "temp_gnuplot_files\\" + _data_fnames.back();
+	line = "temp_gnuplot_files/" + _data_fnames.back();
 	std::ofstream f_data;
 	open_output_file(line, f_data);
-	for (auto i = xs.begin(), j = ys.begin(); (i != xs.end()) && (j != ys.end()); i++, j++)
+	for (auto i = xs.begin(), j = ys.begin(); (i != xs.end()) && (j != ys.end()); ++i, ++j)
 		f_data<< *i << '\t' << *j << std::endl;
 	f_data.close();
 }
@@ -120,19 +120,18 @@ void Drawing::DrawData(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std
 			if (mod_name[s] == '\\' || mod_name[s] == '/')
 				mod_name[s] = '.';
 		std::ofstream file;
-		open_output_file("temp_gnuplot_files\\" + mod_name, file);
-		std::cout << "file " << "temp_gnuplot_files\\" + mod_name << ".is_open() " << file.is_open() << std::endl;
+		open_output_file("temp_gnuplot_files/" + mod_name, file);
+		std::cout << "file " << "temp_gnuplot_files/" + mod_name << ".is_open() " << file.is_open() << std::endl;
 		//if (!file.is_open())
 		//	std::cout << GetLastError() << std::endl;
 		for (Int_t h = 0; h < xs.size(); h++)
 			file << xs[h] << '\t' << ys[h] << std::endl;
 		file.close();
 		open_output_file("temp_gnuplot_files\\"+_script_fname, file);
-		file << "plot '" << /*ParameterPile::*/this_path + "\\temp_gnuplot_files\\" + mod_name << "' u 1:2 title '" << title<<"' "<<extra_txt<< std::endl;
+		file << "plot '" << /*ParameterPile::*/this_path + "/temp_gnuplot_files/" + mod_name << "' u 1:2 title '" << title<<"' "<<extra_txt<< std::endl;
 		file << "pause -1";
 		file.close();
-		system(("start \"\" \"%GNUPLOT%\\gnuplot.exe\" -c \"" + /*ParameterPile::*/this_path + "\\temp_gnuplot_files\\"+_script_fname+"\"").c_str());
-		//std::cout << "Gnuplot is not supported yet" << std::endl;
+		INVOKE_GNUPLOT(this_path + "/temp_gnuplot_files/" + _script_fname);
 	}
 }
 
@@ -155,9 +154,13 @@ void Drawing::DrawData(void)
 		_script_lines[1].insert(0,"#");
 	}
 
+#if defined(__WIN32__)
 	_script_lines.insert(_script_lines.begin() + 1, "set terminal wxt size " + std::to_string(/*ParameterPile::*/gnuplot_width) + ","
 		+ std::to_string(std::min(/*ParameterPile::*/gnuplot_max_size , N_pads*/*ParameterPile::*/gnuplot_pad_size)));
-	
+#else
+	_script_lines.insert(_script_lines.begin() + 1, "set terminal x11 size " + std::to_string(/*ParameterPile::*/gnuplot_width) + ","
+			+ std::to_string(std::min(/*ParameterPile::*/gnuplot_max_size , N_pads*/*ParameterPile::*/gnuplot_pad_size)));
+#endif
 	Int_t set_pads = 0;
 	while (set_pads < N_pads){ //because inserting the lines invalidates iterators
 		Int_t pads_off = set_pads + 1;//+1 in order to account for the first "###"
@@ -192,11 +195,11 @@ void Drawing::DrawData(void)
 			}
 	}
 	std::ofstream file;
-	open_output_file("temp_gnuplot_files\\" + _script_fname, file);
+	open_output_file("temp_gnuplot_files/" + _script_fname, file);
 	for (auto i = _script_lines.begin(); i != _script_lines.end(); i++)
 		file << *i << std::endl;
 	file.close();
-	system(("start \"\" \"%GNUPLOT%\\gnuplot.exe\" -c \"" +/* ParameterPile::*/this_path + "\\temp_gnuplot_files\\" + _script_fname + "\"").c_str());
+	INVOKE_GNUPLOT(this_path + "/temp_gnuplot_files/" + _script_fname);
 }
 
 void Drawing::Clear(void)

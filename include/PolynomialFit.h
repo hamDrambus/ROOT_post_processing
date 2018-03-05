@@ -18,10 +18,10 @@ public:
 	Int_t getOrder(void) const;
 	void getCoefs(TVectorD &pars) const;
 
-	virtual void operator ()(const std::vector<Double_t> &xs_in, const std::vector<Double_t> &ys_in,
+	virtual void operator ()(std::vector<Double_t> &xs_in, std::vector<Double_t> &ys_in,
 		TVectorD &pars_out, Double_t in_x0=0); //in_x0 - in what poInt_t set zero x (In the SG filter it is convinient to set x_in
 	//to the poInt_t in which value is calculated
-	virtual void operator ()(const std::vector<Double_t> &xs_in, const std::vector<Double_t> &ys_in,
+	virtual void operator ()(std::vector<Double_t> &xs_in, std::vector<Double_t> &ys_in,
 		Int_t offset, Int_t N_poInt_ts, TVectorD &pars_out, Double_t in_x0=0); //only for a part of a vector
 };
 

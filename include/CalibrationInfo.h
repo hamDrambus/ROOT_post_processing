@@ -15,7 +15,7 @@ public:
 protected:
 	AnalysisStates* state_info; //for channels only
 	//for each mppc channel
-	std::deque<std::pair<Int_t, Int_t>> N_used_in_calibration; //that is for calculating s1pe (S of 1 photoelectron)
+	std::deque<std::pair<Int_t, Int_t> > N_used_in_calibration; //that is for calculating s1pe (S of 1 photoelectron)
 	//experiment->channel
 	std::deque<std::deque<S1pe_method> > method;
 	std::deque<std::deque<Double_t> > avr_S1pe;//from manual fitting/analysing of histograms and with cuts applied
@@ -26,7 +26,7 @@ protected:
 	Double_t s1pe_PMT3;		//ch 0
 	Double_t s1pe_PMT1;		//ch 1
 
-	void read_file(std::vector<std::pair<Int_t, Double_t>> &current_list);
+	void read_file(std::vector<std::pair<Int_t, Double_t> > &current_list);
 public:
 	CalibrationInfo(AnalysisStates* data);
 	Double_t getPMT_S1pe(Int_t ch);
@@ -49,9 +49,9 @@ public:
 	void set_S2pe(Int_t ch, Int_t exp_index, Double_t val);
 	Double_t get_S2pe(Int_t ch, Int_t exp_index);
 
-	std::deque<std::deque<std::pair<Bool_t, Bool_t>>> &recalibrate(std::deque<std::deque<Double_t>> &S2_S,
-		std::deque<std::deque<Double_t>> &Double_I, std::vector<Double_t>& Fields);//sets S2_S and Double_I to N_pe. returns sucess vector
-	std::deque<std::pair<Bool_t, Bool_t>> &recalibrate(std::deque<Double_t> &S2_S,
+	std::deque<std::deque<std::pair<Bool_t, Bool_t> > > &recalibrate(std::deque<std::deque<Double_t> > &S2_S,
+		std::deque<std::deque<Double_t> >  &Double_I, std::vector<Double_t>& Fields);//sets S2_S and Double_I to N_pe. returns sucess vector
+	std::deque<std::pair<Bool_t, Bool_t> > &recalibrate(std::deque<Double_t> &S2_S,
 		std::deque<Double_t> &Double_I, std::vector<Double_t>& Fields, Int_t channel);//sets S2_S and Double_I to N_pe. returns sucess vector
 
 	void Save(void);

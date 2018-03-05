@@ -355,16 +355,15 @@ void unset_as_run_cut(std::string name)
 }
 
 //Int_teractive methods
-
+/*
 Int_t main(Int_t argc, char *argv[])
 {
 	//ParameterPile::Init_globals();
-	Int_t n_par = 0;
-	char **f = NULL;
+	double a;
+	std::cin>>a;
 	TRint* app = new TRint("test_app",&argc,argv,NULL,0);
 	TCanvas* c1 = new TCanvas("test", "test_title", 800, 500);
 	TF1 *func = new TF1("test_func", "sin(x)+3*x", 0, 10);
-	func->Draw();
 	func->Draw();
 	
 	//SIMULATING SCRIPT
@@ -388,4 +387,4 @@ Int_t main(Int_t argc, char *argv[])
 	app->Run();
 	delete app;
 	return 0;
-}
+}*/

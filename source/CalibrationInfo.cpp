@@ -55,8 +55,7 @@ Double_t CalibrationInfo::calculateS1pe(Int_t channel)
 
 Double_t CalibrationInfo::getS1pe(Int_t channel)
 {
-	Int_t ch_ind = state_info->mppc_channel_to_index(channel);
-	return (ch_ind < 0) ? -1 : s1pe[ch_ind];
+	return calculateS1pe(channel);
 }
 void CalibrationInfo::setS1pe(Int_t channel, Double_t val)
 {
@@ -131,7 +130,7 @@ void CalibrationInfo::set_S1pe(Int_t ch, Int_t exp_index, Double_t val)
 	Int_t ch_ind = state_info->mppc_channel_to_index(ch);
 	if (ch_ind < 0)
 		return;
-	avr_S1pe[exp_index][ch] = val;
+	avr_S1pe[exp_index][ch_ind] = val;
 	calculateS1pe(ch);
 }
 Double_t CalibrationInfo::get_S1pe(Int_t ch, Int_t exp_index)
@@ -139,14 +138,14 @@ Double_t CalibrationInfo::get_S1pe(Int_t ch, Int_t exp_index)
 	Int_t ch_ind = state_info->mppc_channel_to_index(ch);
 	if (ch_ind < 0)
 		return -1;
-	return avr_S1pe[exp_index][ch];
+	return avr_S1pe[exp_index][ch_ind];
 }
 void CalibrationInfo::set_S2pe(Int_t ch, Int_t exp_index, Double_t val)
 {
 	Int_t ch_ind = state_info->mppc_channel_to_index(ch);
 	if (ch_ind < 0)
 		return;
-	avr_S2pe[exp_index][ch] = val;
+	avr_S2pe[exp_index][ch_ind] = val;
 	calculateS1pe(ch);
 }
 Double_t CalibrationInfo::get_S2pe(Int_t ch, Int_t exp_index)
@@ -154,7 +153,7 @@ Double_t CalibrationInfo::get_S2pe(Int_t ch, Int_t exp_index)
 	Int_t ch_ind = state_info->mppc_channel_to_index(ch);
 	if (ch_ind < 0)
 		return -1;
-	return avr_S2pe[exp_index][ch];
+	return avr_S2pe[exp_index][ch_ind];
 }
 
 //TODO: set Double_t I calibration from pre set parameters (e.g. from file or ParameterPile)
@@ -176,7 +175,7 @@ std::deque<std::deque<std::pair<Bool_t, Bool_t>>> &CalibrationInfo::recalibrate(
 			continue;
 		//calculate N_pe_direct
 		for (Int_t exp_ind = 0; exp_ind < S2_S.size(); ++exp_ind){
-			S2_S[exp_ind][ch_ind] /= s1pe[ch_ind];
+			S2_S[exp_ind][ch_ind] /= getS1pe(state_info->MPPC_channels[ch_ind]); //instead of s1pe[ch_ind] getS1pe is called which updates the value if necessary.
 			recalibration_sucess[exp_ind][ch_ind].first = kTRUE;
 		}
 		TVectorD direct_line;
@@ -283,7 +282,7 @@ void CalibrationInfo::read_file(std::vector<std::pair<Int_t, Double_t>> &current
 	str.close();
 }
 
-void CalibrationInfo::Save(void)
+void CalibrationInfo::Save(void) //TODO: this function does not work on empty file (empty list_)
 {
 	std::vector<std::pair<Int_t, Double_t>> list_;
 	read_file(list_);

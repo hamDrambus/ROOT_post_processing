@@ -37,7 +37,7 @@ AllRunsResults::AllRunsResults(/*ParameterPile::*/experiment_area experiment)
 
 			vector_from_file(mppc_peaks.back(), prefix + "peaks.dat");
 			vector_from_file(mppc_S2_S.back(), prefix + "S2_S.dat");
-			vector_from_file(mppc_Double_Is.back(), prefix + "Double_I.dat");
+			vector_from_file(mppc_Double_Is.back(), prefix + "double_I.dat");
 			vector_from_file(mppc_S2_start_time.back(), prefix + "S2_start_t.dat");
 			vector_from_file(mppc_S2_finish_time.back(), prefix + "S2_finish_t.dat");
 

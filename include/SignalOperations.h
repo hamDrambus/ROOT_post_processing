@@ -5,6 +5,8 @@
 
 namespace SignalOperations
 {
+	void signal_from_file(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::string fname);
+	void signal_to_file(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::string fname);
 
 	void invert_y(std::vector<Double_t> &x_in_out, std::vector<Double_t> &y_in_out);
 	Double_t find_baseline_by_median(Double_t approx, std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::deque<peak> &peaks);

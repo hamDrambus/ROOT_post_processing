@@ -1,7 +1,7 @@
 #include "AnalysisStates.h"
 
 AnalysisStates::AnalysisStates(std::deque<Int_t> &mppc_channels_, std::deque<Int_t> &pmt_channels_, std::deque<std::string>& experiments_):
-_first_state(MPPC_Ss), _last_state(PMT_t_S)
+_first_state(MPPC_Ss), _last_state(PMT_times)
 {
 	MPPC_channels = mppc_channels_;
 	PMT_channels = pmt_channels_;
@@ -138,7 +138,7 @@ Bool_t AnalysisStates::PrevExp(Bool_t save)
 
 Bool_t AnalysisStates::is_PMT_type(Type type)
 {
-	return (type == PMT_S2_S || type == PMT_Ss || type == PMT_t_S);
+	return (type == PMT_S2_S || type == PMT_Ss || type == PMT_t_S || type == PMT_times);
 }
 
 Bool_t AnalysisStates::isValid()
@@ -191,4 +191,64 @@ Int_t AnalysisStates::pmt_channel_to_index(Int_t ch)
 		if (ch == *i)
 			return (i - PMT_channels.begin());
 	return -1;
+}
+
+std::string AnalysisStates::type_name(Type type)
+{
+	std::string name;
+	switch (type){
+	case Type::MPPC_Ss:{
+		name += "_Ss";
+		break;
+	}
+	case Type::MPPC_S2_S:{
+		name += "_S2_auto";
+		break;
+	}
+	case Type::MPPC_Double_I:{
+		name += "_Double_I";
+		break;
+	}
+	case Type::MPPC_tboth:{
+		name += "_t_both";
+		break;
+	}
+	case Type::MPPC_tfinal:{
+		name += "_t_final";
+		break;
+	}
+	case Type::MPPC_tstart:{
+		name += "_t_start";
+		break;
+	}
+	case Type::MPPC_t_S:{
+		name += "_t_S";
+		break;
+	}
+	case Type::MPPC_S2:{
+			name += "_S2_manual";
+			break;
+		}
+	case Type::PMT_S2_S:{
+		name += "_S2_S";
+		break;
+	}
+	case Type::PMT_Ss:{
+		name += "_Ss";
+		break;
+	}
+	case Type::PMT_t_S:{
+		name += "_t_S";
+		break;
+	}
+	case Type::MPPC_times: {
+		name+="_signal_form";
+		break;
+	}
+	case Type::PMT_times: {
+		name+="_signal_form";
+		break;
+	}
+	}
+	return name;
 }

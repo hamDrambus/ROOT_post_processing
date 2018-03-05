@@ -25,8 +25,8 @@ public:
 	Int_t getNIter(void) const;
 	void getPars(Int_t &n_poInt_ts, Int_t &order, Int_t &n_iterations) const;
 
-	void operator ()(const std::vector<Double_t> &xs_in, const std::vector<Double_t> &ys_in,
-		std::vector<Double_t> &xs_out, std::vector<Double_t> &ys_out) const;
+	void operator ()(std::vector<Double_t> &xs_in, std::vector<Double_t> &ys_in,
+		std::vector<Double_t> &xs_out, std::vector<Double_t> &ys_out) const;//TODO: make const vector references
 };
 
 #endif
