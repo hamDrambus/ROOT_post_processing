@@ -662,6 +662,55 @@ void PostProcessor::save_all(void)
 	for (Int_t ch = data->exp_area.channels.get_next_index(); ch != -1; ch = data->exp_area.channels.get_next_index())
 		save(ch);
 	calibr_info.Save();
+
+	std::ofstream str;
+	open_output_file(OUTPUT_DIR+DATA_MPPC_VERSION+"/S2_manual.dat", str);
+	str<<"ch\\E"<<"\t";
+	for (int ee=0,_end_exp=experiments.size();ee!=_end_exp;++ee)
+		str<<data->Fields[ee]<<((ee==(_end_exp-1))? "\n": "\t");
+	for (int ch=0,_end_ch=MPPC_channels.size();ch!=_end_ch;++ch){
+		str<<MPPC_channels[ch]<<"\t";
+		for (int ee=0,_end_exp=experiments.size();ee!=_end_exp;++ee)
+			str<<avr_S2_S[ee][ch]<<((ee==(_end_exp-1))? "": "\t");
+		str<<std::endl;
+	}
+	str.close();
+
+	open_output_file(OUTPUT_DIR+DATA_MPPC_VERSION+"/double_I.dat", str);
+	str<<"ch\\E"<<"\t";
+	for (int ee=0,_end_exp=experiments.size();ee!=_end_exp;++ee)
+		str<<data->Fields[ee]<<((ee==(_end_exp-1))? "\n": "\t");
+	for (int ch=0,_end_ch=MPPC_channels.size();ch!=_end_ch;++ch){
+		str<<MPPC_channels[ch]<<"\t";
+		for (int ee=0,_end_exp=experiments.size();ee!=_end_exp;++ee)
+			str<<avr_Double_I[ee][ch]<<((ee==(_end_exp-1))? "": "\t");
+		str<<std::endl;
+	}
+	str.close();
+
+	open_output_file(OUTPUT_DIR+DATA_MPPC_VERSION+"/Npe_direct.dat", str);
+	str<<"ch\\E"<<"\t";
+	for (int ee=0,_end_exp=experiments.size();ee!=_end_exp;++ee)
+		str<<data->Fields[ee]<<((ee==(_end_exp-1))? "\n": "\t");
+	for (int ch=0,_end_ch=MPPC_channels.size();ch!=_end_ch;++ch){
+		str<<MPPC_channels[ch]<<"\t";
+		for (int ee=0,_end_exp=experiments.size();ee!=_end_exp;++ee)
+			str<<data->N_pe_direct[ee][ch]<<((ee==(_end_exp-1))? "": "\t");
+		str<<std::endl;
+	}
+	str.close();
+
+	open_output_file(OUTPUT_DIR+DATA_MPPC_VERSION+"/Npe_result.dat", str);
+	str<<"ch\\E"<<"\t";
+	for (int ee=0,_end_exp=experiments.size();ee!=_end_exp;++ee)
+		str<<data->Fields[ee]<<((ee==(_end_exp-1))? "\n": "\t");
+	for (int ch=0,_end_ch=MPPC_channels.size();ch!=_end_ch;++ch){
+		str<<MPPC_channels[ch]<<"\t";
+		for (int ee=0,_end_exp=experiments.size();ee!=_end_exp;++ee)
+			str<<data->N_pe_result[ee][ch]<<((ee==(_end_exp-1))? "": "\t");
+		str<<std::endl;
+	}
+	str.close();
 }
 
 void PostProcessor::plot_N_pe(Int_t channel, GraphicOutputManager* gr_man)
@@ -778,7 +827,7 @@ void PostProcessor::update_Npe(void)
 	calibr_info.recalibrate(data->N_pe_direct, data->N_pe_Double_I, data->Fields);
 	for (Int_t exp = 0, exp_end_ = data->N_pe_direct.size(); exp != exp_end_; ++exp) {
 		for (Int_t ch = 0, ch_end_ = MPPC_channels.size(); ch != ch_end_; ++ch) {
-			if (exp > calibr_info.get_N_calib(ch).second)
+			if (exp > calibr_info.get_N_calib(MPPC_channels[ch]).first)
 				data->N_pe_result[exp][ch] = data->N_pe_Double_I[exp][ch];
 			else
 				data->N_pe_result[exp][ch] = data->N_pe_direct[exp][ch];
@@ -798,17 +847,133 @@ void PostProcessor::update_physical(void)
 		if (current_setups->N_gauss>0 && current_setups->fitted)
 			avr_Double_I[current_exp_index][mppc_channel_to_index(current_channel)] = current_setups->par_val[1];
 		else {
-			std::cout << "Warning! No Double_t Int_tegral for " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
+			if (0==current_setups->N_gauss) {
+				Double_t val = 0;
+				Int_t weight = 0;
+				Int_t run_size = data->Double_I[current_exp_index][mppc_channel_to_index(current_channel)].size();
+				std::vector<Double_t> cut_data(1);
+				for (auto run = 0; run != run_size; ++run){
+					for (auto cut = RunCuts[current_exp_index].begin(), c_end_ = RunCuts[current_exp_index].end(); cut != c_end_; ++cut){
+						if (kFALSE == cut->GetAccept(run))
+							goto _10cutted;
+					}
+					cut_data[0] = data->Double_I[current_exp_index][mppc_channel_to_index(current_channel)][run];
+					for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
+						if (kFALSE == (*cut)(cut_data))
+							goto _10cutted;
+					}
+					for (auto cut = current_setups->phys_hist_cuts.begin(), c_end_ = current_setups->phys_hist_cuts.end(); cut != c_end_; ++cut){
+						if (kFALSE == (*cut)(cut_data))
+							goto _10cutted;
+					}
+					++weight;
+					val+= cut_data[0];
+					_10cutted:;
+				}
+				if (0==weight)
+					std::cout << "Warning! No mean double integral value for " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
+				else
+					avr_Double_I[current_exp_index][mppc_channel_to_index(current_channel)] = val/weight;
+			} else
+				std::cout << "Warning! No double integral for " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
 		}
 		break;
 	}
 	case Type::MPPC_S2:	//TODO: Warning!: these two types overwrite each other
+	{
+		if (current_setups->N_gauss>0 && current_setups->fitted)
+			avr_S2_S[current_exp_index][mppc_channel_to_index(current_channel)] = current_setups->par_val[1];
+		else {
+			if (0==current_setups->N_gauss) { //Use mean then
+				Double_t val = 0;
+				Int_t weight = 0;
+				Int_t run_size = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)].size();
+				std::vector<Double_t> cut_data(5);
+				double S2;
+				for (auto run = 0; run != run_size; ++run){
+					for (auto cut = RunCuts[current_exp_index].begin(), c_end_ = RunCuts[current_exp_index].end(); cut != c_end_; ++cut){
+						if (kFALSE == cut->GetAccept(run))
+							goto _0cutted;
+					}
+					S2=0;
+					for (Int_t pk = 0, pk_end = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run].size();
+						pk != pk_end; ++pk){
+						cut_data[0] = 0;
+						cut_data[1] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].S;
+						cut_data[2] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].A;
+						cut_data[3] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].left;
+						cut_data[4] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].right;
+						for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
+							if (kFALSE == (*cut)(cut_data))
+								goto _0cutted1;
+						}
+						for (auto cut = current_setups->phys_hist_cuts.begin(), c_end_ = current_setups->phys_hist_cuts.end(); cut != c_end_; ++cut){
+							if (kFALSE == (*cut)(cut_data))
+								goto _0cutted1;
+						}
+						S2+=cut_data[1];
+					_0cutted1:;
+					}
+					cut_data[0] = S2;
+					cut_data[1] = -2;
+					cut_data[2] = -2;
+					cut_data[3] = -2;
+					cut_data[4] = -2;
+					for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
+						if (kFALSE == (*cut)(cut_data))
+							goto _0cutted;
+					}
+					for (auto cut = current_setups->phys_hist_cuts.begin(), c_end_ = current_setups->phys_hist_cuts.end(); cut != c_end_; ++cut){
+						if (kFALSE == (*cut)(cut_data))
+							goto _0cutted;
+					}
+					++weight;
+					val+= cut_data[0];
+					_0cutted:;
+				}
+				if (0==weight)
+					std::cout << "Warning! No mean S2 value for " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
+				else
+					avr_S2_S[current_exp_index][mppc_channel_to_index(current_channel)] = val/weight;
+			} else
+				std::cout << "Warning! No S2 area for " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
+		}
+		break;
+	}
 	case Type::MPPC_S2_S:
 	{
 		if (current_setups->N_gauss>0 && current_setups->fitted)
 			avr_S2_S[current_exp_index][mppc_channel_to_index(current_channel)] = current_setups->par_val[1];
 		else {
-			std::cout << "Warning! No S2 area for " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
+			if (0==current_setups->N_gauss) { //Use mean then
+				Double_t val = 0;
+				Int_t weight = 0;
+				Int_t run_size = data->S2_S[current_exp_index][mppc_channel_to_index(current_channel)].size();
+				std::vector<Double_t> cut_data(1);
+				for (auto run = 0; run != run_size; ++run){
+					for (auto cut = RunCuts[current_exp_index].begin(), c_end_ = RunCuts[current_exp_index].end(); cut != c_end_; ++cut){
+						if (kFALSE == cut->GetAccept(run))
+							goto _1cutted;
+					}
+					cut_data[0] = data->S2_S[current_exp_index][mppc_channel_to_index(current_channel)][run];
+					for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
+						if (kFALSE == (*cut)(cut_data))
+							goto _1cutted;
+					}
+					for (auto cut = current_setups->phys_hist_cuts.begin(), c_end_ = current_setups->phys_hist_cuts.end(); cut != c_end_; ++cut){
+						if (kFALSE == (*cut)(cut_data))
+							goto _1cutted;
+					}
+					++weight;
+					val+= cut_data[0];
+					_1cutted:;
+				}
+				if (0==weight)
+					std::cout << "Warning! No mean S2 value for " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
+				else
+									avr_S2_S[current_exp_index][mppc_channel_to_index(current_channel)] = val/weight;
+			} else
+				std::cout << "Warning! No S2 area for " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
 		}
 		break;
 	}
@@ -927,6 +1092,10 @@ void PostProcessor::add_hist_cut(FunctionWrapper* picker, std::string name)
 	std::pair<Double_t, Double_t> x_lims = hist_x_limits();
 	current_setups->left_limit = x_lims.first;
 	current_setups->right_limit = x_lims.second;
+	if (current_setups->phys_hist_cuts.empty()) { //no drawn limit
+		current_setups->left_drawn_limit = x_lims.first;
+		current_setups->right_drawn_limit = x_lims.second;
+	}
 	update(All);
 }
 void PostProcessor::remove_hist_cut(std::string name)
@@ -1297,6 +1466,10 @@ void PostProcessor::set_limits(Double_t left, Double_t right)
 	add_hist_cut(picker, name);
 	current_setups->left_limit = _left;
 	current_setups->right_limit = _right;
+	if (current_setups->phys_hist_cuts.empty()) { //no drawn limit
+			current_setups->left_drawn_limit = _left;
+			current_setups->right_drawn_limit = _right;
+		}
 	update(All);
 }
 

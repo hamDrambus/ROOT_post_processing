@@ -210,6 +210,7 @@ void set_calib_N(Int_t from, Int_t to)//in order to set default use invalid valu
 		return;
 	}
 	post_processor->calibr_info.set_N_calib(post_processor->current_channel, from, to);
+	post_processor->update(PostProcessor::UpdateState::Results);//TODO: encapsulate
 }
 
 void draw_Npe(void)
@@ -295,12 +296,14 @@ void use_mean(Bool_t do_use) //uses mean value of data instead of gauss' mean. M
 		state(kFALSE);
 		return;
 	}
-	CalibrationInfo::S1pe_method prev_method = post_processor->calibr_info.get_method(post_processor->current_exp_index, post_processor->current_channel);
-	if (do_use)
-		prev_method = CalibrationInfo::UsingMean;
-	if ((!do_use) && (prev_method == CalibrationInfo::UsingMean))
-		prev_method = CalibrationInfo::Ignore;
-	post_processor->calibr_info.set_method(post_processor->current_exp_index, post_processor->current_channel, prev_method);
+	if (AnalysisStates::Type::MPPC_Ss==post_processor->current_type){
+		CalibrationInfo::S1pe_method prev_method = post_processor->calibr_info.get_method(post_processor->current_exp_index, post_processor->current_channel);
+		if (do_use)
+			prev_method = CalibrationInfo::UsingMean;
+		if ((!do_use) && (prev_method == CalibrationInfo::UsingMean))
+			prev_method = CalibrationInfo::Ignore;
+		post_processor->calibr_info.set_method(post_processor->current_exp_index, post_processor->current_channel, prev_method);
+	}
 }
 void set_N_bin(Int_t n)
 {
@@ -311,7 +314,7 @@ void set_N_bin(Int_t n)
 	post_processor->set_N_bins(n);
 }
 
-void Exit(Bool_t save)
+void Exit(Bool_t save) //TODO: add deletions
 {
 	if (NULL == g_data){
 		state(kFALSE);
