@@ -12,7 +12,7 @@ AnalysisStates(_data->mppc_channels,_data->pmt_channels, _data->exp_area.experim
 	current_fit_func = NULL;
 
 	if (!isValid()){
-		std::cout << "Wrong input data: no channels or experments from AnalysisManager" << std::endl;
+		std::cout << "Wrong input data: no channels or experiments from AnalysisManager" << std::endl;
 		return;
 	}
 
@@ -21,18 +21,34 @@ AnalysisStates(_data->mppc_channels,_data->pmt_channels, _data->exp_area.experim
 	current_canvas->cd();
 	++canvas_n;
 	for (auto exp = data->exp_area.experiments.begin(); exp != data->exp_area.experiments.end(); ++exp){
-		manual_setups.push_back(std::deque<std::deque<HistogramSetups*>>());
 		avr_S2_S.push_back(std::deque<Double_t>());
 		avr_Double_I.push_back(std::deque<Double_t>());
 		PMT3_avr_S2_S.push_back(-1);
 		PMT1_avr_S2_S.push_back(-1);
 		RunCuts.push_back(std::deque<EventCut>());
 		for (auto ch = data->mppc_channels.begin(); ch != data->mppc_channels.end(); ++ch){
-			manual_setups.back().push_back(std::deque<HistogramSetups*>());
-			for (Int_t h = MPPC_Ss; h != ((Int_t)PMT_t_S + 1);++h)
-				manual_setups.back().back().push_back(NULL);
 			avr_S2_S.back().push_back(-1);
 			avr_Double_I.back().push_back(-1);
+		}
+	}
+
+	for (Int_t h = _first_state; h != ((Int_t)_last_state + 1);++h){
+		manual_setups.push_back(std::deque<std::deque<HistogramSetups*>>());
+		for (auto exp = data->exp_area.experiments.begin(); exp != data->exp_area.experiments.end(); ++exp){
+			manual_setups.back().push_back(std::deque<HistogramSetups*>());
+			if (isMultichannel((AnalysisStates::Type)h)) {
+				manual_setups.back().back().push_back(NULL);
+				continue;
+			}
+			if (is_PMT_type((AnalysisStates::Type)h)) {
+				for (auto ch = data->pmt_channels.begin(); ch != data->pmt_channels.end(); ++ch){
+					manual_setups.back().back().push_back(NULL);
+				}
+			} else {
+				for (auto ch = data->mppc_channels.begin(); ch != data->mppc_channels.end(); ++ch){
+					manual_setups.back().back().push_back(NULL);
+				}
+			}
 		}
 	}
 
@@ -91,12 +107,12 @@ void PostProcessor::set_hist_setups(HistogramSetups* setups, std::string experim
 	Int_t exp_ind = data->get_exp_index(experiment);
 	if (exp_ind < 0)
 		return;
-	Int_t ch_ind = data->get_ch_index(channel);
+	Int_t ch_ind = (isMultichannel(type) ? 0 : data->get_ch_index(channel));
 	if (ch_ind < 0)
 		return;
-	if ((NULL != manual_setups[exp_ind][ch_ind][type]) && (setups != manual_setups[exp_ind][ch_ind][type]))
-		delete manual_setups[exp_ind][ch_ind][type];
-	manual_setups[exp_ind][ch_ind][type] = setups;
+	if ((NULL != manual_setups[type][exp_ind][ch_ind]) && (setups != manual_setups[type][exp_ind][ch_ind]))
+		delete manual_setups[type][exp_ind][ch_ind];
+	manual_setups[type][exp_ind][ch_ind] = setups;
 }
 
 HistogramSetups* PostProcessor::get_hist_setups(std::string experiment, Int_t channel, Type type)
@@ -104,10 +120,10 @@ HistogramSetups* PostProcessor::get_hist_setups(std::string experiment, Int_t ch
 	Int_t exp_ind = data->get_exp_index(experiment);
 	if (exp_ind < 0)
 		return NULL;
-	Int_t ch_ind = data->get_ch_index(channel);
+	Int_t ch_ind = (isMultichannel(type) ? 0 : data->get_ch_index(channel));
 	if (ch_ind < 0)
 		return NULL;
-	return manual_setups[exp_ind][ch_ind][type];
+	return manual_setups[type][exp_ind][ch_ind];
 }
 
 void PostProcessor::save(Int_t channel)
@@ -144,6 +160,7 @@ MPPC_times		peak.S		peak.A		peak.left	peak.right	------		=== MPPC_Ss
 MPPC_t_start	time		------		------		------		------
 MPPC_t_both		time		------		------		------		------
 MPPC_t_final	time		------		------		------		------
+MPPC_sum_ts		peak.S		peak.A		peak.left	peak.right	------
 MPPC_S2			SUM(peak.S)	peak.S		peak.A		peak.left	peak.right	//composite: cuts for peaks and then derived parameter. Data is derived within loop.
 PMT_S2_S		SUM(peak.S)	peak.S		peak.A		peak.left	peak.right	//composite: cuts for peaks and then derived parameter. Data is derived within loop.
 PMT_Ss			peak.S		peak.A		peak.left	peak.right	------
@@ -304,7 +321,7 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation)
 		}
 	case Type::PMT_S2_S: //cuts for this one are tricky: they are 2-stage: first peaks selection for S2 and then cuts for S2 themselves
 	{
-		Int_t run_size = (current_channel == 0) ? data->PMT3_peaks[current_exp_index].size() : data->PMT1_peaks[current_exp_index].size();
+		Int_t run_size = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)].size();
 		std::vector<Double_t> cut_data(5);
 		for (auto run = 0; run != run_size; ++run){
 			Double_t S2 = 0;
@@ -317,12 +334,12 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation)
 				if (kFALSE == cut->GetAccept(run))//not calculating it here!
 					goto _6cutted;
 			}
-			for (Int_t pk = 0, pk_end = ((current_channel == 0) ? data->PMT3_peaks[current_exp_index].size() : data->PMT1_peaks[current_exp_index].size());
+			for (Int_t pk = 0, pk_end = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run].size();
 				pk != pk_end; ++pk){
-				cut_data[1] = ((current_channel == 0) ? data->PMT3_peaks[current_exp_index][run][pk].S : data->PMT1_peaks[current_exp_index][run][pk].S);
-				cut_data[2] = ((current_channel == 0) ? data->PMT3_peaks[current_exp_index][run][pk].A : data->PMT1_peaks[current_exp_index][run][pk].A);
-				cut_data[3] = ((current_channel == 0) ? data->PMT3_peaks[current_exp_index][run][pk].left : data->PMT1_peaks[current_exp_index][run][pk].left);
-				cut_data[4] = ((current_channel == 0) ? data->PMT3_peaks[current_exp_index][run][pk].right : data->PMT1_peaks[current_exp_index][run][pk].right);
+				cut_data[1] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].S;
+				cut_data[2] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].A;
+				cut_data[3] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].left;
+				cut_data[4] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].right;
 				for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
 					if (kFALSE == (*cut)(cut_data))
 						goto _6cutted1;
@@ -348,9 +365,9 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation)
 	case Type::PMT_t_S:
 	case Type::PMT_Ss:
 	{
-		Int_t run_size = (current_channel == 0) ? data->PMT3_peaks[current_exp_index].size() : data->PMT1_peaks[current_exp_index].size();
+		Int_t run_size = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)].size();
 		std::vector<Double_t> cut_data(4);
-		for (auto run = 0; run != run_size; ++run){
+		for (auto run = 0; run != run_size; ++run) {
 			cut_data[0] = 0;
 			cut_data[1] = 0;
 			cut_data[2] = 0;
@@ -359,12 +376,12 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation)
 				if (kFALSE == cut->GetAccept(run))//not calculating it here!
 					goto _7cutted;
 			}
-			for (Int_t pk = 0, pk_end = ((current_channel == 0) ? data->PMT3_peaks[current_exp_index][run].size() : data->PMT1_peaks[current_exp_index][run].size());
+			for (Int_t pk = 0, pk_end = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run].size();
 				pk != pk_end; ++pk){
-				cut_data[0] = ((current_channel == 0) ? data->PMT3_peaks[current_exp_index][run][pk].S : data->PMT1_peaks[current_exp_index][run][pk].S);
-				cut_data[1] = ((current_channel == 0) ? data->PMT3_peaks[current_exp_index][run][pk].A : data->PMT1_peaks[current_exp_index][run][pk].A);
-				cut_data[2] = ((current_channel == 0) ? data->PMT3_peaks[current_exp_index][run][pk].left : data->PMT1_peaks[current_exp_index][run][pk].left);
-				cut_data[3] = ((current_channel == 0) ? data->PMT3_peaks[current_exp_index][run][pk].right : data->PMT1_peaks[current_exp_index][run][pk].right);
+				cut_data[0] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].S;
+				cut_data[1] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].A;
+				cut_data[2] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].left;
+				cut_data[3] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].right;
 				for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
 					if (kFALSE == (*cut)(cut_data))
 						goto _7cutted1;
@@ -373,6 +390,39 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation)
 		_7cutted1:;
 			}
 		_7cutted:;
+		}
+		break;
+	}
+	case Type::MPPC_sum_ts:
+	{
+		Int_t run_size = data->mppc_peaks[current_exp_index][0].size();
+		for (auto run = 0; run != run_size; ++run) {
+			for (auto cut = RunCuts[current_exp_index].begin(), c_end_ = RunCuts[current_exp_index].end(); cut != c_end_; ++cut) {
+				if (kFALSE == cut->GetAccept(run))//not calculating it here!
+					goto _8cutted;
+			}
+			for (int ch_ind=0,_ch_ind_end_= MPPC_channels.size(); ch_ind<_ch_ind_end_;++ch_ind){
+				std::vector<Double_t> cut_data(4);
+				cut_data[0] = 0; //reserved for S2 cut
+				cut_data[1] = 0; //the 4 below are for S2 selection
+				cut_data[2] = 0;
+				cut_data[3] = 0;
+				for (Int_t pk = 0, pk_end = data->mppc_peaks[current_exp_index][ch_ind][run].size();
+					pk != pk_end; ++pk) {
+					cut_data[0] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].S;
+					cut_data[1] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].A;
+					cut_data[2] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].left;
+					cut_data[3] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].right;
+					for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut) {
+						if (cut->GetChannel()==MPPC_channels[ch_ind])
+							if (kFALSE == (*cut)(cut_data))
+								goto _8cutted1;
+					}
+					(*operation)(cut_data);
+				_8cutted1:;
+				}
+			}
+			_8cutted:;
 		}
 		break;
 	}
@@ -402,6 +452,7 @@ void PostProcessor::FillHist(void* p_hist)//considers cuts and histogram tipe (v
 		break;
 	}
 	case Type::PMT_t_S:
+	case Type::MPPC_sum_ts:
 	case Type::MPPC_t_S:
 	{
 		filler_op = [](std::vector<double>& pars, void* data) {
@@ -495,6 +546,7 @@ std::pair<Double_t, Double_t> PostProcessor::hist_x_limits(void) //valid only fo
 	case Type::PMT_times:
 	case Type::MPPC_times:
 	case Type::PMT_t_S:
+	case Type::MPPC_sum_ts:
 	case Type::MPPC_t_S:
 	{
 		filler_op = [](std::vector<double>& pars, void* data) {
@@ -641,6 +693,7 @@ void PostProcessor::set_default_hist_setups(void)//does not affect cuts
 	case Type::MPPC_t_S:
 	case Type::MPPC_times:
 	case Type::PMT_times:
+	case Type::MPPC_sum_ts:
 	case Type::PMT_t_S:
 	{
 		current_setups->N_gauss = 0;
@@ -1087,8 +1140,14 @@ void PostProcessor::add_hist_cut(FunctionWrapper* picker, std::string name)
 		std::cout << "Wrong input data: no channels or experiments from AnalysisManager" << std::endl;
 		return;
 	}
+	if (isMultichannel(current_type)){
+		std::cout << "PostProcessor::add_hist_cut(FunctionWrapper*, std::string) Error: for type '"<<type_name(current_type)<<"' channel must be specified."<<std::endl;
+		std::cout << "\t Use add_hist_cut(FunctionWrapper*, std::string, int channel) instead."<<std::endl;
+		return;
+	}
 	current_setups->display_hist_cuts.push_back(EventCut(0, EventCut::HistCut, name));
 	current_setups->display_hist_cuts.back().SetPicker(picker);
+	current_setups->display_hist_cuts.back().SetChannel(current_channel);
 	std::pair<Double_t, Double_t> x_lims = hist_x_limits();
 	current_setups->left_limit = x_lims.first;
 	current_setups->right_limit = x_lims.second;
@@ -1098,6 +1157,31 @@ void PostProcessor::add_hist_cut(FunctionWrapper* picker, std::string name)
 	}
 	update(All);
 }
+
+void PostProcessor::add_hist_cut(FunctionWrapper* picker, std::string name, int channel)
+{
+	if (!isValid()){
+		std::cout << "Wrong input data: no channels or experiments from AnalysisManager" << std::endl;
+		return;
+	}
+	if (!isMultichannel(current_type)){
+		std::cout << "PostProcessor::add_hist_cut(FunctionWrapper*, std::string, int) Error: for type '"<<type_name(current_type)<<"' channel can't be specified."<<std::endl;
+		std::cout << "\t Use add_hist_cut(FunctionWrapper*, std::string) instead."<<std::endl;
+		return;
+	}
+	current_setups->display_hist_cuts.push_back(EventCut(0, EventCut::HistCut, name));
+	current_setups->display_hist_cuts.back().SetPicker(picker);
+	current_setups->display_hist_cuts.back().SetChannel(channel);
+	std::pair<Double_t, Double_t> x_lims = hist_x_limits();
+	current_setups->left_limit = x_lims.first;
+	current_setups->right_limit = x_lims.second;
+	if (current_setups->phys_hist_cuts.empty()) { //no drawn limit
+		current_setups->left_drawn_limit = x_lims.first;
+		current_setups->right_drawn_limit = x_lims.second;
+	}
+	update(All);
+}
+
 void PostProcessor::remove_hist_cut(std::string name)
 {
 	if (!isValid()){
@@ -1110,6 +1194,7 @@ void PostProcessor::remove_hist_cut(std::string name)
 			std::pair<Double_t, Double_t> x_lims = hist_x_limits();
 			current_setups->left_limit = x_lims.first;
 			current_setups->right_limit = x_lims.second;
+			update(All);
 			return;
 		}
 	}
@@ -1120,6 +1205,31 @@ void PostProcessor::remove_hist_cut(std::string name)
 	current_setups->right_limit = x_lims.second;
 	update(All);
 }
+
+void PostProcessor::remove_hist_cut(std::string name, int ch)
+{
+	if (!isValid()){
+		std::cout << "Wrong input data: no channels or experiments from AnalysisManager" << std::endl;
+		return;
+	}
+	for (auto i = current_setups->display_hist_cuts.rbegin(); i != current_setups->display_hist_cuts.rend(); ++i){
+		if ((i->GetName() == name)&&(i->GetChannel()==ch)){
+			current_setups->display_hist_cuts.erase(i.base());
+			std::pair<Double_t, Double_t> x_lims = hist_x_limits();
+			current_setups->left_limit = x_lims.first;
+			current_setups->right_limit = x_lims.second;
+			update(All);
+			return;
+		}
+	}
+	if (!current_setups->display_hist_cuts.empty()) //in case not found by name
+		current_setups->display_hist_cuts.erase(current_setups->display_hist_cuts.end()-1);
+	std::pair<Double_t, Double_t> x_lims = hist_x_limits();
+	current_setups->left_limit = x_lims.first;
+	current_setups->right_limit = x_lims.second;
+	update(All);
+}
+
 void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits in HistogramSetups to runs cut (from current exp, channel and type)
 {
 	if (!isValid()){
@@ -1127,8 +1237,8 @@ void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits 
 		return;
 	}
 	Int_t run_size = is_PMT_type(current_type) ? 
-		(data->PMT3_peaks.empty() ? data->PMT1_peaks[current_exp_index].size() : data->PMT3_peaks[current_exp_index].size())
-		:data->Double_I[current_exp_index][mppc_channel_to_index(current_channel)].size();
+		data->pmt_peaks[current_exp_index][pmt_channel_to_index(current_channel)].size()
+		:data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)].size();
 	RunCuts[current_exp_index].push_back(EventCut(run_size, EventCut::RunCut, name));
 	RunCuts[current_exp_index].back().SetChannel(current_channel);
 	RunCuts[current_exp_index].back().SetExperiment(current_exp_index);
@@ -1247,7 +1357,7 @@ void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits 
 	}
 	case Type::PMT_S2_S: //cuts for this one are tricky: they are 2-stage: first peaks selection for S2 and then cuts for S2 themselves
 	{
-		Int_t run_size = (current_channel == 0) ? data->PMT3_peaks[current_exp_index].size() : data->PMT1_peaks[current_exp_index].size();
+		Int_t run_size = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)].size();
 		std::vector<Double_t> cut_data(5);
 		for (auto run = 0; run != run_size; ++run){
 			RunCuts[current_exp_index].back().SetAccept(run, kFALSE);
@@ -1257,12 +1367,12 @@ void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits 
 			cut_data[2] = 0;
 			cut_data[3] = 0;
 			cut_data[4] = 0;
-			for (Int_t pk = 0, pk_end = ((current_channel == 0) ? data->PMT3_peaks[current_exp_index].size() : data->PMT1_peaks[current_exp_index].size());
+			for (Int_t pk = 0, pk_end = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run].size();
 				pk != pk_end; ++pk){
-				cut_data[1] = ((current_channel == 0) ? data->PMT3_peaks[current_exp_index][run][pk].S : data->PMT1_peaks[current_exp_index][run][pk].S);
-				cut_data[2] = ((current_channel == 0) ? data->PMT3_peaks[current_exp_index][run][pk].A : data->PMT1_peaks[current_exp_index][run][pk].A);
-				cut_data[3] = ((current_channel == 0) ? data->PMT3_peaks[current_exp_index][run][pk].left : data->PMT1_peaks[current_exp_index][run][pk].left);
-				cut_data[4] = ((current_channel == 0) ? data->PMT3_peaks[current_exp_index][run][pk].right : data->PMT1_peaks[current_exp_index][run][pk].right);
+				cut_data[1] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].S;
+				cut_data[2] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].A;
+				cut_data[3] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].left;
+				cut_data[4] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].right;
 				for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
 					if (kFALSE == (*cut)(cut_data))
 						goto _6cutted1;
@@ -1296,7 +1406,7 @@ void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits 
 	case Type::PMT_times:
 	case Type::PMT_Ss:
 	{
-		Int_t run_size = (current_channel == 0) ? data->PMT3_peaks[current_exp_index].size() : data->PMT1_peaks[current_exp_index].size();
+		Int_t run_size = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)].size();
 		std::vector<Double_t> cut_data(4);
 		for (auto run = 0; run != run_size; ++run){
 			RunCuts[current_exp_index].back().SetAccept(run, kFALSE);
@@ -1304,12 +1414,12 @@ void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits 
 			cut_data[1] = 0;
 			cut_data[2] = 0;
 			cut_data[3] = 0;
-			for (Int_t pk = 0, pk_end = ((current_channel == 0) ? data->PMT3_peaks[current_exp_index][run].size() : data->PMT1_peaks[current_exp_index][run].size());
+			for (Int_t pk = 0, pk_end = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run].size();
 				pk != pk_end; ++pk){
-				cut_data[0] = ((current_channel == 0) ? data->PMT3_peaks[current_exp_index][run][pk].S : data->PMT1_peaks[current_exp_index][run][pk].S);
-				cut_data[1] = ((current_channel == 0) ? data->PMT3_peaks[current_exp_index][run][pk].A : data->PMT1_peaks[current_exp_index][run][pk].A);
-				cut_data[2] = ((current_channel == 0) ? data->PMT3_peaks[current_exp_index][run][pk].left : data->PMT1_peaks[current_exp_index][run][pk].left);
-				cut_data[3] = ((current_channel == 0) ? data->PMT3_peaks[current_exp_index][run][pk].right : data->PMT1_peaks[current_exp_index][run][pk].right);
+				cut_data[0] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].S;
+				cut_data[1] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].A;
+				cut_data[2] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].left;
+				cut_data[3] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].right;
 				for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
 					if (kFALSE == (*cut)(cut_data))
 						goto _7cutted1;
@@ -1326,52 +1436,56 @@ void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits 
 		break;
 	}
 	case Type::MPPC_S2: //cuts for this one are tricky: they are 2-stage: first peaks selection for S2 and then cuts for S2 themselves
-		{
-			Int_t run_size = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)].size();
-			std::vector<Double_t> cut_data(5);
-			for (auto run = 0; run != run_size; ++run){
-				RunCuts[current_exp_index].back().SetAccept(run, kFALSE);
-				Double_t S2 = 0;
-				cut_data[0] = 0; //reserved for S2 cut
-				cut_data[1] = 0; //the 4 below are for S2 selection
-				cut_data[2] = 0;
-				cut_data[3] = 0;
-				cut_data[4] = 0;
-				for (Int_t pk = 0, pk_end = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run].size();
-					pk != pk_end; ++pk){
-					cut_data[1] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].S;
-					cut_data[2] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].A;
-					cut_data[3] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].left;
-					cut_data[4] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].right;
-					for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
-						if (kFALSE == (*cut)(cut_data))
-							goto _8cutted1;
-					}
-					for (auto cut = current_setups->phys_hist_cuts.begin(), c_end_ = current_setups->phys_hist_cuts.end(); cut != c_end_; ++cut){
-						if (kFALSE == (*cut)(cut_data))
-							goto _8cutted1;
-					}
-					S2 += cut_data[1];
-				_8cutted1:;
-				}
-				cut_data[0] = S2;//1st parameter cut must be applied only if the rest 4 parameters are -2. -1 is reserved for invalid peaks
-				cut_data[1] = -2;
-				cut_data[2] = -2;
-				cut_data[3] = -2;
-				cut_data[4] = -2;
+	{
+		Int_t run_size = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)].size();
+		std::vector<Double_t> cut_data(5);
+		for (auto run = 0; run != run_size; ++run){
+			RunCuts[current_exp_index].back().SetAccept(run, kFALSE);
+			Double_t S2 = 0;
+			cut_data[0] = 0; //reserved for S2 cut
+			cut_data[1] = 0; //the 4 below are for S2 selection
+			cut_data[2] = 0;
+			cut_data[3] = 0;
+			cut_data[4] = 0;
+			for (Int_t pk = 0, pk_end = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run].size();
+				pk != pk_end; ++pk){
+				cut_data[1] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].S;
+				cut_data[2] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].A;
+				cut_data[3] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].left;
+				cut_data[4] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].right;
 				for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
 					if (kFALSE == (*cut)(cut_data))
-						goto _8cutted;
+						goto _8cutted1;
 				}
 				for (auto cut = current_setups->phys_hist_cuts.begin(), c_end_ = current_setups->phys_hist_cuts.end(); cut != c_end_; ++cut){
 					if (kFALSE == (*cut)(cut_data))
-						goto _8cutted;
+						goto _8cutted1;
 				}
-				RunCuts[current_exp_index].back().SetAccept(run, kTRUE);
-			_8cutted:;
+				S2 += cut_data[1];
+			_8cutted1:;
 			}
-			break;
+			cut_data[0] = S2;//1st parameter cut must be applied only if the rest 4 parameters are -2. -1 is reserved for invalid peaks
+			cut_data[1] = -2;
+			cut_data[2] = -2;
+			cut_data[3] = -2;
+			cut_data[4] = -2;
+			for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
+				if (kFALSE == (*cut)(cut_data))
+					goto _8cutted;
+			}
+			for (auto cut = current_setups->phys_hist_cuts.begin(), c_end_ = current_setups->phys_hist_cuts.end(); cut != c_end_; ++cut){
+				if (kFALSE == (*cut)(cut_data))
+					goto _8cutted;
+			}
+			RunCuts[current_exp_index].back().SetAccept(run, kTRUE);
+		_8cutted:;
 		}
+		break;
+	}
+	case Type::MPPC_sum_ts:
+	{
+		break;
+	}
 	}
 	update(All);
 }
@@ -1444,7 +1558,7 @@ void PostProcessor::set_limits(Double_t left, Double_t right)
 		});
 	}
 	else {
-		if (current_type == Type::MPPC_times||current_type == Type::PMT_times){
+		if (current_type == Type::MPPC_times||current_type == Type::PMT_times||current_type==Type::MPPC_sum_ts){
 			picker->SetFunction(
 				[](std::vector<Double_t> &vals, void* data) {
 					return ((0.5*(vals[2]+vals[3]) <= ((std::pair<double, double>*)data)->second) && (0.5*(vals[2]+vals[3]) >= ((std::pair<double, double>*)data)->first));
@@ -1458,12 +1572,19 @@ void PostProcessor::set_limits(Double_t left, Double_t right)
 	}
 
 	std::string name = "_histogram_limits_";
-	for (auto i = current_setups->display_hist_cuts.rbegin(); i != current_setups->display_hist_cuts.rend(); ++i)
-		if (i->GetName() == name){
-			current_setups->display_hist_cuts.erase(i.base());
-			break;
-		}
-	add_hist_cut(picker, name);
+	while (true) {
+		for (auto i = current_setups->display_hist_cuts.rbegin(); i != current_setups->display_hist_cuts.rend(); ++i)
+			if (i->GetName() == name){
+				current_setups->display_hist_cuts.erase(i.base());
+				break;
+			}
+		break;
+	}
+	if (isMultichannel(current_type)){
+		for (int chi=0;chi!=MPPC_channels.size();++chi)
+			add_hist_cut(picker, name, MPPC_channels[chi]);
+	} else
+		add_hist_cut(picker, name);
 	current_setups->left_limit = _left;
 	current_setups->right_limit = _right;
 	if (current_setups->phys_hist_cuts.empty()) { //no drawn limit
@@ -1493,7 +1614,7 @@ void PostProcessor::set_drawn_limits(Double_t left, Double_t right)
 		});
 	}
 	else {
-		if (current_type == Type::MPPC_times||current_type == Type::PMT_times){
+		if (current_type == Type::MPPC_times||current_type == Type::PMT_times||current_type == Type::MPPC_sum_ts){
 			picker->SetFunction(
 				[](std::vector<Double_t> &vals, void* data) {
 					return ((0.5*(vals[2]+vals[3]) <= ((std::pair<double, double>*)data)->second) && (0.5*(vals[2]+vals[3]) >= ((std::pair<double, double>*)data)->first));
@@ -1507,13 +1628,25 @@ void PostProcessor::set_drawn_limits(Double_t left, Double_t right)
 	}
 
 	std::string name = "_histogram_drawn_limits_";
-	for (auto i = current_setups->phys_hist_cuts.rbegin(); i != current_setups->phys_hist_cuts.rend(); ++i)
-		if (i->GetName() == name){
-			current_setups->phys_hist_cuts.erase(i.base());
-			break;
+	while (true) {
+		for (auto i = current_setups->phys_hist_cuts.rbegin(); i != current_setups->phys_hist_cuts.rend(); ++i)
+			if (i->GetName() == name){
+				current_setups->phys_hist_cuts.erase(i.base());
+				break;
+			}
+		break;
+	}
+	if (isMultichannel(current_type)){
+		for (int ch=0; ch!=MPPC_channels.size(); ++ch) {
+			current_setups->phys_hist_cuts.push_back(EventCut(0, EventCut::HistCut, name));
+			current_setups->phys_hist_cuts.back().SetPicker(picker);
+			current_setups->phys_hist_cuts.back().SetChannel(MPPC_channels[ch]);
 		}
-	current_setups->phys_hist_cuts.push_back(EventCut(0, EventCut::HistCut, name));
-	current_setups->phys_hist_cuts.back().SetPicker(picker);
+	} else {
+		current_setups->phys_hist_cuts.push_back(EventCut(0, EventCut::HistCut, name));
+		current_setups->phys_hist_cuts.back().SetPicker(picker);
+		current_setups->phys_hist_cuts.back().SetChannel(current_channel);
+	}
 	current_setups->left_drawn_limit = std::max(current_setups->left_limit,_left);
 	current_setups->right_drawn_limit = std::min(current_setups->right_limit, _right);
 	update(All);

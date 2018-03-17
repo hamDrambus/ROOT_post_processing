@@ -74,6 +74,11 @@ Bool_t AnalysisStates::NextCh(Bool_t save)
 	Int_t prev_exp = current_exp_index;
 	Type prev_type = current_type;
 	
+	if (isMultichannel(current_type)){
+		std::cout<<"Warning: current type has no channels"<<std::endl;
+		return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type, save);
+	}
+
 	if (is_PMT_type(current_type)){
 		for (auto i = PMT_channels.begin(), _end_ = PMT_channels.end(); i != _end_; ++i)
 			if (current_channel == *i){
@@ -97,6 +102,11 @@ Bool_t AnalysisStates::PrevCh(Bool_t save)
 	Int_t prev_ch = current_channel;
 	Int_t prev_exp = current_exp_index;
 	Type prev_type = current_type;
+
+	if (isMultichannel(current_type)){
+		std::cout<<"Warning: current type has no channels"<<std::endl;
+		return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type, save);
+	}
 
 	if (is_PMT_type(current_type)){
 		for (auto i = PMT_channels.rbegin(), _end_ = PMT_channels.rend(); i != _end_; ++i)
@@ -139,6 +149,11 @@ Bool_t AnalysisStates::PrevExp(Bool_t save)
 Bool_t AnalysisStates::is_PMT_type(Type type)
 {
 	return (type == PMT_S2_S || type == PMT_Ss || type == PMT_t_S || type == PMT_times);
+}
+
+Bool_t AnalysisStates::isMultichannel(Type type)
+{
+	return (type == MPPC_sum_ts);
 }
 
 Bool_t AnalysisStates::isValid()
@@ -225,10 +240,14 @@ std::string AnalysisStates::type_name(Type type)
 		name += "_t_S";
 		break;
 	}
+	case Type::MPPC_sum_ts:{
+		name += "sum_ts";
+		break;
+	}
 	case Type::MPPC_S2:{
-			name += "_S2_manual";
-			break;
-		}
+		name += "_S2_manual";
+		break;
+	}
 	case Type::PMT_S2_S:{
 		name += "_S2_S";
 		break;

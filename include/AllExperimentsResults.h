@@ -16,9 +16,8 @@ class AllExperimentsResults
 public:
 	//expriment->channel->run->peak_itself:
 	std::deque<std::deque<std::deque<std::deque<peak> > > > mppc_peaks;
-	//expriment->run->peak_itself:
-	std::deque<std::deque<std::deque<peak> > > PMT3_peaks;
-	std::deque<std::deque<std::deque<peak> > > PMT1_peaks;
+	//expriment->channel->run->peak_itself:
+	std::deque<std::deque<std::deque<std::deque<peak> > > > pmt_peaks;
 	//expriment->channel->array_itself:
 	//std::deque<std::deque<std::vector<Double_t>>> Ss;
 	std::deque<std::deque<std::vector<Double_t> > > S2_S; //size of std::vector<Double_t> must be the No. of runs

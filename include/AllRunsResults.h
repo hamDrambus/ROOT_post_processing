@@ -28,8 +28,7 @@ protected:
 	std::deque<Int_t> mppc_channels;
 	std::deque<Int_t> pmt_channels;
 	std::deque<std::deque<std::deque<peak> > > mppc_peaks;	//[channel][run#][peaks]
-	std::deque<std::deque<peak> > PMT3_peaks;			//[run#][peaks]
-	std::deque<std::deque<peak> > PMT1_peaks;			//[run#][peaks]
+	std::deque<std::deque<std::deque<peak> > > pmt_peaks;	//[channel][run#][peaks]
 
 	/*TH1D* createMPPCHist(std::vector<Double_t> &what, std::string name, Double_t left_cutoff, Double_t right_cutoff_from_RMS, Int_t N_bins = 0);
 	void vector_to_file(std::vector<Double_t> &what, std::string fname);

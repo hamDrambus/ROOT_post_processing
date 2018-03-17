@@ -8,20 +8,15 @@ AllRunsResults::AllRunsResults(/*ParameterPile::*/experiment_area experiment)
 	for (auto ex = _exp.experiments.begin(); ex != _exp.experiments.end(); ++ex) {
 		Int_t mppc_ch = 0;
 		for (Int_t ch = _exp.channels.get_next_index(); ch != -1; ch = _exp.channels.get_next_index()){
-			if (ch == 0){
-				std::string prefix = DATA_PREFIX + DATA_PMT_VERSION + "/PMT_" + *ex + "/PMT_0/PMT_0_";
-				vector_from_file(PMT3_peaks, prefix + "peaks.dat");
-				if (!PMT3_peaks.empty()){
-					pmt_channels.push_back(ch);
-					std::cout << "Loaded channel " << ch << std::endl;
-				}
-				continue;
-			}
-			if (ch == 1){
-				std::string prefix = DATA_PREFIX +  DATA_PMT_VERSION + "/PMT_" + *ex + "/PMT_1/PMT_1_";
-				vector_from_file(PMT1_peaks, prefix + "peaks.dat");
-				if (!PMT1_peaks.empty()){
-					pmt_channels.push_back(ch);
+			if ((ch<32)&&(ch!=2)) {
+				std::string prefix = DATA_PREFIX + DATA_PMT_VERSION + "/PMT_" + *ex + "/PMT_"+std::to_string(ch)+"/PMT_"+std::to_string(ch)+"_";
+				mppc_channels.push_back(ch);
+				pmt_peaks.push_back(std::deque<std::deque<peak>>());
+				vector_from_file(pmt_peaks.back(), prefix + "peaks.dat");
+				if (pmt_peaks.back().empty()){
+					pmt_channels.pop_back();
+					pmt_peaks.pop_back();
+				} else {
 					std::cout << "Loaded channel " << ch << std::endl;
 				}
 				continue;
@@ -300,10 +295,10 @@ void AllRunsResults::Clear(void)
 {
 	std::deque<std::vector<Double_t>>().swap(mppc_S2_S);
 	std::deque<std::deque<std::deque<peak>>>().swap(mppc_peaks);
-	std::deque<std::deque<peak>>().swap(PMT3_peaks);
-	std::deque<std::deque<peak>>().swap(PMT1_peaks);
+	std::deque<std::deque<std::deque<peak>>>().swap(pmt_peaks);
 	std::deque<std::vector<Double_t>>().swap(mppc_Double_Is);
 	std::deque<Int_t>().swap(mppc_channels);
+	std::deque<Int_t>().swap(pmt_channels);
 	N_of_runs = 0;
 	//Iteration_N preserved;
 }

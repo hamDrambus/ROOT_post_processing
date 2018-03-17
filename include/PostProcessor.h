@@ -11,23 +11,24 @@
 #include "CalibrationInfo.h"
 
 //for adding new types of analysis - dependence on AnalysisStates::Type
-//1). AnalysisStates::AnalysisStates (first/last state)
-//2). AnalysisStates::is_PMT_type
-//3). std::string AnalysisStates::type_name(Type type);
-//4). PostProcessor::is_TH1D_hist
+//1) AnalysisStates::AnalysisStates (first/last state)
+//2) AnalysisStates::isMultichannel();
+//3) AnalysisStates::is_PMT_type
+//4) std::string AnalysisStates::type_name(Type type);
+//5) PostProcessor::is_TH1D_hist
 
-//5). void PostProcessor::LoopThroughData(FunctionWrapper*);
-//6). void PostProcessor::FillHist(void* p_hist)
-//7). Int_t PostProcessor::numOfFills(void);
-//8). std::pair<Double_t, Double_t> PostProcessor::hist_x_limits(void);
-//9). std::pair<Double_t, Double_t> PostProcessor::hist_y_limits(void);
+//6) void PostProcessor::LoopThroughData(FunctionWrapper*);
+//7) void PostProcessor::FillHist(void* p_hist)
+//8) Int_t PostProcessor::numOfFills(void);
+//9) std::pair<Double_t, Double_t> PostProcessor::hist_x_limits(void);
+//10) std::pair<Double_t, Double_t> PostProcessor::hist_y_limits(void);
 
-//10). void PostProcessor::set_default_hist_setups(void);
+//11) void PostProcessor::set_default_hist_setups(void);
 
-//11). void PostProcessor::update_physical(void);
-//12). void PostProcessor::set_limits(Double_t left, Double_t right);
-//13). void PostProcessor::set_drawn_limits(Double_t left, Double_t right);
-//14) void PostProcessor::set_as_run_cut(std::string name)
+//12) void PostProcessor::update_physical(void);
+//13) void PostProcessor::set_limits(Double_t left, Double_t right);
+//14) void PostProcessor::set_drawn_limits(Double_t left, Double_t right);
+//15) void PostProcessor::set_as_run_cut(std::string name)
 
 
 //TODO: rename display_cuts from HistogramSetups (counter-intuitive)
@@ -100,7 +101,9 @@ public:
 
 	//~done: will be done to the fullest from root macros. Then can add code from there. TO DO: add several default cuts (e.g. from left/right limit)
 	void add_hist_cut(FunctionWrapper *picker, std::string name = "");
+	void add_hist_cut(FunctionWrapper* picker, std::string name, int channel);
 	void remove_hist_cut(std::string name = "");
+	void remove_hist_cut(std::string name, int ch);
 	void set_as_run_cut(std::string name = "");//adds current drawn_limits in HistogramSetups to runs cut (from current exp, channel and type)
 	void unset_as_run_cut(std::string name = "");//deletes current exp,ch and type from current cuts (if present) deletes from back, that is
 	//if a single exp,ch,type produces several EventCuts, unset must be called respective amount of times

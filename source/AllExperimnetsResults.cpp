@@ -54,10 +54,7 @@ void AllExperimentsResults::processAllExperiments(std::deque<AllRunsResults> &al
 		}
 		exp_area.experiments.push_back(i->_exp.experiments.back());
 		mppc_peaks.push_back(i->mppc_peaks);
-		if (!i->PMT1_peaks.empty()) //TODO: the case when there is no mppc channels
-			PMT1_peaks.push_back(i->PMT1_peaks);
-		if (!i->PMT3_peaks.empty())
-			PMT3_peaks.push_back(i->PMT3_peaks);
+		pmt_peaks.push_back(i->pmt_peaks);
 		S2_S.push_back(i->mppc_S2_S);
 		S2_start_t.push_back(i->mppc_S2_start_time);
 		S2_finish_t.push_back(i->mppc_S2_finish_time);
@@ -79,17 +76,17 @@ void AllExperimentsResults::processAllExperiments(std::deque<AllRunsResults> &al
 		}
 	}
 	for (Int_t exp = 0, e_end_ = exp_area.experiments.size(); exp != e_end_; ++exp){
-		for (Int_t ch = 0, _end_ = mppc_channels.size(); ch != _end_; ++ch){
-			Int_t run_size = Double_I[exp][ch].size();
-			if ((run_size != S2_S[exp][ch].size())
-				|| (run_size != S2_start_t[exp][ch].size())
-				|| (run_size != S2_finish_t[exp][ch].size())
-				|| (run_size != (PMT3_peaks.empty() ? run_size : PMT3_peaks[exp].size()))
-				|| (run_size != (PMT1_peaks.empty() ? run_size : PMT1_peaks[exp].size()))
-				|| (run_size != mppc_peaks[exp][ch].size())){
-				std::cout << "AllExperimentResults::processAllExperiments Error: exp " << exp_area.experiments[exp] << " ch "
-					<< ch << " Run size mismathch!"<<std::endl;
-			}
+		int run_size = mppc_channels.empty() ? (pmt_channels.empty() ? 0 : pmt_peaks[exp][0].size()): mppc_peaks[exp][0].size();
+		bool not_ok = false;
+		for (Int_t ch = 0, _end_ = mppc_channels.size(); ch != _end_; ++ch)
+			not_ok = not_ok||(run_size != S2_S[exp][ch].size())
+						|| (run_size != S2_start_t[exp][ch].size())
+						|| (run_size != S2_finish_t[exp][ch].size())
+						|| (run_size != mppc_peaks[exp][ch].size());
+		for (Int_t ch = 0, _end_ = pmt_channels.size(); ch != _end_; ++ch)
+			not_ok = not_ok||(run_size!=pmt_peaks[exp][ch].size());
+		if (not_ok){
+			std::cout << "AllExperimentResults::processAllExperiments Error: exp " << exp_area.experiments[exp] << " Run size mismathch!"<<std::endl;
 		}
 	}
 }

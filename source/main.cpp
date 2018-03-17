@@ -332,6 +332,14 @@ void add_hist_cut(FunctionWrapper *picker, std::string name)
 	}
 	post_processor->add_hist_cut(picker, name);
 }
+void add_hist_cut(FunctionWrapper *picker, std::string name, int ch)
+{
+	if (NULL == g_data){
+		state(kFALSE);
+		return;
+	}
+	post_processor->add_hist_cut(picker, name, ch);
+}
 void remove_hist_cut(std::string name)
 {
 	if (NULL == g_data){
@@ -340,6 +348,15 @@ void remove_hist_cut(std::string name)
 	}
 	post_processor->remove_hist_cut(name);
 }
+void remove_hist_cut(std::string name, int ch)
+{
+	if (NULL == g_data){
+		state(kFALSE);
+		return;
+	}
+	post_processor->remove_hist_cut(name, ch);
+}
+
 void set_as_run_cut(std::string name)
 {
 	if (NULL == g_data){
