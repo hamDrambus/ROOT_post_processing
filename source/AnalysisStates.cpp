@@ -153,7 +153,7 @@ Bool_t AnalysisStates::is_PMT_type(Type type)
 
 Bool_t AnalysisStates::isMultichannel(Type type)
 {
-	return (type == MPPC_sum_ts);
+	return (type == MPPC_sum_ts)||(type==MPPC_coord);
 }
 
 Bool_t AnalysisStates::isValid()
@@ -242,6 +242,10 @@ std::string AnalysisStates::type_name(Type type)
 	}
 	case Type::MPPC_sum_ts:{
 		name += "sum_ts";
+		break;
+	}
+	case Type::MPPC_coord: {
+		name += "coordinate";
 		break;
 	}
 	case Type::MPPC_S2:{

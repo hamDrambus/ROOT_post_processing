@@ -110,6 +110,7 @@ void DrawFileData(std::string name, std::vector<Double_t> xs, std::vector<Double
 
 	std::map < std::string, Double_t > experiment_fields;
 	std::pair<Int_t, Int_t> calibaration_poInt_ts;
+	std::map < int, std::pair<double,double> > MPPC_coords;
 
 	Bool_t draw_required(/*ParameterPile::*/experiment_area what)
 	{
@@ -153,6 +154,32 @@ void DrawFileData(std::string name, std::vector<Double_t> xs, std::vector<Double
 			j->second *= coeff;
 
 		calibaration_poInt_ts = std::pair<Int_t, Int_t>(0, 4);
+
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (32, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (33, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (34, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (35, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (36, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (37, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (38, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (39, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (40, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (41, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (42, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (43, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (44, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (48, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (49, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (50, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (51, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (52, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (53, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (54, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (55, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (56, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (57, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (58, std::pair<double,double>(0,0) ) );
+		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (59, std::pair<double,double>(0,0) ) );
 
 		areas_to_draw.push_back(experiment_area());
 		/*areas_to_draw.back().experiments.push_back("X_ray_12kV_SiPM_46V_THGEM_0V_coll_6mm");
