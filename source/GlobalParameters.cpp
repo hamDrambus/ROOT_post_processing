@@ -6,7 +6,7 @@
 #include "GlobalParameters.h"
 
 
-//TODO: some functions must be moved to PostProcessor class. (then I won't need the std::vector<Double_t>* get_data methods)
+//TODO: some functions must be moved to PostProcessor class. (then I won't need the std::vector<double>* get_data methods)
 
 peak::peak() : right(-1), left(-1), S(-1), A(-1)
 {}
@@ -16,11 +16,11 @@ AnalysisManager *manager = NULL;
 AllExperimentsResults* g_data = NULL;
 PostProcessor* post_processor = NULL;
 
-std::vector<Double_t>::iterator iter_add(std::vector<Double_t>::iterator& to, Int_t what, std::vector<Double_t>::iterator& end)
+std::vector<double>::iterator iter_add(std::vector<double>::iterator& to, int what, std::vector<double>::iterator& end)
 {
 	if (what < 0)
 		return end;
-	return ((Int_t)(end - to) < what) ? end : to + what;
+	return ((int)(end - to) < what) ? end : to + what;
 }
 
 void open_output_file(std::string name, std::ofstream &str)
@@ -34,7 +34,7 @@ void open_output_file(std::string name, std::ofstream &str)
 	if (!folder.empty()){
 		DWORD ftyp = GetFileAttributesA(folder.c_str());
 		if (!(ftyp & FILE_ATTRIBUTE_DIRECTORY) || ftyp == INVALID_FILE_ATTRIBUTES){
-				Int_t code = system(("mkdir \"" + folder + "\"").c_str());
+				int code = system(("mkdir \"" + folder + "\"").c_str());
 				if (code)
 					std::cout << "mkdir error: " << GetLastError() << std::endl;
 			}
@@ -43,7 +43,7 @@ void open_output_file(std::string name, std::ofstream &str)
 	struct stat st;
 	stat(folder.c_str(),&st);
 	if(!S_ISDIR(st.st_mode)){
-		Int_t code = system(("mkdir \"" + folder + "\"").c_str());
+		int code = system(("mkdir \"" + folder + "\"").c_str());
 			if (code)
 				std::cout << "mkdir error: " << code << std::endl;
 	}
@@ -54,16 +54,16 @@ void open_output_file(std::string name, std::ofstream &str)
 	}
 }
 
-void DrawFileData(std::string name, std::vector<Double_t> xs, std::vector<Double_t> ys,/* ParameterPile::*/DrawEngine de)
+void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> ys,/* ParameterPile::*/DrawEngine de)
 {
 	if (xs.size() != ys.size()){
 		std::cout << "DrawFileData::input data size mismatch" << std::endl;
 		return;
 	}
 	if (de == /*ParameterPile::*/DrawEngine::ROOT_){
-		Double_t *xxxs = new Double_t[xs.size()];
-		Double_t *yyys = new Double_t[ys.size()];
-		for (Int_t h = 0; h < xs.size(); h++){
+		double *xxxs = new double[xs.size()];
+		double *yyys = new double[ys.size()];
+		for (int h = 0; h < xs.size(); h++){
 			xxxs[h] = xs.at(h);
 			yyys[h] = ys.at(h);
 		}
@@ -76,7 +76,7 @@ void DrawFileData(std::string name, std::vector<Double_t> xs, std::vector<Double
 		delete[] yyys;
 	} else {
 		std::string mod_name = name;
-		for (Int_t s = 0; s < mod_name.size(); s++)
+		for (int s = 0; s < mod_name.size(); s++)
 			if (mod_name[s] == '\\' || mod_name[s] == '/')
 				mod_name[s] = '.';
 		std::ofstream file;
@@ -86,7 +86,7 @@ void DrawFileData(std::string name, std::vector<Double_t> xs, std::vector<Double
 		if (!file.is_open())
 			std::cout << GetLastError() << std::endl;
 #endif //__WIN32__
-		for (Int_t h = 0; h < xs.size(); h++)
+		for (int h = 0; h < xs.size(); h++)
 			file << xs[h] << '\t' << ys[h] << std::endl;
 		file.close();
 		open_output_file("temp_gnuplot_files/script.sc", file);
@@ -102,14 +102,15 @@ void DrawFileData(std::string name, std::vector<Double_t> xs, std::vector<Double
 	std::deque <experiment_area> areas_to_draw;
 	std::string this_path;
 	experiment_area exp_area;
-	Int_t threads_number = 6; //obv. must be >=1
+	int threads_number = 6; //obv. must be >=1
 
-	Int_t gnuplot_pad_size = 400;
-	Int_t gnuplot_max_size = 1600;
-	Int_t gnuplot_width = 900; //default for gnuplot is 640
+	int gnuplot_pad_size = 400;
+	int gnuplot_max_size = 1600;
+	int gnuplot_width = 900; //default for gnuplot is 640
 
-	std::map < std::string, Double_t > experiment_fields;
-	std::pair<Int_t, Int_t> calibaration_poInt_ts;
+	std::map < std::string, double > experiment_fields;
+	std::map < std::string, double > PMT_V;
+	std::pair<int, int> calibaration_points;
 	std::map < int, std::pair<double,double> > MPPC_coords;
 
 	Bool_t draw_required(/*ParameterPile::*/experiment_area what)
@@ -131,12 +132,15 @@ void DrawFileData(std::string name, std::vector<Double_t> xs, std::vector<Double
 		TThread::Initialize();
 		gStyle->SetOptFit();
 		
-		Double_t coeff = (600 / 804.0)*(1.54 / (1.54*1.8 + 1.01*0.4));
+		double coeff = (600 / 804.0)*(1.54 / (1.54*1.8 + 1.01*0.4));
 		/*experiment_fields["X_ray_12kV_SiPM_46V_THGEM_0V_coll_6mm"] = 12;
 		experiment_fields["X_ray_14kV_SiPM_46V_THGEM_0V_coll_6mm"] = 14;
 		experiment_fields["X_ray_16kV_SiPM_46V_THGEM_0V_coll_6mm"] = 16;
 		experiment_fields["X_ray_18kV_SiPM_46V_THGEM_0V_coll_6mm"] = 18;
 		experiment_fields["X_ray_20kV_SiPM_46V_THGEM_0V_coll_6mm"] = 20;*/
+
+		PMT_V[""] = 750;
+		PMT_V["sd"] = 700;
 
 		experiment_fields["event_x-ray_4_thmV"] = 4;
 		experiment_fields["event_x-ray_5_thmV"] = 5;
@@ -153,7 +157,7 @@ void DrawFileData(std::string name, std::vector<Double_t> xs, std::vector<Double
 		for (auto j = experiment_fields.begin(); j != experiment_fields.end(); ++j)
 			j->second *= coeff;
 
-		calibaration_poInt_ts = std::pair<Int_t, Int_t>(0, 4);
+		calibaration_points = std::pair<int, int>(0, 4);
 
 		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (32, std::pair<double,double>(0,0) ) );
 		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (33, std::pair<double,double>(0,0) ) );

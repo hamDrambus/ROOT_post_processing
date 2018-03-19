@@ -6,8 +6,8 @@ AllRunsResults::AllRunsResults(/*ParameterPile::*/experiment_area experiment)
 	N_of_runs = 0;
 	Iteration_N = 0;
 	for (auto ex = _exp.experiments.begin(); ex != _exp.experiments.end(); ++ex) {
-		Int_t mppc_ch = 0;
-		for (Int_t ch = _exp.channels.get_next_index(); ch != -1; ch = _exp.channels.get_next_index()){
+		int mppc_ch = 0;
+		for (int ch = _exp.channels.get_next_index(); ch != -1; ch = _exp.channels.get_next_index()){
 			if ((ch<32)&&(ch!=2)) {
 				std::string prefix = DATA_PREFIX + DATA_PMT_VERSION + "/PMT_" + *ex + "/PMT_"+std::to_string(ch)+"/PMT_"+std::to_string(ch)+"_";
 				mppc_channels.push_back(ch);
@@ -24,10 +24,10 @@ AllRunsResults::AllRunsResults(/*ParameterPile::*/experiment_area experiment)
 			std::string prefix = DATA_PREFIX+"/"+DATA_MPPC_VERSION + "/MPPCs_" + *ex + "/MPPC_" + std::to_string(ch) + "/MPPC_" + std::to_string(ch) + "_";
 			
 			mppc_peaks.push_back(std::deque<std::deque<peak>>());
-			mppc_S2_S.push_back(std::vector<Double_t>());
-			mppc_S2_start_time.push_back(std::vector<Double_t>());
-			mppc_S2_finish_time.push_back(std::vector<Double_t>());
-			mppc_Double_Is.push_back(std::vector<Double_t>());
+			mppc_S2_S.push_back(std::vector<double>());
+			mppc_S2_start_time.push_back(std::vector<double>());
+			mppc_S2_finish_time.push_back(std::vector<double>());
+			mppc_Double_Is.push_back(std::vector<double>());
 			mppc_channels.push_back(ch);
 
 			vector_from_file(mppc_peaks.back(), prefix + "peaks.dat");
@@ -47,7 +47,7 @@ AllRunsResults::AllRunsResults(/*ParameterPile::*/experiment_area experiment)
 			} else {
 				++mppc_ch;
 				std::cout << "Loaded channel " << ch << std::endl;
-				N_of_runs = std::max(N_of_runs, (Int_t)std::max(mppc_Double_Is.back().size(), mppc_S2_S.back().size()));
+				N_of_runs = std::max(N_of_runs, (int)std::max(mppc_Double_Is.back().size(), mppc_S2_S.back().size()));
 			}
 		}
 	}
@@ -85,7 +85,7 @@ void AllRunsResults::Merge(AllRunsResults* with)
 	//	mppc_channels = with->mppc_channels;
 	//	mppc_Double_Is = with->mppc_Double_Is;
 	//} else {
-	//	for (Int_t ch = 0; ch < mppc_S2_S.size(); ++ch) {
+	//	for (int ch = 0; ch < mppc_S2_S.size(); ++ch) {
 	//		mppc_S2_S[ch].insert(mppc_S2_S[ch].end(), with->mppc_S2_S[ch].begin(), with->mppc_S2_S[ch].end());
 	//		mppc_all_peaks_Ss[ch].insert(mppc_all_peaks_Ss[ch].end(), with->mppc_all_peaks_Ss[ch].begin(), with->mppc_all_peaks_Ss[ch].end());
 	//		mppc_Double_Is[ch].insert(mppc_Double_Is[ch].end(), with->mppc_Double_Is[ch].begin(), with->mppc_Double_Is[ch].end());
@@ -100,14 +100,14 @@ void AllRunsResults::Merged(void)
 //		|| (mppc_S2_S.size() != mppc_Double_Is.size()))
 //		valid = kFALSE;
 //	if (valid && !(mppc_S2_S.empty())) {
-//		ParameterPile::experiment_area area_(ParameterPile::experiment_area::Type::PoInt_t);
+//		ParameterPile::experiment_area area_(ParameterPile::experiment_area::Type::Point);
 //		area_.experiments.push_back(_exp.experiments.back()); //done: TODO: account for MPPC channel
 //		if (ParameterPile::draw_required(area_)) {
 //			std::string fname = std::string(OUTPUT_DIR) + OUTPUT_MPPCS + area_.experiments.back()+".dat";
 //			std::ofstream output;
 //			open_output_file(fname, output);
 //			output << "MPPC#\tS_1pe_avr\tS_2pe_avr\tS2_S_avr\tDouble_I_avr\tS_1pe_sigma\tS_2pe_sigma\tS2_S_sigma\tDouble_I_sigma\ttime_left_avr\ttime_right_avr" << std::endl;
-//			for (Int_t ch = 0; ch < mppc_peaks_in_S2_area.size(); ++ch) {
+//			for (int ch = 0; ch < mppc_peaks_in_S2_area.size(); ++ch) {
 //				std::string Ss_name = area_.experiments.back()+"_MPPC#" + std::to_string(mppc_channels[ch]) + "_peaks_S";
 //				std::string S2_S_name = area_.experiments.back() + "_MPPC#" + std::to_string(mppc_channels[ch]) + "_S2_S";
 //				std::string S2_start_t_name = area_.experiments.back() + "_MPPC#" + std::to_string(mppc_channels[ch]) + "_S2_start_t";
@@ -234,20 +234,20 @@ void AllRunsResults::Merged(void)
 	++Iteration_N;
 }
 
-void AllRunsResults::vector_from_file(std::vector<Double_t> &what, std::string fname)
+void AllRunsResults::vector_from_file(std::vector<double> &what, std::string fname)
 {
 	what.clear();
 	std::ifstream str;
 	str.open(fname, std::ios_base::binary);
 	if (!str.is_open())
 		return;
-	Double_t val;
+	double val;
 	size_t size;
 	while (!str.eof()) {
 		str.read((char*)&size,sizeof(std::size_t));
 		std::size_t counter = 0;
 		while (!str.eof() && counter != size){
-			str.read((char*)&val,sizeof(Double_t));
+			str.read((char*)&val,sizeof(double));
 			what.push_back(val);
 			++counter;
 		}
@@ -274,10 +274,10 @@ void AllRunsResults::vector_from_file(std::deque<std::deque<peak>> &pks, std::st
 			std::size_t counter = 0;
 			while (!str.eof() && counter != size){
 				peak pk;
-				str.read((char*)&pk.left, sizeof(Double_t));
-				str.read((char*)&pk.right, sizeof(Double_t));
-				str.read((char*)&pk.S, sizeof(Double_t));
-				str.read((char*)&pk.A, sizeof(Double_t));
+				str.read((char*)&pk.left, sizeof(double));
+				str.read((char*)&pk.right, sizeof(double));
+				str.read((char*)&pk.S, sizeof(double));
+				str.read((char*)&pk.A, sizeof(double));
 				pks.back().push_back(pk);
 				++counter;
 			}
@@ -288,17 +288,17 @@ void AllRunsResults::vector_from_file(std::deque<std::deque<peak>> &pks, std::st
 	str.close();
 }
 
-Int_t AllRunsResults::Iteration(void) const
+int AllRunsResults::Iteration(void) const
 {	return Iteration_N;}
 
 void AllRunsResults::Clear(void)
 {
-	std::deque<std::vector<Double_t>>().swap(mppc_S2_S);
+	std::deque<std::vector<double>>().swap(mppc_S2_S);
 	std::deque<std::deque<std::deque<peak>>>().swap(mppc_peaks);
 	std::deque<std::deque<std::deque<peak>>>().swap(pmt_peaks);
-	std::deque<std::vector<Double_t>>().swap(mppc_Double_Is);
-	std::deque<Int_t>().swap(mppc_channels);
-	std::deque<Int_t>().swap(pmt_channels);
+	std::deque<std::vector<double>>().swap(mppc_Double_Is);
+	std::deque<int>().swap(mppc_channels);
+	std::deque<int>().swap(pmt_channels);
 	N_of_runs = 0;
 	//Iteration_N preserved;
 }

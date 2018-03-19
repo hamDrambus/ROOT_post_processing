@@ -7,7 +7,7 @@
 
 namespace SignalOperations {
 
-	void signal_from_file(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::string fname)
+	void signal_from_file(std::vector<double> &xs, std::vector<double> &ys, std::string fname)
 	{
 		xs.clear();
 		ys.clear();
@@ -15,7 +15,7 @@ namespace SignalOperations {
 		str.open(fname);
 		if (!str.is_open())
 			return;
-		Double_t valx,valy;
+		double valx,valy;
 		while (!str.eof()&&str.good()) {
 			str>>valx;
 			if ((!str.good())||(str.eof()))
@@ -29,7 +29,7 @@ namespace SignalOperations {
 		str.close();
 	}
 
-	void signal_to_file(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::string fname)
+	void signal_to_file(std::vector<double> &xs, std::vector<double> &ys, std::string fname)
 	{
 		if (xs.size()!=ys.size()){
 			std::cout<<"SignalOperations::signal_to_file: x-y size mismatch"<<std::endl;
@@ -46,18 +46,18 @@ namespace SignalOperations {
 		str.close();
 	}
 
-	void invert_y(std::vector<Double_t> &x_in_out, std::vector<Double_t> &y_in_out)
+	void invert_y(std::vector<double> &x_in_out, std::vector<double> &y_in_out)
 	{
 		auto _end_ = y_in_out.end();
 		for (auto i = y_in_out.begin(); i != _end_; ++i)
 			*i = -*i;
 	}
 
-	Double_t find_baseline_by_median(Double_t approx, std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::deque<peak> &peaks)
+	double find_baseline_by_median(double approx, std::vector<double> &xs, std::vector<double> &ys, std::deque<peak> &peaks)
 	{
 		if (xs.size() != ys.size())
 			return approx;
-		std::vector<Double_t> selected_y;
+		std::vector<double> selected_y;
 #ifndef _USE_DEQUE
 		selected_y.reserve(ys.size());
 #endif
@@ -75,7 +75,7 @@ namespace SignalOperations {
 			}
 		}
 		std::sort(selected_y.begin(), selected_y.end());
-		Int_t ind = selected_y.size();
+		int ind = selected_y.size();
 		if (0 == ind)
 			return approx;
 		if (0 == ind % 2)
@@ -84,13 +84,13 @@ namespace SignalOperations {
 			return 0.5*(selected_y[ind / 2] + selected_y[1 + (ind / 2)]);
 	}
 
-	Double_t find_baseline_by_median(Double_t approx, std::vector<Double_t> &xs, std::vector<Double_t> &ys)
+	double find_baseline_by_median(double approx, std::vector<double> &xs, std::vector<double> &ys)
 	{
 		if (xs.size() != ys.size())
 			return approx;
-		std::vector<Double_t> selected_y=ys;
+		std::vector<double> selected_y=ys;
 		std::sort(selected_y.begin(), selected_y.end());
-		Int_t ind = selected_y.size();
+		int ind = selected_y.size();
 		if (0 == ind)
 			return approx;
 		if (0 == ind % 2)
@@ -99,29 +99,29 @@ namespace SignalOperations {
 			return 0.5*(selected_y[ind / 2] + selected_y[1 + (ind / 2)]);
 	}
 
-	Double_t find_baseline_by_Int_tegral(Double_t approx, std::vector<Double_t> &xs, std::vector<Double_t> &ys)
+	double find_baseline_by_integral(double approx, std::vector<double> &xs, std::vector<double> &ys)
 	{
 		if ((xs.size() <= 1) || (xs.size() != ys.size()))
 			return approx;
-		Double_t val = 0;
-		Double_t dx = xs.back()-*(xs.begin());
+		double val = 0;
+		double dx = xs.back()-*(xs.begin());
 		if (0 == dx)
 			return approx;
 		Integrate(xs, ys, val, xs.begin(), --xs.end(), *(++xs.begin()) - *(xs.begin()), 0);
 		return val/dx;
 	}
 
-	Double_t find_baseline_by_Int_tegral(Double_t approx, std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::deque<peak> &peaks)
+	double find_baseline_by_integral(double approx, std::vector<double> &xs, std::vector<double> &ys, std::deque<peak> &peaks)
 	{
 		if ((xs.size() != ys.size())||(xs.size()<2))
 			return approx;
 		Bool_t one_vector = kTRUE;
 		auto _end_ = xs.end();
 		auto _begin_ = xs.begin();
-		Double_t Sum_dx = 0, Sum_Int_t = 0;
-		std::vector<Double_t>::iterator x_cut_left = xs.begin(), x_cut_right = _end_;
+		double Sum_dx = 0, Sum_int = 0;
+		std::vector<double>::iterator x_cut_left = xs.begin(), x_cut_right = _end_;
 		Bool_t do_account = kTRUE;
-		Double_t delta_x = *(++xs.begin()) - *(xs.begin());
+		double delta_x = *(++xs.begin()) - *(xs.begin());
 		auto pks_end_ = peaks.end();
 		for (auto i = xs.begin(), j = ys.begin(); (i != _end_); ++i, ++j){
 			do_account = kTRUE;
@@ -133,9 +133,9 @@ namespace SignalOperations {
 			if (do_account&&!one_vector) {
 				if ((x_cut_right!=_end_)&&(x_cut_right-x_cut_left>= 1)){
 					Sum_dx += *x_cut_right - *x_cut_left;
-					Double_t val;
+					double val;
 					Integrate(xs, ys, val, x_cut_left, x_cut_right, delta_x, 0);
-					Sum_Int_t += val;
+					Sum_int += val;
 				}
 				x_cut_right = _end_;
 				x_cut_left = i;
@@ -147,23 +147,23 @@ namespace SignalOperations {
 			}
 		}
 		//the code above doesn't add the last area. (one_vector === has do_account changed) 
-		//if ((one_vector && (x_cut_right == _end_))/*last Int_terval before end*/
+		//if ((one_vector && (x_cut_right == _end_))/*last interval before end*/
 			//|| ((x_cut_right != _end_) && !one_vector)/*last peak overlaps with end, and the last area has not been added*/) {
 			x_cut_right = (x_cut_right == _end_) ? x_cut_right-1 : x_cut_right;
 			if (x_cut_right - x_cut_left >= 1){
 				Sum_dx += *x_cut_right - *x_cut_left;
-				Double_t val;
+				double val;
 				Integrate(xs, ys, val, x_cut_left, x_cut_right,delta_x, 0);
-				Sum_Int_t += val;
+				Sum_int += val;
 			}
 		//}
 		if (0 == Sum_dx)
 			return approx;
-		return (Sum_Int_t / Sum_dx);
+		return (Sum_int / Sum_dx);
 	}
 
 	//Not used, too unstable and very expensive
-	void find_baseline_by_ROOT_advanced(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t> &ys_out)
+	void find_baseline_by_ROOT_advanced(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &ys_out)
 	{
 		if (xs.size() != ys.size()){
 			ys_out.clear();
@@ -174,206 +174,206 @@ namespace SignalOperations {
 
 		TSpectrum *spec = new TSpectrum();
 		double *f_ys = new double[ys.size()];
-		for (Int_t h = 0; h != ys.size(); ++h)
+		for (int h = 0; h != ys.size(); ++h)
 			f_ys[h] = ys[h];
 		spec->Background(f_ys, ys.size(), 60, TSpectrum::kBackDecreasingWindow, TSpectrum::kBackOrder2, kTRUE, TSpectrum::kBackSmoothing3, kFALSE);
-		for (Int_t h = 0; h != ys.size(); ++h)
+		for (int h = 0; h != ys.size(); ++h)
 			ys_out[h]=f_ys[h];
 		delete[] f_ys;
 		spec->Delete();
 
-		std::vector<Double_t>::iterator x_min;
-		Double_t y_min;
+		std::vector<double>::iterator x_min;
+		double y_min;
 		SignalOperations::get_min(xs, ys_out, xs.begin(), xs.end(), x_min, y_min, 1);
 		if (x_min == xs.end())
 			return;
-		std::vector<Double_t>::reverse_iterator x_prev_min(x_min);
+		std::vector<double>::reverse_iterator x_prev_min(x_min);
 		SignalOperations::find_previous_extremum_faster(xs, ys_out, x_prev_min, 5); //TODO: N_trust and ParameterPile
 		if (x_prev_min == xs.rend())
 			return;
 		SignalOperations::find_previous_extremum_faster(xs, ys_out, x_prev_min, 5);
 		if (x_prev_min == xs.rend())
 			return;
-		std::vector<Double_t>::iterator x_cut_from = x_prev_min.base();
-		Double_t y_cut_from = ys_out[x_cut_from - xs.begin()];
+		std::vector<double>::iterator x_cut_from = x_prev_min.base();
+		double y_cut_from = ys_out[x_cut_from - xs.begin()];
 		for (auto xx = x_cut_from; xx != x_min; ++xx)
 			ys_out[xx - xs.begin()] = y_cut_from + (*xx-*x_cut_from)*(y_min - y_cut_from)/(*x_min-*x_cut_from);//line
 	}
 
-	void find_baseline_by_ROOT(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t> &ys_out)
+	void find_baseline_by_ROOT(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &ys_out)
 	{
-		Int_t _size_ = ys.size();
+		int _size_ = ys.size();
 #ifndef _USE_DEQUE
 		ys_out = ys;
-		Double_t *f_ys = &ys_out[0];
+		double *f_ys = &ys_out[0];
 #else
 		ys_out.resize(ys.size());
-		Double_t *f_ys = new Double_t[_size_];
-		for (Int_t h = 0; h != _size_; ++h)
+		double *f_ys = new double[_size_];
+		for (int h = 0; h != _size_; ++h)
 			f_ys[h] = ys[h];
 #endif
 		//TODO: ? ParameterPile and as input parameters?
 		ROOT_BL_CALL_V0
 #ifdef _USE_DEQUE
-			for (Int_t h = 0; h != _size_; ++h)
+			for (int h = 0; h != _size_; ++h)
 				ys_out[h] = f_ys[h];
 		delete[] f_ys;
 #endif
 	}
 
-	void find_baseline_by_ROOT_v2(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t> &ys_out)
+	void find_baseline_by_ROOT_v2(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &ys_out)
 	{
-		Int_t _size_ = ys.size();
+		int _size_ = ys.size();
 #ifndef _USE_DEQUE
 		ys_out = ys;
-		Double_t *f_ys = &ys_out[0];
+		double *f_ys = &ys_out[0];
 #else
 		ys_out.resize(ys.size());
-		Double_t *f_ys = new Double_t[_size_];
-		for (Int_t h = 0; h != _size_; ++h)
+		double *f_ys = new double[_size_];
+		for (int h = 0; h != _size_; ++h)
 			f_ys[h] = ys[h];
 #endif
 		//TODO: ? ParameterPile and as input parameters?
 		ROOT_BL_CALL_V2
 #ifdef _USE_DEQUE
-		for (Int_t h = 0; h != _size_; ++h)
+		for (int h = 0; h != _size_; ++h)
 			ys_out[h] = f_ys[h];
 		delete[] f_ys;
 #endif
 	}
 
-	void find_baseline_by_ROOT_v3(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t> &ys_out)
+	void find_baseline_by_ROOT_v3(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &ys_out)
 	{
-		Int_t _size_ = ys.size();
+		int _size_ = ys.size();
 #ifndef _USE_DEQUE
 		ys_out = ys;
-		Double_t *f_ys = &ys_out[0];
+		double *f_ys = &ys_out[0];
 #else
 		ys_out.resize(ys.size());
-		Double_t *f_ys = new Double_t[_size_];
-		for (Int_t h = 0; h != _size_; ++h)
+		double *f_ys = new double[_size_];
+		for (int h = 0; h != _size_; ++h)
 			f_ys[h] = ys[h];
 #endif
 		//TODO: ? ParameterPile and as input parameters?
 		ROOT_BL_CALL_V3
 #ifdef _USE_DEQUE
-			for (Int_t h = 0; h != _size_; ++h)
+			for (int h = 0; h != _size_; ++h)
 				ys_out[h] = f_ys[h];
 		delete[] f_ys;
 #endif
 	}
 
-	void find_baseline_by_ROOT_v4(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t> &ys_out)
+	void find_baseline_by_ROOT_v4(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &ys_out)
 	{
-		Int_t _size_ = ys.size();
+		int _size_ = ys.size();
 #ifndef _USE_DEQUE
 		ys_out = ys;
-		Double_t *f_ys = &ys_out[0];
+		double *f_ys = &ys_out[0];
 #else
 		ys_out.resize(ys.size());
-		Double_t *f_ys = new Double_t[_size_];
-		for (Int_t h = 0; h != _size_; ++h)
+		double *f_ys = new double[_size_];
+		for (int h = 0; h != _size_; ++h)
 			f_ys[h] = ys[h];
 #endif
 		//TODO: ? ParameterPile and as input parameters?
 		ROOT_BL_CALL_V4
 #ifdef _USE_DEQUE
-			for (Int_t h = 0; h != _size_; ++h)
+			for (int h = 0; h != _size_; ++h)
 				ys_out[h] = f_ys[h];
 		delete[] f_ys;
 #endif
 	}
 
-	void find_baseline_by_ROOT_v5(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t> &ys_out)
+	void find_baseline_by_ROOT_v5(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &ys_out)
 	{
 		ys_out.resize(ys.size());
 
 		TSpectrum *spec = new TSpectrum();
 		double *f_ys = new double[ys.size()];
-		for (Int_t h = 0; h != ys.size(); ++h)
+		for (int h = 0; h != ys.size(); ++h)
 			f_ys[h] = ys[h];
 		//TODO: ? ParameterPile and as input parameters?
 		ROOT_BL_CALL_V5
-		for (Int_t h = 0; h != ys.size(); ++h)
+		for (int h = 0; h != ys.size(); ++h)
 			ys_out[h]=f_ys[h];
 		delete[] f_ys;
 		spec->Delete();
 	}
 
-	void find_baseline_by_ROOT_v6(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t> &ys_out)
+	void find_baseline_by_ROOT_v6(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &ys_out)
 	{
 		ys_out.resize(ys.size());
 
 		TSpectrum *spec = new TSpectrum();
 		double *f_ys = new double[ys.size()];
-		for (Int_t h = 0; h != ys.size(); ++h)
+		for (int h = 0; h != ys.size(); ++h)
 			f_ys[h] = ys[h];
 		//TODO: ? ParameterPile and as input parameters?
 		ROOT_BL_CALL_V6
-		for (Int_t h = 0; h != ys.size(); ++h)
+		for (int h = 0; h != ys.size(); ++h)
 			ys_out[h] = f_ys[h];
 		delete[] f_ys;
 		spec->Delete();
 
-		std::vector<Double_t>::iterator x_min;
-		Double_t y_min;
+		std::vector<double>::iterator x_min;
+		double y_min;
 		SignalOperations::get_min(xs, ys_out, xs.begin(), xs.end(), x_min, y_min, 1);
 		if (x_min == xs.end())
 			return;
-		std::vector<Double_t>::reverse_iterator x_prev_min(x_min);
+		std::vector<double>::reverse_iterator x_prev_min(x_min);
 		SignalOperations::find_previous_extremum_faster(xs, ys_out, x_prev_min, 5);
 		if (x_prev_min == xs.rend())
 			return;
 		SignalOperations::find_previous_extremum_faster(xs, ys_out, x_prev_min, 5);
 		if (x_prev_min == xs.rend())
 			return;
-		std::vector<Double_t>::iterator x_cut_from = x_prev_min.base();
-		Double_t y_cut_from = ys_out[x_cut_from - xs.begin()];
+		std::vector<double>::iterator x_cut_from = x_prev_min.base();
+		double y_cut_from = ys_out[x_cut_from - xs.begin()];
 		for (auto xx = x_cut_from; xx != x_min; ++xx)
 			ys_out[xx - xs.begin()] = y_cut_from + (*xx - *x_cut_from)*(y_min - y_cut_from) / (*x_min - *x_cut_from);//line
 	}
 
-	void find_baseline_by_ROOT_v7(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t> &ys_out)
+	void find_baseline_by_ROOT_v7(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &ys_out)
 	{
 		ys_out.resize(ys.size());
 
 		TSpectrum *spec = new TSpectrum();
 		double *f_ys = new double[ys.size()];
-		for (Int_t h = 0; h != ys.size(); ++h)
+		for (int h = 0; h != ys.size(); ++h)
 			f_ys[h] = ys[h];
 		//TODO: ? ParameterPile and as input parameters?
 		ROOT_BL_CALL_V7
-		for (Int_t h = 0; h != ys.size(); ++h)
+		for (int h = 0; h != ys.size(); ++h)
 			ys_out[h]=f_ys[h];
 		delete[] f_ys;
 		spec->Delete();
 	}
 
-	void find_baseline_by_ROOT_v8(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t> &ys_out)
+	void find_baseline_by_ROOT_v8(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &ys_out)
 	{
 		ys_out.resize(ys.size());
 
 		TSpectrum *spec = new TSpectrum();
 		double *f_ys = new double[ys.size()];
-		for (Int_t h = 0; h != ys.size(); ++h)
+		for (int h = 0; h != ys.size(); ++h)
 			f_ys[h] = ys[h];
 		//TODO: ? ParameterPile and as input parameters?
 		ROOT_BL_CALL_V8
-		for (Int_t h = 0; h != ys.size(); ++h)
+		for (int h = 0; h != ys.size(); ++h)
 			ys_out[h]=f_ys[h];
 		delete[] f_ys;
 		spec->Delete();
 	}
 
-	const char *find_background_v_raw(Double_t *spectrum, Int_t ssize,
-		Int_t numberIterations,
-		Int_t direction, Int_t filterOrder,
-		Bool_t smoothing, Int_t smoothWindow,
+	const char *find_background_v_raw(double *spectrum, int ssize,
+		int numberIterations,
+		int direction, int filterOrder,
+		Bool_t smoothing, int smoothWindow,
 		Bool_t compton)
 	{
 	
-		Int_t i, j, w, bw, b1, b2, priz;
-		Double_t a, b, c, d, e, yb1, yb2, ai, av, men, b4, c4, d4, e4, b6, c6, d6, e6, f6, g6, b8, c8, d8, e8, f8, g8, h8, i8;
+		int i, j, w, bw, b1, b2, priz;
+		double a, b, c, d, e, yb1, yb2, ai, av, men, b4, c4, d4, e4, b6, c6, d6, e6, f6, g6, b8, c8, d8, e8, f8, g8, h8, i8;
 		if (ssize <= 0)
 			return "Wrong Parameters";
 		if (numberIterations < 1)
@@ -382,7 +382,7 @@ namespace SignalOperations {
 			return "Too Large Clipping Window";
 		if (smoothing == kTRUE && smoothWindow != TSpectrum::kBackSmoothing3 && smoothWindow != TSpectrum::kBackSmoothing5 && smoothWindow != TSpectrum::kBackSmoothing7 && smoothWindow != TSpectrum::kBackSmoothing9 && smoothWindow != TSpectrum::kBackSmoothing11 && smoothWindow != TSpectrum::kBackSmoothing13 && smoothWindow != TSpectrum::kBackSmoothing15)
 			return "Incorrect width of smoothing window";
-		Double_t *working_space = new Double_t[2 * ssize];
+		double *working_space = new double[2 * ssize];
 		for (i = 0; i < ssize; i++){
 			working_space[i] = spectrum[i];
 			working_space[i + ssize] = spectrum[i];
@@ -455,10 +455,10 @@ namespace SignalOperations {
 						b = (working_space[ssize + j - i] + working_space[ssize + j + i]) / 2.0;
 						c = 0;
 						ai = i / 2;
-						c -= working_space[ssize + j - (Int_t)(2 * ai)] / 6;
-						c += 4 * working_space[ssize + j - (Int_t)ai] / 6;
-						c += 4 * working_space[ssize + j + (Int_t)ai] / 6;
-						c -= working_space[ssize + j + (Int_t)(2 * ai)] / 6;
+						c -= working_space[ssize + j - (int)(2 * ai)] / 6;
+						c += 4 * working_space[ssize + j - (int)ai] / 6;
+						c += 4 * working_space[ssize + j + (int)ai] / 6;
+						c -= working_space[ssize + j + (int)(2 * ai)] / 6;
 						if (b < c)
 							b = c;
 						if (b < a)
@@ -498,7 +498,7 @@ namespace SignalOperations {
 						b = (b + c) / 2;
 						ai = i / 2;
 						b4 = 0, men = 0;
-						for (w = j - (Int_t)(2 * ai) - bw; w <= j - (Int_t)(2 * ai) + bw; w++){
+						for (w = j - (int)(2 * ai) - bw; w <= j - (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								b4 += working_space[ssize + w];
 								men += 1;
@@ -506,7 +506,7 @@ namespace SignalOperations {
 						}
 						b4 = b4 / men;
 						c4 = 0, men = 0;
-						for (w = j - (Int_t)ai - bw; w <= j - (Int_t)ai + bw; w++){
+						for (w = j - (int)ai - bw; w <= j - (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								c4 += working_space[ssize + w];
 								men += 1;
@@ -514,7 +514,7 @@ namespace SignalOperations {
 						}
 						c4 = c4 / men;
 						d4 = 0, men = 0;
-						for (w = j + (Int_t)ai - bw; w <= j + (Int_t)ai + bw; w++){
+						for (w = j + (int)ai - bw; w <= j + (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								d4 += working_space[ssize + w];
 								men += 1;
@@ -522,7 +522,7 @@ namespace SignalOperations {
 						}
 						d4 = d4 / men;
 						e4 = 0, men = 0;
-						for (w = j + (Int_t)(2 * ai) - bw; w <= j + (Int_t)(2 * ai) + bw; w++){
+						for (w = j + (int)(2 * ai) - bw; w <= j + (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								e4 += working_space[ssize + w];
 								men += 1;
@@ -554,18 +554,18 @@ namespace SignalOperations {
 						b = (working_space[ssize + j - i] + working_space[ssize + j + i]) / 2.0;
 						c = 0;
 						ai = i / 2;
-						c -= working_space[ssize + j - (Int_t)(2 * ai)] / 6;
-						c += 4 * working_space[ssize + j - (Int_t)ai] / 6;
-						c += 4 * working_space[ssize + j + (Int_t)ai] / 6;
-						c -= working_space[ssize + j + (Int_t)(2 * ai)] / 6;
+						c -= working_space[ssize + j - (int)(2 * ai)] / 6;
+						c += 4 * working_space[ssize + j - (int)ai] / 6;
+						c += 4 * working_space[ssize + j + (int)ai] / 6;
+						c -= working_space[ssize + j + (int)(2 * ai)] / 6;
 						d = 0;
 						ai = i / 3;
-						d += working_space[ssize + j - (Int_t)(3 * ai)] / 20;
-						d -= 6 * working_space[ssize + j - (Int_t)(2 * ai)] / 20;
-						d += 15 * working_space[ssize + j - (Int_t)ai] / 20;
-						d += 15 * working_space[ssize + j + (Int_t)ai] / 20;
-						d -= 6 * working_space[ssize + j + (Int_t)(2 * ai)] / 20;
-						d += working_space[ssize + j + (Int_t)(3 * ai)] / 20;
+						d += working_space[ssize + j - (int)(3 * ai)] / 20;
+						d -= 6 * working_space[ssize + j - (int)(2 * ai)] / 20;
+						d += 15 * working_space[ssize + j - (int)ai] / 20;
+						d += 15 * working_space[ssize + j + (int)ai] / 20;
+						d -= 6 * working_space[ssize + j + (int)(2 * ai)] / 20;
+						d += working_space[ssize + j + (int)(3 * ai)] / 20;
 						if (b < d)
 							b = d;
 						if (b < c)
@@ -607,7 +607,7 @@ namespace SignalOperations {
 						b = (b + c) / 2;
 						ai = i / 2;
 						b4 = 0, men = 0;
-						for (w = j - (Int_t)(2 * ai) - bw; w <= j - (Int_t)(2 * ai) + bw; w++){
+						for (w = j - (int)(2 * ai) - bw; w <= j - (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								b4 += working_space[ssize + w];
 								men += 1;
@@ -615,7 +615,7 @@ namespace SignalOperations {
 						}
 						b4 = b4 / men;
 						c4 = 0, men = 0;
-						for (w = j - (Int_t)ai - bw; w <= j - (Int_t)ai + bw; w++){
+						for (w = j - (int)ai - bw; w <= j - (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								c4 += working_space[ssize + w];
 								men += 1;
@@ -623,7 +623,7 @@ namespace SignalOperations {
 						}
 						c4 = c4 / men;
 						d4 = 0, men = 0;
-						for (w = j + (Int_t)ai - bw; w <= j + (Int_t)ai + bw; w++){
+						for (w = j + (int)ai - bw; w <= j + (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								d4 += working_space[ssize + w];
 								men += 1;
@@ -631,7 +631,7 @@ namespace SignalOperations {
 						}
 						d4 = d4 / men;
 						e4 = 0, men = 0;
-						for (w = j + (Int_t)(2 * ai) - bw; w <= j + (Int_t)(2 * ai) + bw; w++){
+						for (w = j + (int)(2 * ai) - bw; w <= j + (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								e4 += working_space[ssize + w];
 								men += 1;
@@ -641,7 +641,7 @@ namespace SignalOperations {
 						b4 = (-b4 + 4 * c4 + 4 * d4 - e4) / 6;
 						ai = i / 3;
 						b6 = 0, men = 0;
-						for (w = j - (Int_t)(3 * ai) - bw; w <= j - (Int_t)(3 * ai) + bw; w++){
+						for (w = j - (int)(3 * ai) - bw; w <= j - (int)(3 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								b6 += working_space[ssize + w];
 								men += 1;
@@ -649,7 +649,7 @@ namespace SignalOperations {
 						}
 						b6 = b6 / men;
 						c6 = 0, men = 0;
-						for (w = j - (Int_t)(2 * ai) - bw; w <= j - (Int_t)(2 * ai) + bw; w++){
+						for (w = j - (int)(2 * ai) - bw; w <= j - (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								c6 += working_space[ssize + w];
 								men += 1;
@@ -657,7 +657,7 @@ namespace SignalOperations {
 						}
 						c6 = c6 / men;
 						d6 = 0, men = 0;
-						for (w = j - (Int_t)ai - bw; w <= j - (Int_t)ai + bw; w++){
+						for (w = j - (int)ai - bw; w <= j - (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								d6 += working_space[ssize + w];
 								men += 1;
@@ -665,7 +665,7 @@ namespace SignalOperations {
 						}
 						d6 = d6 / men;
 						e6 = 0, men = 0;
-						for (w = j + (Int_t)ai - bw; w <= j + (Int_t)ai + bw; w++){
+						for (w = j + (int)ai - bw; w <= j + (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								e6 += working_space[ssize + w];
 								men += 1;
@@ -673,7 +673,7 @@ namespace SignalOperations {
 						}
 						e6 = e6 / men;
 						f6 = 0, men = 0;
-						for (w = j + (Int_t)(2 * ai) - bw; w <= j + (Int_t)(2 * ai) + bw; w++){
+						for (w = j + (int)(2 * ai) - bw; w <= j + (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								f6 += working_space[ssize + w];
 								men += 1;
@@ -681,7 +681,7 @@ namespace SignalOperations {
 						}
 						f6 = f6 / men;
 						g6 = 0, men = 0;
-						for (w = j + (Int_t)(3 * ai) - bw; w <= j + (Int_t)(3 * ai) + bw; w++){
+						for (w = j + (int)(3 * ai) - bw; w <= j + (int)(3 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								g6 += working_space[ssize + w];
 								men += 1;
@@ -715,28 +715,28 @@ namespace SignalOperations {
 						b = (working_space[ssize + j - i] + working_space[ssize + j + i]) / 2.0;
 						c = 0;
 						ai = i / 2;
-						c -= working_space[ssize + j - (Int_t)(2 * ai)] / 6;
-						c += 4 * working_space[ssize + j - (Int_t)ai] / 6;
-						c += 4 * working_space[ssize + j + (Int_t)ai] / 6;
-						c -= working_space[ssize + j + (Int_t)(2 * ai)] / 6;
+						c -= working_space[ssize + j - (int)(2 * ai)] / 6;
+						c += 4 * working_space[ssize + j - (int)ai] / 6;
+						c += 4 * working_space[ssize + j + (int)ai] / 6;
+						c -= working_space[ssize + j + (int)(2 * ai)] / 6;
 						d = 0;
 						ai = i / 3;
-						d += working_space[ssize + j - (Int_t)(3 * ai)] / 20;
-						d -= 6 * working_space[ssize + j - (Int_t)(2 * ai)] / 20;
-						d += 15 * working_space[ssize + j - (Int_t)ai] / 20;
-						d += 15 * working_space[ssize + j + (Int_t)ai] / 20;
-						d -= 6 * working_space[ssize + j + (Int_t)(2 * ai)] / 20;
-						d += working_space[ssize + j + (Int_t)(3 * ai)] / 20;
+						d += working_space[ssize + j - (int)(3 * ai)] / 20;
+						d -= 6 * working_space[ssize + j - (int)(2 * ai)] / 20;
+						d += 15 * working_space[ssize + j - (int)ai] / 20;
+						d += 15 * working_space[ssize + j + (int)ai] / 20;
+						d -= 6 * working_space[ssize + j + (int)(2 * ai)] / 20;
+						d += working_space[ssize + j + (int)(3 * ai)] / 20;
 						e = 0;
 						ai = i / 4;
-						e -= working_space[ssize + j - (Int_t)(4 * ai)] / 70;
-						e += 8 * working_space[ssize + j - (Int_t)(3 * ai)] / 70;
-						e -= 28 * working_space[ssize + j - (Int_t)(2 * ai)] / 70;
-						e += 56 * working_space[ssize + j - (Int_t)ai] / 70;
-						e += 56 * working_space[ssize + j + (Int_t)ai] / 70;
-						e -= 28 * working_space[ssize + j + (Int_t)(2 * ai)] / 70;
-						e += 8 * working_space[ssize + j + (Int_t)(3 * ai)] / 70;
-						e -= working_space[ssize + j + (Int_t)(4 * ai)] / 70;
+						e -= working_space[ssize + j - (int)(4 * ai)] / 70;
+						e += 8 * working_space[ssize + j - (int)(3 * ai)] / 70;
+						e -= 28 * working_space[ssize + j - (int)(2 * ai)] / 70;
+						e += 56 * working_space[ssize + j - (int)ai] / 70;
+						e += 56 * working_space[ssize + j + (int)ai] / 70;
+						e -= 28 * working_space[ssize + j + (int)(2 * ai)] / 70;
+						e += 8 * working_space[ssize + j + (int)(3 * ai)] / 70;
+						e -= working_space[ssize + j + (int)(4 * ai)] / 70;
 						if (b < e)
 							b = e;
 						if (b < d)
@@ -780,7 +780,7 @@ namespace SignalOperations {
 						b = (b + c) / 2;
 						ai = i / 2;
 						b4 = 0, men = 0;
-						for (w = j - (Int_t)(2 * ai) - bw; w <= j - (Int_t)(2 * ai) + bw; w++){
+						for (w = j - (int)(2 * ai) - bw; w <= j - (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								b4 += working_space[ssize + w];
 								men += 1;
@@ -788,7 +788,7 @@ namespace SignalOperations {
 						}
 						b4 = b4 / men;
 						c4 = 0, men = 0;
-						for (w = j - (Int_t)ai - bw; w <= j - (Int_t)ai + bw; w++){
+						for (w = j - (int)ai - bw; w <= j - (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								c4 += working_space[ssize + w];
 								men += 1;
@@ -796,7 +796,7 @@ namespace SignalOperations {
 						}
 						c4 = c4 / men;
 						d4 = 0, men = 0;
-						for (w = j + (Int_t)ai - bw; w <= j + (Int_t)ai + bw; w++){
+						for (w = j + (int)ai - bw; w <= j + (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								d4 += working_space[ssize + w];
 								men += 1;
@@ -804,7 +804,7 @@ namespace SignalOperations {
 						}
 						d4 = d4 / men;
 						e4 = 0, men = 0;
-						for (w = j + (Int_t)(2 * ai) - bw; w <= j + (Int_t)(2 * ai) + bw; w++){
+						for (w = j + (int)(2 * ai) - bw; w <= j + (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								e4 += working_space[ssize + w];
 								men += 1;
@@ -814,7 +814,7 @@ namespace SignalOperations {
 						b4 = (-b4 + 4 * c4 + 4 * d4 - e4) / 6;
 						ai = i / 3;
 						b6 = 0, men = 0;
-						for (w = j - (Int_t)(3 * ai) - bw; w <= j - (Int_t)(3 * ai) + bw; w++){
+						for (w = j - (int)(3 * ai) - bw; w <= j - (int)(3 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								b6 += working_space[ssize + w];
 								men += 1;
@@ -822,7 +822,7 @@ namespace SignalOperations {
 						}
 						b6 = b6 / men;
 						c6 = 0, men = 0;
-						for (w = j - (Int_t)(2 * ai) - bw; w <= j - (Int_t)(2 * ai) + bw; w++){
+						for (w = j - (int)(2 * ai) - bw; w <= j - (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								c6 += working_space[ssize + w];
 								men += 1;
@@ -830,7 +830,7 @@ namespace SignalOperations {
 						}
 						c6 = c6 / men;
 						d6 = 0, men = 0;
-						for (w = j - (Int_t)ai - bw; w <= j - (Int_t)ai + bw; w++){
+						for (w = j - (int)ai - bw; w <= j - (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								d6 += working_space[ssize + w];
 								men += 1;
@@ -838,7 +838,7 @@ namespace SignalOperations {
 						}
 						d6 = d6 / men;
 						e6 = 0, men = 0;
-						for (w = j + (Int_t)ai - bw; w <= j + (Int_t)ai + bw; w++){
+						for (w = j + (int)ai - bw; w <= j + (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								e6 += working_space[ssize + w];
 								men += 1;
@@ -846,7 +846,7 @@ namespace SignalOperations {
 						}
 						e6 = e6 / men;
 						f6 = 0, men = 0;
-						for (w = j + (Int_t)(2 * ai) - bw; w <= j + (Int_t)(2 * ai) + bw; w++){
+						for (w = j + (int)(2 * ai) - bw; w <= j + (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								f6 += working_space[ssize + w];
 								men += 1;
@@ -854,7 +854,7 @@ namespace SignalOperations {
 						}
 						f6 = f6 / men;
 						g6 = 0, men = 0;
-						for (w = j + (Int_t)(3 * ai) - bw; w <= j + (Int_t)(3 * ai) + bw; w++){
+						for (w = j + (int)(3 * ai) - bw; w <= j + (int)(3 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								g6 += working_space[ssize + w];
 								men += 1;
@@ -864,7 +864,7 @@ namespace SignalOperations {
 						b6 = (b6 - 6 * c6 + 15 * d6 + 15 * e6 - 6 * f6 + g6) / 20;
 						ai = i / 4;
 						b8 = 0, men = 0;
-						for (w = j - (Int_t)(4 * ai) - bw; w <= j - (Int_t)(4 * ai) + bw; w++){
+						for (w = j - (int)(4 * ai) - bw; w <= j - (int)(4 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								b8 += working_space[ssize + w];
 								men += 1;
@@ -872,7 +872,7 @@ namespace SignalOperations {
 						}
 						b8 = b8 / men;
 						c8 = 0, men = 0;
-						for (w = j - (Int_t)(3 * ai) - bw; w <= j - (Int_t)(3 * ai) + bw; w++){
+						for (w = j - (int)(3 * ai) - bw; w <= j - (int)(3 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								c8 += working_space[ssize + w];
 								men += 1;
@@ -880,7 +880,7 @@ namespace SignalOperations {
 						}
 						c8 = c8 / men;
 						d8 = 0, men = 0;
-						for (w = j - (Int_t)(2 * ai) - bw; w <= j - (Int_t)(2 * ai) + bw; w++){
+						for (w = j - (int)(2 * ai) - bw; w <= j - (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								d8 += working_space[ssize + w];
 								men += 1;
@@ -888,7 +888,7 @@ namespace SignalOperations {
 						}
 						d8 = d8 / men;
 						e8 = 0, men = 0;
-						for (w = j - (Int_t)ai - bw; w <= j - (Int_t)ai + bw; w++){
+						for (w = j - (int)ai - bw; w <= j - (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								e8 += working_space[ssize + w];
 								men += 1;
@@ -896,7 +896,7 @@ namespace SignalOperations {
 						}
 						e8 = e8 / men;
 						f8 = 0, men = 0;
-						for (w = j + (Int_t)ai - bw; w <= j + (Int_t)ai + bw; w++){
+						for (w = j + (int)ai - bw; w <= j + (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								f8 += working_space[ssize + w];
 								men += 1;
@@ -904,7 +904,7 @@ namespace SignalOperations {
 						}
 						f8 = f8 / men;
 						g8 = 0, men = 0;
-						for (w = j + (Int_t)(2 * ai) - bw; w <= j + (Int_t)(2 * ai) + bw; w++){
+						for (w = j + (int)(2 * ai) - bw; w <= j + (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								g8 += working_space[ssize + w];
 								men += 1;
@@ -912,7 +912,7 @@ namespace SignalOperations {
 						}
 						g8 = g8 / men;
 						h8 = 0, men = 0;
-						for (w = j + (Int_t)(3 * ai) - bw; w <= j + (Int_t)(3 * ai) + bw; w++){
+						for (w = j + (int)(3 * ai) - bw; w <= j + (int)(3 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								h8 += working_space[ssize + w];
 								men += 1;
@@ -920,7 +920,7 @@ namespace SignalOperations {
 						}
 						h8 = h8 / men;
 						i8 = 0, men = 0;
-						for (w = j + (Int_t)(4 * ai) - bw; w <= j + (Int_t)(4 * ai) + bw; w++){
+						for (w = j + (int)(4 * ai) - bw; w <= j + (int)(4 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								i8 += working_space[ssize + w];
 								men += 1;
@@ -1011,15 +1011,15 @@ namespace SignalOperations {
 		return 0;
 	}
 
-	const char *find_background_v_0(Double_t *spectrum, Int_t ssize,
-		Int_t numberIterations,
-		Int_t direction, Int_t filterOrder,
-		Bool_t smoothing, Int_t smoothWindow,
-		Bool_t compton, Int_t sparse)
+	const char *find_background_v_0(double *spectrum, int ssize,
+		int numberIterations,
+		int direction, int filterOrder,
+		Bool_t smoothing, int smoothWindow,
+		Bool_t compton, int sparse)
 	{
 
-		Int_t i, j, w, bw, b1, b2, priz;
-		Double_t a, b, c, d, e, yb1, yb2, ai, av, men, b4, c4, d4, e4, b6, c6, d6, e6, f6, g6, b8, c8, d8, e8, f8, g8, h8, i8;
+		int i, j, w, bw, b1, b2, priz;
+		double a, b, c, d, e, yb1, yb2, ai, av, men, b4, c4, d4, e4, b6, c6, d6, e6, f6, g6, b8, c8, d8, e8, f8, g8, h8, i8;
 		if (ssize <= 0)
 			return "Wrong Parameters";
 		if (numberIterations < 1)
@@ -1032,7 +1032,7 @@ namespace SignalOperations {
 			return "Sparse Must Be Positive";
 		if (sparse >= numberIterations)
 			return "Sparse must be Less than the width of clipping window";
-		Double_t *working_space = new Double_t[2 * ssize];
+		double *working_space = new double[2 * ssize];
 		for (i = 0; i < ssize; i++){
 			working_space[i] = spectrum[i];
 			working_space[i + ssize] = spectrum[i];
@@ -1105,10 +1105,10 @@ namespace SignalOperations {
 						b = (working_space[ssize + j - i] + working_space[ssize + j + i]) / 2.0;
 						c = 0;
 						ai = i / 2;
-						c -= working_space[ssize + j - (Int_t)(2 * ai)] / 6;
-						c += 4 * working_space[ssize + j - (Int_t)ai] / 6;
-						c += 4 * working_space[ssize + j + (Int_t)ai] / 6;
-						c -= working_space[ssize + j + (Int_t)(2 * ai)] / 6;
+						c -= working_space[ssize + j - (int)(2 * ai)] / 6;
+						c += 4 * working_space[ssize + j - (int)ai] / 6;
+						c += 4 * working_space[ssize + j + (int)ai] / 6;
+						c -= working_space[ssize + j + (int)(2 * ai)] / 6;
 						if (b < c)
 							b = c;
 						if (b < a)
@@ -1148,7 +1148,7 @@ namespace SignalOperations {
 						b = (b + c) / 2;
 						ai = i / 2;
 						b4 = 0, men = 0;
-						for (w = j - (Int_t)(2 * ai) - bw; w <= j - (Int_t)(2 * ai) + bw; w++){
+						for (w = j - (int)(2 * ai) - bw; w <= j - (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								b4 += working_space[ssize + w];
 								men += 1;
@@ -1156,7 +1156,7 @@ namespace SignalOperations {
 						}
 						b4 = b4 / men;
 						c4 = 0, men = 0;
-						for (w = j - (Int_t)ai - bw; w <= j - (Int_t)ai + bw; w++){
+						for (w = j - (int)ai - bw; w <= j - (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								c4 += working_space[ssize + w];
 								men += 1;
@@ -1164,7 +1164,7 @@ namespace SignalOperations {
 						}
 						c4 = c4 / men;
 						d4 = 0, men = 0;
-						for (w = j + (Int_t)ai - bw; w <= j + (Int_t)ai + bw; w++){
+						for (w = j + (int)ai - bw; w <= j + (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								d4 += working_space[ssize + w];
 								men += 1;
@@ -1172,7 +1172,7 @@ namespace SignalOperations {
 						}
 						d4 = d4 / men;
 						e4 = 0, men = 0;
-						for (w = j + (Int_t)(2 * ai) - bw; w <= j + (Int_t)(2 * ai) + bw; w++){
+						for (w = j + (int)(2 * ai) - bw; w <= j + (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								e4 += working_space[ssize + w];
 								men += 1;
@@ -1204,18 +1204,18 @@ namespace SignalOperations {
 						b = (working_space[ssize + j - i] + working_space[ssize + j + i]) / 2.0;
 						c = 0;
 						ai = i / 2;
-						c -= working_space[ssize + j - (Int_t)(2 * ai)] / 6;
-						c += 4 * working_space[ssize + j - (Int_t)ai] / 6;
-						c += 4 * working_space[ssize + j + (Int_t)ai] / 6;
-						c -= working_space[ssize + j + (Int_t)(2 * ai)] / 6;
+						c -= working_space[ssize + j - (int)(2 * ai)] / 6;
+						c += 4 * working_space[ssize + j - (int)ai] / 6;
+						c += 4 * working_space[ssize + j + (int)ai] / 6;
+						c -= working_space[ssize + j + (int)(2 * ai)] / 6;
 						d = 0;
 						ai = i / 3;
-						d += working_space[ssize + j - (Int_t)(3 * ai)] / 20;
-						d -= 6 * working_space[ssize + j - (Int_t)(2 * ai)] / 20;
-						d += 15 * working_space[ssize + j - (Int_t)ai] / 20;
-						d += 15 * working_space[ssize + j + (Int_t)ai] / 20;
-						d -= 6 * working_space[ssize + j + (Int_t)(2 * ai)] / 20;
-						d += working_space[ssize + j + (Int_t)(3 * ai)] / 20;
+						d += working_space[ssize + j - (int)(3 * ai)] / 20;
+						d -= 6 * working_space[ssize + j - (int)(2 * ai)] / 20;
+						d += 15 * working_space[ssize + j - (int)ai] / 20;
+						d += 15 * working_space[ssize + j + (int)ai] / 20;
+						d -= 6 * working_space[ssize + j + (int)(2 * ai)] / 20;
+						d += working_space[ssize + j + (int)(3 * ai)] / 20;
 						if (b < d)
 							b = d;
 						if (b < c)
@@ -1257,7 +1257,7 @@ namespace SignalOperations {
 						b = (b + c) / 2;
 						ai = i / 2;
 						b4 = 0, men = 0;
-						for (w = j - (Int_t)(2 * ai) - bw; w <= j - (Int_t)(2 * ai) + bw; w++){
+						for (w = j - (int)(2 * ai) - bw; w <= j - (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								b4 += working_space[ssize + w];
 								men += 1;
@@ -1265,7 +1265,7 @@ namespace SignalOperations {
 						}
 						b4 = b4 / men;
 						c4 = 0, men = 0;
-						for (w = j - (Int_t)ai - bw; w <= j - (Int_t)ai + bw; w++){
+						for (w = j - (int)ai - bw; w <= j - (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								c4 += working_space[ssize + w];
 								men += 1;
@@ -1273,7 +1273,7 @@ namespace SignalOperations {
 						}
 						c4 = c4 / men;
 						d4 = 0, men = 0;
-						for (w = j + (Int_t)ai - bw; w <= j + (Int_t)ai + bw; w++){
+						for (w = j + (int)ai - bw; w <= j + (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								d4 += working_space[ssize + w];
 								men += 1;
@@ -1281,7 +1281,7 @@ namespace SignalOperations {
 						}
 						d4 = d4 / men;
 						e4 = 0, men = 0;
-						for (w = j + (Int_t)(2 * ai) - bw; w <= j + (Int_t)(2 * ai) + bw; w++){
+						for (w = j + (int)(2 * ai) - bw; w <= j + (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								e4 += working_space[ssize + w];
 								men += 1;
@@ -1291,7 +1291,7 @@ namespace SignalOperations {
 						b4 = (-b4 + 4 * c4 + 4 * d4 - e4) / 6;
 						ai = i / 3;
 						b6 = 0, men = 0;
-						for (w = j - (Int_t)(3 * ai) - bw; w <= j - (Int_t)(3 * ai) + bw; w++){
+						for (w = j - (int)(3 * ai) - bw; w <= j - (int)(3 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								b6 += working_space[ssize + w];
 								men += 1;
@@ -1299,7 +1299,7 @@ namespace SignalOperations {
 						}
 						b6 = b6 / men;
 						c6 = 0, men = 0;
-						for (w = j - (Int_t)(2 * ai) - bw; w <= j - (Int_t)(2 * ai) + bw; w++){
+						for (w = j - (int)(2 * ai) - bw; w <= j - (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								c6 += working_space[ssize + w];
 								men += 1;
@@ -1307,7 +1307,7 @@ namespace SignalOperations {
 						}
 						c6 = c6 / men;
 						d6 = 0, men = 0;
-						for (w = j - (Int_t)ai - bw; w <= j - (Int_t)ai + bw; w++){
+						for (w = j - (int)ai - bw; w <= j - (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								d6 += working_space[ssize + w];
 								men += 1;
@@ -1315,7 +1315,7 @@ namespace SignalOperations {
 						}
 						d6 = d6 / men;
 						e6 = 0, men = 0;
-						for (w = j + (Int_t)ai - bw; w <= j + (Int_t)ai + bw; w++){
+						for (w = j + (int)ai - bw; w <= j + (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								e6 += working_space[ssize + w];
 								men += 1;
@@ -1323,7 +1323,7 @@ namespace SignalOperations {
 						}
 						e6 = e6 / men;
 						f6 = 0, men = 0;
-						for (w = j + (Int_t)(2 * ai) - bw; w <= j + (Int_t)(2 * ai) + bw; w++){
+						for (w = j + (int)(2 * ai) - bw; w <= j + (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								f6 += working_space[ssize + w];
 								men += 1;
@@ -1331,7 +1331,7 @@ namespace SignalOperations {
 						}
 						f6 = f6 / men;
 						g6 = 0, men = 0;
-						for (w = j + (Int_t)(3 * ai) - bw; w <= j + (Int_t)(3 * ai) + bw; w++){
+						for (w = j + (int)(3 * ai) - bw; w <= j + (int)(3 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								g6 += working_space[ssize + w];
 								men += 1;
@@ -1365,28 +1365,28 @@ namespace SignalOperations {
 						b = (working_space[ssize + j - i] + working_space[ssize + j + i]) / 2.0;
 						c = 0;
 						ai = i / 2;
-						c -= working_space[ssize + j - (Int_t)(2 * ai)] / 6;
-						c += 4 * working_space[ssize + j - (Int_t)ai] / 6;
-						c += 4 * working_space[ssize + j + (Int_t)ai] / 6;
-						c -= working_space[ssize + j + (Int_t)(2 * ai)] / 6;
+						c -= working_space[ssize + j - (int)(2 * ai)] / 6;
+						c += 4 * working_space[ssize + j - (int)ai] / 6;
+						c += 4 * working_space[ssize + j + (int)ai] / 6;
+						c -= working_space[ssize + j + (int)(2 * ai)] / 6;
 						d = 0;
 						ai = i / 3;
-						d += working_space[ssize + j - (Int_t)(3 * ai)] / 20;
-						d -= 6 * working_space[ssize + j - (Int_t)(2 * ai)] / 20;
-						d += 15 * working_space[ssize + j - (Int_t)ai] / 20;
-						d += 15 * working_space[ssize + j + (Int_t)ai] / 20;
-						d -= 6 * working_space[ssize + j + (Int_t)(2 * ai)] / 20;
-						d += working_space[ssize + j + (Int_t)(3 * ai)] / 20;
+						d += working_space[ssize + j - (int)(3 * ai)] / 20;
+						d -= 6 * working_space[ssize + j - (int)(2 * ai)] / 20;
+						d += 15 * working_space[ssize + j - (int)ai] / 20;
+						d += 15 * working_space[ssize + j + (int)ai] / 20;
+						d -= 6 * working_space[ssize + j + (int)(2 * ai)] / 20;
+						d += working_space[ssize + j + (int)(3 * ai)] / 20;
 						e = 0;
 						ai = i / 4;
-						e -= working_space[ssize + j - (Int_t)(4 * ai)] / 70;
-						e += 8 * working_space[ssize + j - (Int_t)(3 * ai)] / 70;
-						e -= 28 * working_space[ssize + j - (Int_t)(2 * ai)] / 70;
-						e += 56 * working_space[ssize + j - (Int_t)ai] / 70;
-						e += 56 * working_space[ssize + j + (Int_t)ai] / 70;
-						e -= 28 * working_space[ssize + j + (Int_t)(2 * ai)] / 70;
-						e += 8 * working_space[ssize + j + (Int_t)(3 * ai)] / 70;
-						e -= working_space[ssize + j + (Int_t)(4 * ai)] / 70;
+						e -= working_space[ssize + j - (int)(4 * ai)] / 70;
+						e += 8 * working_space[ssize + j - (int)(3 * ai)] / 70;
+						e -= 28 * working_space[ssize + j - (int)(2 * ai)] / 70;
+						e += 56 * working_space[ssize + j - (int)ai] / 70;
+						e += 56 * working_space[ssize + j + (int)ai] / 70;
+						e -= 28 * working_space[ssize + j + (int)(2 * ai)] / 70;
+						e += 8 * working_space[ssize + j + (int)(3 * ai)] / 70;
+						e -= working_space[ssize + j + (int)(4 * ai)] / 70;
 						if (b < e)
 							b = e;
 						if (b < d)
@@ -1430,7 +1430,7 @@ namespace SignalOperations {
 						b = (b + c) / 2;
 						ai = i / 2;
 						b4 = 0, men = 0;
-						for (w = j - (Int_t)(2 * ai) - bw; w <= j - (Int_t)(2 * ai) + bw; w++){
+						for (w = j - (int)(2 * ai) - bw; w <= j - (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								b4 += working_space[ssize + w];
 								men += 1;
@@ -1438,7 +1438,7 @@ namespace SignalOperations {
 						}
 						b4 = b4 / men;
 						c4 = 0, men = 0;
-						for (w = j - (Int_t)ai - bw; w <= j - (Int_t)ai + bw; w++){
+						for (w = j - (int)ai - bw; w <= j - (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								c4 += working_space[ssize + w];
 								men += 1;
@@ -1446,7 +1446,7 @@ namespace SignalOperations {
 						}
 						c4 = c4 / men;
 						d4 = 0, men = 0;
-						for (w = j + (Int_t)ai - bw; w <= j + (Int_t)ai + bw; w++){
+						for (w = j + (int)ai - bw; w <= j + (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								d4 += working_space[ssize + w];
 								men += 1;
@@ -1454,7 +1454,7 @@ namespace SignalOperations {
 						}
 						d4 = d4 / men;
 						e4 = 0, men = 0;
-						for (w = j + (Int_t)(2 * ai) - bw; w <= j + (Int_t)(2 * ai) + bw; w++){
+						for (w = j + (int)(2 * ai) - bw; w <= j + (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								e4 += working_space[ssize + w];
 								men += 1;
@@ -1464,7 +1464,7 @@ namespace SignalOperations {
 						b4 = (-b4 + 4 * c4 + 4 * d4 - e4) / 6;
 						ai = i / 3;
 						b6 = 0, men = 0;
-						for (w = j - (Int_t)(3 * ai) - bw; w <= j - (Int_t)(3 * ai) + bw; w++){
+						for (w = j - (int)(3 * ai) - bw; w <= j - (int)(3 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								b6 += working_space[ssize + w];
 								men += 1;
@@ -1472,7 +1472,7 @@ namespace SignalOperations {
 						}
 						b6 = b6 / men;
 						c6 = 0, men = 0;
-						for (w = j - (Int_t)(2 * ai) - bw; w <= j - (Int_t)(2 * ai) + bw; w++){
+						for (w = j - (int)(2 * ai) - bw; w <= j - (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								c6 += working_space[ssize + w];
 								men += 1;
@@ -1480,7 +1480,7 @@ namespace SignalOperations {
 						}
 						c6 = c6 / men;
 						d6 = 0, men = 0;
-						for (w = j - (Int_t)ai - bw; w <= j - (Int_t)ai + bw; w++){
+						for (w = j - (int)ai - bw; w <= j - (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								d6 += working_space[ssize + w];
 								men += 1;
@@ -1488,7 +1488,7 @@ namespace SignalOperations {
 						}
 						d6 = d6 / men;
 						e6 = 0, men = 0;
-						for (w = j + (Int_t)ai - bw; w <= j + (Int_t)ai + bw; w++){
+						for (w = j + (int)ai - bw; w <= j + (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								e6 += working_space[ssize + w];
 								men += 1;
@@ -1496,7 +1496,7 @@ namespace SignalOperations {
 						}
 						e6 = e6 / men;
 						f6 = 0, men = 0;
-						for (w = j + (Int_t)(2 * ai) - bw; w <= j + (Int_t)(2 * ai) + bw; w++){
+						for (w = j + (int)(2 * ai) - bw; w <= j + (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								f6 += working_space[ssize + w];
 								men += 1;
@@ -1504,7 +1504,7 @@ namespace SignalOperations {
 						}
 						f6 = f6 / men;
 						g6 = 0, men = 0;
-						for (w = j + (Int_t)(3 * ai) - bw; w <= j + (Int_t)(3 * ai) + bw; w++){
+						for (w = j + (int)(3 * ai) - bw; w <= j + (int)(3 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								g6 += working_space[ssize + w];
 								men += 1;
@@ -1514,7 +1514,7 @@ namespace SignalOperations {
 						b6 = (b6 - 6 * c6 + 15 * d6 + 15 * e6 - 6 * f6 + g6) / 20;
 						ai = i / 4;
 						b8 = 0, men = 0;
-						for (w = j - (Int_t)(4 * ai) - bw; w <= j - (Int_t)(4 * ai) + bw; w++){
+						for (w = j - (int)(4 * ai) - bw; w <= j - (int)(4 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								b8 += working_space[ssize + w];
 								men += 1;
@@ -1522,7 +1522,7 @@ namespace SignalOperations {
 						}
 						b8 = b8 / men;
 						c8 = 0, men = 0;
-						for (w = j - (Int_t)(3 * ai) - bw; w <= j - (Int_t)(3 * ai) + bw; w++){
+						for (w = j - (int)(3 * ai) - bw; w <= j - (int)(3 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								c8 += working_space[ssize + w];
 								men += 1;
@@ -1530,7 +1530,7 @@ namespace SignalOperations {
 						}
 						c8 = c8 / men;
 						d8 = 0, men = 0;
-						for (w = j - (Int_t)(2 * ai) - bw; w <= j - (Int_t)(2 * ai) + bw; w++){
+						for (w = j - (int)(2 * ai) - bw; w <= j - (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								d8 += working_space[ssize + w];
 								men += 1;
@@ -1538,7 +1538,7 @@ namespace SignalOperations {
 						}
 						d8 = d8 / men;
 						e8 = 0, men = 0;
-						for (w = j - (Int_t)ai - bw; w <= j - (Int_t)ai + bw; w++){
+						for (w = j - (int)ai - bw; w <= j - (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								e8 += working_space[ssize + w];
 								men += 1;
@@ -1546,7 +1546,7 @@ namespace SignalOperations {
 						}
 						e8 = e8 / men;
 						f8 = 0, men = 0;
-						for (w = j + (Int_t)ai - bw; w <= j + (Int_t)ai + bw; w++){
+						for (w = j + (int)ai - bw; w <= j + (int)ai + bw; w++){
 							if (w >= 0 && w < ssize){
 								f8 += working_space[ssize + w];
 								men += 1;
@@ -1554,7 +1554,7 @@ namespace SignalOperations {
 						}
 						f8 = f8 / men;
 						g8 = 0, men = 0;
-						for (w = j + (Int_t)(2 * ai) - bw; w <= j + (Int_t)(2 * ai) + bw; w++){
+						for (w = j + (int)(2 * ai) - bw; w <= j + (int)(2 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								g8 += working_space[ssize + w];
 								men += 1;
@@ -1562,7 +1562,7 @@ namespace SignalOperations {
 						}
 						g8 = g8 / men;
 						h8 = 0, men = 0;
-						for (w = j + (Int_t)(3 * ai) - bw; w <= j + (Int_t)(3 * ai) + bw; w++){
+						for (w = j + (int)(3 * ai) - bw; w <= j + (int)(3 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								h8 += working_space[ssize + w];
 								men += 1;
@@ -1570,7 +1570,7 @@ namespace SignalOperations {
 						}
 						h8 = h8 / men;
 						i8 = 0, men = 0;
-						for (w = j + (Int_t)(4 * ai) - bw; w <= j + (Int_t)(4 * ai) + bw; w++){
+						for (w = j + (int)(4 * ai) - bw; w <= j + (int)(4 * ai) + bw; w++){
 							if (w >= 0 && w < ssize){
 								i8 += working_space[ssize + w];
 								men += 1;
@@ -1662,14 +1662,14 @@ namespace SignalOperations {
 	}
 
 
-	void Integrate(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t> &y_out, Double_t baseline)
+	void Integrate(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &y_out, double baseline)
 	{
 		if ((xs.size() != ys.size()) || (xs.size() <= 1)){
 			y_out.clear();
 			return;
 		}
 		y_out.resize(ys.size());
-		Double_t prev = 0, dx;
+		double prev = 0, dx;
 		auto _begin_ = xs.begin();
 		auto _end_ = xs.end();
 		for (auto ix = xs.begin(), iy = ys.begin(); (ix != _end_); ++ix, ++iy) {
@@ -1680,47 +1680,47 @@ namespace SignalOperations {
 		}
 	}
 
-	void Integrate(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t> &y_out, Double_t dx_hInt_t, Double_t baseline)
+	void Integrate(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &y_out, double dx_hint, double baseline)
 	{
 		if ((xs.size() != ys.size()) || (xs.size() <= 1)) {
 			y_out.clear();
 			return;
 		}
 		y_out.resize(ys.size());
-		Double_t prev = 0;
+		double prev = 0;
 		auto _begin_ = xs.begin();
 		auto _end_ = xs.end();
 		for (auto ix = xs.begin(), iy = ys.begin(); (ix != _end_); ++ix, ++iy) {
-			prev = dx_hInt_t*(*iy - baseline) + prev;
+			prev = dx_hint*(*iy - baseline) + prev;
 			y_out[ix - _begin_] = prev;
 		}
 	}
 
-	void Integrate(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t> &x_out, std::vector<Double_t> &y_out, Double_t left, Double_t right, Double_t dx_hInt_t, Double_t baseline)
+	void Integrate(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &x_out, std::vector<double> &y_out, double left, double right, double dx_hint, double baseline)
 	{
 		y_out.clear();
 		x_out.clear();
 		if ((xs.size() != ys.size()) || (xs.size() <= 1) || left >= right)
 			return;
-		Double_t prev = 0;
+		double prev = 0;
 		auto _end_ = xs.end();
 		auto _begin_ = xs.begin();
 		for (auto ix = xs.begin(), iy = ys.begin(); (ix != _end_); ++ix, ++iy){
 			if (!((*ix) < left) && !((*ix)>right)){
-				prev = dx_hInt_t*(*iy - baseline) + prev;
+				prev = dx_hint*(*iy - baseline) + prev;
 				x_out.push_back(*ix);
 				y_out.push_back(prev);
 			}
 		}
 	}
 
-	void Integrate(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t> &x_out, std::vector<Double_t> &y_out, Double_t left, Double_t right, Double_t baseline)
+	void Integrate(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &x_out, std::vector<double> &y_out, double left, double right, double baseline)
 	{
 		y_out.clear();
 		x_out.clear();
 		if ((xs.size() != ys.size()) || (xs.size() <= 1)||left>=right)
 			return;
-		Double_t prev = 0, dx;
+		double prev = 0, dx;
 		auto _end_ = xs.end();
 		auto _begin_ = xs.begin();
 		for (auto ix = xs.begin(), iy = ys.begin(); (ix != _end_); ++ix, ++iy){
@@ -1734,7 +1734,7 @@ namespace SignalOperations {
 		}
 	}
 
-	void Integrate(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t> &x_out, std::vector<Double_t> &y_out, std::vector<Double_t>::iterator left, std::vector<Double_t>::iterator right, Double_t dx_hInt_t, Double_t baseline)
+	void Integrate(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &x_out, std::vector<double> &y_out, std::vector<double>::iterator left, std::vector<double>::iterator right, double dx_hint, double baseline)
 	{
 		if ((right == xs.end()) || (left == xs.end()) || (left >= right) || (xs.size() != ys.size())){
 			x_out.clear();
@@ -1743,17 +1743,17 @@ namespace SignalOperations {
 		}
 		x_out.resize(right - left + 1);
 		y_out.resize(right - left + 1);
-		std::vector<Double_t>::iterator _end_ = ++right;
-		std::vector<Double_t>::iterator _begin_ = left;
-		Double_t prev = 0;
+		std::vector<double>::iterator _end_ = ++right;
+		std::vector<double>::iterator _begin_ = left;
+		double prev = 0;
 		for (auto ix = left, iy = ys.begin() + (left - xs.begin()); (ix != _end_); ++ix, ++iy){
-			prev = dx_hInt_t*(*iy - baseline) + prev;
+			prev = dx_hint*(*iy - baseline) + prev;
 			y_out[ix - _begin_] = prev;
 			x_out[ix - _begin_] = *ix;
 		}
 	}
 
-	void Integrate(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t> &x_out, std::vector<Double_t> &y_out, std::vector<Double_t>::iterator left, std::vector<Double_t>::iterator right, Double_t baseline)
+	void Integrate(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &x_out, std::vector<double> &y_out, std::vector<double>::iterator left, std::vector<double>::iterator right, double baseline)
 	{
 		if ((right == xs.end()) ||(left == xs.end()) || (left >= right)||(xs.size()!=ys.size())){
 			x_out.clear();
@@ -1762,9 +1762,9 @@ namespace SignalOperations {
 		}
 		x_out.resize(right - left + 1);
 		y_out.resize(right - left + 1);
-		std::vector<Double_t>::iterator _end_ = ++right;
-		std::vector<Double_t>::iterator _begin_ = left;
-		Double_t prev = 0, dx;
+		std::vector<double>::iterator _end_ = ++right;
+		std::vector<double>::iterator _begin_ = left;
+		double prev = 0, dx;
 		for (auto ix = left, iy = ys.begin() + (left-xs.begin()); (ix != _end_); ++ix, ++iy){
 			dx = (ix == (_end_ - 1)) ? (*ix - *(ix - 1)) :
 				(ix == _begin_) ? (*(ix + 1) - *ix) : 0.5*(*(ix + 1) - *(ix - 1));
@@ -1774,26 +1774,26 @@ namespace SignalOperations {
 		}
 	}
 
-	void Integrate(std::vector<Double_t> &xs, std::vector<Double_t> &ys, Double_t &y_out, std::vector<Double_t>::iterator left, std::vector<Double_t>::iterator right, Double_t dx_hInt_t, Double_t baseline)
+	void Integrate(std::vector<double> &xs, std::vector<double> &ys, double &y_out, std::vector<double>::iterator left, std::vector<double>::iterator right, double dx_hint, double baseline)
 	{
 		y_out = 0;
 		if ((right == xs.end()) || (left == xs.end()) || (left >= right) || (xs.size() != ys.size()))
 			return;
-		std::vector<Double_t>::iterator _end_ = ++right;
-		std::vector<Double_t>::iterator _begin_ = left;
+		std::vector<double>::iterator _end_ = ++right;
+		std::vector<double>::iterator _begin_ = left;
 		for (auto ix = left, iy = ys.begin() + (left - xs.begin()); (ix != _end_); ++ix, ++iy){
-			y_out = dx_hInt_t*(*iy - baseline) + y_out;
+			y_out = dx_hint*(*iy - baseline) + y_out;
 		}
 	}
 
-	void Integrate(std::vector<Double_t> &xs, std::vector<Double_t> &ys, Double_t &y_out, std::vector<Double_t>::iterator left, std::vector<Double_t>::iterator right, Double_t baseline)
+	void Integrate(std::vector<double> &xs, std::vector<double> &ys, double &y_out, std::vector<double>::iterator left, std::vector<double>::iterator right, double baseline)
 	{
 		y_out = 0;
 		if ((right == xs.end()) || (left == xs.end()) || (left >= right) || (xs.size() != ys.size()))
 			return;
-		std::vector<Double_t>::iterator _end_ = ++right;
-		std::vector<Double_t>::iterator _begin_ = left;
-		Double_t dx;
+		std::vector<double>::iterator _end_ = ++right;
+		std::vector<double>::iterator _begin_ = left;
+		double dx;
 		for (auto ix = left, iy = ys.begin() + (left - xs.begin()); (ix != _end_); ++ix, ++iy){
 			dx = (ix == (_end_ - 1)) ? (*ix - *(ix - 1)) :
 				(ix == _begin_) ? (*(ix + 1) - *ix) : 0.5*(*(ix + 1) - *(ix - 1));
@@ -1801,15 +1801,15 @@ namespace SignalOperations {
 		}
 	}
 
-	void apply_time_limits(std::vector<Double_t> &xs, std::vector<Double_t> &ys, Double_t x_left, Double_t x_right, Double_t dx_hInt_t)
+	void apply_time_limits(std::vector<double> &xs, std::vector<double> &ys, double x_left, double x_right, double dx_hint)
 	{
-		if ((xs.size() != ys.size()) || x_left >= x_right||!(dx_hInt_t>0)||(xs.empty()))
+		if ((xs.size() != ys.size()) || x_left >= x_right||!(dx_hint>0)||(xs.empty()))
 			return;
 		auto _end_ = xs.end();
 		auto _begin_ = xs.begin();
-		std::vector<Double_t>::iterator iterator_left = iter_add(_begin_,(Int_t)((x_left - *xs.begin()) / dx_hInt_t),_end_);
+		std::vector<double>::iterator iterator_left = iter_add(_begin_,(int)((x_left - *xs.begin()) / dx_hint),_end_);
 		Bool_t left_fallback = kFALSE;
-		if ((iterator_left != _end_) && (iterator_left != (_end_-1))) { // ==end considered that the hInt_t worked
+		if ((iterator_left != _end_) && (iterator_left != (_end_-1))) { // ==end considered that the hint worked
 			if (!((*iterator_left <= x_left) && (*(iterator_left + 1) > x_left))) //hint didn't work
 				left_fallback = kTRUE;
 		} else {
@@ -1821,10 +1821,10 @@ namespace SignalOperations {
 					iterator_left = xs.begin();
 				}
 		}
-		std::vector<Double_t>::iterator iterator_right = iter_add(_begin_, (Int_t)((x_right - *xs.begin()) / dx_hInt_t), _end_);
+		std::vector<double>::iterator iterator_right = iter_add(_begin_, (int)((x_right - *xs.begin()) / dx_hint), _end_);
 		Bool_t right_fallback = kFALSE;
-		if ((iterator_right != _end_) && (iterator_right != (_end_ - 1))) { // ==end considered that the hInt_t worked
-			if (!((*iterator_right <= x_right) && (*(iterator_right + 1) > x_right))) //hInt_t didn't work
+		if ((iterator_right != _end_) && (iterator_right != (_end_ - 1))) { // ==end considered that the hint worked
+			if (!((*iterator_right <= x_right) && (*(iterator_right + 1) > x_right))) //hint didn't work
 				right_fallback = kTRUE;
 		} else {
 			if (x_right <= xs.back())
@@ -1835,7 +1835,7 @@ namespace SignalOperations {
 					iterator_right = xs.end();
 				}
 		}
-		if (right_fallback && left_fallback) { //hInt_t failed for some reason
+		if (right_fallback && left_fallback) { //hint failed for some reason
 			for (auto ix = xs.begin(); (ix != _end_); ++ix) {
 				if (!((*ix) > x_left))
 					iterator_left = ix;
@@ -1843,13 +1843,13 @@ namespace SignalOperations {
 					iterator_right = ix;
 			}
 		}
-		if (right_fallback && !left_fallback) { //hInt_t failed for some reason
+		if (right_fallback && !left_fallback) { //hint failed for some reason
 			for (auto ix = xs.begin(); (ix != _end_); ++ix) {
 				if (!((*ix) > x_right))
 					iterator_right = ix;
 			}
 		}
-		if (left_fallback && !right_fallback) { //hInt_t failed for some reason
+		if (left_fallback && !right_fallback) { //hint failed for some reason
 			for (auto ix = xs.begin(); (ix != _end_); ++ix) {
 				if (!((*ix) > x_left))
 					iterator_left = ix;
@@ -1858,19 +1858,19 @@ namespace SignalOperations {
 
 		iterator_right = iter_add(iterator_right,1,_end_);
 
-		std::vector<Double_t>::iterator iterator_left_y = ys.begin() + (iterator_left - xs.begin());
-		std::vector<Double_t>::iterator iterator_right_y = ys.begin() + (iterator_right - xs.begin());
+		std::vector<double>::iterator iterator_left_y = ys.begin() + (iterator_left - xs.begin());
+		std::vector<double>::iterator iterator_right_y = ys.begin() + (iterator_right - xs.begin());
 		xs.erase(iterator_right, xs.end());
 		xs.erase(xs.begin(), iterator_left);
 		ys.erase(iterator_right_y, ys.end());
 		ys.erase(ys.begin(), iterator_left_y);
 	}
 
-	void apply_time_limits(std::vector<Double_t> &xs, std::vector<Double_t> &ys, Double_t x_left, Double_t x_right)
+	void apply_time_limits(std::vector<double> &xs, std::vector<double> &ys, double x_left, double x_right)
 	{
 		if ((xs.size() != ys.size()) || x_left>=x_right)
 			return;
-		std::vector<Double_t>::iterator iterator_left = xs.begin(), iterator_right = xs.end() - 1;
+		std::vector<double>::iterator iterator_left = xs.begin(), iterator_right = xs.end() - 1;
 		auto _end_ = xs.end();
 		for (auto ix = xs.begin(); (ix != _end_); ++ix) {
 			if (!((*ix) > x_left))
@@ -1880,17 +1880,17 @@ namespace SignalOperations {
 		}
 		++iterator_right;
 
-		std::vector<Double_t>::iterator iterator_left_y = ys.begin() + (iterator_left - xs.begin());
-		std::vector<Double_t>::iterator iterator_right_y = ys.begin() + (iterator_right - xs.begin());
+		std::vector<double>::iterator iterator_left_y = ys.begin() + (iterator_left - xs.begin());
+		std::vector<double>::iterator iterator_right_y = ys.begin() + (iterator_right - xs.begin());
 		xs.erase(iterator_right, xs.end());
 		xs.erase(xs.begin(), iterator_left);
 		ys.erase(iterator_right_y, ys.end());
 		ys.erase(ys.begin(), iterator_left_y);
 	}
 
-	std::vector<Double_t>::iterator find_x_iterator_by_value(std::vector<Double_t>::iterator &x_left, std::vector<Double_t>::iterator &x_right, Double_t x)
+	std::vector<double>::iterator find_x_iterator_by_value(std::vector<double>::iterator &x_left, std::vector<double>::iterator &x_right, double x)
 	{
-		for (auto h = x_left; h != x_right; h++) //find in which poInt_t of the vector the maximum realizes
+		for (auto h = x_left; h != x_right; h++) //find in which point of the vector the maximum realizes
 			if (!(*h > x) && !(*(h + 1) < x)){
 				if ((x - *h) > (*(h + 1) - x))
 					return h + 1;
@@ -1901,25 +1901,25 @@ namespace SignalOperations {
 		return x_left; // mustn't occur
 	}
 
-	//hInt_t is the distance between 2 poInt_t in case they are all at equal distancess
-	std::vector<Double_t>::iterator find_x_iterator_by_value(std::vector<Double_t>::iterator &x_left, std::vector<Double_t>::iterator &x_right, Double_t x, Double_t hInt_t)
+	//hint is the distance between 2 point in case they are all at equal distancess
+	std::vector<double>::iterator find_x_iterator_by_value(std::vector<double>::iterator &x_left, std::vector<double>::iterator &x_right, double x, double hint)
 	{
-		std::vector<Double_t>::iterator temp = x_right+1;
-		std::vector<Double_t>::iterator approx_left = iter_add(x_left, (Int_t)((x - *x_left) / hInt_t), temp);
+		std::vector<double>::iterator temp = x_right+1;
+		std::vector<double>::iterator approx_left = iter_add(x_left, (int)((x - *x_left) / hint), temp);
 		if (approx_left==(x_right+1))
-			return find_x_iterator_by_value(x_left, x_right, x); //fallback in case the hInt_t does not work
+			return find_x_iterator_by_value(x_left, x_right, x); //fallback in case the hint does not work
 		if (!(*approx_left > x) && !(*(approx_left + 1) < x)) {
 			if ((x - *approx_left) > (*(approx_left + 1) - x))
 				return approx_left + 1;
 			else
 				return approx_left;
 		}
-		return find_x_iterator_by_value(x_left, x_right, x); //fallback in case the hInt_t does not work
+		return find_x_iterator_by_value(x_left, x_right, x); //fallback in case the hint does not work
 	}
 
-	void get_max(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t>::iterator x_start, std::vector<Double_t>::iterator x_finish, std::vector<Double_t>::iterator &x_max, Double_t &y_max, Int_t N_trust)
+	void get_max(std::vector<double> &xs, std::vector<double> &ys, std::vector<double>::iterator x_start, std::vector<double>::iterator x_finish, std::vector<double>::iterator &x_max, double &y_max, int N_trust)
 	{
-		N_trust = std::min((Int_t)(x_finish - x_start), N_trust); //other funtions return invalid results in this case
+		N_trust = std::min((int)(x_finish - x_start), N_trust); //other funtions return invalid results in this case
 		if (xs.size() != ys.size()){
 			x_max = xs.end();
 			return;
@@ -1929,7 +1929,7 @@ namespace SignalOperations {
 			N_trust = 1;
 			use_fit = kFALSE;
 		}
-		Int_t delta = N_trust / 3;
+		int delta = N_trust / 3;
 		y_max = *(ys.begin()+(x_start - xs.begin()));
 		x_max = x_start;
 
@@ -1939,14 +1939,14 @@ namespace SignalOperations {
 			auto _begin_ = xs.begin();
 			std::size_t _size_ = xs.size();
 			for (auto i = x_start; (i != _end_)&&(i<x_finish); ((delta<(_end_ - i)) ? i = i + delta : i = _end_)){
-				Int_t shift = (Int_t)(_size_ - (i - _begin_) - N_trust) < 0 ? (_size_ - (i - _begin_) - N_trust) : 0; //accounts for the end
+				int shift = (int)(_size_ - (i - _begin_) - N_trust) < 0 ? (_size_ - (i - _begin_) - N_trust) : 0; //accounts for the end
 
 				TVectorD coefs;
-				std::vector<Double_t>::iterator x_left = i + shift;
+				std::vector<double>::iterator x_left = i + shift;
 				fitter(xs, ys, x_left - _begin_, N_trust, coefs, *x_left);
 
-				Double_t y_max_exact, x_max_exact;
-				std::vector<Double_t>::iterator x_max_here;
+				double y_max_exact, x_max_exact;
+				std::vector<double>::iterator x_max_here;
 				fitter.FindMaximum(x_max_here, x_max_exact, y_max_exact);
 				if (y_max < y_max_exact){
 					y_max = y_max_exact;
@@ -1963,9 +1963,9 @@ namespace SignalOperations {
 			}
 		}
 	}
-	void get_min(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t>::iterator x_start, std::vector<Double_t>::iterator x_finish, std::vector<Double_t>::iterator &x_min, Double_t &y_min, Int_t N_trust)
+	void get_min(std::vector<double> &xs, std::vector<double> &ys, std::vector<double>::iterator x_start, std::vector<double>::iterator x_finish, std::vector<double>::iterator &x_min, double &y_min, int N_trust)
 	{
-		N_trust = std::min((Int_t)(x_finish - x_start), N_trust); //other funtions return invalid results in this case
+		N_trust = std::min((int)(x_finish - x_start), N_trust); //other funtions return invalid results in this case
 		if (xs.size() != ys.size()){
 			x_min = xs.end();
 			return;
@@ -1975,7 +1975,7 @@ namespace SignalOperations {
 			N_trust = 1;
 			use_fit = kFALSE;
 		}
-		Int_t delta = N_trust / 3;
+		int delta = N_trust / 3;
 		y_min = *(ys.begin() + (x_start - xs.begin()));
 		x_min = x_start;
 
@@ -1985,14 +1985,14 @@ namespace SignalOperations {
 			auto _begin_ = xs.begin();
 			std::size_t _size_ = xs.size();
 			for (auto i = x_start; (i != _end_) && (i<x_finish); ((delta<(_end_ - i)) ? i = i + delta : i = _end_)){
-				Int_t shift = (Int_t)(_size_- (i - _begin_) - N_trust) < 0 ? (_size_ - (i - _begin_) - N_trust) : 0; //accounts for the end
+				int shift = (int)(_size_- (i - _begin_) - N_trust) < 0 ? (_size_ - (i - _begin_) - N_trust) : 0; //accounts for the end
 
 				TVectorD coefs;
-				std::vector<Double_t>::iterator x_left = i + shift;
+				std::vector<double>::iterator x_left = i + shift;
 				fitter(xs, ys, x_left - _begin_, N_trust, coefs, *x_left);
 
-				Double_t y_max_exact, x_max_exact;
-				std::vector<Double_t>::iterator x_max_here;
+				double y_max_exact, x_max_exact;
+				std::vector<double>::iterator x_max_here;
 				fitter.FindMinimum(x_max_here, x_max_exact, y_max_exact);
 				if (y_min > y_max_exact) {
 					y_min = y_max_exact;
@@ -2009,13 +2009,13 @@ namespace SignalOperations {
 			}
 		}
 	}
-	void get_max(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t>::iterator &x_max, Double_t &y_max, Int_t N_trust)
+	void get_max(std::vector<double> &xs, std::vector<double> &ys, std::vector<double>::iterator &x_max, double &y_max, int N_trust)
 	{	get_max(xs, ys, xs.begin(), xs.end(), x_max, y_max, N_trust);}
 	//after getting the peak, the next search must be started from (x_finish+1) or +(N_trust/2)!!!
-	void find_next_peak(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t>::iterator &x_start,
-		std::vector<Double_t>::iterator &x_finish, Double_t threshold, Int_t N_trust)//done - now every step by x uses fitting 
-		//TODO: does not handle Double_t peak which middle is slightly above
-		//the threshold (slightly means that 2nd order fit would Int_tersect the threshold)
+	void find_next_peak(std::vector<double> &xs, std::vector<double> &ys, std::vector<double>::iterator &x_start,
+		std::vector<double>::iterator &x_finish, double threshold, int N_trust)//done - now every step by x uses fitting 
+		//TODO: does not handle double peak which middle is slightly above
+		//the threshold (slightly means that 2nd order fit would intersect the threshold)
 	{
 		x_finish = xs.end();
 		if ((xs.size() != ys.size()) || ((xs.end() - x_start) < N_trust)){
@@ -2023,16 +2023,16 @@ namespace SignalOperations {
 			x_finish = xs.begin();
 			return;
 		}
-		std::vector<Double_t>::iterator minimal_iterator = x_start;
+		std::vector<double>::iterator minimal_iterator = x_start;
 		x_start = xs.end();
 		Bool_t use_fit = kTRUE;
 		if (N_trust < 3) {//2nd order polynom
 			N_trust = 1;
 			use_fit = kFALSE;
 		}
-		Int_t delta = N_trust / 3;
-		std::vector<Double_t>::iterator approx_x_left = minimal_iterator;
-		std::vector<Double_t>::iterator approx_x_right = xs.end();
+		int delta = N_trust / 3;
+		std::vector<double>::iterator approx_x_left = minimal_iterator;
+		std::vector<double>::iterator approx_x_right = xs.end();
 		Bool_t found_peak = kFALSE;
 
 		auto _end_ = xs.end();
@@ -2041,16 +2041,16 @@ namespace SignalOperations {
 			auto _begin_ = xs.begin();
 			std::size_t _size_ = xs.size();
 			for (auto i = minimal_iterator; (i != _end_); ((delta < (_end_ - i)) ? i = i + delta : i = _end_)) {
-				Int_t shift = (Int_t)(_size_ - (i - _begin_) - N_trust) < 0 ? (_size_ - (i - _begin_) - N_trust) : 0; //accounts for the end
+				int shift = (int)(_size_ - (i - _begin_) - N_trust) < 0 ? (_size_ - (i - _begin_) - N_trust) : 0; //accounts for the end
 				TVectorD coefs;
-				std::vector<Double_t>::iterator x_left = i + shift;
+				std::vector<double>::iterator x_left = i + shift;
 				fitter(xs, ys, (x_left - _begin_), N_trust, coefs, *x_left);
 
 				//#ifdef _TEMP_CODE
 				//				if ((*i <= 32.49) && (32.49 <= *(i + N_trust - 1))) {
 				//					GraphicOutputManager man;
 				//					Drawing *dr = man.GetDrawing("Peak find test "+std::to_string(*j), 0, ParameterPile::DrawEngine::Gnuplot);
-				//					std::vector<Double_t> tmp_x, tmp_y;
+				//					std::vector<double> tmp_x, tmp_y;
 				//					for (auto ti = i, tj = j; (ti < (i + N_trust)) && (tj < (j + N_trust)); ++ti, ++tj) {
 				//						tmp_x.push_back(*ti);
 				//						tmp_y.push_back(*tj);
@@ -2058,9 +2058,9 @@ namespace SignalOperations {
 				//					dr->AddToDraw(tmp_x, tmp_y, "peak " + std::to_string(*j));
 				//					TVectorD coefs;
 				//					fitter.getCoefs(coefs);
-				//					Double_t a = coefs[2];
-				//					Double_t b = coefs[1]-2**x_left*coefs[2];
-				//					Double_t c = coefs[0] - coefs[1] * *x_left + coefs[2] * *x_left * *x_left;
+				//					double a = coefs[2];
+				//					double b = coefs[1]-2**x_left*coefs[2];
+				//					double c = coefs[0] - coefs[1] * *x_left + coefs[2] * *x_left * *x_left;
 				//					std::stringstream aa, bb, cc;
 				//					aa << std::setprecision(12) << a;
 				//					bb << std::setprecision(12) << b;
@@ -2069,31 +2069,31 @@ namespace SignalOperations {
 				//					man.Draw();
 				//				}
 				//#endif
-				std::vector<Double_t>::iterator x_Int_ter1, x_Int_ter2;
-				Double_t x_Int_ter_exact1, x_Int_ter_exact2;
-				fitter.FindInt_tersection(x_Int_ter1, x_Int_ter2, x_Int_ter_exact1, x_Int_ter_exact2, threshold);
-				if (x_Int_ter2 != _end_){
+				std::vector<double>::iterator x_inter1, x_inter2;
+				double x_inter_exact1, x_inter_exact2;
+				fitter.Findintersection(x_inter1, x_inter2, x_inter_exact1, x_inter_exact2, threshold);
+				if (x_inter2 != _end_){
 					if (found_peak){
-						if (fitter.Derivative(x_Int_ter_exact2) < 0.0){
-							x_finish = x_Int_ter2;
+						if (fitter.Derivative(x_inter_exact2) < 0.0){
+							x_finish = x_inter2;
 							return;
 						}
 					} else {
-						if (fitter.Derivative(x_Int_ter_exact2) > 0.0){
-							x_start = x_Int_ter2;
+						if (fitter.Derivative(x_inter_exact2) > 0.0){
+							x_start = x_inter2;
 							found_peak = kTRUE;
 						}
 					}
 				}
-				if (x_Int_ter1 != _end_){
+				if (x_inter1 != _end_){
 					if (found_peak){
-						if (fitter.Derivative(x_Int_ter_exact1) < 0.0){
-							x_finish = x_Int_ter1;
+						if (fitter.Derivative(x_inter_exact1) < 0.0){
+							x_finish = x_inter1;
 							return;
 						}
 					} else {
-						if (fitter.Derivative(x_Int_ter_exact1) > 0.0){
-							x_start = x_Int_ter1;
+						if (fitter.Derivative(x_inter_exact1) > 0.0){
+							x_start = x_inter1;
 							found_peak = kTRUE;
 						}
 					}
@@ -2121,15 +2121,15 @@ namespace SignalOperations {
 		x_start = _end_;
 	}
 
-	void find_peaks(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::deque<peak> &peaks, Double_t base_line, Double_t threshold, Int_t N_trust)
+	void find_peaks(std::vector<double> &xs, std::vector<double> &ys, std::deque<peak> &peaks, double base_line, double threshold, int N_trust)
 	{
 		peaks.clear();
 
 		if (xs.size() <= 1)
 			return;
-		std::vector<Double_t>::iterator x_peak_l = xs.begin(), x_peak_r = xs.begin();
+		std::vector<double>::iterator x_peak_l = xs.begin(), x_peak_r = xs.begin();
 		auto _end_ = xs.end();
-		Double_t delta_x = *(++xs.begin()) - *(xs.begin());
+		double delta_x = *(++xs.begin()) - *(xs.begin());
 		while (x_peak_l != _end_) {
 			SignalOperations::find_next_peak(xs, ys, x_peak_l, x_peak_r, threshold, N_trust);
 			if (x_peak_l != _end_){
@@ -2137,29 +2137,29 @@ namespace SignalOperations {
 				pk.left = *x_peak_l;
 				pk.right = *x_peak_r;
 				SignalOperations::Integrate(xs, ys, pk.S, x_peak_l, x_peak_r, delta_x, base_line);
-				std::vector<Double_t>::iterator pk_max;
+				std::vector<double>::iterator pk_max;
 				SignalOperations::get_max(xs, ys, x_peak_l, x_peak_r + 1, pk_max, pk.A, N_trust);
 				if ((pk_max != _end_) && (pk.S > 0) && (pk.right>=pk.left))
 					peaks.push_back(pk);
 				x_peak_l = x_peak_r;
-				Int_t delta_i = std::max(N_trust / 3, 1);
+				int delta_i = std::max(N_trust / 3, 1);
 				x_peak_l = ((_end_ - x_peak_l) < delta_i) ? _end_ : (x_peak_l + delta_i);
 			}
 		}
 	}
 
 	//seaches peak from x_start, in difference to find_next peak this one first finds peak by threshold_finder and then finds its edges (wider 
-	//than Int_tersection of threshold and signal) using thresh_edges.
-	void find_next_peak_fine(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t>::iterator &x_start, std::vector<Double_t>::iterator &x_finish, Double_t &Amp,
-		Double_t thresh_finder, Double_t thresh_edges, Int_t N_trust)
+	//than intersection of threshold and signal) using thresh_edges.
+	void find_next_peak_fine(std::vector<double> &xs, std::vector<double> &ys, std::vector<double>::iterator &x_start, std::vector<double>::iterator &x_finish, double &Amp,
+		double thresh_finder, double thresh_edges, int N_trust)
 	{
 		if (thresh_edges >= thresh_finder)
 			thresh_edges = 0;
 		x_finish = xs.end();
 		Bool_t use_fit = kTRUE;
-		Int_t delta = N_trust / 3;
-		std::vector<Double_t>::iterator minimal_iterator = x_start;
-		std::vector<Double_t>::iterator pk_max;
+		int delta = N_trust / 3;
+		std::vector<double>::iterator minimal_iterator = x_start;
+		std::vector<double>::iterator pk_max;
 		if ((xs.size() != ys.size()) || ((xs.end() - x_start)<N_trust))
 			goto bad_return;
 		find_next_peak(xs, ys, x_start, x_finish, thresh_finder, N_trust);
@@ -2179,28 +2179,28 @@ namespace SignalOperations {
 			auto _begin_ = xs.begin();
 			std::size_t _size_ = xs.size();
 			for (auto i = x_finish; (i != _end_);((delta<(_end_ - i)) ? i = i + delta : i = _end_)){
-				Int_t shift = (Int_t)(_size_ - (i - _begin_) - N_trust) < 0 ? (_size_ - (i - _begin_) - N_trust) : 0; //accounts for the end
+				int shift = (int)(_size_ - (i - _begin_) - N_trust) < 0 ? (_size_ - (i - _begin_) - N_trust) : 0; //accounts for the end
 				TVectorD coefs;
-				std::vector<Double_t>::iterator x_left = i + shift;
+				std::vector<double>::iterator x_left = i + shift;
 				fitter(xs, ys, (i - _begin_) + shift, N_trust, coefs, *x_left);
-				std::vector<Double_t>::iterator x_extr;
-				std::vector<Double_t>::iterator x_Int_tersect1, x_Int_tersect2;
-				std::vector<Double_t>::iterator x_Int_ter = _end_; //of Int_terest
-				Double_t x_extr_exact, y_extr_exact;
-				Double_t x_Int_ter_exact1, x_Int_ter_exact2;
+				std::vector<double>::iterator x_extr;
+				std::vector<double>::iterator x_intersect1, x_intersect2;
+				std::vector<double>::iterator x_inter = _end_; //of interest
+				double x_extr_exact, y_extr_exact;
+				double x_inter_exact1, x_inter_exact2;
 				fitter.FindExtremum(x_extr, x_extr_exact, y_extr_exact);
-				fitter.FindInt_tersection(x_Int_tersect1, x_Int_tersect2, x_Int_ter_exact1, x_Int_ter_exact2, thresh_edges);
+				fitter.Findintersection(x_intersect1, x_intersect2, x_inter_exact1, x_inter_exact2, thresh_edges);
 				if (x_extr <= x_finish)
 					x_extr = _end_; //accidently found extremum as peak maximum (in case x_start==x_finish)
-				if (x_Int_tersect2 != _end_)
-					if (fitter.Derivative(x_Int_ter_exact2) < 0)
-						x_Int_ter = x_Int_tersect2;
-				if (x_Int_tersect1 != _end_&&(x_Int_ter==_end_))
-					if (fitter.Derivative(x_Int_ter_exact1) < 0)
-						x_Int_ter = x_Int_tersect1;
-				if (x_extr != _end_&&x_Int_ter!=_end_){
+				if (x_intersect2 != _end_)
+					if (fitter.Derivative(x_inter_exact2) < 0)
+						x_inter = x_intersect2;
+				if (x_intersect1 != _end_&&(x_inter==_end_))
+					if (fitter.Derivative(x_inter_exact1) < 0)
+						x_inter = x_intersect1;
+				if (x_extr != _end_&&x_inter!=_end_){
 					if (y_extr_exact < thresh_edges)
-						x_finish = x_Int_ter;
+						x_finish = x_inter;
 					else
 						x_finish = x_extr;
 					break;
@@ -2209,38 +2209,38 @@ namespace SignalOperations {
 					x_finish = x_extr;
 					break;
 				}
-				if (x_Int_ter != _end_){
-					x_finish = x_Int_ter;
+				if (x_inter != _end_){
+					x_finish = x_inter;
 					break;
 				}
 			}
-			std::vector<Double_t>::reverse_iterator x_left_peak = std::vector<Double_t>::reverse_iterator(x_start);
-			std::vector<Double_t>::reverse_iterator x_rend = std::vector<Double_t>::reverse_iterator(minimal_iterator);
+			std::vector<double>::reverse_iterator x_left_peak = std::vector<double>::reverse_iterator(x_start);
+			std::vector<double>::reverse_iterator x_rend = std::vector<double>::reverse_iterator(minimal_iterator);
 			auto _rend_ = xs.rend();
 			auto _rbegin_ = xs.rbegin();
 			for (auto i = x_left_peak; (i != x_rend); ((delta<(x_rend - i)) ? i = i + delta : i = x_rend)){
-				Int_t shift = (Int_t)(_size_ - (i - _rbegin_) - N_trust) < 0 ? (_size_ - (i - _rbegin_) - N_trust) : 0; //accounts for the rend
+				int shift = (int)(_size_ - (i - _rbegin_) - N_trust) < 0 ? (_size_ - (i - _rbegin_) - N_trust) : 0; //accounts for the rend
 				TVectorD coefs;
-				std::vector<Double_t>::iterator x_left = (i + shift).base();
+				std::vector<double>::iterator x_left = (i + shift).base();
 				fitter(xs, ys, x_left - _begin_, N_trust, coefs, *x_left);
-				std::vector<Double_t>::iterator x_extr;
-				std::vector<Double_t>::iterator x_Int_tersect1, x_Int_tersect2;
-				std::vector<Double_t>::iterator x_Int_ter = _end_; //of Int_terest
-				Double_t x_extr_exact, y_extr_exact;
-				Double_t x_Int_ter_exact1, x_Int_ter_exact2;
+				std::vector<double>::iterator x_extr;
+				std::vector<double>::iterator x_intersect1, x_intersect2;
+				std::vector<double>::iterator x_inter = _end_; //of interest
+				double x_extr_exact, y_extr_exact;
+				double x_inter_exact1, x_inter_exact2;
 				fitter.FindExtremum(x_extr, x_extr_exact, y_extr_exact);
-				fitter.FindInt_tersection(x_Int_tersect1, x_Int_tersect2, x_Int_ter_exact1, x_Int_ter_exact2, thresh_edges);
+				fitter.Findintersection(x_intersect1, x_intersect2, x_inter_exact1, x_inter_exact2, thresh_edges);
 				if (x_extr >= x_start)
 					x_extr = _end_; //accidently found extremum as peak maximum (in case x_start==x_finish)
-				if (x_Int_tersect2 != _end_)
-					if (fitter.Derivative(x_Int_ter_exact2) > 0)
-						x_Int_ter = x_Int_tersect2;
-				if (x_Int_tersect1 != _end_ && (x_Int_ter == _end_))
-					if (fitter.Derivative(x_Int_ter_exact1) > 0)
-						x_Int_ter = x_Int_tersect1;
-				if (x_extr != _end_ && x_Int_ter != _end_){
+				if (x_intersect2 != _end_)
+					if (fitter.Derivative(x_inter_exact2) > 0)
+						x_inter = x_intersect2;
+				if (x_intersect1 != _end_ && (x_inter == _end_))
+					if (fitter.Derivative(x_inter_exact1) > 0)
+						x_inter = x_intersect1;
+				if (x_extr != _end_ && x_inter != _end_){
 					if (y_extr_exact < thresh_edges)
-						x_start = x_Int_ter;
+						x_start = x_inter;
 					else
 						x_start = x_extr;
 					break;
@@ -2249,8 +2249,8 @@ namespace SignalOperations {
 					x_start = x_extr;
 					break;
 				}
-				if (x_Int_ter != _end_){
-					x_start = x_Int_ter;
+				if (x_inter != _end_){
+					x_start = x_inter;
 					break;
 				}
 			}
@@ -2262,7 +2262,7 @@ namespace SignalOperations {
 			for (auto i = x_finish, j = ys.begin() + (x_finish - xs.begin()); (i != _end_); ++i, ++j){
 				if ((i == _begin_) || ((i + 1) == _end_))
 					continue;
-				if ((*j - thresh_edges)*(*(j - 1) - thresh_edges) <= 0){ //Int_tersection
+				if ((*j - thresh_edges)*(*(j - 1) - thresh_edges) <= 0){ //intersection
 					x_finish = i; //TODO: more exact?
 					break;
 				}
@@ -2272,8 +2272,8 @@ namespace SignalOperations {
 				//	break;
 				//}
 			}
-			std::vector<Double_t>::reverse_iterator x_left_peak = std::vector<Double_t>::reverse_iterator(x_start);
-			std::vector<Double_t>::reverse_iterator x_rend = std::vector<Double_t>::reverse_iterator(minimal_iterator);
+			std::vector<double>::reverse_iterator x_left_peak = std::vector<double>::reverse_iterator(x_start);
+			std::vector<double>::reverse_iterator x_rend = std::vector<double>::reverse_iterator(minimal_iterator);
 			auto _rend_ = xs.rend();
 			auto _rbegin_ = xs.rbegin();
 			for (auto i = x_left_peak, j = ys.rbegin() + (x_left_peak - xs.rbegin()); (i != x_rend); ++i, ++j){
@@ -2300,18 +2300,18 @@ namespace SignalOperations {
 		x_finish = xs.begin();
 		return;
 	}
-	void find_peaks_fine(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::deque<peak> &peaks, Double_t base_line, Double_t threshold, Double_t threshold_edges, Int_t N_trust)
+	void find_peaks_fine(std::vector<double> &xs, std::vector<double> &ys, std::deque<peak> &peaks, double base_line, double threshold, double threshold_edges, int N_trust)
 	{
 		if (threshold_edges >= threshold)
 			threshold_edges = 0;
 		peaks.clear();
 		if (xs.size() <= 1)
 			return;
-		Double_t delta_x = *(++xs.begin()) - *(xs.begin());
-		std::vector<Double_t>::iterator x_peak_l = xs.begin(), x_peak_r = xs.begin();
+		double delta_x = *(++xs.begin()) - *(xs.begin());
+		std::vector<double>::iterator x_peak_l = xs.begin(), x_peak_r = xs.begin();
 		auto _end_ = xs.end();
 		while (x_peak_l != _end_) {
-			Double_t Amp;
+			double Amp;
 			SignalOperations::find_next_peak_fine(xs, ys, x_peak_l, x_peak_r,Amp, threshold, threshold_edges, N_trust);
 			if (x_peak_l != _end_) {
 				peak pk;
@@ -2322,15 +2322,15 @@ namespace SignalOperations {
 				if ((pk.S>0) && (pk.A>0)&&(pk.right>=pk.left))
 					peaks.push_back(pk);
 				x_peak_l = x_peak_r;
-				Int_t delta_i = std::max(N_trust / 3, 1);
+				int delta_i = std::max(N_trust / 3, 1);
 				x_peak_l = ((_end_ - x_peak_l) < delta_i) ? _end_ : (x_peak_l + delta_i);
 			}
 		}
 	}
 
-	void find_next_extremum_faster(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t>::iterator &x_start, Int_t N_trust)
+	void find_next_extremum_faster(std::vector<double> &xs, std::vector<double> &ys, std::vector<double>::iterator &x_start, int N_trust)
 	{	
-		Int_t delta = std::max(N_trust / 2, 1);
+		int delta = std::max(N_trust / 2, 1);
 		if ((xs.end() - x_start < (2 * delta + 1)) ||(xs.size()!=ys.size())){
 			x_start = xs.end(); //not found
 			return;
@@ -2358,9 +2358,9 @@ namespace SignalOperations {
 		x_start = _end_; //not found
 	}
 
-	void find_previous_extremum_faster(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t>::reverse_iterator &x_start, Int_t N_trust)
+	void find_previous_extremum_faster(std::vector<double> &xs, std::vector<double> &ys, std::vector<double>::reverse_iterator &x_start, int N_trust)
 	{
-		Int_t delta = std::max(N_trust / 2, 1);
+		int delta = std::max(N_trust / 2, 1);
 		if ((xs.rend() - x_start < (2 * delta + 1)) || (xs.size() != ys.size())){
 			x_start = xs.rend(); //not found
 			return;
@@ -2386,7 +2386,7 @@ namespace SignalOperations {
 		x_start = _rend_; //not found
 	}
 
-	void find_next_extremum(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t>::iterator &x_start, Int_t N_trust)
+	void find_next_extremum(std::vector<double> &xs, std::vector<double> &ys, std::vector<double>::iterator &x_start, int N_trust)
 	{
 		if (xs.size() != ys.size()){
 			x_start = xs.end();
@@ -2397,19 +2397,19 @@ namespace SignalOperations {
 			N_trust = 1;
 			use_fit = kFALSE;
 		}
-		Int_t delta = N_trust / 3;
+		int delta = N_trust / 3;
 		if (use_fit) {
 			Polynom2Order fitter;
 			auto _end_ = xs.end();
 			auto _begin_ = xs.begin();
 			std::size_t _size_ = xs.size();
 			for (auto i = x_start; (i != _end_); ((delta<(_end_ - i)) ? i = i + delta : i = _end_)) {
-				Int_t shift = (Int_t)(_size_ - (i - _begin_) - N_trust) < 0 ? (_size_ - (i - _begin_) - N_trust) : 0; //accounts for the end
+				int shift = (int)(_size_ - (i - _begin_) - N_trust) < 0 ? (_size_ - (i - _begin_) - N_trust) : 0; //accounts for the end
 				TVectorD coefs;
-				std::vector<Double_t>::iterator x_left = i + shift;
+				std::vector<double>::iterator x_left = i + shift;
 				fitter(xs, ys, (i - _begin_) + shift, N_trust, coefs, *x_left);
-				std::vector<Double_t>::iterator x_extr;
-				Double_t x_extr_exact, y_extr_exact;
+				std::vector<double>::iterator x_extr;
+				double x_extr_exact, y_extr_exact;
 				fitter.FindExtremum(x_extr, x_extr_exact, y_extr_exact);
 				if (x_extr != _end_){
 					if (x_extr <= x_start)
@@ -2433,7 +2433,7 @@ namespace SignalOperations {
 		x_start = xs.end(); //not found
 	}
 
-	void find_previous_extremum(std::vector<Double_t> &xs, std::vector<Double_t> &ys, std::vector<Double_t>::reverse_iterator &x_start, Int_t N_trust)
+	void find_previous_extremum(std::vector<double> &xs, std::vector<double> &ys, std::vector<double>::reverse_iterator &x_start, int N_trust)
 	{
 		if (xs.size() != ys.size()){
 			x_start = xs.rend();
@@ -2444,7 +2444,7 @@ namespace SignalOperations {
 			N_trust = 1;
 			use_fit = kFALSE;
 		}
-		Int_t delta = N_trust / 3;
+		int delta = N_trust / 3;
 		if (use_fit) {
 			Polynom2Order fitter;
 			auto _end_ = xs.end();
@@ -2453,17 +2453,17 @@ namespace SignalOperations {
 			auto _rbegin_ = xs.rbegin();
 			std::size_t _size_ = xs.size();
 			for (auto i = x_start; (i != _rend_); ((delta<(_rend_ - i)) ? i = i + delta : i = _rend_)){
-				Int_t shift = (Int_t)(_size_ - (i - _rbegin_) - N_trust) < 0 ? (_size_ - (i - _rbegin_) - N_trust) : 0; //accounts for the end
+				int shift = (int)(_size_ - (i - _rbegin_) - N_trust) < 0 ? (_size_ - (i - _rbegin_) - N_trust) : 0; //accounts for the end
 				TVectorD coefs;
-				std::vector<Double_t>::reverse_iterator x_left = i + shift;
+				std::vector<double>::reverse_iterator x_left = i + shift;
 				fitter(xs, ys, (i.base() - _begin_) + shift, N_trust, coefs, *x_left);
-				std::vector<Double_t>::iterator x_extr;
-				Double_t x_extr_exact, y_extr_exact;
+				std::vector<double>::iterator x_extr;
+				double x_extr_exact, y_extr_exact;
 				fitter.FindExtremum(x_extr, x_extr_exact, y_extr_exact);
 				if (x_extr != _end_) {
 					if (x_extr >= x_start.base())
 						continue; //accidently found previous extremum
-					x_start = std::vector<Double_t>::reverse_iterator(x_extr);
+					x_start = std::vector<double>::reverse_iterator(x_extr);
 					return;
 				}
 			}
@@ -2482,30 +2482,30 @@ namespace SignalOperations {
 		x_start = xs.rend(); //not found
 	}
 
-	void spread_peaks(Double_t x_left, Double_t x_right, std::deque<peak> &peaks, std::vector<Double_t> &xs_out, std::vector<Double_t>& ys_out)
+	void spread_peaks(double x_left, double x_right, std::deque<peak> &peaks, std::vector<double> &xs_out, std::vector<double>& ys_out)
 	{
 		//doesn't check whether peaks are valid (e.g. peak.A<0)
 #ifdef _HOTFIX_CLEAR_MEMORY
-		std::vector<Double_t>().swap(xs_out);
-		std::vector<Double_t>().swap(ys_out);
+		std::vector<double>().swap(xs_out);
+		std::vector<double>().swap(ys_out);
 #else
 		xs_out.clear();
 		ys_out.clear();
 #endif
 		for (auto pp = peaks.begin(); pp != peaks.end(); ++pp){
 			Bool_t is_first = (pp == peaks.begin());
-			Double_t x_l = is_first ? x_left - 1e-7 : ((pp - 1)->left + (pp - 1)->right) / 2;
-			Double_t x_r = (pp->left + pp->right)/2;
-			Double_t y_v = is_first ? 0.5*pp->S : 0.5*((pp - 1)->S + pp->S);
+			double x_l = is_first ? x_left - 1e-7 : ((pp - 1)->left + (pp - 1)->right) / 2;
+			double x_r = (pp->left + pp->right)/2;
+			double y_v = is_first ? 0.5*pp->S : 0.5*((pp - 1)->S + pp->S);
 			y_v /= x_r - x_l;
 			xs_out.push_back(x_l + 1e-7);
 			xs_out.push_back(x_r - 1e-7);
 			ys_out.push_back(y_v);
 			ys_out.push_back(y_v);
 		}
-		Double_t x_l = peaks.empty() ? x_left : 0.5*(peaks.back().left + peaks.back().right);
-		Double_t x_r = x_right;
-		Double_t y_v = peaks.empty() ? 0 : 0.5*(peaks.back().S);
+		double x_l = peaks.empty() ? x_left : 0.5*(peaks.back().left + peaks.back().right);
+		double x_r = x_right;
+		double y_v = peaks.empty() ? 0 : 0.5*(peaks.back().S);
 		y_v /= x_r - x_l;
 		xs_out.push_back(x_l + 1e-7);
 		xs_out.push_back(x_r);
@@ -2513,24 +2513,24 @@ namespace SignalOperations {
 		ys_out.push_back(y_v);
 	}
 	//in comparisson to ^ has more smooth result
-	void spread_peaks_v2(Double_t x_left, Double_t x_right, std::deque<peak> &peaks, std::vector<Double_t> &xs_out, std::vector<Double_t>& ys_out, Double_t min_dx)
+	void spread_peaks_v2(double x_left, double x_right, std::deque<peak> &peaks, std::vector<double> &xs_out, std::vector<double>& ys_out, double min_dx)
 	{
 		//doesn't check whether peaks are valid (e.g. peak.A<0)
 #ifdef _HOTFIX_CLEAR_MEMORY
-		std::vector<Double_t>().swap(xs_out);
-		std::vector<Double_t>().swap(ys_out);
+		std::vector<double>().swap(xs_out);
+		std::vector<double>().swap(ys_out);
 #else
 		xs_out.clear();
 		ys_out.clear();
 #endif
-		Double_t current_left_x;
+		double current_left_x;
 		Bool_t uniting_several_peaks = kFALSE;
-		Double_t y_v=0;
+		double y_v=0;
 		for (auto pp = peaks.begin(); pp != peaks.end(); ++pp){
 			Bool_t is_first = (pp == peaks.begin());
-			Double_t x_l = uniting_several_peaks ? current_left_x :
+			double x_l = uniting_several_peaks ? current_left_x :
 				(is_first ? x_left - 1e-7 : ((pp - 1)->left + (pp - 1)->right) / 2);
-			Double_t x_r = (pp->left + pp->right) / 2;
+			double x_r = (pp->left + pp->right) / 2;
 			y_v += is_first ? 0.5*pp->S : 0.5*((pp - 1)->S + pp->S);
 			if ((x_r - x_l) < min_dx){
 				uniting_several_peaks = kTRUE;
@@ -2546,10 +2546,10 @@ namespace SignalOperations {
 			ys_out.push_back(y_v);
 			y_v = 0;
 		}
-		Double_t x_l = uniting_several_peaks ? current_left_x : 
+		double x_l = uniting_several_peaks ? current_left_x : 
 			peaks.empty() ? x_left : 0.5*(peaks.back().left + peaks.back().right);
-		Double_t x_r = x_right;
-		Double_t dx = x_r - x_l;
+		double x_r = x_right;
+		double dx = x_r - x_l;
 		if (xs_out.size() >= 2)
 			dx = std::max(x_r - *(xs_out.end() - 2), std::max(min_dx,dx));
 		else
@@ -2562,11 +2562,11 @@ namespace SignalOperations {
 		ys_out.push_back(y_v);
 	}
 
-	void peaks_to_yx(Double_t x_left, Double_t x_right, std::deque<peak> &peaks, std::vector<Double_t> &xs_out, std::vector<Double_t>& ys_out)
+	void peaks_to_yx(double x_left, double x_right, std::deque<peak> &peaks, std::vector<double> &xs_out, std::vector<double>& ys_out)
 	{
 #ifdef _HOTFIX_CLEAR_MEMORY
-		std::vector<Double_t>().swap(xs_out);
-		std::vector<Double_t>().swap(ys_out);
+		std::vector<double>().swap(xs_out);
+		std::vector<double>().swap(ys_out);
 #else
 		xs_out.clear();
 		ys_out.clear();
@@ -2574,7 +2574,7 @@ namespace SignalOperations {
 		xs_out.push_back(x_left);
 		ys_out.push_back(0);
 		for (auto pp = peaks.begin(); pp != peaks.end(); ++pp) {
-			Double_t y_v = pp->S / (pp->right - pp->left);
+			double y_v = pp->S / (pp->right - pp->left);
 			xs_out.push_back(pp->left - 1e-7);
 			ys_out.push_back(0);
 			xs_out.push_back(pp->left + 1e-7);
@@ -2588,11 +2588,11 @@ namespace SignalOperations {
 		ys_out.push_back(0);
 	}
 
-	void spread_peaks(std::vector<Double_t> &xs_in, std::vector<Double_t> &ys_in, std::vector<Double_t> &xs_out, std::vector<Double_t>& ys_out)
+	void spread_peaks(std::vector<double> &xs_in, std::vector<double> &ys_in, std::vector<double> &xs_out, std::vector<double>& ys_out)
 	{
 #ifdef _HOTFIX_CLEAR_MEMORY
-		std::vector<Double_t>().swap(xs_out);
-		std::vector<Double_t>().swap(ys_out);
+		std::vector<double>().swap(xs_out);
+		std::vector<double>().swap(ys_out);
 #else
 		xs_out.clear();
 		ys_out.clear();
@@ -2602,8 +2602,8 @@ namespace SignalOperations {
 		ys_out.reserve(ys_in.size());
 #endif
 		Bool_t first = kTRUE; //eliminating the same xs
-		Double_t x_prev;
-		Double_t y_val;
+		double x_prev;
+		double y_val;
 		for (auto i = xs_in.begin(), j = ys_in.begin(); (i != xs_in.end()) && (j != ys_in.end()); ++i, ++j) {
 			if (first){
 				x_prev = *i;
@@ -2639,11 +2639,11 @@ namespace SignalOperations {
 		}
 	}
 
-	void exclude_peaks(std::vector<Double_t> &xs_in, std::vector<Double_t> &ys_in, std::deque<peak> &peaks)
+	void exclude_peaks(std::vector<double> &xs_in, std::vector<double> &ys_in, std::deque<peak> &peaks)
 	{
 		if (xs_in.size() != ys_in.size())
 			return;
-		std::vector<Double_t> x_out, y_out;
+		std::vector<double> x_out, y_out;
 #ifndef _USE_DEQUE
 		x_out.reserve(xs_in.size());
 		y_out.reserve(ys_in.size());
@@ -2667,13 +2667,13 @@ namespace SignalOperations {
 		ys_in = y_out;
 	}
 
-	void substract_baseline(std::vector<Double_t> &ys_in, Double_t base_line)
+	void substract_baseline(std::vector<double> &ys_in, double base_line)
 	{
 		auto _end_ = ys_in.end();//it's cheaper to call end() only once
 		for (auto i = ys_in.begin(); i != _end_; ++i)
 			*i -= base_line;
 	}
-	void substract_baseline(std::vector<Double_t> &ys_in, std::vector<Double_t> &base_ys)
+	void substract_baseline(std::vector<double> &ys_in, std::vector<double> &base_ys)
 	{
 		if (ys_in.size() != base_ys.size())
 			return;
@@ -2683,7 +2683,7 @@ namespace SignalOperations {
 	}
 
 	//required for substracting ROOT's baseline which is calculated only for some range
-	void substract_baseline(std::vector<Double_t>& xs_in, std::vector<Double_t> &ys_in, std::vector<Double_t> &base_xs, std::vector<Double_t> &base_ys, Double_t baseline_baseline)
+	void substract_baseline(std::vector<double>& xs_in, std::vector<double> &ys_in, std::vector<double> &base_xs, std::vector<double> &base_ys, double baseline_baseline)
 	{
 		if ((xs_in.size() != ys_in.size()) || (base_xs.size() != base_ys.size()))
 			return;
@@ -2715,11 +2715,11 @@ namespace SignalOperations {
 		}
 	}
 
-	Double_t Mean(std::vector<Double_t>::iterator first, std::vector<Double_t>::iterator last)
+	double Mean(std::vector<double>::iterator first, std::vector<double>::iterator last)
 	{
 		// Return the weighted mean of an array defined by the iterators.
-		Double_t sum = 0;
-		Double_t sumw = 0;
+		double sum = 0;
+		double sumw = 0;
 		while (first != last) {
 			sum += *first;
 			sumw += 1;
@@ -2728,7 +2728,7 @@ namespace SignalOperations {
 		return sum / sumw;
 	}
 
-	Double_t RMS(std::vector<Double_t>::iterator first, std::vector<Double_t>::iterator last)
+	double RMS(std::vector<double>::iterator first, std::vector<double>::iterator last)
 	{
 		// Return the Standard Deviation of an array defined by the iterators.
 		// Note that this function returns the sigma(standard deviation) and
@@ -2738,23 +2738,23 @@ namespace SignalOperations {
 		// precise.  Since we have a vector the 2 pass algorithm is still faster than the 
 		// Welford algorithm. (See also ROOT-5545)
 
-		Double_t n = 0;
-		Double_t tot = 0;
-		Double_t mean = Mean(first, last);
+		double n = 0;
+		double tot = 0;
+		double mean = Mean(first, last);
 		while (first != last) {
-			Double_t x = Double_t(*first);
+			double x = double(*first);
 			tot += (x - mean)*(x - mean);
 			++first;
 			n+=1;
 		}
-		Double_t rms = (n > 1) ? TMath::Sqrt(tot / (n - 1)) : 0.0;
+		double rms = (n > 1) ? TMath::Sqrt(tot / (n - 1)) : 0.0;
 		return rms;
 	}
-	//Double_t Mean(std::deque<std::deque<peak>>::iterator first, std::deque<std::deque<peak>>::iterator last, std::function<Double_t(peak& pk)> &value_picker)
+	//double Mean(std::deque<std::deque<peak>>::iterator first, std::deque<std::deque<peak>>::iterator last, std::function<double(peak& pk)> &value_picker)
 	//{
 	//	// Return the weighted mean of an array defined by the iterators.
-	//	Double_t sum = 0;
-	//	Double_t sumw = 0;
+	//	double sum = 0;
+	//	double sumw = 0;
 	//	while (first != last) {
 	//		auto _end_ = first->end();
 	//		for (auto i = first->begin(); i != _end_; ++i)
@@ -2765,7 +2765,7 @@ namespace SignalOperations {
 	//	return sum / sumw;
 	//}
 
-	//Double_t RMS(std::deque<std::deque<peak>>::iterator first, std::deque<std::deque<peak>>::iterator last, std::function<Double_t(peak& pk)> &value_picker)
+	//double RMS(std::deque<std::deque<peak>>::iterator first, std::deque<std::deque<peak>>::iterator last, std::function<double(peak& pk)> &value_picker)
 	//{
 	//	// Return the Standard Deviation of an array defined by the iterators.
 	//	// Note that this function returns the sigma(standard deviation) and
@@ -2775,19 +2775,19 @@ namespace SignalOperations {
 	//	// precise.  Since we have a vector the 2 pass algorithm is still faster than the 
 	//	// Welford algorithm. (See also ROOT-5545)
 
-	//	Double_t n = 0;
-	//	Double_t tot = 0;
-	//	Double_t mean = Mean(first, last, value_picker);
+	//	double n = 0;
+	//	double tot = 0;
+	//	double mean = Mean(first, last, value_picker);
 	//	while (first != last) {
 	//		auto _end_ = first->end();
 	//		for (auto i = first->begin(); i != _end_; ++i){
-	//			Double_t x = value_picker(*i);
+	//			double x = value_picker(*i);
 	//			tot += (x - mean)*(x - mean);
 	//		}
 	//		n += first->size();
 	//		++first;
 	//	}
-	//	Double_t rms = (n > 1) ? TMath::Sqrt(tot / (n - 1)) : 0.0;
+	//	double rms = (n > 1) ? TMath::Sqrt(tot / (n - 1)) : 0.0;
 	//	return rms;
 	//}
 

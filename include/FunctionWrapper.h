@@ -14,7 +14,7 @@ protected:
 public:
 	FunctionWrapper(void* stat_data);
 	~FunctionWrapper();
-	Bool_t operator () (std::vector<Double_t> &pars);
+	Bool_t operator () (std::vector<double> &pars);
 	void SetFunction(CUTTER f);
 };
 

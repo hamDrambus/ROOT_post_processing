@@ -16,7 +16,7 @@
 #define ROOT_BL_CALL_V7 spec->Background(f_ys, ys.size(), 20,	TSpectrum::kBackIncreasingWindow, TSpectrum::kBackOrder2, kFALSE, TSpectrum::kBackSmoothing3, kFALSE);
 #define ROOT_BL_CALL_V8 spec->Background(f_ys, ys.size(), 20,	TSpectrum::kBackIncreasingWindow, TSpectrum::kBackOrder2, kFALSE, TSpectrum::kBackSmoothing3, kFALSE);
 
-std::vector<Double_t>::iterator iter_add(std::vector<Double_t>::iterator& to, Int_t what, std::vector<Double_t>::iterator& end);
+std::vector<double>::iterator iter_add(std::vector<double>::iterator& to, int what, std::vector<double>::iterator& end);
 
 class AnalysisManager;
 class AllExperimentsResults;
@@ -38,18 +38,19 @@ extern PostProcessor* post_processor;
 	extern std::string this_path;
 	
 	extern experiment_area exp_area;
-	extern Int_t threads_number;
+	extern int threads_number;
 
-	extern Int_t gnuplot_pad_size;
-	extern Int_t gnuplot_max_size;
-	extern Int_t gnuplot_width;
+	extern int gnuplot_pad_size;
+	extern int gnuplot_max_size;
+	extern int gnuplot_width;
 
-	extern std::map < std::string, Double_t > experiment_fields;
-	extern std::pair<Int_t, Int_t> calibaration_poInt_ts;
+	extern std::map < std::string, double > experiment_fields;
+	extern std::map < std::string, double > PMT_V;
+	extern std::pair<int, int> calibaration_points;
 	extern std::map < int, std::pair<double,double> > MPPC_coords;
 
 	void Init_globals(void);
 //};
-void DrawFileData(std::string name, std::vector<Double_t> xs, std::vector<Double_t> ys, /*ParameterPile::*/DrawEngine de = /*ParameterPile::*/ ROOT_);
+void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> ys, /*ParameterPile::*/DrawEngine de = /*ParameterPile::*/ ROOT_);
 
 #endif

@@ -1,6 +1,6 @@
 #include "AnalysisStates.h"
 
-AnalysisStates::AnalysisStates(std::deque<Int_t> &mppc_channels_, std::deque<Int_t> &pmt_channels_, std::deque<std::string>& experiments_):
+AnalysisStates::AnalysisStates(std::deque<int> &mppc_channels_, std::deque<int> &pmt_channels_, std::deque<std::string>& experiments_):
 _first_state(MPPC_Ss), _last_state(PMT_times)
 {
 	MPPC_channels = mppc_channels_;
@@ -17,7 +17,7 @@ _first_state(MPPC_Ss), _last_state(PMT_times)
 	}
 }
 
-Bool_t AnalysisStates::StateChange(Int_t to_ch, Int_t to_exp, Type to_type, Int_t from_ch, Int_t from_exp, Type from_type, Bool_t save)
+Bool_t AnalysisStates::StateChange(int to_ch, int to_exp, Type to_type, int from_ch, int from_exp, Type from_type, Bool_t save)
 {
 	return !((to_ch == from_ch)&&(to_exp==from_exp)&&(to_type==from_type));
 }
@@ -26,8 +26,8 @@ Bool_t AnalysisStates::NextType(Bool_t save)
 {
 	if (!isValid())
 		return kFALSE;
-	Int_t prev_ch = current_channel;
-	Int_t prev_exp = current_exp_index;
+	int prev_ch = current_channel;
+	int prev_exp = current_exp_index;
 	Type prev_type = current_type;
 	do {
 		current_type = (current_type == _last_state) ? _first_state : (Type)(current_type + 1);
@@ -48,8 +48,8 @@ Bool_t AnalysisStates::PrevType(Bool_t save)
 {
 	if (!isValid())
 		return kFALSE;
-	Int_t prev_ch = current_channel;
-	Int_t prev_exp = current_exp_index;
+	int prev_ch = current_channel;
+	int prev_exp = current_exp_index;
 	Type prev_type = current_type;
 	do {
 		current_type = (current_type == _first_state) ? _last_state : (Type)(current_type - 1);
@@ -70,8 +70,8 @@ Bool_t AnalysisStates::NextCh(Bool_t save)
 {
 	if (!isValid())
 		return kFALSE;
-	Int_t prev_ch = current_channel;
-	Int_t prev_exp = current_exp_index;
+	int prev_ch = current_channel;
+	int prev_exp = current_exp_index;
 	Type prev_type = current_type;
 	
 	if (isMultichannel(current_type)){
@@ -99,8 +99,8 @@ Bool_t AnalysisStates::PrevCh(Bool_t save)
 {
 	if (!isValid())
 		return kFALSE;
-	Int_t prev_ch = current_channel;
-	Int_t prev_exp = current_exp_index;
+	int prev_ch = current_channel;
+	int prev_exp = current_exp_index;
 	Type prev_type = current_type;
 
 	if (isMultichannel(current_type)){
@@ -128,8 +128,8 @@ Bool_t AnalysisStates::NextExp(Bool_t save)
 {
 	if (!isValid())
 		return kFALSE;
-	Int_t prev_ch = current_channel;
-	Int_t prev_exp = current_exp_index;
+	int prev_ch = current_channel;
+	int prev_exp = current_exp_index;
 	Type prev_type = current_type;
 	current_exp_index = (current_exp_index == (experiments.size()-1)) ? 0 : current_exp_index+1;
 	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type, save);
@@ -139,8 +139,8 @@ Bool_t AnalysisStates::PrevExp(Bool_t save)
 {
 	if (!isValid())
 		return kFALSE;
-	Int_t prev_ch = current_channel;
-	Int_t prev_exp = current_exp_index;
+	int prev_ch = current_channel;
+	int prev_exp = current_exp_index;
 	Type prev_type = current_type;
 	current_exp_index = (current_exp_index == 0) ? (experiments.size() - 1) : current_exp_index - 1;
 	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type, save);
@@ -153,7 +153,7 @@ Bool_t AnalysisStates::is_PMT_type(Type type)
 
 Bool_t AnalysisStates::isMultichannel(Type type)
 {
-	return (type == MPPC_sum_ts)||(type==MPPC_coord);
+	return (type == MPPC_sum_ts)||(type==MPPC_coord)||(type==MPPC_coord_x)||(type==MPPC_coord_y);
 }
 
 Bool_t AnalysisStates::isValid()
@@ -184,7 +184,7 @@ Bool_t AnalysisStates::isValid()
 	return kTRUE;
 }
 
-Int_t AnalysisStates::channel_to_index(Int_t ch)
+int AnalysisStates::channel_to_index(int ch)
 {
 	if (is_PMT_type(current_type))
 		return pmt_channel_to_index(ch);
@@ -193,14 +193,14 @@ Int_t AnalysisStates::channel_to_index(Int_t ch)
 	return -1;
 }
 
-Int_t AnalysisStates::mppc_channel_to_index(Int_t ch)
+int AnalysisStates::mppc_channel_to_index(int ch)
 {
 	for (auto i = MPPC_channels.begin(), _end_ = MPPC_channels.end(); i != _end_; ++i)
 		if (ch == *i)
 			return (i - MPPC_channels.begin());
 	return -1;
 }
-Int_t AnalysisStates::pmt_channel_to_index(Int_t ch)
+int AnalysisStates::pmt_channel_to_index(int ch)
 {
 	for (auto i = PMT_channels.begin(), _end_ = PMT_channels.end(); i != _end_; ++i)
 		if (ch == *i)
@@ -246,6 +246,14 @@ std::string AnalysisStates::type_name(Type type)
 	}
 	case Type::MPPC_coord: {
 		name += "coordinate";
+		break;
+	}
+	case Type::MPPC_coord_x: {
+		name += "x_coordinate";
+		break;
+	}
+	case Type::MPPC_coord_y: {
+		name += "y_coordinate";
 		break;
 	}
 	case Type::MPPC_S2:{

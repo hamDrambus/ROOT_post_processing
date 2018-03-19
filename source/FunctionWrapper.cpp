@@ -6,7 +6,7 @@ FunctionWrapper::FunctionWrapper(void* stat_data)
 }
 FunctionWrapper::~FunctionWrapper()
 {}
-Bool_t FunctionWrapper::operator () (std::vector<Double_t> &pars)
+Bool_t FunctionWrapper::operator () (std::vector<double> &pars)
 {
 	return ((NULL==func) ? kTRUE : func(pars, static_data));
 }

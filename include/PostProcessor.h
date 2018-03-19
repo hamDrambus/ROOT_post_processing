@@ -11,23 +11,23 @@
 #include "CalibrationInfo.h"
 
 //for adding new types of analysis - dependence on AnalysisStates::Type
-//1) AnalysisStates::AnalysisStates (first/last state)
-//2) AnalysisStates::isMultichannel();
-//3) AnalysisStates::is_PMT_type
-//4) std::string AnalysisStates::type_name(Type type);
-//5) PostProcessor::is_TH1D_hist
+//1). AnalysisStates::AnalysisStates (first/last state)
+//2). AnalysisStates::isMultichannel();
+//3). AnalysisStates::is_PMT_type
+//4). std::string AnalysisStates::type_name(Type type);
+//5). PostProcessor::is_TH1D_hist
 
-//6) void PostProcessor::LoopThroughData(FunctionWrapper*);
-//7) void PostProcessor::FillHist(void* p_hist)
-//8) Int_t PostProcessor::numOfFills(void);
-//9) std::pair<Double_t, Double_t> PostProcessor::hist_x_limits(void);
-//10) std::pair<Double_t, Double_t> PostProcessor::hist_y_limits(void);
+//6). void PostProcessor::LoopThroughData(FunctionWrapper*);
+//7). void PostProcessor::FillHist(void* p_hist)
+//8). int PostProcessor::numOfFills(void);
+//9). std::pair<double, double> PostProcessor::hist_x_limits(void);
+//10). std::pair<double, double> PostProcessor::hist_y_limits(void);
 
-//11) void PostProcessor::set_default_hist_setups(void);
+//11). void PostProcessor::set_default_hist_setups(void);
 
-//12) void PostProcessor::update_physical(void);
-//13) void PostProcessor::set_limits(Double_t left, Double_t right);
-//14) void PostProcessor::set_drawn_limits(Double_t left, Double_t right);
+//12). void PostProcessor::update_physical(void);
+//13). void PostProcessor::set_limits(double left, double right);
+//14). void PostProcessor::set_drawn_limits(double left, double right);
 //15) void PostProcessor::set_as_run_cut(std::string name)
 
 
@@ -39,7 +39,7 @@ public:
 protected:
 	HistogramSetups* current_setups;
 	TCanvas *current_canvas;
-	Int_t canvas_n;
+	int canvas_n;
 	TF1 *current_fit_func;
 	TH1D *current_hist1;
 	TH2D *current_hist2;
@@ -54,27 +54,27 @@ protected:
 	std::deque < std::deque<EventCut> > RunCuts;
 
 	//experiment->channel
-	std::deque <std::deque<Double_t> > avr_S2_S; //initial (automatic) values are set in processAllExperiments
-	std::deque <std::deque<Double_t> > avr_Double_I;
-	std::deque <Double_t> PMT3_avr_S2_S;
-	std::deque <Double_t> PMT1_avr_S2_S;
+	std::deque <std::deque<double> > avr_S2_S; //initial (automatic) values are set in processAllExperiments
+	std::deque <std::deque<double> > avr_Double_I;
+	std::deque <double> PMT3_avr_S2_S;
+	std::deque <double> PMT1_avr_S2_S;
 
-	virtual Bool_t StateChange(Int_t to_ch, Int_t to_exp, Type to_type, Int_t from_ch, Int_t from_exp, Type from_type,Bool_t save);
+	virtual Bool_t StateChange(int to_ch, int to_exp, Type to_type, int from_ch, int from_exp, Type from_type,Bool_t save);
 	
-	void set_hist_setups(HistogramSetups* setups, std::string exp, Int_t channel, Type type);//does not call update
-	HistogramSetups* get_hist_setups(std::string exp, Int_t channel, Type type);//does not call update
+	void set_hist_setups(HistogramSetups* setups, std::string exp, int channel, Type type);//does not call update
+	HistogramSetups* get_hist_setups(std::string exp, int channel, Type type);//does not call update
 
 	void FillHist(void* p_hist);//considers cuts and histogram tipe (void*)==either TH1D* or TH2D*
-	//see function for std::vector<Double_t> &vals usage in cuts' picker
-	Int_t numOfFills(void);
-	std::pair<Double_t, Double_t> hist_x_limits(void); //considering cuts
-	std::pair<Double_t, Double_t> hist_y_limits(void); //valid only for 2d plots
+	//see function for std::vector<double> &vals usage in cuts' picker
+	int numOfFills(void);
+	std::pair<double, double> hist_x_limits(void); //considering cuts
+	std::pair<double, double> hist_y_limits(void); //valid only for 2d plots
 	void set_default_hist_setups(void);//
 
 	TF1* create_fit_function(HistogramSetups* func);
 	void update_fit_function(void); //uses current_fit_func and current_setups
-	//TODO: add setting average S2 and Double_t I without manual setups. Maybe as exit() method, which will
-	//set S2 and Double_t Int_tegral with NULL HistogramSetups by default and won't touch the calibration
+	//TODO: add setting average S2 and double I without manual setups. Maybe as exit() method, which will
+	//set S2 and double integral with NULL HistogramSetups by default and won't touch the calibration
 	void update_physical(void); //2nd and 3rd mandates of ::update(void)
 	void update_Npe(void);		//4th part of ::update(void). TODO: actually it is better to move it to CalibrationInfo.
 
@@ -94,10 +94,10 @@ public:
 	PostProcessor(AllExperimentsResults* results); //results must be already processed, e.g. loaded
 	CalibrationInfo calibr_info;
 	//TODO: save current setups and picture without moving to other {ch,exp,type}
-	void save(Int_t ch);	//TODO: make that it saves results such as calibration and Npe(E) (for both PMT and MPPC). That is updates only one line in calibr. file
+	void save(int ch);	//TODO: make that it saves results such as calibration and Npe(E) (for both PMT and MPPC). That is updates only one line in calibr. file
 	void save_all(void);
 	
-	void plot_N_pe(Int_t ch, GraphicOutputManager* gr_man);
+	void plot_N_pe(int ch, GraphicOutputManager* gr_man);
 
 	//~done: will be done to the fullest from root macros. Then can add code from there. TO DO: add several default cuts (e.g. from left/right limit)
 	void add_hist_cut(FunctionWrapper *picker, std::string name = "");
@@ -109,15 +109,15 @@ public:
 	//if a single exp,ch,type produces several EventCuts, unset must be called respective amount of times
 	void do_fit(Bool_t upd_vis = kTRUE);
 
-	void set_N_bins(Int_t N);
-	void set_limits(Double_t left, Double_t right);
-	void set_drawn_limits(Double_t left, Double_t right);
+	void set_N_bins(int N);
+	void set_limits(double left, double right);
+	void set_drawn_limits(double left, double right);
 	void unset_limits(void);
 	void unset_drawn_limits(void);
 
-	void set_fit_gauss(Int_t N);
-	void set_parameter_val(Int_t index, Double_t val);
-	void set_parameter_limits(Int_t index, Double_t left, Double_t right);
+	void set_fit_gauss(int N);
+	void set_parameter_val(int index, double val);
+	void set_parameter_limits(int index, double left, double right);
 
 	void new_canvas(void);
 

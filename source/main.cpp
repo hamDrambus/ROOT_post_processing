@@ -1,5 +1,5 @@
 #include "main.h"
-//Int_teractive methods
+//interactive methods
 
 void Initialize(void)
 {
@@ -47,7 +47,7 @@ void Pch(Bool_t save_state) //Previous channel
 	post_processor->PrevCh(save_state);
 }
 
-void GotoCh(Int_t ch, Bool_t save_state) //go to specific channel
+void GotoCh(int ch, Bool_t save_state) //go to specific channel
 {
 	if (NULL == g_data){
 		state(kFALSE);
@@ -56,7 +56,7 @@ void GotoCh(Int_t ch, Bool_t save_state) //go to specific channel
 	std::cout << "TODO: not implemented" << std::endl;
 }
 
-void Nt(Bool_t save_state) //Next type (Ss, S2_S, Double_Int_tergral)
+void Nt(Bool_t save_state) //Next type (Ss, S2_S, Double_intergral)
 {
 	if (NULL == g_data){
 		state(kFALSE);
@@ -65,7 +65,7 @@ void Nt(Bool_t save_state) //Next type (Ss, S2_S, Double_Int_tergral)
 	post_processor->NextType(save_state);
 }
 
-void Pt(Bool_t save_state) //Prev type (Ss, S2_S, Double_Int_tergral)
+void Pt(Bool_t save_state) //Prev type (Ss, S2_S, Double_intergral)
 {
 	if (NULL == g_data){
 		state(kFALSE);
@@ -131,7 +131,7 @@ void set_fit_3_gauss(void)
 	post_processor->set_fit_gauss(3);
 }
 
-void set_fit_gauss(Int_t N)
+void set_fit_gauss(int N)
 {
 	if (NULL == post_processor){
 		state(kFALSE);
@@ -140,7 +140,7 @@ void set_fit_gauss(Int_t N)
 	post_processor->set_fit_gauss(N);
 }
 
-void set_parameter_val(Int_t index, Double_t val)
+void set_parameter_val(int index, double val)
 {
 	if (NULL == g_data){
 		state(kFALSE);
@@ -149,7 +149,7 @@ void set_parameter_val(Int_t index, Double_t val)
 	post_processor->set_parameter_val(index, val);
 }
 
-void set_parameter_limits(Int_t index, Double_t left, Double_t right)
+void set_parameter_limits(int index, double left, double right)
 {
 	if (NULL == g_data){
 		state(kFALSE);
@@ -167,7 +167,7 @@ void do_fit(Bool_t update_vis)
 	post_processor->do_fit();
 }
 
-void draw_limits(Double_t left, Double_t right)
+void draw_limits(double left, double right)
 {
 	if (NULL == g_data){
 		state(kFALSE);
@@ -176,7 +176,7 @@ void draw_limits(Double_t left, Double_t right)
 	post_processor->set_drawn_limits(left, right);
 }
 
-void impose_limits(Double_t left, Double_t right)
+void impose_limits(double left, double right)
 {
 	if (NULL == g_data){
 		state(kFALSE);
@@ -203,7 +203,7 @@ void next_canvas(void) //creates new canvas, so the current one will stay unchan
 	post_processor->new_canvas();
 }
 
-void set_calib_N(Int_t from, Int_t to)//in order to set default use invalid values
+void set_calib_N(int from, int to)//in order to set default use invalid values
 {
 	if (NULL == g_data){
 		state(kFALSE);
@@ -274,7 +274,7 @@ void rem_2peS(void)
 	post_processor->calibr_info.set_method(post_processor->current_exp_index, post_processor->current_channel, prev_method);
 }
 
-void set_1peS(Double_t val)
+void set_1peS(double val)
 {
 	if (NULL == g_data){
 		state(kFALSE);
@@ -305,7 +305,7 @@ void use_mean(Bool_t do_use) //uses mean value of data instead of gauss' mean. M
 		post_processor->calibr_info.set_method(post_processor->current_exp_index, post_processor->current_channel, prev_method);
 	}
 }
-void set_N_bin(Int_t n)
+void set_N_bin(int n)
 {
 	if (NULL == g_data){
 		state(kFALSE);
@@ -374,9 +374,9 @@ void unset_as_run_cut(std::string name)
 	post_processor->unset_as_run_cut(name);
 }
 
-//Int_teractive methods
+//interactive methods
 /*
-Int_t main(Int_t argc, char *argv[])
+int main(int argc, char *argv[])
 {
 	//ParameterPile::Init_globals();
 	double a;

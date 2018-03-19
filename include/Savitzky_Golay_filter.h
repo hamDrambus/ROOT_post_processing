@@ -10,23 +10,23 @@
 class SavitzkyGolayFilter
 {
 protected:
-	Int_t _n_poInt_ts;
-	Int_t _n_iterations;
-	Int_t _order;
+	int _n_points;
+	int _n_iterations;
+	int _order;
 public:
-	SavitzkyGolayFilter(Int_t n_poInt_ts = 10, Int_t order = 4, Int_t n_iterations = 1);
-	void setNPoInt_ts(Int_t n);
-	void setOrder(Int_t n);
-	void setNIter(Int_t n);
-	void setPars(Int_t n_poInt_ts = 10, Int_t order = 4, Int_t n_iterations = 1);
+	SavitzkyGolayFilter(int n_points = 10, int order = 4, int n_iterations = 1);
+	void setNPoints(int n);
+	void setOrder(int n);
+	void setNIter(int n);
+	void setPars(int n_points = 10, int order = 4, int n_iterations = 1);
 
-	Int_t getNPoInt_ts(void) const;
-	Int_t getOrder(void) const;
-	Int_t getNIter(void) const;
-	void getPars(Int_t &n_poInt_ts, Int_t &order, Int_t &n_iterations) const;
+	int getNPoints(void) const;
+	int getOrder(void) const;
+	int getNIter(void) const;
+	void getPars(int &n_points, int &order, int &n_iterations) const;
 
-	void operator ()(std::vector<Double_t> &xs_in, std::vector<Double_t> &ys_in,
-		std::vector<Double_t> &xs_out, std::vector<Double_t> &ys_out) const;//TODO: make const vector references
+	void operator ()(std::vector<double> &xs_in, std::vector<double> &ys_in,
+		std::vector<double> &xs_out, std::vector<double> &ys_out) const;//TODO: make const vector references
 };
 
 #endif

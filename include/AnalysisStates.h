@@ -10,27 +10,27 @@
 class AnalysisStates {
 public:
 	enum Type {
-		MPPC_Ss, MPPC_tfinal, MPPC_tstart, MPPC_tboth, MPPC_Double_I, MPPC_S2_S, MPPC_t_S, MPPC_times, MPPC_sum_ts, MPPC_coord, MPPC_S2,
+		MPPC_Ss, MPPC_tfinal, MPPC_tstart, MPPC_tboth, MPPC_Double_I, MPPC_S2_S, MPPC_t_S, MPPC_times, MPPC_sum_ts, MPPC_coord, MPPC_coord_x, MPPC_coord_y, MPPC_S2,
 		PMT_S2_S, PMT_Ss, PMT_t_S, PMT_times};
 protected:
 	const Type _first_state;
 	const Type _last_state;
-	Int_t MPPC_last_ch;
-	Int_t PMT_last_ch;
-	virtual Bool_t StateChange(Int_t to_ch, Int_t to_exp, Type to_type, Int_t from_ch, Int_t from_exp, Type from_type,Bool_t save);
+	int MPPC_last_ch;
+	int PMT_last_ch;
+	virtual Bool_t StateChange(int to_ch, int to_exp, Type to_type, int from_ch, int from_exp, Type from_type,Bool_t save);
 	Bool_t is_PMT_type(Type type);
-	Int_t channel_to_index(Int_t ch);
+	int channel_to_index(int ch);
 public:
-	Int_t mppc_channel_to_index(Int_t ch);
-	Int_t pmt_channel_to_index(Int_t ch);
-	std::deque<Int_t> MPPC_channels;
-	std::deque<Int_t> PMT_channels;
+	int mppc_channel_to_index(int ch);
+	int pmt_channel_to_index(int ch);
+	std::deque<int> MPPC_channels;
+	std::deque<int> PMT_channels;
 	std::deque<std::string> experiments;
 	Type current_type;
-	Int_t current_channel;
-	Int_t current_exp_index;
+	int current_channel;
+	int current_exp_index;
 	std::string type_name(Type type);
-	AnalysisStates(std::deque<Int_t> &mppc_channsels_, std::deque<Int_t> &pmt_channsels_, std::deque<std::string>& experiments_);
+	AnalysisStates(std::deque<int> &mppc_channsels_, std::deque<int> &pmt_channsels_, std::deque<std::string>& experiments_);
 	Bool_t NextType(Bool_t save = kTRUE);
 	Bool_t PrevType(Bool_t save = kTRUE);
 	Bool_t NextCh(Bool_t save = kTRUE);

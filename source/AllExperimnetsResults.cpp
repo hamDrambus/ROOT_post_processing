@@ -5,14 +5,14 @@ AllExperimentsResults::AllExperimentsResults(/*ParameterPile::*/experiment_area 
 	exp_area = area;
 }
 
-Int_t AllExperimentsResults::get_exp_index(std::string experiment)
+int AllExperimentsResults::get_exp_index(std::string experiment)
 {
 	for (auto i = exp_area.experiments.begin(); i != exp_area.experiments.end(); ++i)
 		if (*i == experiment)
 			return i - exp_area.experiments.begin();
 	return -1;
 }
-Int_t AllExperimentsResults::get_ch_index(Int_t channel)
+int AllExperimentsResults::get_ch_index(int channel)
 {
 	for (auto i = mppc_channels.begin(); i != mppc_channels.end(); ++i)
 		if (*i == channel){
@@ -64,9 +64,9 @@ void AllExperimentsResults::processAllExperiments(std::deque<AllRunsResults> &al
 			Fields.push_back(j->second);
 		else
 			Fields.push_back(-1);
-		N_pe_direct.push_back(std::deque<Double_t>());
-		N_pe_Double_I.push_back(std::deque<Double_t>());
-		N_pe_result.push_back(std::deque<Double_t>());
+		N_pe_direct.push_back(std::deque<double>());
+		N_pe_Double_I.push_back(std::deque<double>());
+		N_pe_result.push_back(std::deque<double>());
 		N_pe_PMT3.push_back(0);
 		N_pe_PMT1.push_back(0);
 		for (auto ff = mppc_channels.begin(); ff != mppc_channels.end(); ++ff){
@@ -75,15 +75,15 @@ void AllExperimentsResults::processAllExperiments(std::deque<AllRunsResults> &al
 			N_pe_result.back().push_back(0);
 		}
 	}
-	for (Int_t exp = 0, e_end_ = exp_area.experiments.size(); exp != e_end_; ++exp){
+	for (int exp = 0, e_end_ = exp_area.experiments.size(); exp != e_end_; ++exp){
 		int run_size = mppc_channels.empty() ? (pmt_channels.empty() ? 0 : pmt_peaks[exp][0].size()): mppc_peaks[exp][0].size();
 		bool not_ok = false;
-		for (Int_t ch = 0, _end_ = mppc_channels.size(); ch != _end_; ++ch)
+		for (int ch = 0, _end_ = mppc_channels.size(); ch != _end_; ++ch)
 			not_ok = not_ok||(run_size != S2_S[exp][ch].size())
 						|| (run_size != S2_start_t[exp][ch].size())
 						|| (run_size != S2_finish_t[exp][ch].size())
 						|| (run_size != mppc_peaks[exp][ch].size());
-		for (Int_t ch = 0, _end_ = pmt_channels.size(); ch != _end_; ++ch)
+		for (int ch = 0, _end_ = pmt_channels.size(); ch != _end_; ++ch)
 			not_ok = not_ok||(run_size!=pmt_peaks[exp][ch].size());
 		if (not_ok){
 			std::cout << "AllExperimentResults::processAllExperiments Error: exp " << exp_area.experiments[exp] << " Run size mismathch!"<<std::endl;

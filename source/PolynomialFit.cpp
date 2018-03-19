@@ -1,11 +1,11 @@
 #include "PolynomialFit.h"
 
-PolynomialFit::PolynomialFit(Int_t order)
+PolynomialFit::PolynomialFit(int order)
 {
 	setOrder(order);
 }
 
-void PolynomialFit::setOrder(Int_t n)
+void PolynomialFit::setOrder(int n)
 {
 	if (n < 0)
 		_order = 2;
@@ -13,7 +13,7 @@ void PolynomialFit::setOrder(Int_t n)
 		_order = n;
 }
 
-Int_t PolynomialFit::getOrder(void) const
+int PolynomialFit::getOrder(void) const
 {
 	return _order;
 }
@@ -24,27 +24,27 @@ void PolynomialFit::getCoefs(TVectorD &pars) const
 	pars = _last_coefs;
 }
 
-void PolynomialFit::operator ()(std::vector<Double_t> &xs_in, std::vector<Double_t> &ys_in,
-	TVectorD &pars_out, Double_t in_x0){
+void PolynomialFit::operator ()(std::vector<double> &xs_in, std::vector<double> &ys_in,
+	TVectorD &pars_out, double in_x0){
 	return (*this)(xs_in, ys_in, 0, xs_in.size(), pars_out, in_x0);
 }
 
-void PolynomialFit::operator ()(std::vector<Double_t> &xs_in, std::vector<Double_t> &ys_in,
-	Int_t offset, Int_t N_poInt_ts, TVectorD &pars_out, Double_t in_x0) //only for a part of a vector
+void PolynomialFit::operator ()(std::vector<double> &xs_in, std::vector<double> &ys_in,
+	int offset, int N_points, TVectorD &pars_out, double in_x0) //only for a part of a vector
 {
 	if (xs_in.size() != ys_in.size())
 		return;
-	if ((xs_in.size()-offset) < N_poInt_ts)
+	if ((xs_in.size()-offset) < N_points)
 		return;
-	if (N_poInt_ts < (_order + 1))
+	if (N_points < (_order + 1))
 		return;
 
-	TMatrixD mat(N_poInt_ts, _order + 1);
-	for (Int_t col = 0; col < mat.GetNcols(); col++)
-		for (Int_t row = 0; row < mat.GetNrows(); row++)
+	TMatrixD mat(N_points, _order + 1);
+	for (int col = 0; col < mat.GetNcols(); col++)
+		for (int row = 0; row < mat.GetNrows(); row++)
 			mat[row][col] = pow(xs_in[offset+ row] - in_x0, col);
-	TVectorD Y(N_poInt_ts);
-	for (Int_t row = 0; row < Y.GetNrows(); row++)
+	TVectorD Y(N_points);
+	for (int row = 0; row < Y.GetNrows(); row++)
 		Y[row] = ys_in[offset + row];
 	TMatrixD mT = mat;
 	mT.T();

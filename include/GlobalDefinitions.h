@@ -55,13 +55,13 @@
 
 //#define _USE_DEQUE
 #ifdef _USE_DEQUE
-#define DVECTOR std::deque<Double_t>
+#define DVECTOR std::deque<double>
 #else
-#define DVECTOR std::vector<Double_t>
+#define DVECTOR std::vector<double>
 #endif
 
-#define DITERATOR std::vector<Double_t>::iterator
-#define D_REV_ITERATOR std::vector<Double_t>::reverse_iterator
+#define DITERATOR std::vector<double>::iterator
+#define D_REV_ITERATOR std::vector<double>::reverse_iterator
 
 typedef bool(*CUTTER)(std::vector<double>& pars, void* stat_data);
 
@@ -78,10 +78,10 @@ void open_output_file(std::string name, std::ofstream &str);
 class peak
 {
 public:
-	Double_t left;
-	Double_t right;
-	Double_t S; //Area
-	Double_t A; //Amplitude (from baseline)
+	double left;
+	double right;
+	double S; //Area
+	double A; //Amplitude (from baseline)
 	peak();
 };
 
