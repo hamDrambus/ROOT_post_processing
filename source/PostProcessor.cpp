@@ -63,7 +63,7 @@ Bool_t PostProcessor::is_TH1D_hist()
 }
 std::string PostProcessor::hist_name()
 {
-	std::string name = (is_PMT_type(current_type) ? "PMT#" : "MPPC#") + std::to_string(current_channel)
+	std::string name = (is_PMT_type(current_type) ? "PMT#" : "MPPC#") + (isMultichannel(current_type) ? "All" : std::to_string(current_channel) )
 		+ "_" + g_data->exp_area.experiments[current_exp_index];
 	name += type_name(current_type);
 	return name;
@@ -77,8 +77,8 @@ void PostProcessor::print_hist(void)
 void PostProcessor::print_hist(int ch, int exp_ind, Type type)
 {
 	std::string name = OUTPUT_DIR + (is_PMT_type(type) ? OUTPUT_PMT_PICS : OUTPUT_MPPCS_PICS) + g_data->exp_area.experiments[exp_ind]
-		+ "/" + (is_PMT_type(type) ? "PMT_" : "MPPC_") + std::to_string(ch)
-		+ "/" + (is_PMT_type(type) ? "PMT_" : "MPPC_") + std::to_string(ch)
+		+ "/" + (isMultichannel(type) ? (is_PMT_type(type) ? "PMT_" : "MPPC_") : ((is_PMT_type(type) ? "PMT_" : "MPPC_") + std::to_string(ch)
+		+ "/" + (is_PMT_type(type) ? "PMT_" : "MPPC_") + std::to_string(ch)) )
 		+ type_name(type)+".png";
 	current_canvas->SaveAs(name.c_str(), "png");
 }
@@ -478,7 +478,13 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation)
 //see function for std::vector<double> &vals usage in cuts' picker
 void PostProcessor::FillHist(void* p_hist)//considers cuts and histogram tipe (void*)==either TH1D* or TH2D*
 {
-	FunctionWrapper* histogram_filler = new FunctionWrapper(p_hist);
+	struct temp_data {
+		void* phist;
+		int ch_size;
+	} st_data;
+	st_data.phist = p_hist;
+	st_data.ch_size = MPPC_channels.size();
+	FunctionWrapper* histogram_filler = new FunctionWrapper(&st_data);
 	CUTTER filler_op;
 	switch (current_type)
 	{
@@ -493,7 +499,7 @@ void PostProcessor::FillHist(void* p_hist)//considers cuts and histogram tipe (v
 	case Type::PMT_Ss:
 	{
 		filler_op = [](std::vector<double>& pars, void* data) {
-			((TH1D*)data)->Fill(pars[0]);
+			((TH1D*)((temp_data*)data)->phist)->Fill(pars[0]);
 			return true;
 		};
 		break;
@@ -503,7 +509,7 @@ void PostProcessor::FillHist(void* p_hist)//considers cuts and histogram tipe (v
 	case Type::MPPC_t_S:
 	{
 		filler_op = [](std::vector<double>& pars, void* data) {
-			((TH2D*)data)->Fill(0.5*(pars[2]+pars[3]),pars[0]);
+			((TH2D*)((temp_data*)data)->phist)->Fill(0.5*(pars[2]+pars[3]),pars[0]);
 			return true;
 		};
 		break;
@@ -511,7 +517,7 @@ void PostProcessor::FillHist(void* p_hist)//considers cuts and histogram tipe (v
 	case Type::MPPC_coord:
 	{
 		filler_op = [](std::vector<double>& pars, void* data) {
-			((TH2D*)data)->Fill(pars[MPPC_channels.size()], pars[MPPC_channels.size()+1]);
+			((TH2D*)((temp_data*)data)->phist)->Fill(pars[((temp_data*)data)->ch_size], pars[((temp_data*)data)->ch_size+1]);
 			return true;
 		};
 		break;
@@ -519,7 +525,7 @@ void PostProcessor::FillHist(void* p_hist)//considers cuts and histogram tipe (v
 	case Type::MPPC_coord_x:
 	{
 		filler_op = [](std::vector<double>& pars, void* data) {
-			((TH1D*)data)->Fill(pars[MPPC_channels.size()]);
+			((TH1D*)((temp_data*)data)->phist)->Fill(pars[((temp_data*)data)->ch_size]);
 			return true;
 		};
 		break;
@@ -527,7 +533,7 @@ void PostProcessor::FillHist(void* p_hist)//considers cuts and histogram tipe (v
 	case Type::MPPC_coord_y:
 	{
 		filler_op = [](std::vector<double>& pars, void* data) {
-			((TH1D*)data)->Fill(pars[MPPC_channels.size()+1]);
+			((TH1D*)((temp_data*)data)->phist)->Fill(pars[((temp_data*)data)->ch_size+1]);
 			return true;
 		};
 		break;
@@ -536,7 +542,7 @@ void PostProcessor::FillHist(void* p_hist)//considers cuts and histogram tipe (v
 	case Type::MPPC_times:
 	{
 		filler_op = [](std::vector<double>& pars, void* data) {
-			((TH1D*)data)->Fill(0.5*(pars[2]+pars[3]),pars[0]);
+			((TH1D*)((temp_data*)data)->phist)->Fill(0.5*(pars[2]+pars[3]),pars[0]);
 			return true;
 		};
 		break;
@@ -566,14 +572,20 @@ int PostProcessor::numOfFills(void) //TODO: maybe for the case of filling histog
 std::pair<double, double> PostProcessor::hist_y_limits(void) //considering cuts
 {
 	std::pair<double,double> ret(DBL_MAX,-DBL_MAX);
+	struct temp_data {
+		std::pair<double,double>* mm;
+		int ch_size;
+	} st_data;
+	st_data.mm = &ret;
+	st_data.ch_size = MPPC_channels.size();
 	switch (current_type)
 	{
 	case Type::PMT_t_S:
 	case Type::MPPC_t_S:
 	{
-		FunctionWrapper* histogram_filler = new FunctionWrapper(&ret);
+		FunctionWrapper* histogram_filler = new FunctionWrapper(&st_data);
 		CUTTER filler_op = [](std::vector<double> &pars, void* data){
-			std::pair<double,double>* p = (std::pair<double,double>*)data;
+			std::pair<double,double>* p = ((temp_data*)data)->mm;
 			p->first = std::min(p->first, pars[0]);
 			p->second = std::max(p->second, pars[0]);
 			return true;
@@ -583,13 +595,13 @@ std::pair<double, double> PostProcessor::hist_y_limits(void) //considering cuts
 		delete histogram_filler;
 		break;
 	}
-	case Type::MPPC_t_S:
+	case Type::MPPC_coord:
 	{
-		FunctionWrapper* histogram_filler = new FunctionWrapper(&ret);
+		FunctionWrapper* histogram_filler = new FunctionWrapper(&st_data);
 		CUTTER filler_op = [](std::vector<double> &pars, void* data){
-			std::pair<double,double>* p = (std::pair<double,double>*)data;
-			p->first = std::min(p->first, pars[MPPC_channels.size()+1]);
-			p->second = std::max(p->second, pars[MPPC_channels.size()+1]);
+			std::pair<double,double>* p = ((temp_data*)data)->mm;
+			p->first = std::min(p->first, pars[((temp_data*)data)->ch_size+1]);
+			p->second = std::max(p->second, pars[((temp_data*)data)->ch_size+1]);
 			return true;
 		};
 		histogram_filler->SetFunction(filler_op);
@@ -606,7 +618,13 @@ std::pair<double, double> PostProcessor::hist_y_limits(void) //considering cuts
 std::pair<double, double> PostProcessor::hist_x_limits(void) //valid only for 2d plots
 {
 	std::pair<double, double> ret(DBL_MAX, -DBL_MAX);
-	FunctionWrapper* histogram_filler = new FunctionWrapper(&ret);
+	struct temp_data {
+		std::pair<double,double>* mm;
+		int ch_size;
+	} st_data;
+	st_data.mm = &ret;
+	st_data.ch_size = MPPC_channels.size();
+	FunctionWrapper* histogram_filler = new FunctionWrapper(&st_data);
 	CUTTER filler_op;
 	switch (current_type)
 	{
@@ -621,7 +639,7 @@ std::pair<double, double> PostProcessor::hist_x_limits(void) //valid only for 2d
 	case Type::PMT_Ss:
 	{
 		filler_op = [](std::vector<double>& pars, void* data) {
-			std::pair<double,double>* p = (std::pair<double,double>*)data;
+			std::pair<double,double>* p = ((temp_data*)data)->mm;
 			p->first = std::min(p->first, pars[0]);
 			p->second = std::max(p->second, pars[0]);
 			return true;
@@ -635,7 +653,7 @@ std::pair<double, double> PostProcessor::hist_x_limits(void) //valid only for 2d
 	case Type::MPPC_t_S:
 	{
 		filler_op = [](std::vector<double>& pars, void* data) {
-			std::pair<double,double>* p = (std::pair<double,double>*)data;
+			std::pair<double,double>* p = ((temp_data*)data)->mm;
 			p->first = std::min(p->first, 0.5*(pars[2]+pars[3]));
 			p->second = std::max(p->second, 0.5*(pars[2]+pars[3]));
 			return true;
@@ -646,9 +664,9 @@ std::pair<double, double> PostProcessor::hist_x_limits(void) //valid only for 2d
 	case Type::MPPC_coord:
 	{
 		filler_op = [](std::vector<double>& pars, void* data) {
-			std::pair<double,double>* p = (std::pair<double,double>*)data;
-			p->first = std::min(p->first, pars[MPPC_channels.size()]);
-			p->second = std::max(p->second, pars[MPPC_channels.size()]);
+			std::pair<double,double>* p = ((temp_data*)data)->mm;
+			p->first = std::min(p->first, pars[((temp_data*)data)->ch_size]);
+			p->second = std::max(p->second, pars[((temp_data*)data)->ch_size]);
 			return true;
 		};
 		break;
@@ -656,9 +674,9 @@ std::pair<double, double> PostProcessor::hist_x_limits(void) //valid only for 2d
 	case Type::MPPC_coord_y:
 	{
 		filler_op = [](std::vector<double>& pars, void* data) {
-			std::pair<double,double>* p = (std::pair<double,double>*)data;
-			p->first = std::min(p->first, pars[MPPC_channels.size()+1]);
-			p->second = std::max(p->second, pars[MPPC_channels.size()+1]);
+			std::pair<double,double>* p = ((temp_data*)data)->mm;
+			p->first = std::min(p->first, pars[((temp_data*)data)->ch_size+1]);
+			p->second = std::max(p->second, pars[((temp_data*)data)->ch_size+1]);
 			return true;
 		};
 		break;
@@ -917,6 +935,13 @@ void PostProcessor::update(UpdateState to_update)//TODO: optimize it?
 	current_canvas->cd();
 	current_canvas->SetTitle(hist_name().c_str());
 	current_canvas->Clear();
+	std::pair<double, double> x_lims = hist_x_limits();
+	current_setups->left_limit = x_lims.first;
+	current_setups->right_limit = x_lims.second;
+	if (current_setups->phys_hist_cuts.empty()) { //no drawn limit
+		current_setups->left_drawn_limit = x_lims.first;
+		current_setups->right_drawn_limit = x_lims.second;
+	}
 	if (to_update&UpdateState::Histogram){
 		if (is_TH1D_hist()){
 			if (current_hist1)
@@ -995,9 +1020,9 @@ void PostProcessor::update_Npe(void)
 				data->N_pe_result[exp][ch] = data->N_pe_direct[exp][ch];
 		}
 		if (!data->N_pe_PMT3.empty())
-			data->N_pe_PMT3[exp] = PMT3_avr_S2_S[exp] / calibr_info.getPMT_S1pe(0);
+			data->N_pe_PMT3[exp] = PMT3_avr_S2_S[exp] / calibr_info.getPMT_S1pe(0, exp);
 		if (!data->N_pe_PMT1.empty())
-			data->N_pe_PMT1[exp] = PMT1_avr_S2_S[exp] / calibr_info.getPMT_S1pe(1);
+			data->N_pe_PMT1[exp] = PMT1_avr_S2_S[exp] / calibr_info.getPMT_S1pe(1, exp);
 	}
 }
 
@@ -1041,7 +1066,7 @@ void PostProcessor::update_physical(void)
 		}
 		break;
 	}
-	case Type::MPPC_S2:	//TODO: Warning!: these two types overwrite each other
+	case Type::MPPC_S2:	//TODO: Warning!: these two types (MPPC_S2 and MPPC_S2_S) overwrite each other
 	{
 		if (current_setups->N_gauss>0 && current_setups->fitted)
 			avr_S2_S[current_exp_index][mppc_channel_to_index(current_channel)] = current_setups->par_val[1];
@@ -1133,7 +1158,7 @@ void PostProcessor::update_physical(void)
 				if (0==weight)
 					std::cout << "Warning! No mean S2 value for " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
 				else
-									avr_S2_S[current_exp_index][mppc_channel_to_index(current_channel)] = val/weight;
+					avr_S2_S[current_exp_index][mppc_channel_to_index(current_channel)] = val/weight;
 			} else
 				std::cout << "Warning! No S2 area for " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
 		}
@@ -1142,8 +1167,10 @@ void PostProcessor::update_physical(void)
 	case Type::MPPC_Ss:
 	{
 		CalibrationInfo::S1pe_method meth = calibr_info.get_method(current_exp_index, current_channel);
-		if (meth == CalibrationInfo::Ignore)
+		if (meth == CalibrationInfo::Ignore){
+			calibr_info.calculateS1pe(current_channel);
 			break;
+		}
 		if (meth == CalibrationInfo::UsingMean){
 			double val = 0;
 			int weight = 0;
@@ -1178,6 +1205,7 @@ void PostProcessor::update_physical(void)
 				std::cout << "Warning! No mean calibration Ss value for " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
 			else
 				calibr_info.set_S1pe(current_channel, current_exp_index, val / (double)weight);
+			calibr_info.calculateS1pe(current_channel);
 			break;
 		}
 		if (meth == CalibrationInfo::Using1pe || meth == CalibrationInfo::Using1pe2pe){
@@ -1194,6 +1222,7 @@ void PostProcessor::update_physical(void)
 				std::cout << "Warning! No calibration S2pe value for  " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
 			}
 		}
+		calibr_info.calculateS1pe(current_channel);
 		break;
 	}
 	case Type::PMT_S2_S:
@@ -1243,7 +1272,7 @@ void PostProcessor::update_fit_function(void)
 	current_fit_func = create_fit_function(current_setups);
 }
 
-void PostProcessor::add_hist_cut(FunctionWrapper* picker, std::string name)
+void PostProcessor::add_hist_cut(FunctionWrapper* picker, std::string name, bool do_update)
 {
 	if (!isValid()){
 		std::cout << "Wrong input data: no channels or experiments from AnalysisManager" << std::endl;
@@ -1257,17 +1286,11 @@ void PostProcessor::add_hist_cut(FunctionWrapper* picker, std::string name)
 	current_setups->display_hist_cuts.push_back(EventCut(0, EventCut::HistCut, name));
 	current_setups->display_hist_cuts.back().SetPicker(picker);
 	current_setups->display_hist_cuts.back().SetChannel(current_channel);
-	std::pair<double, double> x_lims = hist_x_limits();
-	current_setups->left_limit = x_lims.first;
-	current_setups->right_limit = x_lims.second;
-	if (current_setups->phys_hist_cuts.empty()) { //no drawn limit
-		current_setups->left_drawn_limit = x_lims.first;
-		current_setups->right_drawn_limit = x_lims.second;
-	}
-	update(All);
+	if (do_update)
+		update(All);
 }
 
-void PostProcessor::add_hist_cut(FunctionWrapper* picker, std::string name, int channel)
+void PostProcessor::add_hist_cut(FunctionWrapper* picker, std::string name, int channel, bool do_update)
 {
 	if (!isValid()){
 		std::cout << "Wrong input data: no channels or experiments from AnalysisManager" << std::endl;
@@ -1281,17 +1304,11 @@ void PostProcessor::add_hist_cut(FunctionWrapper* picker, std::string name, int 
 	current_setups->display_hist_cuts.push_back(EventCut(0, EventCut::HistCut, name));
 	current_setups->display_hist_cuts.back().SetPicker(picker);
 	current_setups->display_hist_cuts.back().SetChannel(channel);
-	std::pair<double, double> x_lims = hist_x_limits();
-	current_setups->left_limit = x_lims.first;
-	current_setups->right_limit = x_lims.second;
-	if (current_setups->phys_hist_cuts.empty()) { //no drawn limit
-		current_setups->left_drawn_limit = x_lims.first;
-		current_setups->right_drawn_limit = x_lims.second;
-	}
-	update(All);
+	if (do_update)
+		update(All);
 }
 
-void PostProcessor::remove_hist_cut(std::string name)
+void PostProcessor::remove_hist_cut(std::string name, bool do_update)
 {
 	if (!isValid()){
 		std::cout << "Wrong input data: no channels or experiments from AnalysisManager" << std::endl;
@@ -1300,22 +1317,15 @@ void PostProcessor::remove_hist_cut(std::string name)
 	for (auto i = current_setups->display_hist_cuts.rbegin(); i != current_setups->display_hist_cuts.rend(); ++i){
 		if (i->GetName() == name){
 			current_setups->display_hist_cuts.erase(i.base());
-			std::pair<double, double> x_lims = hist_x_limits();
-			current_setups->left_limit = x_lims.first;
-			current_setups->right_limit = x_lims.second;
-			update(All);
+			if (do_update)
+				update(All);
 			return;
 		}
 	}
-	if (!current_setups->display_hist_cuts.empty()) //in case not found by name
-		current_setups->display_hist_cuts.erase(current_setups->display_hist_cuts.end()-1);
-	std::pair<double, double> x_lims = hist_x_limits();
-	current_setups->left_limit = x_lims.first;
-	current_setups->right_limit = x_lims.second;
-	update(All);
+	std::cout<<"Cut '"<<name<<"' not found"<<std::endl;
 }
 
-void PostProcessor::remove_hist_cut(std::string name, int ch)
+void PostProcessor::remove_hist_cut(std::string name, int ch, bool do_update)
 {
 	if (!isValid()){
 		std::cout << "Wrong input data: no channels or experiments from AnalysisManager" << std::endl;
@@ -1324,19 +1334,11 @@ void PostProcessor::remove_hist_cut(std::string name, int ch)
 	for (auto i = current_setups->display_hist_cuts.rbegin(); i != current_setups->display_hist_cuts.rend(); ++i){
 		if ((i->GetName() == name)&&(i->GetChannel()==ch)){
 			current_setups->display_hist_cuts.erase(i.base());
-			std::pair<double, double> x_lims = hist_x_limits();
-			current_setups->left_limit = x_lims.first;
-			current_setups->right_limit = x_lims.second;
-			update(All);
+			if (do_update)
+				update(All);
 			return;
 		}
 	}
-	if (!current_setups->display_hist_cuts.empty()) //in case not found by name
-		current_setups->display_hist_cuts.erase(current_setups->display_hist_cuts.end()-1);
-	std::pair<double, double> x_lims = hist_x_limits();
-	current_setups->left_limit = x_lims.first;
-	current_setups->right_limit = x_lims.second;
-	update(All);
 }
 
 void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits in HistogramSetups to runs cut (from current exp, channel and type)
@@ -1713,18 +1715,27 @@ void PostProcessor::set_limits(double left, double right)
 		for (auto i = current_setups->display_hist_cuts.rbegin(); i != current_setups->display_hist_cuts.rend(); ++i)
 			if (i->GetName() == name){
 				current_setups->display_hist_cuts.erase(i.base());
-				break;
+				goto anew;
 			}
 		break;
+		anew:;
 	}
 	double _left = std::min(left, right);
 	double _right = std::max(left, right);
 	
-	FunctionWrapper *picker = new FunctionWrapper(new std::pair<double, double>(_left, _right));
+	struct temp_data {
+		std::pair<double,double> mm;
+		int ch_size;
+	};
+	temp_data * st_data = new temp_data;
+	st_data->mm = std::pair<double, double>(_left, _right);
+	st_data->ch_size = MPPC_channels.size();
+
+	FunctionWrapper *picker = new FunctionWrapper(st_data);
 	if ((current_type == Type::MPPC_coord)||(current_type == Type::MPPC_coord_x)) {
 		picker->SetFunction(
 		[](std::vector<double> &vals, void* data) {
-			return ((vals[MPPC_channels.size()] <= ((std::pair<double, double>*)data)->second) && (vals[MPPC_channels.size()] >= ((std::pair<double, double>*)data)->first));
+			return ((vals[((temp_data*)data)->ch_size] <= ((temp_data*)data)->mm.second) && (vals[((temp_data*)data)->ch_size] >= ((temp_data*)data)->mm.first));
 		});
 		add_hist_cut(picker, name, -1);
 		current_setups->left_limit = _left;
@@ -1739,7 +1750,7 @@ void PostProcessor::set_limits(double left, double right)
 	if (current_type == Type::MPPC_coord_y) {
 		picker->SetFunction(
 		[](std::vector<double> &vals, void* data) {
-			return ((vals[MPPC_channels.size()+1] <= ((std::pair<double, double>*)data)->second) && (vals[MPPC_channels.size()+1] >= ((std::pair<double, double>*)data)->first));
+			return ((vals[((temp_data*)data)->ch_size+1] <= ((temp_data*)data)->mm.second) && (vals[((temp_data*)data)->ch_size+1] >= ((temp_data*)data)->mm.first));
 		});
 		add_hist_cut(picker, name, -1);
 		current_setups->left_limit = _left;
@@ -1756,7 +1767,7 @@ void PostProcessor::set_limits(double left, double right)
 		picker->SetFunction(
 		[](std::vector<double> &vals, void* data) {
 			if ((vals[1] == -2) && (vals[2] == -2) && (vals[3] == -2) && (vals[4] == -2))
-				return ((vals[0] <= ((std::pair<double, double>*)data)->second) && (vals[0] >= ((std::pair<double, double>*)data)->first));//S2 value selection (derived from accepted peaks)
+				return ((vals[0] <= ((temp_data*)data)->mm.second) && (vals[0] >= ((temp_data*)data)->mm.first));//S2 value selection (derived from accepted peaks)
 			else
 				return kTRUE;//individual peak selection
 		});
@@ -1765,21 +1776,21 @@ void PostProcessor::set_limits(double left, double right)
 		if (current_type == Type::MPPC_times||current_type == Type::PMT_times||current_type==Type::MPPC_sum_ts){
 			picker->SetFunction(
 				[](std::vector<double> &vals, void* data) {
-					return ((0.5*(vals[2]+vals[3]) <= ((std::pair<double, double>*)data)->second) && (0.5*(vals[2]+vals[3]) >= ((std::pair<double, double>*)data)->first));
+					return ((0.5*(vals[2]+vals[3]) <= ((temp_data*)data)->mm.second) && (0.5*(vals[2]+vals[3]) >= ((temp_data*)data)->mm.first));
 			});
 		} else {
 			picker->SetFunction(
 				[](std::vector<double> &vals, void* data) {
-					return ((vals[0] <= ((std::pair<double, double>*)data)->second) && (vals[0] >= ((std::pair<double, double>*)data)->first));
+					return ((vals[0] <=((temp_data*)data)->mm.second) && (vals[0] >= ((temp_data*)data)->mm.first));
 			});
 		}
 	}
 
 	if (isMultichannel(current_type)){
 		for (int chi=0;chi!=MPPC_channels.size();++chi)
-			add_hist_cut(picker, name, MPPC_channels[chi]);
+			add_hist_cut(picker, name, MPPC_channels[chi], false);
 	} else
-		add_hist_cut(picker, name);
+		add_hist_cut(picker, name, false);
 	current_setups->left_limit = _left;
 	current_setups->right_limit = _right;
 	if (current_setups->phys_hist_cuts.empty()) { //no drawn limit
@@ -1808,11 +1819,20 @@ void PostProcessor::set_drawn_limits(double left, double right)
 
 	double _left = std::min(left, right);
 	double _right = std::max(left, right);
-	FunctionWrapper *picker = new FunctionWrapper(new std::pair<double, double>(_left, _right));
+
+	struct temp_data {
+		std::pair<double,double> mm;
+		int ch_size;
+	};
+	temp_data* st_data = new temp_data;
+	st_data->mm = std::pair<double, double>(_left, _right);
+	st_data->ch_size = MPPC_channels.size();
+
+	FunctionWrapper *picker = new FunctionWrapper(st_data);
 	if ((current_type == Type::MPPC_coord)||(current_type == Type::MPPC_coord_x)) {
 		picker->SetFunction(
 		[](std::vector<double> &vals, void* data) {
-			return ((vals[MPPC_channels.size()] <= ((std::pair<double, double>*)data)->second) && (vals[MPPC_channels.size()] >= ((std::pair<double, double>*)data)->first));
+			return ((vals[((temp_data*)data)->ch_size] <= ((temp_data*)data)->mm.second) && (vals[((temp_data*)data)->ch_size] >= ((temp_data*)data)->mm.first));
 		});
 		current_setups->phys_hist_cuts.push_back(EventCut(0, EventCut::HistCut, name));
 		current_setups->phys_hist_cuts.back().SetPicker(picker);
@@ -1825,7 +1845,7 @@ void PostProcessor::set_drawn_limits(double left, double right)
 	if (current_type == Type::MPPC_coord_y) {
 		picker->SetFunction(
 		[](std::vector<double> &vals, void* data) {
-			return ((vals[MPPC_channels.size()+1] <= ((std::pair<double, double>*)data)->second) && (vals[MPPC_channels.size()+1] >= ((std::pair<double, double>*)data)->first));
+			return ((vals[((temp_data*)data)->ch_size+1] <= ((temp_data*)data)->mm.second) && (vals[((temp_data*)data)->ch_size+1] >= ((temp_data*)data)->mm.first));
 		});
 		current_setups->phys_hist_cuts.push_back(EventCut(0, EventCut::HistCut, name));
 		current_setups->phys_hist_cuts.back().SetPicker(picker);
@@ -1840,7 +1860,7 @@ void PostProcessor::set_drawn_limits(double left, double right)
 		picker->SetFunction(
 			[](std::vector<double> &vals, void* data) {
 			if ((vals[1] == -2) && (vals[2] == -2) && (vals[3] == -2) && (vals[4] == -2))
-				return ((vals[0] <= ((std::pair<double, double>*)data)->second) && (vals[0] >= ((std::pair<double, double>*)data)->first));//S2 value selection (derived from accepted peaks)
+				return ((vals[0] <= ((temp_data*)data)->mm.second) && (vals[0] >= ((temp_data*)data)->mm.first));//S2 value selection (derived from accepted peaks)
 			else
 				return kTRUE;//individual peak selection
 		});
@@ -1849,12 +1869,12 @@ void PostProcessor::set_drawn_limits(double left, double right)
 		if (current_type == Type::MPPC_times||current_type == Type::PMT_times||current_type == Type::MPPC_sum_ts){
 			picker->SetFunction(
 				[](std::vector<double> &vals, void* data) {
-					return ((0.5*(vals[2]+vals[3]) <= ((std::pair<double, double>*)data)->second) && (0.5*(vals[2]+vals[3]) >= ((std::pair<double, double>*)data)->first));
+					return ((0.5*(vals[2]+vals[3]) <= ((temp_data*)data)->mm.second) && (0.5*(vals[2]+vals[3]) >= ((temp_data*)data)->mm.first));
 			});
 		} else {
 			picker->SetFunction(
 				[](std::vector<double> &vals, void* data) {
-					return ((vals[0] <= ((std::pair<double, double>*)data)->second) && (vals[0] >= ((std::pair<double, double>*)data)->first));
+					return ((vals[0] <= ((temp_data*)data)->mm.second) && (vals[0] >= ((temp_data*)data)->mm.first));
 			});
 		}
 	}

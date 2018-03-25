@@ -65,7 +65,7 @@ void AnalysisManager::processOneRun_first_iteration(AllRunsResults *_all_results
 		one_run_results.pop_back();
 		one_run_data.pop_back();
 	} else {
-		std::cout<<"processed: "<< current_under_processing.experiments.back() << "_run_" << current_under_processing.runs.back() << "_sub_"
+		std::cout<<"processed"<<_all_results->Iteration()<<": "<< current_under_processing.experiments.back() << "_run_" << current_under_processing.runs.back() << "_sub_"
 					<< current_under_processing.sub_runs.back() << std::endl;
 	}
 }

@@ -10,7 +10,7 @@ AllRunsResults::AllRunsResults(/*ParameterPile::*/experiment_area experiment)
 		for (int ch = _exp.channels.get_next_index(); ch != -1; ch = _exp.channels.get_next_index()){
 			if ((ch<32)&&(ch!=2)) {
 				std::string prefix = DATA_PREFIX + DATA_PMT_VERSION + "/PMT_" + *ex + "/PMT_"+std::to_string(ch)+"/PMT_"+std::to_string(ch)+"_";
-				mppc_channels.push_back(ch);
+				pmt_channels.push_back(ch);
 				pmt_peaks.push_back(std::deque<std::deque<peak>>());
 				vector_from_file(pmt_peaks.back(), prefix + "peaks.dat");
 				if (pmt_peaks.back().empty()){

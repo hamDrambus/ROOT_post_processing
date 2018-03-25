@@ -4,8 +4,6 @@
 CalibrationInfo::CalibrationInfo(AnalysisStates* data):
 state_info(data)
 {
-	s1pe_PMT3 = 1;//TODO: ParameterPile (need to ask the real values from Vlad)
-	s1pe_PMT1 = 1;
 	for (auto i = state_info->experiments.begin(); i != state_info->experiments.end(); ++i) {
 		avr_S1pe.push_back(std::deque<double>());
 		avr_S2pe.push_back(std::deque<double>());
@@ -21,6 +19,7 @@ state_info(data)
 		forced_s1pe.push_back(kFALSE);
 		N_used_in_calibration.push_back(/*ParameterPile::*/calibaration_points);
 	}
+	Load();
 }
 
 double CalibrationInfo::calculateS1pe(int channel)
@@ -55,7 +54,10 @@ double CalibrationInfo::calculateS1pe(int channel)
 
 double CalibrationInfo::getS1pe(int channel)
 {
-	return calculateS1pe(channel);
+	int ch_ind = state_info->mppc_channel_to_index(channel);
+	if (ch_ind < 0)
+		return -1;
+	return s1pe[ch_ind];
 }
 void CalibrationInfo::setS1pe(int channel, double val)
 {
@@ -284,35 +286,114 @@ void CalibrationInfo::read_file(std::vector<std::pair<int/*ch*/, std::string> > 
 	std::ifstream str;
 	str.open(OUTPUT_DIR + CALIBRATION_FILE);
 	int ch = 0;
-	double val = 0;
+	std::string val;
 	while (str.is_open() && str.good() && !str.eof()) {
 		str >> ch;
-		str >> val;
-		if (str.good() && !str.eof()){
-			current_list.push_back(std::pair<int, double>(ch, val));
-		}
+		std::getline(str,val);
+		current_list.push_back(std::pair<int, std::string>(ch, val));
 	}
 	str.close();
 }
 void CalibrationInfo::extract_PMT_info (std::vector<std::pair<int/*ch*/, std::string> > &current_list, PMT_info_ &PMT_table)
 {
-
+	for (int i=0,_end_ = current_list.size();i!=_end_;++i){
+		if (current_list[i].first<32) {//PMT channels
+			std::vector<std::pair<double,double> > ch_info;
+			double V, s1pe;
+			std::stringstream info(current_list[i].second);
+			while (!info.eof()&&info.good()){ //TODO: add validations of double format (throw error if string is present instead of numbers)
+				info>>V;
+				if (info.eof()&&!info.good()){
+					std::cout<<"Warning: ch "<<current_list[i].first<<" wrong PMT calibration table"<<std::endl;
+					continue;
+				}
+				info>>s1pe;
+				ch_info.push_back(std::pair<double, double>(V, s1pe));
+			}
+			if (ch_info.size()>0)
+				PMT_table.push_back(std::pair<int,std::vector<std::pair<double,double> > >(current_list[i].first, ch_info));
+		}
+	}
 }
 void CalibrationInfo::extract_MPPC_info (std::vector<std::pair<int/*ch*/, std::string> > &current_list, MPPC_info_ &MPPC_table)
 {
-
+	for (int i=0,_end_ = current_list.size();i!=_end_;++i) {
+		if (current_list[i].first>=32) {//MPPC channels
+			double _s1pe;
+			int num=0;
+			std::stringstream info(current_list[i].second);
+			while (!info.eof()&&info.good()){ //TODO: add validations of double format (throw error if string is present instead of numbers)
+				info>>_s1pe;
+				++num;
+				MPPC_table.push_back(std::pair<double, double>(current_list[i].first, _s1pe));
+				if (info.good()){
+					std::cout<<"Warning: ch "<<current_list[i].first<<" wrong SiPM calibration: more than 1 value present"<<std::endl;
+				}
+				break;
+			}
+		}
+	}
 }
 void CalibrationInfo::add_to_PMT_info (PMT_info_& table, int ch, double V, double S1pe) //preserves sorting, updates if necessary
 {
-
+	for (int chi = 0, _end_chi = table.size(); chi!=_end_chi; ++chi) {
+		if (table[chi].first==ch) { //modify, table[i].second is supposed to be not empty.
+			for (int i = 0, _end_ = table[chi].second.size(); i!=_end_; ++i) {
+				if (table[chi].second[i].first==V) {
+					table[chi].second[i].second = S1pe;
+					return;
+				}
+				if ((V<table[chi].second[i].first) && ((0==i) ? true : (table[chi].second[i-1].first<ch))) {
+					table[chi].second.insert(table[chi].second.begin()+i, std::pair<double, double >(V,S1pe));
+					return;
+				}
+			}
+			table[chi].second.insert(table[chi].second.end(), std::pair<double, double >(V,S1pe));
+		}
+		if ((ch<table[chi].first) && ((0==chi) ? true : (table[chi-1].first<ch))) {//insert
+			std::vector<std::pair<double, double> > temp;
+			temp.push_back(std::pair<double, double >(V,S1pe));
+			std::pair<int, std::vector<std::pair<double, double> > > temp2(ch, temp);
+			table.insert(table.begin()+chi, temp2);
+			return;
+		}
+	}
+	std::vector<std::pair<double, double> > temp;
+	temp.push_back(std::pair<double, double >(V,S1pe));
+	std::pair<int, std::vector<std::pair<double, double> > > temp2(ch, temp);
+	table.insert(table.end(), temp2);
 }
 void CalibrationInfo::add_to_MPPC_info (MPPC_info_& table, int ch, double S1pe)         //preserves sorting, updates if necessary
 {
-
+	for (int chi = 0, _end_chi = table.size(); chi!=_end_chi; ++chi) {
+		if (table[chi].first==ch) { //modify, table[i].second is supposed to be not empty.
+			table[chi].second = S1pe;
+			return;
+		}
+		if ((ch<table[chi].first) && ((0==chi) ? true : (table[chi-1].first<ch))) {//insert
+			table.insert(table.begin()+chi,std::pair<int, double>(ch,S1pe));
+			return;
+		}
+	}
+	table.insert(table.end(),std::pair<int, double>(ch,S1pe));
 }
 void CalibrationInfo::write_to_file (PMT_info_& PMT_table, MPPC_info_& MPPC_table)
 {
-
+	std::ofstream str;
+	open_output_file(OUTPUT_DIR + CALIBRATION_FILE,str);
+	if (str.is_open()){
+		for (int chi = 0, _end_chi = PMT_table.size(); chi!=_end_chi; ++chi) {
+			str<<PMT_table[chi].first<<"\t";
+			for (int i = 0, _end_ = PMT_table[chi].second.size(); i!=_end_; ++i) {
+				str<<PMT_table[chi].second[i].first<<"\t"<<PMT_table[chi].second[i].second<<"\t";
+			}
+			str<<std::endl;
+		}
+		for (int chi = 0, _end_chi = MPPC_table.size(); chi!=_end_chi; ++chi) {
+			str<<MPPC_table[chi].first<<"\t"<<MPPC_table[chi].second<<std::endl;
+		}
+	}
+	str.close();
 }
 
 void CalibrationInfo::Save(void) //TODO: this function does not work on empty file (empty list_)

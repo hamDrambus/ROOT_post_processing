@@ -10,7 +10,7 @@
 class AnalysisStates {
 public:
 	enum Type {
-		MPPC_Ss, MPPC_tfinal, MPPC_tstart, MPPC_tboth, MPPC_Double_I, MPPC_S2_S, MPPC_t_S, MPPC_times, MPPC_sum_ts, MPPC_coord, MPPC_coord_x, MPPC_coord_y, MPPC_S2,
+		MPPC_Ss, MPPC_t_S, MPPC_Double_I, MPPC_S2_S, MPPC_times, MPPC_sum_ts, MPPC_coord, MPPC_coord_x, MPPC_coord_y, MPPC_S2, MPPC_tfinal, MPPC_tstart, MPPC_tboth,
 		PMT_S2_S, PMT_Ss, PMT_t_S, PMT_times};
 protected:
 	const Type _first_state;

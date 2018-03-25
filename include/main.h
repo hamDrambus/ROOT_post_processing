@@ -40,10 +40,10 @@ void use_mean(Bool_t do_use = kTRUE); //uses mean value of data instead of gauss
 void set_N_bin(int n);
 void Exit(Bool_t save = kTRUE);
 
-void add_hist_cut(FunctionWrapper *picker, std::string name = "");
-void add_hist_cut(FunctionWrapper *picker, std::string name, int ch);
-void remove_hist_cut(std::string name = "");
-void remove_hist_cut(std::string name, int ch);
+void add_hist_cut(FunctionWrapper *picker, std::string name, bool update);
+void add_hist_cut(FunctionWrapper *picker, std::string name, int ch, bool update);
+void remove_hist_cut(std::string name, bool update);
+void remove_hist_cut(std::string name, int ch, bool update);
 void set_as_run_cut(std::string name = "");
 void unset_as_run_cut(std::string name = "");
 

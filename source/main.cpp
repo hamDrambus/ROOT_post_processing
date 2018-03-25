@@ -324,37 +324,37 @@ void Exit(Bool_t save) //TODO: add deletions
 		post_processor->save_all();
 }
 
-void add_hist_cut(FunctionWrapper *picker, std::string name)
+void add_hist_cut(FunctionWrapper *picker, std::string name, bool update)
 {
 	if (NULL == g_data){
 		state(kFALSE);
 		return;
 	}
-	post_processor->add_hist_cut(picker, name);
+	post_processor->add_hist_cut(picker, name, update);
 }
-void add_hist_cut(FunctionWrapper *picker, std::string name, int ch)
+void add_hist_cut(FunctionWrapper *picker, std::string name, int ch, bool update)
 {
 	if (NULL == g_data){
 		state(kFALSE);
 		return;
 	}
-	post_processor->add_hist_cut(picker, name, ch);
+	post_processor->add_hist_cut(picker, name, ch, update);
 }
-void remove_hist_cut(std::string name)
+void remove_hist_cut(std::string name, bool update)
 {
 	if (NULL == g_data){
 		state(kFALSE);
 		return;
 	}
-	post_processor->remove_hist_cut(name);
+	post_processor->remove_hist_cut(name, update);
 }
-void remove_hist_cut(std::string name, int ch)
+void remove_hist_cut(std::string name, int ch, bool update)
 {
 	if (NULL == g_data){
 		state(kFALSE);
 		return;
 	}
-	post_processor->remove_hist_cut(name, ch);
+	post_processor->remove_hist_cut(name, ch, update);
 }
 
 void set_as_run_cut(std::string name)

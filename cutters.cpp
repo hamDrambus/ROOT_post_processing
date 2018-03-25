@@ -1,3 +1,6 @@
+std::vector<std::vector<double> > S_T_to_exclude; //per chanell, fill via S-t distribution in "S_t_cuts.cpp"
+std::vector<double> S_thresholds;
+
 bool Picker_S (std::vector<double> &pars, void* stat_data){
     return pars[0]>=(*(double*)stat_data);
 }
@@ -16,3 +19,32 @@ bool Picker_S2_t (std::vector<double> &pars, void* stat_data){
   else  
     return (pars[3]>=((std::pair<double,double>*)stat_data)->first)&&(pars[4]<=((std::pair<double,double>*)stat_data)->second);
 } 
+
+bool Picker_S_T_exclude (std::vector<double> &pars, void* stat_data) {
+  std::vector<double> *exl_region = (std::vector<double> *) stat_data;
+  //{t_min0, t_max0, S_min0, S_max0, t_min1, t_max1 ...}
+  if (0!=(exl_region->size()%4))
+    return true;
+  double time = 0.5*(pars[2] + pars[3]);
+  for (int i=0, _end_=exl_region->size()/4;i!=_end_;++i){
+    if ((time>=(*exl_region)[4*i])&&(time<=(*exl_region)[4*i+1])&&(pars[0]>=(*exl_region)[4*i+2])&&(pars[0]<=(*exl_region)[4*i+3]))
+      return false;
+  }
+  return true;
+}
+
+void apply_S_t_cut (bool do_update=true) {
+  int ch_ind = post_processor->mppc_channel_to_index(post_processor->current_channel);
+  FunctionWrapper* cutter_S_T = new FunctionWrapper(&(S_T_to_exclude[ch_ind]));
+  cutter_S_T->SetFunction(&Picker_S_T_exclude);
+  remove_hist_cut("S_T_exclude", false);
+  add_hist_cut(cutter_S_T, "S_T_exclude", do_update);
+}
+
+void apply_S_t_cut (int ch, bool do_update = true) {
+  int ch_ind = post_processor->mppc_channel_to_index(ch);
+  FunctionWrapper* cutter_S_T = new FunctionWrapper(&(S_T_to_exclude[ch_ind]));
+  cutter_S_T->SetFunction(&Picker_S_T_exclude);
+  remove_hist_cut("S_T_exclude", ch, false);
+  add_hist_cut(cutter_S_T, "S_T_exclude", ch, do_update);
+}

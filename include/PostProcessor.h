@@ -100,10 +100,10 @@ public:
 	void plot_N_pe(int ch, GraphicOutputManager* gr_man);
 
 	//~done: will be done to the fullest from root macros. Then can add code from there. TO DO: add several default cuts (e.g. from left/right limit)
-	void add_hist_cut(FunctionWrapper *picker, std::string name = "");
-	void add_hist_cut(FunctionWrapper* picker, std::string name, int channel);
-	void remove_hist_cut(std::string name = "");
-	void remove_hist_cut(std::string name, int ch);
+	void add_hist_cut(FunctionWrapper *picker, std::string name = "", bool update = true);
+	void add_hist_cut(FunctionWrapper* picker, std::string name, int channel, bool update = true);
+	void remove_hist_cut(std::string name = "", bool update = true);
+	void remove_hist_cut(std::string name, int ch, bool update = true);
 	void set_as_run_cut(std::string name = "");//adds current drawn_limits in HistogramSetups to runs cut (from current exp, channel and type)
 	void unset_as_run_cut(std::string name = "");//deletes current exp,ch and type from current cuts (if present) deletes from back, that is
 	//if a single exp,ch,type produces several EventCuts, unset must be called respective amount of times
