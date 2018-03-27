@@ -79,15 +79,19 @@ void CalibrationInfo::unsetS1pe(int ch)
 
 double CalibrationInfo::getPMT_S1pe(int ch, int exp_ind)
 {
+	double ratio = 1;
+	if (PMT_dB.find(state_info->experiments[exp_ind])!=PMT_dB.end()){
+		ratio = PMT_dB.find(state_info->experiments[exp_ind])->second;
+	}
 	if (PMT_V.find(state_info->experiments[exp_ind])!=PMT_V.end()){
 		double V = PMT_V.find(state_info->experiments[exp_ind])->second;
 		if (0==ch){
 			if (s1pe_PMT3.find(V)!=s1pe_PMT3.end()) {
-				return s1pe_PMT3.find(V)->second;
+				return (s1pe_PMT3.find(V)->second)/ratio;
 			}
 		} else { //1==ch
 			if (s1pe_PMT1.find(V)!=s1pe_PMT1.end()) {
-				return s1pe_PMT1.find(V)->second;
+				return (s1pe_PMT1.find(V)->second)/ratio;
 			}
 		}
 	}

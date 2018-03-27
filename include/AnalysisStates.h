@@ -10,8 +10,8 @@
 class AnalysisStates {
 public:
 	enum Type {
-		MPPC_Ss, MPPC_t_S, MPPC_Double_I, MPPC_S2_S, MPPC_times, MPPC_sum_ts, MPPC_coord, MPPC_coord_x, MPPC_coord_y, MPPC_S2, MPPC_tfinal, MPPC_tstart, MPPC_tboth,
-		PMT_S2_S, PMT_Ss, PMT_t_S, PMT_times};
+		MPPC_Ss, MPPC_t_S, MPPC_Double_I, MPPC_S2_S, MPPC_times, MPPC_sum_ts, MPPC_coord, MPPC_coord_x, MPPC_coord_y, MPPC_Npe_sum, MPPC_S2, MPPC_tfinal, MPPC_tstart, MPPC_tboth,
+		PMT_S2_S, PMT_S2_int, PMT_Ss, PMT_t_S, PMT_times};
 protected:
 	const Type _first_state;
 	const Type _last_state;
@@ -20,6 +20,7 @@ protected:
 	virtual Bool_t StateChange(int to_ch, int to_exp, Type to_type, int from_ch, int from_exp, Type from_type,Bool_t save);
 	Bool_t is_PMT_type(Type type);
 	int channel_to_index(int ch);
+	int channel_to_index(int ch, Type type);
 public:
 	int mppc_channel_to_index(int ch);
 	int pmt_channel_to_index(int ch);
@@ -33,6 +34,7 @@ public:
 	AnalysisStates(std::deque<int> &mppc_channsels_, std::deque<int> &pmt_channsels_, std::deque<std::string>& experiments_);
 	Bool_t NextType(Bool_t save = kTRUE);
 	Bool_t PrevType(Bool_t save = kTRUE);
+	bool GotoT(Type to_type, bool save = true);
 	Bool_t NextCh(Bool_t save = kTRUE);
 	Bool_t PrevCh(Bool_t save = kTRUE);
 	Bool_t NextExp(Bool_t save = kTRUE);

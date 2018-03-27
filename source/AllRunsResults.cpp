@@ -12,10 +12,13 @@ AllRunsResults::AllRunsResults(/*ParameterPile::*/experiment_area experiment)
 				std::string prefix = DATA_PREFIX + DATA_PMT_VERSION + "/PMT_" + *ex + "/PMT_"+std::to_string(ch)+"/PMT_"+std::to_string(ch)+"_";
 				pmt_channels.push_back(ch);
 				pmt_peaks.push_back(std::deque<std::deque<peak>>());
+				pmt_S2_integral.push_back(std::vector<double>());
 				vector_from_file(pmt_peaks.back(), prefix + "peaks.dat");
-				if (pmt_peaks.back().empty()){
+				vector_from_file(pmt_S2_integral.back(), prefix + "S2_int.dat");
+				if (pmt_peaks.back().empty()||pmt_S2_integral.back().empty()){
 					pmt_channels.pop_back();
 					pmt_peaks.pop_back();
+					pmt_S2_integral.pop_back();
 				} else {
 					std::cout << "Loaded channel " << ch << std::endl;
 				}
@@ -278,6 +281,7 @@ void AllRunsResults::vector_from_file(std::deque<std::deque<peak>> &pks, std::st
 				str.read((char*)&pk.right, sizeof(double));
 				str.read((char*)&pk.S, sizeof(double));
 				str.read((char*)&pk.A, sizeof(double));
+				str.read((char*)&pk.t, sizeof(double));
 				pks.back().push_back(pk);
 				++counter;
 			}

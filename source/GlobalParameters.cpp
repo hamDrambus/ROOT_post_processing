@@ -8,7 +8,7 @@
 
 //TODO: some functions must be moved to PostProcessor class. (then I won't need the std::vector<double>* get_data methods)
 
-peak::peak() : right(-1), left(-1), S(-1), A(-1)
+peak::peak() : right(-1), left(-1), S(-1), A(-1), t(-1)
 {}
 
 GraphicOutputManager *gr_manager = NULL;
@@ -110,6 +110,7 @@ void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> 
 
 	std::map < std::string, double > experiment_fields;
 	std::map < std::string, double > PMT_V;
+	std::map < std::string, double > PMT_dB;
 	std::pair<int, int> calibaration_points;
 	std::map < int, std::pair<double,double> > MPPC_coords;
 
@@ -143,6 +144,10 @@ void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> 
 		PMT_V["13kV_SiPM_46V_xray_240Hz"] = 700;
 		PMT_V["14kV_SiPM_46V_xray_240Hz"] = 700;
 		PMT_V["15kV_SiPM_46V_xray_240Hz_PMT_700V_6dB"] = 700;
+		PMT_V["Cd_20kV_PMT750_12dB_coll_2mm_real"] = 750;
+		PMT_V["x_ray_20kV_PMT550_0dB_coll_2mm"] = 550;
+
+		PMT_dB["Cd_20kV_PMT750_12dB_coll_2mm_real"] = 3.98; //ratio, not actual dB
 
 		experiment_fields["7kV_SiPM_46V_xray_240Hz_PMT_750V"] = 7;
 		experiment_fields["8kV_SiPM_46V_xray_240Hz_PMT_750V"] = 8;
@@ -153,37 +158,46 @@ void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> 
 		experiment_fields["13kV_SiPM_46V_xray_240Hz"] = 13;
 		experiment_fields["14kV_SiPM_46V_xray_240Hz"] = 14;
 		experiment_fields["15kV_SiPM_46V_xray_240Hz_PMT_700V_6dB"] = 15;
+		experiment_fields["Cd_20kV_PMT750_12dB_coll_2mm_real"] = 20;
+		experiment_fields["x_ray_20kV_PMT550_0dB_coll_2mm"] = 20;
+
 
 		for (auto j = experiment_fields.begin(); j != experiment_fields.end(); ++j)
 			j->second *= coeff;
 
-		calibaration_points = std::pair<int, int>(0, 4);
+		calibaration_points = std::pair<int, int>(4, 6);
 
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (32, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (33, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (34, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (35, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (36, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (37, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (38, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (39, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (40, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (41, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (42, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (43, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (44, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (48, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (49, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (50, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (51, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (52, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (53, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (54, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (55, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (56, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (57, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (58, std::pair<double,double>(0,0) ) );
-		MPPC_coords.insert(std::pair<int, std::pair<double,double> > (59, std::pair<double,double>(0,0) ) );
+		double SiPM_size = 10; //mm
+		//<x,y>
+		MPPC_coords[32]= std::pair<double,double>(-2,-2);
+		MPPC_coords[33]= std::pair<double,double>(-1,-2);
+		MPPC_coords[34]= std::pair<double,double>(2,-2);
+		MPPC_coords[35]= std::pair<double,double>(-2,-1);
+		MPPC_coords[36]= std::pair<double,double>(1,-1);
+		MPPC_coords[37]= std::pair<double,double>(2,-1);
+		MPPC_coords[38]= std::pair<double,double>(0,0);
+		MPPC_coords[39]= std::pair<double,double>(1,0);
+		MPPC_coords[40]= std::pair<double,double>(-1,1);
+		MPPC_coords[41]= std::pair<double,double>(0,1);
+		MPPC_coords[42]= std::pair<double,double>(-2,2);
+		MPPC_coords[43]= std::pair<double,double>(-1,2);
+		MPPC_coords[44]= std::pair<double,double>(2,2);
+		MPPC_coords[48]= std::pair<double,double>(0,-2);
+		MPPC_coords[49]= std::pair<double,double>(1,-2);
+		MPPC_coords[50]= std::pair<double,double>(-1,-1);
+		MPPC_coords[51]= std::pair<double,double>(0,-1);
+		MPPC_coords[52]= std::pair<double,double>(-2,0);
+		MPPC_coords[53]= std::pair<double,double>(-1,0);
+		MPPC_coords[54]= std::pair<double,double>(2,0);
+		MPPC_coords[55]= std::pair<double,double>(-2,1);
+		MPPC_coords[56]= std::pair<double,double>(1,1);
+		MPPC_coords[57]= std::pair<double,double>(2,1);
+		MPPC_coords[58]= std::pair<double,double>(0,2);
+		MPPC_coords[59]= std::pair<double,double>(1,2);
+		for (auto i = MPPC_coords.begin();i!=MPPC_coords.end();++i){
+			i->second.first *=SiPM_size;
+			i->second.second*=SiPM_size;
+		}
 
 		areas_to_draw.push_back(experiment_area());
 
@@ -196,6 +210,8 @@ void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> 
 		areas_to_draw.back().experiments.push_back("13kV_SiPM_46V_xray_240Hz");
 		areas_to_draw.back().experiments.push_back("14kV_SiPM_46V_xray_240Hz");
 		areas_to_draw.back().experiments.push_back("15kV_SiPM_46V_xray_240Hz_PMT_700V_6dB");
+		areas_to_draw.back().experiments.push_back("Cd_20kV_PMT750_12dB_coll_2mm_real");
+		areas_to_draw.back().experiments.push_back("x_ray_20kV_PMT550_0dB_coll_2mm");
 
 
 		areas_to_draw.back().runs.push_pair(0, 0);
@@ -204,14 +220,14 @@ void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> 
 		areas_to_draw.back().sub_runs.push_pair(0, 0);
 
 		exp_area.channels.push_pair(0, 1);
-		exp_area.channels.push_pair(8, 8);
-		exp_area.channels.push_pair(12,12);
+		//exp_area.channels.push_pair(8, 8);
+		//exp_area.channels.push_pair(12,12);
 		//exp_area.channels.push_pair(2, 2);
 		exp_area.channels.push_pair(32, 62);//will load only present channels
 		exp_area.runs.push_pair(0, 0);
 		exp_area.sub_runs.push_pair(0, 0);
 
-		exp_area.experiments.push_back("7kV_SiPM_46V_xray_240Hz_PMT_750V");
+		/*exp_area.experiments.push_back("7kV_SiPM_46V_xray_240Hz_PMT_750V");
 		exp_area.experiments.push_back("8kV_SiPM_46V_xray_240Hz_PMT_750V");
 		exp_area.experiments.push_back("9kV_SiPM_46V_xray_240Hz");
 		exp_area.experiments.push_back("10kV_SiPM_46V_xray_240Hz");
@@ -219,6 +235,8 @@ void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> 
 		exp_area.experiments.push_back("12kV_SiPM_46V_xray_240Hz");
 		exp_area.experiments.push_back("13kV_SiPM_46V_xray_240Hz");
 		exp_area.experiments.push_back("14kV_SiPM_46V_xray_240Hz");
-		exp_area.experiments.push_back("15kV_SiPM_46V_xray_240Hz_PMT_700V_6dB");
+		exp_area.experiments.push_back("15kV_SiPM_46V_xray_240Hz_PMT_700V_6dB");*/
+		exp_area.experiments.push_back("Cd_20kV_PMT750_12dB_coll_2mm_real");
+		//exp_area.experiments.push_back("x_ray_20kV_PMT550_0dB_coll_2mm");
 	}
 //};

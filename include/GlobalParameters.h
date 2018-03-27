@@ -46,6 +46,7 @@ extern PostProcessor* post_processor;
 
 	extern std::map < std::string, double > experiment_fields;
 	extern std::map < std::string, double > PMT_V;
+	extern std::map < std::string, double > PMT_dB;
 	extern std::pair<int, int> calibaration_points;
 	extern std::map < int, std::pair<double,double> > MPPC_coords;
 

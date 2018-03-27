@@ -14,16 +14,18 @@ class PostProcessor;
 class AllExperimentsResults
 {
 public:
-	//expriment->channel->run->peak_itself:
+	//experiment->channel->run->peak_itself:
 	std::deque<std::deque<std::deque<std::deque<peak> > > > mppc_peaks;
-	//expriment->channel->run->peak_itself:
+	//experiment->channel->run->peak_itself:
 	std::deque<std::deque<std::deque<std::deque<peak> > > > pmt_peaks;
-	//expriment->channel->array_itself:
+	//experiment->channel->array_itself:
 	//std::deque<std::deque<std::vector<double>>> Ss;
 	std::deque<std::deque<std::vector<double> > > S2_S; //size of std::vector<double> must be the No. of runs
 	std::deque<std::deque<std::vector<double> > > S2_start_t;
 	std::deque<std::deque<std::vector<double> > > S2_finish_t;
 	std::deque<std::deque<std::vector<double> > > Double_I;
+	//experiment->channel->array_itself:
+	std::deque<std::deque<std::vector<double> > > PMT_S2_int;
 	
 	std::vector<double> Fields; //for each experiment
 	std::deque<int> mppc_channels;

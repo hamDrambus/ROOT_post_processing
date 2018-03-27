@@ -29,6 +29,7 @@ protected:
 	std::deque<int> pmt_channels;
 	std::deque<std::deque<std::deque<peak> > > mppc_peaks;	//[channel][run#][peaks]
 	std::deque<std::deque<std::deque<peak> > > pmt_peaks;	//[channel][run#][peaks]
+	std::deque<std::vector<double> > pmt_S2_integral;
 
 	/*TH1D* createMPPCHist(std::vector<double> &what, std::string name, double left_cutoff, double right_cutoff_from_RMS, int N_bins = 0);
 	void vector_to_file(std::vector<double> &what, std::string fname);

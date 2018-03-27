@@ -76,10 +76,16 @@ void PostProcessor::print_hist(void)
 
 void PostProcessor::print_hist(int ch, int exp_ind, Type type)
 {
-	std::string name = OUTPUT_DIR + (is_PMT_type(type) ? OUTPUT_PMT_PICS : OUTPUT_MPPCS_PICS) + g_data->exp_area.experiments[exp_ind]
-		+ "/" + (isMultichannel(type) ? (is_PMT_type(type) ? "PMT_" : "MPPC_") : ((is_PMT_type(type) ? "PMT_" : "MPPC_") + std::to_string(ch)
-		+ "/" + (is_PMT_type(type) ? "PMT_" : "MPPC_") + std::to_string(ch)) )
-		+ type_name(type)+".png";
+	std::string name;
+	if (isMultichannel(type)) {
+		name = OUTPUT_DIR + (is_PMT_type(type) ? OUTPUT_PMT_PICS : OUTPUT_MPPCS_PICS) + g_data->exp_area.experiments[exp_ind]
+			+ type_name(type)+".png";
+	} else {
+		name = OUTPUT_DIR + (is_PMT_type(type) ? OUTPUT_PMT_PICS : OUTPUT_MPPCS_PICS) + g_data->exp_area.experiments[exp_ind]
+			+ "/" + (is_PMT_type(type) ? "PMT_" : "MPPC_") + std::to_string(ch)
+			+ "/" + (is_PMT_type(type) ? "PMT_" : "MPPC_") + std::to_string(ch)
+			+ type_name(type)+".png";
+	}
 	current_canvas->SaveAs(name.c_str(), "png");
 }
 
@@ -107,7 +113,7 @@ void PostProcessor::set_hist_setups(HistogramSetups* setups, std::string experim
 	int exp_ind = data->get_exp_index(experiment);
 	if (exp_ind < 0)
 		return;
-	int ch_ind = (isMultichannel(type) ? 0 : data->get_ch_index(channel));
+	int ch_ind = (isMultichannel(type) ? 0 : channel_to_index(channel, type));
 	if (ch_ind < 0)
 		return;
 	if ((NULL != manual_setups[type][exp_ind][ch_ind]) && (setups != manual_setups[type][exp_ind][ch_ind]))
@@ -120,7 +126,7 @@ HistogramSetups* PostProcessor::get_hist_setups(std::string experiment, int chan
 	int exp_ind = data->get_exp_index(experiment);
 	if (exp_ind < 0)
 		return NULL;
-	int ch_ind = (isMultichannel(type) ? 0 : data->get_ch_index(channel));
+	int ch_ind = (isMultichannel(type) ? 0 : channel_to_index(channel, type));
 	if (ch_ind < 0)
 		return NULL;
 	return manual_setups[type][exp_ind][ch_ind];
@@ -151,24 +157,28 @@ void PostProcessor::save(int channel)
 }
 
 /* PARAMETERS PASSED TO FUNCTION WRAPPER AS WELL AS CUTTER
-type			[0]			[1]			[2]			[3]			[4]
-MPPC_Double_I	Double_I	------		------		------		------
-MPPC_S2_S		S2_S		------		------		------		------
-MPPC_Ss			peak.S		peak.A		peak.left	peak.right	------
-MPPC_t_S		peak.S		peak.A		peak.left	peak.right	------ 		=== MPPC_Ss
-MPPC_times		peak.S		peak.A		peak.left	peak.right	------		=== MPPC_Ss
-MPPC_t_start	time		------		------		------		------
-MPPC_t_both		time		------		------		------		------
-MPPC_t_final	time		------		------		------		------
-MPPC_sum_ts		peak.S		peak.A		peak.left	peak.right	------
-MPPC_S2			SUM(peak.S)	peak.S		peak.A		peak.left	peak.right	//composite: cuts for peaks and then derived parameter. Data is derived within loop.
+type			[0]			[1]			[2]			[3]			[4]			[5]
+MPPC_Double_I	Double_I	------		------		------		------		------
+MPPC_S2_S		S2_S		------		------		------		------		------
+MPPC_Ss			peak.S		peak.A		peak.left	peak.right	peak.t		------
+MPPC_t_S		peak.S		peak.A		peak.left	peak.right	peak.t 		------	=== MPPC_Ss
+MPPC_times		peak.S		peak.A		peak.left	peak.right	peak.t		------	=== MPPC_Ss
+MPPC_t_start	time		------		------		------		------		------
+MPPC_t_both		time		------		------		------		------		------
+MPPC_t_final	time		------		------		------		------		------
+MPPC_sum_ts		peak.S		peak.A		peak.left	peak.right	peak.t		------
+MPPC_S2			SUM(peak.S)	peak.S		peak.A		peak.left	peak.right	peak.t	//composite: cuts for peaks and then derived parameter. Data is derived within loop.
 MPPC_coord===MPPC_coord_x===MPPC_coord_y									//composite: cuts for peaks and then derived parameters. Data is derived within loop.
-	1st level:	peak.S		peak.A		peak.left	peak.right	------		//per channel, cuts with corresponding channel called.
+	1st level:	peak.S		peak.A		peak.left	peak.right	peak.t		------		//per channel, cuts with corresponding channel called.
 	2nd level:	Npe[0]	Npe[1]	...	Npe[MPPC_channels.size()-1]		X derived		Y derived	//cuts with channel -1 called.
-PMT_S2_S		SUM(peak.S)	peak.S		peak.A		peak.left	peak.right	//composite: cuts for peaks and then derived parameter. Data is derived within loop.
-PMT_Ss			peak.S		peak.A		peak.left	peak.right	------
-PMT_t_S			peak.S		peak.A		peak.left	peak.right	------		=== PMT_Ss
-PMT_times		peak.S		peak.A		peak.left	peak.right	------		===	PMT_Ss
+MPPC_Npe_sum
+	1st level:	peak.S		peak.A		peak.left	peak.right	peak.t		------		//per channel, cuts with corresponding channel called.
+	2nd level:	Npe[0]	Npe[1]	...	Npe[MPPC_channels.size()-1]		NpeSum			//cuts with channel -1 called.
+PMT_S2_S		SUM(peak.S)	peak.S		peak.A		peak.left	peak.right	peak.t	//composite: cuts for peaks and then derived parameter. Data is derived within loop.
+PMT_S2_int		S2_int		------		------		------		------		------
+PMT_Ss			peak.S		peak.A		peak.left	peak.right	peak.t		------
+PMT_t_S			peak.S		peak.A		peak.left	peak.right	peak.t		------	=== PMT_Ss
+PMT_times		peak.S		peak.A		peak.left	peak.right	peak.t		------	===	PMT_Ss
 */
 void PostProcessor::LoopThroughData(FunctionWrapper* operation)
 {
@@ -217,8 +227,8 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation)
 	case Type::MPPC_Ss:
 	{
 		int run_size = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)].size();
-		std::vector<double> cut_data(4);
-		for (auto run = 0; run != run_size; ++run){
+		std::vector<double> cut_data(5);
+		for (auto run = 0; run != run_size; ++run) {
 			for (auto cut = RunCuts[current_exp_index].begin(), c_end_ = RunCuts[current_exp_index].end(); cut != c_end_; ++cut){
 				if (kFALSE == cut->GetAccept(run))
 					goto _2cutted;
@@ -229,6 +239,7 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation)
 				cut_data[1] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].A;
 				cut_data[2] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].left;
 				cut_data[3] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].right;
+				cut_data[4] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].t;
 				for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
 					if (kFALSE == (*cut)(cut_data))
 						goto _2cutted1;
@@ -281,58 +292,52 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation)
 		break;
 	}
 	case Type::MPPC_S2: //cuts for this one are tricky: they are 2-stage: first peaks selection for S2 and then cuts for S2 themselves
-		{
-			int run_size = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)].size();
-			std::vector<double> cut_data(5);
-			for (auto run = 0; run != run_size; ++run){
-				double S2 = 0;
-				cut_data[0] = 0; //reserved for S2 cut
-				cut_data[1] = 0; //the 4 below are for S2 selection
-				cut_data[2] = 0;
-				cut_data[3] = 0;
-				cut_data[4] = 0;
-				for (auto cut = RunCuts[current_exp_index].begin(), c_end_ = RunCuts[current_exp_index].end(); cut != c_end_; ++cut){
-					if (kFALSE == cut->GetAccept(run))//not calculating it here!
-						goto _5cutted;
-				}
-				for (int pk = 0, pk_end = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run].size();
-					pk != pk_end; ++pk){
-					cut_data[1] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].S;
-					cut_data[2] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].A;
-					cut_data[3] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].left;
-					cut_data[4] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].right;
-					for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut) {
-						if (kFALSE == (*cut)(cut_data))
-							goto _5cutted1;
-					}
-					S2 += cut_data[1];
-				_5cutted1:;
-				}
-				cut_data[0] = S2;//1st parameter cut must be applied only if the rest 4 parameters are -2. -1 is reserved for invalid peaks
-				cut_data[1] = -2;
-				cut_data[2] = -2;
-				cut_data[3] = -2;
-				cut_data[4] = -2;
-				for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
-					if (kFALSE == (*cut)(cut_data))
-						goto _5cutted;
-				}
-				(*operation)(cut_data);
-			_5cutted:;
-			}
-			break;
-		}
-	case Type::PMT_S2_S: //cuts for this one are tricky: they are 2-stage: first peaks selection for S2 and then cuts for S2 themselves
 	{
-		int run_size = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)].size();
-		std::vector<double> cut_data(5);
+		int run_size = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)].size();
+		std::vector<double> cut_data(6);
 		for (auto run = 0; run != run_size; ++run){
 			double S2 = 0;
 			cut_data[0] = 0; //reserved for S2 cut
-			cut_data[1] = 0; //the 4 below are for S2 selection
-			cut_data[2] = 0;
-			cut_data[3] = 0;
-			cut_data[4] = 0;
+			for (auto cut = RunCuts[current_exp_index].begin(), c_end_ = RunCuts[current_exp_index].end(); cut != c_end_; ++cut){
+				if (kFALSE == cut->GetAccept(run))//not calculating it here!
+					goto _5cutted;
+			}
+			for (int pk = 0, pk_end = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run].size();
+				pk != pk_end; ++pk){
+				cut_data[1] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].S;
+				cut_data[2] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].A;
+				cut_data[3] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].left;
+				cut_data[4] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].right;
+				cut_data[5] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].t;
+				for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut) {
+					if (kFALSE == (*cut)(cut_data))
+						goto _5cutted1;
+				}
+				S2 += cut_data[1];
+			_5cutted1:;
+			}
+			cut_data[0] = S2;//1st parameter cut must be applied only if the rest 4 parameters are -2. -1 is reserved for invalid peaks
+			cut_data[1] = -2;
+			cut_data[2] = -2;
+			cut_data[3] = -2;
+			cut_data[4] = -2;
+			cut_data[5] = -2;
+			for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
+				if (kFALSE == (*cut)(cut_data))
+					goto _5cutted;
+			}
+			(*operation)(cut_data);
+		_5cutted:;
+		}
+		break;
+	}
+	case Type::PMT_S2_S: //cuts for this one are tricky: they are 2-stage: first peaks selection for S2 and then cuts for S2 themselves
+	{
+		int run_size = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)].size();
+		std::vector<double> cut_data(6);
+		for (auto run = 0; run != run_size; ++run){
+			double S2 = 0;
+			cut_data[0] = 0; //reserved for S2 cut
 			for (auto cut = RunCuts[current_exp_index].begin(), c_end_ = RunCuts[current_exp_index].end(); cut != c_end_; ++cut){
 				if (kFALSE == cut->GetAccept(run))//not calculating it here!
 					goto _6cutted;
@@ -343,6 +348,7 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation)
 				cut_data[2] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].A;
 				cut_data[3] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].left;
 				cut_data[4] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].right;
+				cut_data[5] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].t;
 				for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
 					if (kFALSE == (*cut)(cut_data))
 						goto _6cutted1;
@@ -350,11 +356,13 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation)
 				S2 += cut_data[1];
 			_6cutted1:;
 			}
-			cut_data[0] = S2;//1st parameter cut must be applied only if the rest 4 parameters are -2. -1 is reserved for invalid peaks
+			cut_data[1] = calibr_info.getPMT_S1pe(current_channel,current_exp_index);
+			cut_data[0] = cut_data[1]>0 ? S2/cut_data[1] : S2;//1st parameter cut must be applied only if the rest 4 parameters are -2. -1 is reserved for invalid peaks
 			cut_data[1] = -2;
 			cut_data[2] = -2;
 			cut_data[3] = -2;
 			cut_data[4] = -2;
+			cut_data[5] = -2;
 			for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
 				if (kFALSE == (*cut)(cut_data))
 					goto _6cutted;
@@ -364,17 +372,40 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation)
 		}
 		break;
 	}
+	case Type::PMT_S2_int:
+	{
+		int run_size = data->PMT_S2_int[current_exp_index][channel_to_index(current_channel)].size();
+		std::vector<double> cut_data(1);
+		double S1pe;
+		for (auto run = 0; run != run_size; ++run){
+			for (auto cut = RunCuts[current_exp_index].begin(), c_end_ = RunCuts[current_exp_index].end(); cut != c_end_; ++cut){
+				if (kFALSE == cut->GetAccept(run))//not calculating it here!
+					goto _6_5cutted;
+			}
+			cut_data[0] = data->PMT_S2_int[current_exp_index][channel_to_index(current_channel)][run];
+			S1pe = calibr_info.getPMT_S1pe(current_channel,current_exp_index);
+			cut_data[0] = S1pe>0 ? cut_data[0]/S1pe : cut_data[0];
+			for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
+				if (kFALSE == (*cut)(cut_data))
+					goto _6_5cutted;
+			}
+			(*operation)(cut_data);
+			_6_5cutted:;
+		}
+		break;
+	}
 	case Type::PMT_times:
 	case Type::PMT_t_S:
 	case Type::PMT_Ss:
 	{
 		int run_size = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)].size();
-		std::vector<double> cut_data(4);
+		std::vector<double> cut_data(5);
 		for (auto run = 0; run != run_size; ++run) {
 			cut_data[0] = 0;
 			cut_data[1] = 0;
 			cut_data[2] = 0;
 			cut_data[3] = 0;
+			cut_data[4] = 0;
 			for (auto cut = RunCuts[current_exp_index].begin(), c_end_ = RunCuts[current_exp_index].end(); cut != c_end_; ++cut){
 				if (kFALSE == cut->GetAccept(run))//not calculating it here!
 					goto _7cutted;
@@ -385,6 +416,7 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation)
 				cut_data[1] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].A;
 				cut_data[2] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].left;
 				cut_data[3] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].right;
+				cut_data[4] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].t;
 				for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
 					if (kFALSE == (*cut)(cut_data))
 						goto _7cutted1;
@@ -412,6 +444,7 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation)
 					cut_data[1] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].A;
 					cut_data[2] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].left;
 					cut_data[3] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].right;
+					cut_data[4] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].t;
 					for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut) {
 						if (cut->GetChannel()==MPPC_channels[ch_ind])
 							if (kFALSE == (*cut)(cut_data))
@@ -431,14 +464,18 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation)
 	{
 		int run_size = data->mppc_peaks[current_exp_index][0].size();
 		std::vector<double> Npes (MPPC_channels.size()+2);
-		double Npe_sum;
+		double Npe_sum, Npe_max;
 		for (auto run = 0; run != run_size; ++run) {
 			for (auto cut = RunCuts[current_exp_index].begin(), c_end_ = RunCuts[current_exp_index].end(); cut != c_end_; ++cut) {
 				if (kFALSE == cut->GetAccept(run))//not calculating it here!
 					goto _9cutted;
 			}
+			Npe_sum = 0;
+			Npe_max = 0;
+			Npes[MPPC_channels.size()] =0;
+			Npes[MPPC_channels.size()+1] = 0;
 			for (int ch_ind=0,_ch_ind_end_= MPPC_channels.size(); ch_ind<_ch_ind_end_;++ch_ind){
-				std::vector<double> cut_data(4);
+				std::vector<double> cut_data(5);
 				double S2 = 0;
 				for (int pk = 0, pk_end = data->mppc_peaks[current_exp_index][ch_ind][run].size();
 					pk != pk_end; ++pk) {
@@ -446,23 +483,35 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation)
 					cut_data[1] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].A;
 					cut_data[2] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].left;
 					cut_data[3] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].right;
+					cut_data[4] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].t;
 					for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut) {
 						if (cut->GetChannel()==MPPC_channels[ch_ind])
 							if (kFALSE == (*cut)(cut_data))
 								goto _9cutted1;
 					}
-					S2+=(calibr_info.getS1pe(MPPC_channels[ch_ind]) > 0 ? cut_data[4]/calibr_info.getS1pe(MPPC_channels[ch_ind]) : 0);
+					S2+=cut_data[0];
 				_9cutted1:;
 				}
+				S2=(calibr_info.getS1pe(MPPC_channels[ch_ind]) > 0 ? S2/calibr_info.getS1pe(MPPC_channels[ch_ind]) : 0);
 				Npes[ch_ind] = std::round(S2);
 				if (MPPC_coords.find(MPPC_channels[ch_ind])!=MPPC_coords.end()){
 					Npe_sum+=Npes[ch_ind];
-					Npes[MPPC_channels.size()] = Npes[ch_ind]*MPPC_coords.find(MPPC_channels[ch_ind])->second.first;//x
-					Npes[MPPC_channels.size()+1] = Npes[ch_ind]*MPPC_coords.find(MPPC_channels[ch_ind])->second.second;//y
+#ifdef WEIGHTED_COORD
+					Npes[MPPC_channels.size()] += Npes[ch_ind]*MPPC_coords.find(MPPC_channels[ch_ind])->second.first;//x
+					Npes[MPPC_channels.size()+1] += Npes[ch_ind]*MPPC_coords.find(MPPC_channels[ch_ind])->second.second;//y
+#else
+					if (Npe_max<Npes[ch_ind]){
+						Npe_max = Npes[ch_ind];
+						Npes[MPPC_channels.size()] = MPPC_coords.find(MPPC_channels[ch_ind])->second.first;//x
+						Npes[MPPC_channels.size()+1] = MPPC_coords.find(MPPC_channels[ch_ind])->second.second;//y
+					}
+#endif //WEIGHTED_COORD
 				}
 			}
+#ifdef WEIGHTED_COORD
 			Npes[MPPC_channels.size()] /= Npe_sum;
 			Npes[MPPC_channels.size()+1] /= Npe_sum;
+#endif
 			for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut) {
 				if (cut->GetChannel()==-1)
 					if (kFALSE == (*cut)(Npes))
@@ -470,6 +519,48 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation)
 			}
 			(*operation)(Npes);
 			_9cutted:;
+		}
+		break;
+	}
+	case Type::MPPC_Npe_sum:
+	{
+		int run_size = data->mppc_peaks[current_exp_index][0].size();
+		std::vector<double> Npes (MPPC_channels.size()+1);
+		for (auto run = 0; run != run_size; ++run) {
+			for (auto cut = RunCuts[current_exp_index].begin(), c_end_ = RunCuts[current_exp_index].end(); cut != c_end_; ++cut) {
+				if (kFALSE == cut->GetAccept(run))//not calculating it here!
+					goto _10cutted;
+			}
+			Npes[MPPC_channels.size()]=0;
+			for (int ch_ind=0,_ch_ind_end_= MPPC_channels.size(); ch_ind<_ch_ind_end_;++ch_ind){
+				std::vector<double> cut_data(5);
+				double S2 = 0;
+				for (int pk = 0, pk_end = data->mppc_peaks[current_exp_index][ch_ind][run].size();
+					pk != pk_end; ++pk) {
+					cut_data[0] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].S;
+					cut_data[1] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].A;
+					cut_data[2] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].left;
+					cut_data[3] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].right;
+					cut_data[4] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].t;
+					for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut) {
+						if (cut->GetChannel()==MPPC_channels[ch_ind])
+							if (kFALSE == (*cut)(cut_data))
+								goto _10cutted1;
+					}
+					S2+=cut_data[0];
+				_10cutted1:;
+				}
+				S2=(calibr_info.getS1pe(MPPC_channels[ch_ind]) > 0 ? S2/calibr_info.getS1pe(MPPC_channels[ch_ind]) : 0);
+				Npes[ch_ind] = std::round(S2);
+				Npes[MPPC_channels.size()]+=Npes[ch_ind];
+			}
+			for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut) {
+				if (cut->GetChannel()==-1)
+					if (kFALSE == (*cut)(Npes))
+						goto _10cutted;
+			}
+			(*operation)(Npes);
+			_10cutted:;
 		}
 		break;
 	}
@@ -496,6 +587,7 @@ void PostProcessor::FillHist(void* p_hist)//considers cuts and histogram tipe (v
 	case Type::MPPC_tfinal:
 	case Type::MPPC_S2:
 	case Type::PMT_S2_S:
+	case Type::PMT_S2_int:
 	case Type::PMT_Ss:
 	{
 		filler_op = [](std::vector<double>& pars, void* data) {
@@ -509,7 +601,7 @@ void PostProcessor::FillHist(void* p_hist)//considers cuts and histogram tipe (v
 	case Type::MPPC_t_S:
 	{
 		filler_op = [](std::vector<double>& pars, void* data) {
-			((TH2D*)((temp_data*)data)->phist)->Fill(0.5*(pars[2]+pars[3]),pars[0]);
+			((TH2D*)((temp_data*)data)->phist)->Fill(pars[4],pars[0]);
 			return true;
 		};
 		break;
@@ -522,6 +614,7 @@ void PostProcessor::FillHist(void* p_hist)//considers cuts and histogram tipe (v
 		};
 		break;
 	}
+	case Type::MPPC_Npe_sum:
 	case Type::MPPC_coord_x:
 	{
 		filler_op = [](std::vector<double>& pars, void* data) {
@@ -542,7 +635,7 @@ void PostProcessor::FillHist(void* p_hist)//considers cuts and histogram tipe (v
 	case Type::MPPC_times:
 	{
 		filler_op = [](std::vector<double>& pars, void* data) {
-			((TH1D*)((temp_data*)data)->phist)->Fill(0.5*(pars[2]+pars[3]),pars[0]);
+			((TH1D*)((temp_data*)data)->phist)->Fill(pars[4],pars[0]);
 			return true;
 		};
 		break;
@@ -636,6 +729,7 @@ std::pair<double, double> PostProcessor::hist_x_limits(void) //valid only for 2d
 	case Type::MPPC_tfinal:
 	case Type::MPPC_S2:
 	case Type::PMT_S2_S:
+	case Type::PMT_S2_int:
 	case Type::PMT_Ss:
 	{
 		filler_op = [](std::vector<double>& pars, void* data) {
@@ -654,12 +748,13 @@ std::pair<double, double> PostProcessor::hist_x_limits(void) //valid only for 2d
 	{
 		filler_op = [](std::vector<double>& pars, void* data) {
 			std::pair<double,double>* p = ((temp_data*)data)->mm;
-			p->first = std::min(p->first, 0.5*(pars[2]+pars[3]));
-			p->second = std::max(p->second, 0.5*(pars[2]+pars[3]));
+			p->first = std::min(p->first, pars[4]);
+			p->second = std::max(p->second, pars[4]);
 			return true;
 		};
 		break;
 	}
+	case Type::MPPC_Npe_sum:
 	case Type::MPPC_coord_x:
 	case Type::MPPC_coord:
 	{
@@ -690,7 +785,11 @@ std::pair<double, double> PostProcessor::hist_x_limits(void) //valid only for 2d
 
 void PostProcessor::set_default_hist_setups(void)//does not affect cuts
 {
+	int _N_ = numOfFills();
+	current_setups->N_bins = _N_;
+	current_setups->N_bins = std::max(1,(int)std::round(std::sqrt(current_setups->N_bins)));
 	std::pair<double, double> x_lims = hist_x_limits();
+	x_lims.second+=(x_lims.second-x_lims.first)/current_setups->N_bins;
 	current_setups->left_limit = x_lims.first;
 	current_setups->right_limit = x_lims.second;
 	current_setups->left_drawn_limit = x_lims.first;
@@ -698,9 +797,7 @@ void PostProcessor::set_default_hist_setups(void)//does not affect cuts
 	x_lims = hist_y_limits();
 	current_setups->bottom_limit = std::min(x_lims.second, x_lims.first);
 	current_setups->top_limit = std::max(x_lims.second, x_lims.first);
-	int _N_ = numOfFills();
-	current_setups->N_bins = _N_;
-	current_setups->N_bins = std::max(1,(int)std::round(std::sqrt(current_setups->N_bins)));
+
 	current_setups->fitted = kFALSE;
 
 	switch (current_type)
@@ -711,6 +808,7 @@ void PostProcessor::set_default_hist_setups(void)//does not affect cuts
 	case Type::MPPC_tfinal:
 	case Type::MPPC_S2:
 	case Type::PMT_S2_S:
+	case Type::PMT_S2_int:
 	{
 		current_setups->N_gauss = 1;
 		current_setups->par_val.resize(3, 0);
@@ -822,6 +920,7 @@ void PostProcessor::set_default_hist_setups(void)//does not affect cuts
 	case Type::MPPC_coord:
 	case Type::MPPC_coord_x:
 	case Type::MPPC_coord_y:
+	case Type::MPPC_Npe_sum:
 	{
 		current_setups->N_gauss = 0;
 		current_setups->par_val.resize(0, 0);
@@ -936,8 +1035,13 @@ void PostProcessor::update(UpdateState to_update)//TODO: optimize it?
 	current_canvas->SetTitle(hist_name().c_str());
 	current_canvas->Clear();
 	std::pair<double, double> x_lims = hist_x_limits();
+	x_lims.second+=(x_lims.second-x_lims.first)/current_setups->N_bins;
 	current_setups->left_limit = x_lims.first;
 	current_setups->right_limit = x_lims.second;
+	std::pair<double, double> y_lims = hist_y_limits();
+	current_setups->bottom_limit = std::min(y_lims.second, y_lims.first);
+	current_setups->top_limit = std::max(y_lims.second, y_lims.first);
+
 	if (current_setups->phys_hist_cuts.empty()) { //no drawn limit
 		current_setups->left_drawn_limit = x_lims.first;
 		current_setups->right_drawn_limit = x_lims.second;
@@ -1075,7 +1179,7 @@ void PostProcessor::update_physical(void)
 				double val = 0;
 				int weight = 0;
 				int run_size = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)].size();
-				std::vector<double> cut_data(5);
+				std::vector<double> cut_data(6);
 				double S2;
 				for (auto run = 0; run != run_size; ++run){
 					for (auto cut = RunCuts[current_exp_index].begin(), c_end_ = RunCuts[current_exp_index].end(); cut != c_end_; ++cut){
@@ -1090,6 +1194,7 @@ void PostProcessor::update_physical(void)
 						cut_data[2] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].A;
 						cut_data[3] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].left;
 						cut_data[4] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].right;
+						cut_data[5] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].t;
 						for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
 							if (kFALSE == (*cut)(cut_data))
 								goto _0cutted1;
@@ -1106,6 +1211,7 @@ void PostProcessor::update_physical(void)
 					cut_data[2] = -2;
 					cut_data[3] = -2;
 					cut_data[4] = -2;
+					cut_data[5] = -2;
 					for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
 						if (kFALSE == (*cut)(cut_data))
 							goto _0cutted;
@@ -1175,7 +1281,7 @@ void PostProcessor::update_physical(void)
 			double val = 0;
 			int weight = 0;
 			int run_size = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)].size();
-			std::vector<double> cut_data(4);
+			std::vector<double> cut_data(5);
 			for (auto run = 0; run != run_size; ++run){
 				for (auto cut = RunCuts[current_exp_index].begin(), c_end_ = RunCuts[current_exp_index].end(); cut != c_end_; ++cut){
 					if (kFALSE == cut->GetAccept(run))
@@ -1187,6 +1293,7 @@ void PostProcessor::update_physical(void)
 					cut_data[1] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].A;
 					cut_data[2] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].left;
 					cut_data[3] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].right;
+					cut_data[4] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].t;
 					for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
 						if (kFALSE == (*cut)(cut_data))
 							goto _2cutted1;
@@ -1230,11 +1337,110 @@ void PostProcessor::update_physical(void)
 		if (current_setups->N_gauss > 0 && current_setups->fitted){
 			if (0 == current_channel)
 				PMT3_avr_S2_S[current_exp_index] = current_setups->par_val[1];
-			if (0 == current_channel)
+			if (1 == current_channel)
 				PMT1_avr_S2_S[current_exp_index] = current_setups->par_val[1];
 		}
 		else {
-			std::cout << "Warning! No S2 area for PMT " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
+			if (0==current_setups->N_gauss) { //Use mean then
+				double val = 0;
+				int weight = 0;
+				int p_ind = pmt_channel_to_index(current_channel);
+				int run_size = data->pmt_peaks[current_exp_index][p_ind].size();
+				std::vector<double> cut_data(6);
+				for (auto run = 0; run != run_size; ++run){
+					for (auto cut = RunCuts[current_exp_index].begin(), c_end_ = RunCuts[current_exp_index].end(); cut != c_end_; ++cut){
+						if (kFALSE == cut->GetAccept(run))
+							goto _3cutted;
+					}
+					cut_data[0]=0;
+					for (std::size_t pk = 0, _end_pk = data->pmt_peaks[current_exp_index][p_ind][run].size(); pk!=_end_pk;++pk) {
+						cut_data[1] = data->pmt_peaks[current_exp_index][p_ind][run][pk].S;
+						cut_data[2] = data->pmt_peaks[current_exp_index][p_ind][run][pk].A;
+						cut_data[3] = data->pmt_peaks[current_exp_index][p_ind][run][pk].left;
+						cut_data[4] = data->pmt_peaks[current_exp_index][p_ind][run][pk].right;
+						cut_data[5] = data->pmt_peaks[current_exp_index][p_ind][run][pk].t;
+						for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
+							if (kFALSE == (*cut)(cut_data))
+								goto _3cutted1;
+						}
+						for (auto cut = current_setups->phys_hist_cuts.begin(), c_end_ = current_setups->phys_hist_cuts.end(); cut != c_end_; ++cut){
+							if (kFALSE == (*cut)(cut_data))
+								goto _3cutted1;
+						}
+						cut_data[0]+=cut_data[1];
+						_3cutted1:;
+					}
+					cut_data[1] = -2;
+					cut_data[2] = -2;
+					cut_data[3] = -2;
+					cut_data[4] = -2;
+					cut_data[5] = -2;
+					for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
+						if (kFALSE == (*cut)(cut_data))
+							goto _3cutted;
+					}
+					for (auto cut = current_setups->phys_hist_cuts.begin(), c_end_ = current_setups->phys_hist_cuts.end(); cut != c_end_; ++cut){
+						if (kFALSE == (*cut)(cut_data))
+							goto _3cutted;
+					}
+					++weight;
+					val+= cut_data[0];
+					_3cutted:;
+				}
+				if (0==weight)
+					std::cout << "Warning! No S2 area for PMT " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
+				else {
+					if (0 == current_channel)
+						PMT3_avr_S2_S[current_exp_index] = val/weight;
+					if (1 == current_channel)
+						PMT1_avr_S2_S[current_exp_index] = val/weight;
+				}
+			}
+		}
+		break;
+	}
+	case Type::PMT_S2_int:
+	{
+		if (current_setups->N_gauss > 0 && current_setups->fitted){
+			if (0 == current_channel)
+				PMT3_avr_S2_S[current_exp_index] = current_setups->par_val[1];
+			if (1 == current_channel)
+				PMT1_avr_S2_S[current_exp_index] = current_setups->par_val[1];
+		}
+		else {
+			if (0==current_setups->N_gauss) { //Use mean then
+				double val = 0;
+				int weight = 0;
+				int p_ind = pmt_channel_to_index(current_channel);
+				int run_size = data->PMT_S2_int[current_exp_index][p_ind].size();
+				std::vector<double> cut_data(1);
+				for (auto run = 0; run != run_size; ++run){
+					for (auto cut = RunCuts[current_exp_index].begin(), c_end_ = RunCuts[current_exp_index].end(); cut != c_end_; ++cut){
+						if (kFALSE == cut->GetAccept(run))
+							goto _4cutted;
+					}
+					cut_data[0]=data->PMT_S2_int[current_exp_index][p_ind][run];
+					for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
+						if (kFALSE == (*cut)(cut_data))
+							goto _4cutted;
+					}
+					for (auto cut = current_setups->phys_hist_cuts.begin(), c_end_ = current_setups->phys_hist_cuts.end(); cut != c_end_; ++cut){
+						if (kFALSE == (*cut)(cut_data))
+							goto _4cutted;
+					}
+					++weight;
+					val+= cut_data[0];
+					_4cutted:;
+				}
+				if (0==weight)
+					std::cout << "Warning! No S2 area for PMT " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
+				else {
+					if (0 == current_channel)
+						PMT3_avr_S2_S[current_exp_index] = val/weight;
+					if (1 == current_channel)
+						PMT1_avr_S2_S[current_exp_index] = val/weight;
+				}
+			}
 		}
 		break;
 	}
@@ -1316,7 +1522,7 @@ void PostProcessor::remove_hist_cut(std::string name, bool do_update)
 	}
 	for (auto i = current_setups->display_hist_cuts.rbegin(); i != current_setups->display_hist_cuts.rend(); ++i){
 		if (i->GetName() == name){
-			current_setups->display_hist_cuts.erase(i.base());
+			current_setups->display_hist_cuts.erase((i+1).base());
 			if (do_update)
 				update(All);
 			return;
@@ -1333,7 +1539,7 @@ void PostProcessor::remove_hist_cut(std::string name, int ch, bool do_update)
 	}
 	for (auto i = current_setups->display_hist_cuts.rbegin(); i != current_setups->display_hist_cuts.rend(); ++i){
 		if ((i->GetName() == name)&&(i->GetChannel()==ch)){
-			current_setups->display_hist_cuts.erase(i.base());
+			current_setups->display_hist_cuts.erase((i+1).base());
 			if (do_update)
 				update(All);
 			return;
@@ -1401,7 +1607,7 @@ void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits 
 	case Type::MPPC_Ss:
 	{
 		int run_size = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)].size();
-		std::vector<double> cut_data(4);
+		std::vector<double> cut_data(5);
 		for (auto run = 0; run != run_size; ++run){
 			RunCuts[current_exp_index].back().SetAccept(run, kFALSE);
 			for (int pk = 0, pk_end = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run].size();
@@ -1410,6 +1616,7 @@ void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits 
 				cut_data[1] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].A;
 				cut_data[2] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].left;
 				cut_data[3] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].right;
+				cut_data[4] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].t;
 				for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
 					if (kFALSE == (*cut)(cut_data))
 						goto _2cutted1;
@@ -1469,7 +1676,7 @@ void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits 
 	case Type::PMT_S2_S: //cuts for this one are tricky: they are 2-stage: first peaks selection for S2 and then cuts for S2 themselves
 	{
 		int run_size = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)].size();
-		std::vector<double> cut_data(5);
+		std::vector<double> cut_data(6);
 		for (auto run = 0; run != run_size; ++run){
 			RunCuts[current_exp_index].back().SetAccept(run, kFALSE);
 			double S2 = 0;
@@ -1478,12 +1685,14 @@ void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits 
 			cut_data[2] = 0;
 			cut_data[3] = 0;
 			cut_data[4] = 0;
+			cut_data[5] = 0;
 			for (int pk = 0, pk_end = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run].size();
 				pk != pk_end; ++pk){
 				cut_data[1] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].S;
 				cut_data[2] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].A;
 				cut_data[3] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].left;
 				cut_data[4] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].right;
+				cut_data[5] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].t;
 				for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
 					if (kFALSE == (*cut)(cut_data))
 						goto _6cutted1;
@@ -1495,11 +1704,13 @@ void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits 
 				S2 += cut_data[1];
 			_6cutted1:;
 			}
-			cut_data[0] = S2;//1st parameter cut must be applied only if the rest 4 parameters are -2. -1 is reserved for invalid peaks
+			cut_data[1] = calibr_info.getPMT_S1pe(current_channel,current_exp_index);
+			cut_data[0] = cut_data[1]>0 ? S2/cut_data[1] : S2; //1st parameter cut must be applied only if the rest 4 parameters are -2. -1 is reserved for invalid peaks
 			cut_data[1] = -2;
 			cut_data[2] = -2;
 			cut_data[3] = -2;
 			cut_data[4] = -2;
+			cut_data[5] = -2;
 			for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
 				if (kFALSE == (*cut)(cut_data))
 					goto _6cutted;
@@ -1513,24 +1724,49 @@ void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits 
 		}
 		break;
 	}
+	case Type::PMT_S2_int:
+	{
+		int run_size = data->PMT_S2_int[current_exp_index][channel_to_index(current_channel)].size();
+		std::vector<double> cut_data(1);
+		double S1pe;
+		for (auto run = 0; run != run_size; ++run){
+			RunCuts[current_exp_index].back().SetAccept(run, kFALSE);
+			cut_data[0] = data->PMT_S2_int[current_exp_index][channel_to_index(current_channel)][run];
+			S1pe = calibr_info.getPMT_S1pe(current_channel, current_exp_index);
+			cut_data[0] = (S1pe>0) ? cut_data[0]/S1pe : cut_data[0];
+			for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
+				if (kFALSE == (*cut)(cut_data))
+					goto _6_5cutted;
+			}
+			for (auto cut = current_setups->phys_hist_cuts.begin(), c_end_ = current_setups->phys_hist_cuts.end(); cut != c_end_; ++cut){
+				if (kFALSE == (*cut)(cut_data))
+					goto _6_5cutted;
+			}
+			RunCuts[current_exp_index].back().SetAccept(run, kTRUE);
+			_6_5cutted:;
+		}
+		break;
+	}
 	case Type::PMT_t_S:
 	case Type::PMT_times:
 	case Type::PMT_Ss:
 	{
 		int run_size = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)].size();
-		std::vector<double> cut_data(4);
+		std::vector<double> cut_data(5);
 		for (auto run = 0; run != run_size; ++run){
 			RunCuts[current_exp_index].back().SetAccept(run, kFALSE);
 			cut_data[0] = 0;
 			cut_data[1] = 0;
 			cut_data[2] = 0;
 			cut_data[3] = 0;
+			cut_data[4] = 0;
 			for (int pk = 0, pk_end = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run].size();
 				pk != pk_end; ++pk){
 				cut_data[0] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].S;
 				cut_data[1] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].A;
 				cut_data[2] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].left;
 				cut_data[3] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].right;
+				cut_data[4] = data->pmt_peaks[current_exp_index][channel_to_index(current_channel)][run][pk].t;
 				for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
 					if (kFALSE == (*cut)(cut_data))
 						goto _7cutted1;
@@ -1549,7 +1785,7 @@ void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits 
 	case Type::MPPC_S2: //cuts for this one are tricky: they are 2-stage: first peaks selection for S2 and then cuts for S2 themselves
 	{
 		int run_size = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)].size();
-		std::vector<double> cut_data(5);
+		std::vector<double> cut_data(6);
 		for (auto run = 0; run != run_size; ++run){
 			RunCuts[current_exp_index].back().SetAccept(run, kFALSE);
 			double S2 = 0;
@@ -1558,12 +1794,14 @@ void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits 
 			cut_data[2] = 0;
 			cut_data[3] = 0;
 			cut_data[4] = 0;
+			cut_data[5] = 0;
 			for (int pk = 0, pk_end = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run].size();
 				pk != pk_end; ++pk){
 				cut_data[1] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].S;
 				cut_data[2] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].A;
 				cut_data[3] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].left;
 				cut_data[4] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].right;
+				cut_data[5] = data->mppc_peaks[current_exp_index][mppc_channel_to_index(current_channel)][run][pk].t;
 				for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
 					if (kFALSE == (*cut)(cut_data))
 						goto _8cutted1;
@@ -1580,6 +1818,7 @@ void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits 
 			cut_data[2] = -2;
 			cut_data[3] = -2;
 			cut_data[4] = -2;
+			cut_data[5] = -2;
 			for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut){
 				if (kFALSE == (*cut)(cut_data))
 					goto _8cutted;
@@ -1603,11 +1842,15 @@ void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits 
 	{
 		int run_size = data->mppc_peaks[current_exp_index][0].size();
 		std::vector<double> Npes (MPPC_channels.size()+2);
-		double Npe_sum;
+		double Npe_sum, Npe_max;
 		for (auto run = 0; run != run_size; ++run) {
 			RunCuts[current_exp_index].back().SetAccept(run, kFALSE);
+			Npe_sum = 0;
+			Npe_max = 0;
+			Npes[MPPC_channels.size()] =0;//x
+			Npes[MPPC_channels.size()+1] = 0;//y
 			for (int ch_ind=0,_ch_ind_end_= MPPC_channels.size(); ch_ind<_ch_ind_end_;++ch_ind){
-				std::vector<double> cut_data(4);
+				std::vector<double> cut_data(5);
 				double S2 = 0;
 				for (int pk = 0, pk_end = data->mppc_peaks[current_exp_index][ch_ind][run].size();
 					pk != pk_end; ++pk) {
@@ -1615,6 +1858,7 @@ void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits 
 					cut_data[1] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].A;
 					cut_data[2] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].left;
 					cut_data[3] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].right;
+					cut_data[4] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].t;
 					for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut) {
 						if (cut->GetChannel()==MPPC_channels[ch_ind])
 							if (kFALSE == (*cut)(cut_data))
@@ -1625,18 +1869,29 @@ void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits 
 							if (kFALSE == (*cut)(cut_data))
 								goto _9cutted1;
 					}
-					S2+=(calibr_info.getS1pe(MPPC_channels[ch_ind]) > 0 ? cut_data[4]/calibr_info.getS1pe(MPPC_channels[ch_ind]) : 0);
+					S2+=cut_data[0];
 				_9cutted1:;
 				}
+				S2=(calibr_info.getS1pe(MPPC_channels[ch_ind]) > 0 ? S2/calibr_info.getS1pe(MPPC_channels[ch_ind]) : 0);
 				Npes[ch_ind] = std::round(S2);
 				if (MPPC_coords.find(MPPC_channels[ch_ind])!=MPPC_coords.end()){
 					Npe_sum+=Npes[ch_ind];
-					Npes[MPPC_channels.size()] = Npes[ch_ind]*MPPC_coords.find(MPPC_channels[ch_ind])->second.first;//x
-					Npes[MPPC_channels.size()+1] = Npes[ch_ind]*MPPC_coords.find(MPPC_channels[ch_ind])->second.second;//y
+#ifdef WEIGHTED_COORD
+					Npes[MPPC_channels.size()] += Npes[ch_ind]*MPPC_coords.find(MPPC_channels[ch_ind])->second.first;//x
+					Npes[MPPC_channels.size()+1] += Npes[ch_ind]*MPPC_coords.find(MPPC_channels[ch_ind])->second.second;//y
+#else
+					if (Npe_max<Npes[ch_ind]){
+						Npe_max = Npes[ch_ind];
+						Npes[MPPC_channels.size()] = MPPC_coords.find(MPPC_channels[ch_ind])->second.first;//x
+						Npes[MPPC_channels.size()+1] = MPPC_coords.find(MPPC_channels[ch_ind])->second.second;//y
+					}
+#endif //WEIGHTED_COORD
 				}
 			}
+#ifdef WEIGHTED_COORD
 			Npes[MPPC_channels.size()] /= Npe_sum;
 			Npes[MPPC_channels.size()+1] /= Npe_sum;
+#endif
 			for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut) {
 				if (cut->GetChannel()==-1)
 					if (kFALSE == (*cut)(Npes))
@@ -1652,6 +1907,55 @@ void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits 
 		}
 		break;
 	}
+	case Type::MPPC_Npe_sum:
+	{
+		int run_size = data->mppc_peaks[current_exp_index][0].size();
+		std::vector<double> Npes (MPPC_channels.size()+1);
+		for (auto run = 0; run != run_size; ++run) {
+			RunCuts[current_exp_index].back().SetAccept(run, kFALSE);
+			Npes[MPPC_channels.size()] = 0;
+			for (int ch_ind=0,_ch_ind_end_= MPPC_channels.size(); ch_ind<_ch_ind_end_;++ch_ind){
+				std::vector<double> cut_data(5);
+				double S2 = 0;
+				for (int pk = 0, pk_end = data->mppc_peaks[current_exp_index][ch_ind][run].size();
+					pk != pk_end; ++pk) {
+					cut_data[0] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].S;
+					cut_data[1] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].A;
+					cut_data[2] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].left;
+					cut_data[3] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].right;
+					cut_data[4] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].t;
+					for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut) {
+						if (cut->GetChannel()==MPPC_channels[ch_ind])
+							if (kFALSE == (*cut)(cut_data))
+								goto _10cutted1;
+					}
+					for (auto cut = current_setups->phys_hist_cuts.begin(), c_end_ = current_setups->phys_hist_cuts.end(); cut != c_end_; ++cut){
+						if (cut->GetChannel()==MPPC_channels[ch_ind])
+							if (kFALSE == (*cut)(cut_data))
+								goto _10cutted1;
+					}
+					S2+=cut_data[0];
+				_10cutted1:;
+				}
+				S2=(calibr_info.getS1pe(MPPC_channels[ch_ind]) > 0 ? S2/calibr_info.getS1pe(MPPC_channels[ch_ind]) : 0);
+				Npes[ch_ind] = std::round(S2);
+				Npes[MPPC_channels.size()]+=Npes[ch_ind];
+			}
+			for (auto cut = current_setups->display_hist_cuts.begin(), c_end_ = current_setups->display_hist_cuts.end(); cut != c_end_; ++cut) {
+				if (cut->GetChannel()==-1)
+					if (kFALSE == (*cut)(Npes))
+						goto _10cutted;
+			}
+			for (auto cut = current_setups->phys_hist_cuts.begin(), c_end_ = current_setups->phys_hist_cuts.end(); cut != c_end_; ++cut) {
+				if (cut->GetChannel()==-1)
+					if (kFALSE == (*cut)(Npes))
+						goto _10cutted;
+			}
+			RunCuts[current_exp_index].back().SetAccept(run, true);
+			_10cutted:;
+		}
+		break;
+	}
 	}
 	update(All);
 }
@@ -1664,7 +1968,7 @@ void PostProcessor::unset_as_run_cut(std::string name)//deletes current exp,ch a
 	}
 	for (auto i = RunCuts[current_exp_index].rbegin(); i != RunCuts[current_exp_index].rend(); ++i){
 		if (i->GetName() == name){
-			RunCuts[current_exp_index].erase(i.base());
+			RunCuts[current_exp_index].erase((i+1).base());
 			update(All);
 			return;
 		}
@@ -1714,7 +2018,7 @@ void PostProcessor::set_limits(double left, double right)
 	while (true) {
 		for (auto i = current_setups->display_hist_cuts.rbegin(); i != current_setups->display_hist_cuts.rend(); ++i)
 			if (i->GetName() == name){
-				current_setups->display_hist_cuts.erase(i.base());
+				current_setups->display_hist_cuts.erase((i+1).base());
 				goto anew;
 			}
 		break;
@@ -1732,7 +2036,7 @@ void PostProcessor::set_limits(double left, double right)
 	st_data->ch_size = MPPC_channels.size();
 
 	FunctionWrapper *picker = new FunctionWrapper(st_data);
-	if ((current_type == Type::MPPC_coord)||(current_type == Type::MPPC_coord_x)) {
+	if ((current_type == Type::MPPC_coord)||(current_type == Type::MPPC_coord_x)||(Type::MPPC_Npe_sum == current_type)) {
 		picker->SetFunction(
 		[](std::vector<double> &vals, void* data) {
 			return ((vals[((temp_data*)data)->ch_size] <= ((temp_data*)data)->mm.second) && (vals[((temp_data*)data)->ch_size] >= ((temp_data*)data)->mm.first));
@@ -1776,7 +2080,7 @@ void PostProcessor::set_limits(double left, double right)
 		if (current_type == Type::MPPC_times||current_type == Type::PMT_times||current_type==Type::MPPC_sum_ts){
 			picker->SetFunction(
 				[](std::vector<double> &vals, void* data) {
-					return ((0.5*(vals[2]+vals[3]) <= ((temp_data*)data)->mm.second) && (0.5*(vals[2]+vals[3]) >= ((temp_data*)data)->mm.first));
+					return ((vals[4] <= ((temp_data*)data)->mm.second) && (vals[4] >= ((temp_data*)data)->mm.first));
 			});
 		} else {
 			picker->SetFunction(
@@ -1811,7 +2115,7 @@ void PostProcessor::set_drawn_limits(double left, double right)
 	while (true) {
 		for (auto i = current_setups->phys_hist_cuts.rbegin(); i != current_setups->phys_hist_cuts.rend(); ++i)
 			if (i->GetName() == name){
-				current_setups->phys_hist_cuts.erase(i.base());
+				current_setups->phys_hist_cuts.erase((i+1).base());
 				break;
 			}
 		break;
@@ -1829,7 +2133,7 @@ void PostProcessor::set_drawn_limits(double left, double right)
 	st_data->ch_size = MPPC_channels.size();
 
 	FunctionWrapper *picker = new FunctionWrapper(st_data);
-	if ((current_type == Type::MPPC_coord)||(current_type == Type::MPPC_coord_x)) {
+	if ((current_type == Type::MPPC_coord)||(current_type == Type::MPPC_coord_x)||(Type::MPPC_Npe_sum == current_type)) {
 		picker->SetFunction(
 		[](std::vector<double> &vals, void* data) {
 			return ((vals[((temp_data*)data)->ch_size] <= ((temp_data*)data)->mm.second) && (vals[((temp_data*)data)->ch_size] >= ((temp_data*)data)->mm.first));
@@ -1869,7 +2173,7 @@ void PostProcessor::set_drawn_limits(double left, double right)
 		if (current_type == Type::MPPC_times||current_type == Type::PMT_times||current_type == Type::MPPC_sum_ts){
 			picker->SetFunction(
 				[](std::vector<double> &vals, void* data) {
-					return ((0.5*(vals[2]+vals[3]) <= ((temp_data*)data)->mm.second) && (0.5*(vals[2]+vals[3]) >= ((temp_data*)data)->mm.first));
+					return ((vals[4] <= ((temp_data*)data)->mm.second) && (vals[4] >= ((temp_data*)data)->mm.first));
 			});
 		} else {
 			picker->SetFunction(
@@ -1999,19 +2303,24 @@ void PostProcessor::status(Bool_t full)
 	std::cout << "Current type: " << type_name(current_type)<<std::endl;
 
 	if (full){
+		std::cout<<"RunCuts ["<< RunCuts[current_exp_index].size()<<"]: ";
+		for (auto i = RunCuts[current_exp_index].begin(), _end_ = RunCuts[current_exp_index].end(); i != _end_; ++i)
+			std::cout << (i->GetName()) << ((i == (_end_ - 1)) ? "" : " | ");
+		std::cout << std::endl;
+
 		std::cout << "Current_setups: " << std::hex << current_setups << std::dec << std::endl;
 		std::cout << "\tleft_limit " << current_setups->left_limit << std::endl;
 		std::cout << "\tright_limit " << current_setups->right_limit << std::endl;
 		std::cout << "\tdisplay_hist_cuts [" << current_setups->display_hist_cuts.size() << "]: ";
 		for (auto i = current_setups->display_hist_cuts.begin(), _end_ = current_setups->display_hist_cuts.end(); i != _end_; ++i)
-			std::cout << (i->GetName()) << ((i == (_end_ - 1)) ? "" : " ");
+			std::cout << (i->GetName()) << ((i == (_end_ - 1)) ? "" : " | ");
 		std::cout << std::endl;
 
 		std::cout << "\tleft_drawn_limit " << current_setups->left_drawn_limit << std::endl;
 		std::cout << "\tright_drawn_limit " << current_setups->right_drawn_limit << std::endl;
 		std::cout << "\tphys_hist_cuts [" << current_setups->phys_hist_cuts.size() << "]: ";
 		for (auto i = current_setups->phys_hist_cuts.begin(), _end_ = current_setups->phys_hist_cuts.end(); i != _end_; ++i)
-			std::cout << (i->GetName()) << ((i == (_end_ - 1)) ? "" : " ");
+			std::cout << (i->GetName()) << ((i == (_end_ - 1)) ? "" : " | ");
 		std::cout << std::endl;
 
 		std::cout << "\tN_gauss " << current_setups->N_gauss << std::endl;

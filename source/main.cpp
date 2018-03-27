@@ -74,6 +74,15 @@ void Pt(Bool_t save_state) //Prev type (Ss, S2_S, Double_intergral)
 	post_processor->PrevType(save_state);
 }
 
+void GotoT(AnalysisStates::Type to_type, bool do_save)
+{
+	if (NULL == g_data){
+		state(kFALSE);
+		return;
+	}
+	post_processor->GotoT(to_type, do_save);
+}
+
 void update()
 {
 	if (NULL == post_processor){

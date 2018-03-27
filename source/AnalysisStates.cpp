@@ -44,6 +44,29 @@ Bool_t AnalysisStates::NextType(Bool_t save)
 	return StateChange(current_channel,current_exp_index,current_type,prev_ch,prev_exp,prev_type,save);
 }
 
+bool AnalysisStates::GotoT(Type to_type, bool save)
+{
+	if (!isValid())
+		return kFALSE;
+	int prev_ch = current_channel;
+	int prev_exp = current_exp_index;
+	Type prev_type = current_type;
+	current_type = to_type;
+	if (!is_PMT_type(current_type) && is_PMT_type(prev_type)){
+		PMT_last_ch = current_channel;
+		current_channel = MPPC_last_ch;
+	}
+	if (is_PMT_type(current_type) && !is_PMT_type(prev_type)){
+		MPPC_last_ch = current_channel;
+		current_channel = PMT_last_ch;
+	}
+	if (!isValid()){
+		std::cout<<"can't go to "<<type_name(current_type)<<" type (no channels)"<<std::endl;
+		current_type = prev_type;
+	}
+	return StateChange(current_channel,current_exp_index,current_type,prev_ch,prev_exp,prev_type,save);
+}
+
 Bool_t AnalysisStates::PrevType(Bool_t save)
 {
 	if (!isValid())
@@ -148,12 +171,12 @@ Bool_t AnalysisStates::PrevExp(Bool_t save)
 
 Bool_t AnalysisStates::is_PMT_type(Type type)
 {
-	return (type == PMT_S2_S || type == PMT_Ss || type == PMT_t_S || type == PMT_times);
+	return (type == PMT_S2_S || type == PMT_Ss || type == PMT_t_S || type == PMT_times|| PMT_S2_int==type);
 }
 
 Bool_t AnalysisStates::isMultichannel(Type type)
 {
-	return (type == MPPC_sum_ts)||(type==MPPC_coord)||(type==MPPC_coord_x)||(type==MPPC_coord_y);
+	return (type == MPPC_sum_ts)||(type==MPPC_coord)||(type==MPPC_coord_x)||(type==MPPC_coord_y)||(type==MPPC_Npe_sum);
 }
 
 Bool_t AnalysisStates::isValid()
@@ -187,6 +210,15 @@ Bool_t AnalysisStates::isValid()
 int AnalysisStates::channel_to_index(int ch)
 {
 	if (is_PMT_type(current_type))
+		return pmt_channel_to_index(ch);
+	else
+		return mppc_channel_to_index(ch);
+	return -1;
+}
+
+int AnalysisStates::channel_to_index(int ch, Type type)
+{
+	if (is_PMT_type(type))
 		return pmt_channel_to_index(ch);
 	else
 		return mppc_channel_to_index(ch);
@@ -241,19 +273,23 @@ std::string AnalysisStates::type_name(Type type)
 		break;
 	}
 	case Type::MPPC_sum_ts:{
-		name += "sum_ts";
+		name += "_sum_ts";
 		break;
 	}
 	case Type::MPPC_coord: {
-		name += "coordinate";
+		name += "_coordinate";
 		break;
 	}
 	case Type::MPPC_coord_x: {
-		name += "x_coordinate";
+		name += "_x_coordinate";
 		break;
 	}
 	case Type::MPPC_coord_y: {
-		name += "y_coordinate";
+		name += "_y_coordinate";
+		break;
+	}
+	case Type::MPPC_Npe_sum :{
+		name += "_N_pe";
 		break;
 	}
 	case Type::MPPC_S2:{
@@ -262,6 +298,10 @@ std::string AnalysisStates::type_name(Type type)
 	}
 	case Type::PMT_S2_S:{
 		name += "_S2_S";
+		break;
+	}
+	case Type::PMT_S2_int: {
+		name += "_S2_by_integral";
 		break;
 	}
 	case Type::PMT_Ss:{

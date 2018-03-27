@@ -14,6 +14,7 @@ void Pch(Bool_t save_state = kTRUE); //Previous channel
 void GotoCh(int ch, Bool_t save_state = kTRUE); //go to specific channel
 void Nt(Bool_t save_state = kTRUE); //Next type (Ss, S2_S, Double_intergral)
 void Pt(Bool_t save_state = kTRUE); //Prev type (Ss, S2_S, Double_intergral)
+void GotoT(AnalysisStates::Type to_type, bool do_save = true);
 void update();
 void status(Bool_t full = kFALSE);// displays current state
 void state(Bool_t full); // displays current state

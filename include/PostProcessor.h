@@ -11,23 +11,23 @@
 #include "CalibrationInfo.h"
 
 //for adding new types of analysis - dependence on AnalysisStates::Type
-//1). AnalysisStates::AnalysisStates (first/last state)
-//2). AnalysisStates::isMultichannel();
-//3). AnalysisStates::is_PMT_type
-//4). std::string AnalysisStates::type_name(Type type);
-//5). PostProcessor::is_TH1D_hist
+//1) AnalysisStates::AnalysisStates (first/last state)
+//2) AnalysisStates::isMultichannel();
+//3) AnalysisStates::is_PMT_type
+//4) std::string AnalysisStates::type_name(Type type);
+//5) PostProcessor::is_TH1D_hist
 
-//6). void PostProcessor::LoopThroughData(FunctionWrapper*);
-//7). void PostProcessor::FillHist(void* p_hist)
-//8). int PostProcessor::numOfFills(void);
-//9). std::pair<double, double> PostProcessor::hist_x_limits(void);
-//10). std::pair<double, double> PostProcessor::hist_y_limits(void);
+//6) void PostProcessor::LoopThroughData(FunctionWrapper*);
+//7) void PostProcessor::FillHist(void* p_hist)
+//8) int PostProcessor::numOfFills(void);
+//9) std::pair<double, double> PostProcessor::hist_x_limits(void);
+//10) std::pair<double, double> PostProcessor::hist_y_limits(void);
 
-//11). void PostProcessor::set_default_hist_setups(void);
+//11) void PostProcessor::set_default_hist_setups(void);
 
-//12). void PostProcessor::update_physical(void);
-//13). void PostProcessor::set_limits(double left, double right);
-//14). void PostProcessor::set_drawn_limits(double left, double right);
+//12) void PostProcessor::update_physical(void);
+//13) void PostProcessor::set_limits(double left, double right);
+//14) void PostProcessor::set_drawn_limits(double left, double right);
 //15) void PostProcessor::set_as_run_cut(std::string name)
 
 
