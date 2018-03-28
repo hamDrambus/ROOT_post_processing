@@ -1,7 +1,7 @@
 #include "AnalysisStates.h"
 
 AnalysisStates::AnalysisStates(std::deque<int> &mppc_channels_, std::deque<int> &pmt_channels_, std::deque<std::string>& experiments_):
-_first_state(MPPC_Ss), _last_state(PMT_times)
+_first_state(MPPC_Ss), _last_state(PMT_times),_x_corr(MPPC_Npe_sum),_y_corr(PMT_S2_S)
 {
 	MPPC_channels = mppc_channels_;
 	PMT_channels = pmt_channels_;
@@ -15,6 +15,12 @@ _first_state(MPPC_Ss), _last_state(PMT_times)
 		current_channel = PMT_last_ch;
 		current_type = PMT_Ss;
 	}
+	if (MPPC_last_ch<0)
+		_x_corr = PMT_S2_S;
+	if (PMT_last_ch<0)
+		_y_corr = MPPC_Npe_sum;
+	_x_corr_ch = is_PMT_type(_x_corr) ? PMT_last_ch : MPPC_last_ch;
+	_y_corr_ch = is_PMT_type(_y_corr) ? PMT_last_ch : MPPC_last_ch;
 }
 
 Bool_t AnalysisStates::StateChange(int to_ch, int to_exp, Type to_type, int from_ch, int from_exp, Type from_type, Bool_t save)
@@ -176,7 +182,27 @@ Bool_t AnalysisStates::is_PMT_type(Type type)
 
 Bool_t AnalysisStates::isMultichannel(Type type)
 {
-	return (type == MPPC_sum_ts)||(type==MPPC_coord)||(type==MPPC_coord_x)||(type==MPPC_coord_y)||(type==MPPC_Npe_sum);
+	return (type == MPPC_sum_ts)||(type==MPPC_coord)||(type==MPPC_coord_x)||(type==MPPC_coord_y)||(type==MPPC_Npe_sum)||(type==Correlation);
+}
+
+bool AnalysisStates::isPerRun (Type type)
+{
+	return !((type==MPPC_Ss)||(type==MPPC_t_S)||(type==MPPC_times)||(type==MPPC_sum_ts)||(type==PMT_Ss)||(type==PMT_t_S)||(type==PMT_times)||(type==MPPC_tboth));
+}
+
+bool AnalysisStates::isPerPeak (Type type)
+{
+	return !((type==MPPC_Double_I)||(type==MPPC_S2_S)||(type==MPPC_tfinal)||(type==MPPC_tstart)||(type==MPPC_tboth)||(type==Correlation)||(type==PMT_S2_int));
+}
+
+Bool_t AnalysisStates::is_TH1D_hist(Type type)
+{
+	return !((type == Type::PMT_t_S) || (type == Type::MPPC_t_S)||(type== Type::MPPC_coord)||(type==Correlation));
+}
+
+bool AnalysisStates::isComposite (Type type)
+{
+	return ((type == MPPC_coord) || (type == MPPC_coord_x)||(type== MPPC_coord_y)||(type==Correlation)||(type==MPPC_Npe_sum)||(type==MPPC_S2)||(type==PMT_S2_S));
 }
 
 Bool_t AnalysisStates::isValid()
@@ -205,6 +231,31 @@ Bool_t AnalysisStates::isValid()
 	if (mppc_ch && is_PMT_type(current_type))
 		return kFALSE;
 	return kTRUE;
+}
+
+bool AnalysisStates::SetCorrelation(Type x, Type y, int chx, int chy)
+{
+	if (isPerRun(x)&&is_TH1D_hist(x)&&is_TH1D_hist(y)&&isPerRun(y)){
+		bool ok = true;
+		if (channel_to_index(chx, x)<0){
+			std::cout<<"Channel x is invalid."<< std::endl;
+			ok = false;
+		}
+		if (channel_to_index(chy, y)<0){
+			std::cout<<"Channel y is invalid."<< std::endl;
+			ok = false;
+		}
+		if (ok) {
+			_x_corr_ch = chx;
+			_y_corr_ch = chy;
+			_x_corr = x;
+			_y_corr = y;
+		}
+		StateChange(current_channel, current_exp_index, current_type, current_channel, current_exp_index, current_type, ok);
+		return true;
+	} else
+		std::cout<<"Can't uses these types for correlation"<<std::endl;
+	return false;
 }
 
 int AnalysisStates::channel_to_index(int ch)
@@ -294,6 +345,11 @@ std::string AnalysisStates::type_name(Type type)
 	}
 	case Type::MPPC_S2:{
 		name += "_S2_manual";
+		break;
+	}
+	case Type::Correlation:{
+		name += "_Corr:";
+		name += type_name(_x_corr) + "&" + type_name(_y_corr);
 		break;
 	}
 	case Type::PMT_S2_S:{

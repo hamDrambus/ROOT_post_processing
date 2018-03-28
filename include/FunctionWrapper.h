@@ -4,7 +4,7 @@
 #include "GlobalDefinitions.h"
 
 #ifdef __MAKECINT__
-typedef bool(*CUTTER)(std::vector<double>& pars, void* stat_data);
+typedef bool(*CUTTER)(std::vector<double>& pars, int run_n, void* stat_data);
 #endif
 
 class FunctionWrapper {
@@ -14,7 +14,7 @@ protected:
 public:
 	FunctionWrapper(void* stat_data);
 	~FunctionWrapper();
-	Bool_t operator () (std::vector<double> &pars);
+	Bool_t operator () (std::vector<double> &pars, int run_n);
 	void SetFunction(CUTTER f);
 };
 

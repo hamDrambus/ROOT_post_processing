@@ -40,17 +40,18 @@
 #undef max
 #undef min
 
-#define DATA_PREFIX std::string("../Data/171123/results/")
+#define DATA_PREFIX std::string("../Data/180222/results/")
 #define DATA_NAME_FORMAT "^MPPCs_4_thmV/MPPC_\d{2}/MPPC_33_Double_I.dat$"
-#define DATA_MPPC_VERSION "MPPCs_v2"
+#define DATA_MPPC_VERSION "MPPCs_v1"
 #define DATA_PMT_VERSION "PMT_v1"
-#define CALIBRATION_FILE "PMT_SiPM_48V_171123.dat"
+#define CALIBRATION_FILE "PMT_SiPM_46V_180222.dat"
 
-#define OUTPUT_DIR std::string("../Data/171123/results/")
-#define OUTPUT_MPPCS_PICS "MPPCs_v2/MPPCs_"
+#define OUTPUT_DIR std::string("../Data/180222/results/")
+#define OUTPUT_MPPCS_PICS "MPPCs_v1/MPPCs_"
 #define OUTPUT_PMT_PICS "PMT_v1/PMT_"
 #define OUTPUT_MPPCS "MPPC_"
 
+//#define PEAK_AVR_TIME
 //#define WEIGHTED_COORD
 
 //#define STD_CONT std::deque
@@ -65,7 +66,7 @@
 #define DITERATOR std::vector<double>::iterator
 #define D_REV_ITERATOR std::vector<double>::reverse_iterator
 
-typedef bool(*CUTTER)(std::vector<double>& pars, void* stat_data);
+typedef bool(*CUTTER)(std::vector<double>& pars, int run_n, void* stat_data);
 
 void open_output_file(std::string name, std::ofstream &str);
 
@@ -84,7 +85,9 @@ public:
 	double right;
 	double S; //Area
 	double A; //Amplitude (from baseline)
+#ifdef PEAK_AVR_TIME
 	double t;
+#endif
 	peak();
 };
 

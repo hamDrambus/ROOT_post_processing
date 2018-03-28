@@ -11,17 +11,21 @@ class AnalysisStates {
 public:
 	enum Type {
 		MPPC_Ss, MPPC_t_S, MPPC_Double_I, MPPC_S2_S, MPPC_times, MPPC_sum_ts, MPPC_coord, MPPC_coord_x, MPPC_coord_y, MPPC_Npe_sum, MPPC_S2, MPPC_tfinal, MPPC_tstart, MPPC_tboth,
-		PMT_S2_S, PMT_S2_int, PMT_Ss, PMT_t_S, PMT_times};
+		Correlation /*uses x,y Type's cuts*/, PMT_S2_S, PMT_S2_int, PMT_Ss, PMT_t_S, PMT_times};
 protected:
 	const Type _first_state;
 	const Type _last_state;
+	Type _x_corr;
+	Type _y_corr;
+	int _x_corr_ch;
+	int _y_corr_ch;
 	int MPPC_last_ch;
 	int PMT_last_ch;
 	virtual Bool_t StateChange(int to_ch, int to_exp, Type to_type, int from_ch, int from_exp, Type from_type,Bool_t save);
-	Bool_t is_PMT_type(Type type);
 	int channel_to_index(int ch);
 	int channel_to_index(int ch, Type type);
 public:
+	bool SetCorrelation(Type x, Type y, int chx, int chy);
 	int mppc_channel_to_index(int ch);
 	int pmt_channel_to_index(int ch);
 	std::deque<int> MPPC_channels;
@@ -41,6 +45,11 @@ public:
 	Bool_t PrevExp(Bool_t save = kTRUE);
 	Bool_t isValid();
 	Bool_t isMultichannel(Type type);
+	Bool_t is_TH1D_hist(Type type);
+	bool isPerRun (Type type);
+	bool isPerPeak (Type type);
+	bool isComposite (Type type);
+	Bool_t is_PMT_type(Type type);
 };
 
 #endif

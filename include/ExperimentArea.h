@@ -35,7 +35,7 @@
 		//void refine (void); //e.g. [2,3][3,4] to [2,4] |OR| [4,5] [1,7] to [1,7]
 	};
 
-	class experiment_area //done //TODO - make analysis via this class. //->NextFile?
+	class experiment_area
 	{
 	public:
 		enum Type { Area, Point };

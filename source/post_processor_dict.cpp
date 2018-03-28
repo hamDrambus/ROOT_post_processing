@@ -231,6 +231,7 @@ extern int __Cling_Autoloading_Map;
 "R_ISREG", payloadCode, "@",
 "R_ISSOCK", payloadCode, "@",
 "R__H", payloadCode, "@",
+"SetCorr", payloadCode, "@",
 "SetErrorHandler", payloadCode, "@",
 "SignalOperations::Integrate", payloadCode, "@",
 "SignalOperations::Mean", payloadCode, "@",

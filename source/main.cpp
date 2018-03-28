@@ -323,6 +323,15 @@ void set_N_bin(int n)
 	post_processor->set_N_bins(n);
 }
 
+void SetCorr (AnalysisStates::Type x_t, AnalysisStates::Type y_t, int chx, int chy)
+{
+	if (NULL == g_data){
+		state(kFALSE);
+		return;
+	}
+	post_processor->SetCorrelation(x_t, y_t, chx, chy);
+}
+
 void Exit(Bool_t save) //TODO: add deletions
 {
 	if (NULL == g_data){

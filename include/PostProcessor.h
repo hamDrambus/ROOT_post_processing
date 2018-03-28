@@ -14,28 +14,32 @@
 //1) AnalysisStates::AnalysisStates (first/last state)
 //2) AnalysisStates::isMultichannel();
 //3) AnalysisStates::is_PMT_type
-//4) std::string AnalysisStates::type_name(Type type);
-//5) PostProcessor::is_TH1D_hist
+//4) AnalysisStates::isPerRun
+//5) AnalysisStates::isPerPeak
+//6) AnalysisStates::isComposite
+//7) std::string AnalysisStates::type_name(Type type);
+//8) AnalysisStates::is_TH1D_hist
 
-//6) void PostProcessor::LoopThroughData(FunctionWrapper*);
-//7) void PostProcessor::FillHist(void* p_hist)
-//8) int PostProcessor::numOfFills(void);
-//9) std::pair<double, double> PostProcessor::hist_x_limits(void);
-//10) std::pair<double, double> PostProcessor::hist_y_limits(void);
+//9) void PostProcessor::LoopThroughData(FunctionWrapper*);
+//10) void PostProcessor::FillHist(void* p_hist)
+//11) int PostProcessor::numOfFills(void);
+//12) std::pair<double, double> PostProcessor::hist_x_limits(void);
+//13) std::pair<double, double> PostProcessor::hist_y_limits(void);
 
-//11) void PostProcessor::set_default_hist_setups(void);
+//14) void PostProcessor::set_default_hist_setups(void);
 
-//12) void PostProcessor::update_physical(void);
-//13) void PostProcessor::set_limits(double left, double right);
-//14) void PostProcessor::set_drawn_limits(double left, double right);
-//15) void PostProcessor::set_as_run_cut(std::string name)
+//15) void PostProcessor::update_physical(void);
+//16) void PostProcessor::set_limits(double left, double right);
+//17) void PostProcessor::set_drawn_limits(double left, double right);
+//18) void PostProcessor::set_as_run_cut(std::string name)
 
 
 //TODO: rename display_cuts from HistogramSetups (counter-intuitive)
 
 class PostProcessor : public AnalysisStates {
 public:
-	enum UpdateState {Histogram=0x1,FitFunction=0x2,Fit=0x4,Results = 0x8, All = Histogram|FitFunction|Fit|Results, AllFit = FitFunction|Fit};
+	enum UpdateState {Histogram=0x1,FitFunction=0x2,Fit=0x4,Results = 0x8, All = Histogram|FitFunction|Fit|Results, AllFit = FitFunction|Fit,
+		Canvas = 0x10, NewCanvas = Canvas|Histogram|AllFit};
 protected:
 	HistogramSetups* current_setups;
 	TCanvas *current_canvas;
@@ -72,19 +76,18 @@ protected:
 	void set_default_hist_setups(void);//
 
 	TF1* create_fit_function(HistogramSetups* func);
-	void update_fit_function(void); //uses current_fit_func and current_setups
+	void update_fit_function(bool do_delete); //uses current_fit_func and current_setups
 	//TODO: add setting average S2 and double I without manual setups. Maybe as exit() method, which will
 	//set S2 and double integral with NULL HistogramSetups by default and won't touch the calibration
 	void update_physical(void); //2nd and 3rd mandates of ::update(void)
 	void update_Npe(void);		//4th part of ::update(void). TODO: actually it is better to move it to CalibrationInfo.
 
-	Bool_t is_TH1D_hist();
 	std::string hist_name();
 	void print_hist(void);
 	void print_hist(int ch, int exp_ind, Type type);
 
 public:
-	void LoopThroughData(FunctionWrapper* operation);
+	void LoopThroughData(FunctionWrapper* operation, int channel, Type type, bool apply_phys_cuts, bool apply_run_cuts);
 
 	void update(UpdateState to_update = All); //mandates:	1)update current picture. (only displayed histogram but not a png, as well as TLines and TF1)
 	//								2)update physical parameters obtained from the current hist

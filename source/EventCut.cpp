@@ -59,7 +59,7 @@ Bool_t EventCut::GetAccept(int run) const
 	return do_accept[run];
 }
 
-bool EventCut::operator () (std::vector<double> &pars)
+bool EventCut::operator () (std::vector<double> &pars, int run)
 {
-	return ((NULL == value_picker) ? kTRUE : (*value_picker)(pars));
+	return ((NULL == value_picker) ? kTRUE : (*value_picker)(pars, run));
 }

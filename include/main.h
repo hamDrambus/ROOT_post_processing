@@ -39,6 +39,7 @@ void set_1peS(double val);
 void unset_1peS(void);
 void use_mean(Bool_t do_use = kTRUE); //uses mean value of data instead of gauss' mean. May be usefull for S2_S
 void set_N_bin(int n);
+void SetCorr (AnalysisStates::Type x_t, AnalysisStates::Type y_t, int chx, int chy);
 void Exit(Bool_t save = kTRUE);
 
 void add_hist_cut(FunctionWrapper *picker, std::string name, bool update);

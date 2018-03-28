@@ -12,7 +12,7 @@ protected:
 	TVectorD _last_coefs;
 public:
 	PolynomialFit(int order);
-	virtual void setOrder(int n); //TODO: actualluy is is a bad practice to call virtual method from the constructor
+	virtual void setOrder(int n); //TODO: actually is is a bad practice to call virtual method from the constructor
 	//but is is ok here, since derivative class only limits setOrder() possible values to {2}
 
 	int getOrder(void) const;

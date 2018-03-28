@@ -8,7 +8,10 @@
 
 //TODO: some functions must be moved to PostProcessor class. (then I won't need the std::vector<double>* get_data methods)
 
-peak::peak() : right(-1), left(-1), S(-1), A(-1), t(-1)
+peak::peak() : right(-1), left(-1), S(-1), A(-1)
+#ifdef PEAK_AVR_TIME
+,t(-1)
+#endif
 {}
 
 GraphicOutputManager *gr_manager = NULL;
@@ -227,7 +230,7 @@ void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> 
 		exp_area.runs.push_pair(0, 0);
 		exp_area.sub_runs.push_pair(0, 0);
 
-		/*exp_area.experiments.push_back("7kV_SiPM_46V_xray_240Hz_PMT_750V");
+		exp_area.experiments.push_back("7kV_SiPM_46V_xray_240Hz_PMT_750V");
 		exp_area.experiments.push_back("8kV_SiPM_46V_xray_240Hz_PMT_750V");
 		exp_area.experiments.push_back("9kV_SiPM_46V_xray_240Hz");
 		exp_area.experiments.push_back("10kV_SiPM_46V_xray_240Hz");
@@ -235,8 +238,8 @@ void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> 
 		exp_area.experiments.push_back("12kV_SiPM_46V_xray_240Hz");
 		exp_area.experiments.push_back("13kV_SiPM_46V_xray_240Hz");
 		exp_area.experiments.push_back("14kV_SiPM_46V_xray_240Hz");
-		exp_area.experiments.push_back("15kV_SiPM_46V_xray_240Hz_PMT_700V_6dB");*/
-		exp_area.experiments.push_back("Cd_20kV_PMT750_12dB_coll_2mm_real");
+		exp_area.experiments.push_back("15kV_SiPM_46V_xray_240Hz_PMT_700V_6dB");
+		//exp_area.experiments.push_back("Cd_20kV_PMT750_12dB_coll_2mm_real");
 		//exp_area.experiments.push_back("x_ray_20kV_PMT550_0dB_coll_2mm");
 	}
 //};

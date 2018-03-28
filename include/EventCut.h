@@ -34,7 +34,7 @@ public:
 	void SetPicker(FunctionWrapper *picker);
 	FunctionWrapper* GetPicker(void) const;
 
-	bool operator () (std::vector<double> &pars);
+	bool operator () (std::vector<double> &pars, int run);
 
 	void SetExperiment(int exp_ind);
 	int GetExperiment(void) const;
