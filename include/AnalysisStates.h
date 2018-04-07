@@ -7,11 +7,12 @@
 //several state groups like: MPPCs with their types, PMT slow (ch0-1), PMT fast (ch8,12) and possibly more.
 //TODO: PMT_times now is valid for both ch{0,1} and ch{8,12} whereas it should be only for the latter.
 //similar goes for PMT_S2_S, PMT_Ss. PMT_t_S is good for both.
+//TODO: CorrelationAll is not only multichannel but also multiexperiment.
 class AnalysisStates {
 public:
 	enum Type {
 		MPPC_Ss, MPPC_t_S, MPPC_Double_I, MPPC_S2_S, MPPC_times, MPPC_sum_ts, MPPC_coord, MPPC_coord_x, MPPC_coord_y, MPPC_Npe_sum, MPPC_S2, MPPC_tfinal, MPPC_tstart, MPPC_tboth,
-		Correlation /*uses x,y Type's cuts*/, PMT_S2_S, PMT_S2_int, PMT_Ss, PMT_t_S, PMT_times};
+		Correlation /*uses x,y Type's cuts*/,CorrelationAll, PMT_S2_S, PMT_S2_int, PMT_Ss, PMT_t_S, PMT_times};
 protected:
 	const Type _first_state;
 	const Type _last_state;

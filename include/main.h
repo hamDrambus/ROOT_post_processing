@@ -28,6 +28,10 @@ void do_fit(Bool_t update_vis);
 void draw_limits(double left, double right);
 void impose_limits(double left, double right);
 void unset_limits(void);
+void set_zoom (double xl, double xr);
+void set_zoom_y (double yl, double yr);
+void set_zoom (double xl, double xr, double yl, double yr);
+void unset_zoom(bool do_update = true);
 void next_canvas(void); //creates new canvas, so the current one will stay unchanged
 void set_calib_N(int from, int to);//in order to set default use invalid values
 void draw_Npe(void);

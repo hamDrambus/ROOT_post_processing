@@ -50,6 +50,9 @@ protected:
 	TLine *current_vert_line0;
 	TLine *current_vert_line1;
 	
+	std::pair<double, double> x_zoom, y_zoom;
+	std::pair<bool, bool> is_zoomed;
+
 	AllExperimentsResults* data;
 
 	//experiment->channel->{Ss,S2_S,Double_I}
@@ -107,6 +110,7 @@ public:
 	void add_hist_cut(FunctionWrapper* picker, std::string name, int channel, bool update = true);
 	void remove_hist_cut(std::string name = "", bool update = true);
 	void remove_hist_cut(std::string name, int ch, bool update = true);
+	void remove_phys_cut(std::string name, bool update = true);
 	void set_as_run_cut(std::string name = "");//adds current drawn_limits in HistogramSetups to runs cut (from current exp, channel and type)
 	void unset_as_run_cut(std::string name = "");//deletes current exp,ch and type from current cuts (if present) deletes from back, that is
 	//if a single exp,ch,type produces several EventCuts, unset must be called respective amount of times
@@ -117,6 +121,11 @@ public:
 	void set_drawn_limits(double left, double right);
 	void unset_limits(void);
 	void unset_drawn_limits(void);
+
+	void set_zoom (double xl, double xr);
+	void set_zoom_y (double yl, double yr);
+	void set_zoom (double xl, double xr, double yl, double yr);
+	void unset_zoom(bool do_update = true);
 
 	void set_fit_gauss(int N);
 	void set_parameter_val(int index, double val);

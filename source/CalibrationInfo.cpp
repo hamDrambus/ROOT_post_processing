@@ -7,10 +7,14 @@ state_info(data)
 	for (auto i = state_info->experiments.begin(); i != state_info->experiments.end(); ++i) {
 		avr_S1pe.push_back(std::deque<double>());
 		avr_S2pe.push_back(std::deque<double>());
+		avr_S1pe_w.push_back(std::deque<int>());
+		avr_S2pe_w.push_back(std::deque<int>());
 		method.push_back(std::deque<S1pe_method>());
 		for (auto ff = state_info->MPPC_channels.begin(); ff != state_info->MPPC_channels.end(); ++ff){
 			avr_S1pe.back().push_back(-1);
 			avr_S2pe.back().push_back(-1);
+			avr_S1pe_w.back().push_back(0);
+			avr_S2pe_w.back().push_back(0);
 			method.back().push_back(Ignore);
 		}
 	}
@@ -36,14 +40,14 @@ double CalibrationInfo::calculateS1pe(int channel)
 		if (Using1pe == method[exp_ind][ch_ind] || Using1pe2pe == method[exp_ind][ch_ind] 
 			|| UsingMean == method[exp_ind][ch_ind]){
 			if (avr_S1pe[exp_ind][ch_ind] > 0){
-				val += avr_S1pe[exp_ind][ch_ind];
-				n_used++;
+				val += avr_S1pe[exp_ind][ch_ind]*avr_S1pe_w[exp_ind][ch_ind];
+				n_used+= avr_S1pe_w[exp_ind][ch_ind];
 			}
 		}
 		if (Using2pe == method[exp_ind][ch_ind] || Using1pe2pe == method[exp_ind][ch_ind]){
 			if (avr_S2pe[exp_ind][ch_ind] > 0){
-				val += 0.5*avr_S2pe[exp_ind][ch_ind];
-				n_used++;
+				val += 0.5*avr_S2pe[exp_ind][ch_ind]*avr_S2pe_w[exp_ind][ch_ind];
+				n_used += avr_S2pe_w[exp_ind][ch_ind];
 			}
 		}
 	}
@@ -80,10 +84,10 @@ void CalibrationInfo::unsetS1pe(int ch)
 double CalibrationInfo::getPMT_S1pe(int ch, int exp_ind)
 {
 	double ratio = 1;
-	if (PMT_dB.find(state_info->experiments[exp_ind])!=PMT_dB.end()){
+	if (PMT_dB.find(state_info->experiments[exp_ind])!=PMT_dB.end()) {
 		ratio = PMT_dB.find(state_info->experiments[exp_ind])->second;
 	}
-	if (PMT_V.find(state_info->experiments[exp_ind])!=PMT_V.end()){
+	if (PMT_V.find(state_info->experiments[exp_ind])!=PMT_V.end()) {
 		double V = PMT_V.find(state_info->experiments[exp_ind])->second;
 		if (0==ch){
 			if (s1pe_PMT3.find(V)!=s1pe_PMT3.end()) {
@@ -91,7 +95,7 @@ double CalibrationInfo::getPMT_S1pe(int ch, int exp_ind)
 			}
 		} else { //1==ch
 			if (s1pe_PMT1.find(V)!=s1pe_PMT1.end()) {
-				return (s1pe_PMT1.find(V)->second)/ratio;
+				return (s1pe_PMT1.find(V)->second);
 			}
 		}
 	}
@@ -141,15 +145,22 @@ void CalibrationInfo::set_method(int exp_ch, int ch, S1pe_method meth)
 	if (ch_ind < 0)
 		return;
 	method[exp_ch][ch_ind] = meth;
+	if (Ignore==meth) { //TODO: actually in other cases update is required as well.
+		avr_S1pe[exp_ch][ch_ind] = -1;
+		avr_S1pe_w[exp_ch][ch_ind] = 0;
+		avr_S2pe[exp_ch][ch_ind] = -1;
+		avr_S2pe_w[exp_ch][ch_ind] = 0;
+	}
 }
 
-//setters/getters for avr_S1pe and avr_S2pe which are used for s1pe calcualtions
-void CalibrationInfo::set_S1pe(int ch, int exp_index, double val)
+//setters/getters for avr_S1pe and avr_S2pe which are used for s1pe calculations
+void CalibrationInfo::set_S1pe(int ch, int exp_index, double val, int weight)
 {
 	int ch_ind = state_info->mppc_channel_to_index(ch);
 	if (ch_ind < 0)
 		return;
 	avr_S1pe[exp_index][ch_ind] = val;
+	avr_S1pe_w[exp_index][ch_ind] = weight;
 	calculateS1pe(ch);
 }
 double CalibrationInfo::get_S1pe(int ch, int exp_index)
@@ -159,12 +170,13 @@ double CalibrationInfo::get_S1pe(int ch, int exp_index)
 		return -1;
 	return avr_S1pe[exp_index][ch_ind];
 }
-void CalibrationInfo::set_S2pe(int ch, int exp_index, double val)
+void CalibrationInfo::set_S2pe(int ch, int exp_index, double val, int weight)
 {
 	int ch_ind = state_info->mppc_channel_to_index(ch);
 	if (ch_ind < 0)
 		return;
 	avr_S2pe[exp_index][ch_ind] = val;
+	avr_S2pe_w[exp_index][ch_ind] = weight;
 	calculateS1pe(ch);
 }
 double CalibrationInfo::get_S2pe(int ch, int exp_index)

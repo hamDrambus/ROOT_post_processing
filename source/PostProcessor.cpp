@@ -11,6 +11,9 @@ AnalysisStates(_data->mppc_channels,_data->pmt_channels, _data->exp_area.experim
 	current_hist2 = NULL;
 	current_fit_func = NULL;
 
+	is_zoomed.first = false;
+	is_zoomed.second = false;
+
 	if (!isValid()){
 		std::cout << "Wrong input data: no channels or experiments from AnalysisManager" << std::endl;
 		return;
@@ -75,14 +78,25 @@ void PostProcessor::print_hist(int ch, int exp_ind, Type type)
 	std::string name;
 	if (isMultichannel(type)) {
 		name = OUTPUT_DIR + (is_PMT_type(type) ? OUTPUT_PMT_PICS : OUTPUT_MPPCS_PICS) + g_data->exp_area.experiments[exp_ind]
-			+ type_name(type)+".png";
+			+ type_name(type);
 	} else {
 		name = OUTPUT_DIR + (is_PMT_type(type) ? OUTPUT_PMT_PICS : OUTPUT_MPPCS_PICS) + g_data->exp_area.experiments[exp_ind]
 			+ "/" + (is_PMT_type(type) ? "PMT_" : "MPPC_") + std::to_string(ch)
 			+ "/" + (is_PMT_type(type) ? "PMT_" : "MPPC_") + std::to_string(ch)
-			+ type_name(type)+".png";
+			+ type_name(type);
 	}
-	current_canvas->SaveAs(name.c_str(), "png");
+	current_canvas->SaveAs((name+".png").c_str(), "png");
+	std::ofstream str;
+	open_output_file(name+".hdata", str);
+	if (is_TH1D_hist(type)) {
+		for (int i=1, _end_ = current_hist1->GetNbinsX();i<=_end_;++i)
+			str<<current_hist1->GetBinCenter(i)<<"\t"<<current_hist1->GetBinContent(i)<<std::endl;
+	} else {
+		for (int i=1, _end_ = current_hist2->GetNbinsX();i<=_end_;++i)
+			for (int j=1, _end_2 = current_hist2->GetNbinsY();j<=_end_2;++j)
+				str<<current_hist2->GetXaxis()->GetBinCenter(i)<<"\t"<<current_hist2->GetYaxis()->GetBinCenter(j)<<"\t"<<current_hist2->GetBinContent(i,j)<<std::endl;
+	}
+	str.close();
 }
 
 
@@ -92,9 +106,10 @@ Bool_t PostProcessor::StateChange(int to_ch, int to_exp, Type to_type, int from_
 		print_hist(from_ch,from_exp,from_type);
 		post_processor->set_hist_setups(current_setups, data->exp_area.experiments[from_exp], from_ch, from_type);
 	}
-	if (!AnalysisStates::StateChange(to_ch, to_exp, to_type, from_ch, from_exp, from_type,save)){
+	if (!AnalysisStates::StateChange(to_ch, to_exp, to_type, from_ch, from_exp, from_type, save)){
 		return kFALSE; //no change
 	}
+	unset_zoom(false);
 	current_setups = get_hist_setups(data->exp_area.experiments[to_exp], to_ch, to_type);
 	if (NULL == current_setups){
 		current_setups = new HistogramSetups();
@@ -469,7 +484,11 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation, int channel, Typ
 				if (kFALSE == cut->GetAccept(run))//not calculating it here!
 					goto _9cutted;
 			for (int chan_ind=0,_ch_ind_end_= MPPC_channels.size(); chan_ind!=_ch_ind_end_;++chan_ind) {
-				for (int pk = 0, pk_end = data->mppc_peaks[current_exp_index][ch_ind][run].size(); pk != pk_end; ++pk) {
+				for (int pk = 0, pk_end = data->mppc_peaks[current_exp_index][chan_ind][run].size(); pk != pk_end; ++pk) {
+					if((run==1544)||(run==1545)){
+						double temp =0;
+						temp*=temp;
+					}
 					cut_data[0] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].S;
 					cut_data[1] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].A;
 					cut_data[2] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].left;
@@ -512,7 +531,7 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation, int channel, Typ
 			Npe_max = 0;
 			Npes[MPPC_channels.size()] =0;
 			Npes[MPPC_channels.size()+1] = 0;
-			for (int chan_ind=0,_ch_ind_end_= MPPC_channels.size(); chan_ind<_ch_ind_end_;++chan_ind) {
+			for (int chan_ind=0,_ch_ind_end_= MPPC_channels.size(); chan_ind<_ch_ind_end_; ++chan_ind) {
 				double S2 = 0;
 				for (int pk = 0, pk_end = data->mppc_peaks[current_exp_index][chan_ind][run].size(); pk != pk_end; ++pk) {
 					cut_data[0] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].S;
@@ -579,7 +598,7 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation, int channel, Typ
 				if (kFALSE == cut->GetAccept(run))//not calculating it here!
 					goto _11cutted;
 			Npes[MPPC_channels.size()]=0;
-			for (int chan_ind=0,_ch_ind_end_= MPPC_channels.size(); chan_ind<_ch_ind_end_;++chan_ind){
+			for (int chan_ind=0,_ch_ind_end_= MPPC_channels.size(); chan_ind<_ch_ind_end_;++chan_ind) {
 				double S2 = 0;
 				for (int pk = 0, pk_end = data->mppc_peaks[current_exp_index][chan_ind][run].size(); pk != pk_end; ++pk) {
 					cut_data[0] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].S;
@@ -732,6 +751,123 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation, int channel, Typ
 		delete vals_y;
 		break;
 	}
+	case Type::CorrelationAll: //it has its own cuts.
+	{
+		int ch_x_ind = channel_to_index(_x_corr_ch, _x_corr);
+		int ch_y_ind = channel_to_index(_y_corr_ch, _y_corr);
+		int actual_current_exp = current_exp_index;
+		struct temp_data {
+			std::vector<double> * vals;
+			std::vector<short> * cuts;
+			int ch_size;
+		} stat_data_x, stat_data_y;
+		std::vector<double> vals(2);
+		for (int exp_ind=0,_end_exp = experiments.size();exp_ind!=_end_exp;++exp_ind) {
+			int run_size = (is_PMT_type(_x_corr) ? data->pmt_peaks[exp_ind][ch_x_ind].size() : data->mppc_peaks[exp_ind][ch_x_ind].size());
+			if (run_size !=(is_PMT_type(_y_corr) ? data->pmt_peaks[exp_ind][ch_y_ind].size() : data->mppc_peaks[exp_ind][ch_y_ind].size())) {
+				std::cout<<"LoopThroughData Error: run size mismatch";
+				break;
+			}
+			std::vector<double>* vals_x, *vals_y;
+			std::vector<short> *cuts;
+			vals_x = new std::vector<double>;
+			vals_y = new std::vector<double>;
+			cuts = new std::vector<short>;
+			vals_x->resize(run_size);
+			vals_y->resize(run_size);
+			cuts->resize(run_size, 0);
+
+			stat_data_x.vals = vals_x;
+			stat_data_x.cuts = cuts;
+			stat_data_x.ch_size = MPPC_channels.size();
+			stat_data_y.vals = vals_y;
+			stat_data_y.cuts = cuts;
+			stat_data_y.ch_size = MPPC_channels.size();
+			FunctionWrapper* X_filler = new FunctionWrapper(&stat_data_x);
+			FunctionWrapper* Y_filler = new FunctionWrapper(&stat_data_y);
+
+			if (Type::MPPC_coord_y==_x_corr) {
+				X_filler->SetFunction([](std::vector<double> &pars, int run, void* data){
+					std::vector<double> * vals = ((temp_data*)data)->vals;
+					std::vector<short> * cuts = ((temp_data*)data)->cuts;
+					(*cuts)[run] += 1;
+					(*vals)[run] = pars[((temp_data*)data)->ch_size+1];
+					return true;
+				});
+			} else {
+				if ((Type::MPPC_coord_x==_x_corr)||(Type::MPPC_Npe_sum==_x_corr)) {
+					X_filler->SetFunction([](std::vector<double> &pars, int run, void* data){
+						std::vector<double> * vals = ((temp_data*)data)->vals;
+						std::vector<short> * cuts = ((temp_data*)data)->cuts;
+						(*cuts)[run] += 1;
+						(*vals)[run] = pars[((temp_data*)data)->ch_size];
+						return true;
+					});
+				} else {
+					X_filler->SetFunction([](std::vector<double> &pars, int run, void* data){
+						std::vector<double> * vals = ((temp_data*)data)->vals;
+						std::vector<short> * cuts = ((temp_data*)data)->cuts;
+						(*cuts)[run] += 1;
+						(*vals)[run] = pars[0];
+						return true;
+					});
+				}
+			}
+			if (Type::MPPC_coord_y==_y_corr) {
+				Y_filler->SetFunction([](std::vector<double> &pars, int run, void* data){
+					std::vector<double> * vals = ((temp_data*)data)->vals;
+					std::vector<short> * cuts = ((temp_data*)data)->cuts;
+					(*cuts)[run] += 1;
+					(*vals)[run] = pars[((temp_data*)data)->ch_size+1];
+					return true;
+				});
+			} else {
+				if ((Type::MPPC_coord_x==_y_corr)||(Type::MPPC_Npe_sum==_y_corr)) {
+					Y_filler->SetFunction([](std::vector<double> &pars, int run, void* data){
+						std::vector<double> * vals = ((temp_data*)data)->vals;
+						std::vector<short> * cuts = ((temp_data*)data)->cuts;
+						(*cuts)[run] += 1;
+						(*vals)[run] = pars[((temp_data*)data)->ch_size];
+						return true;
+					});
+				} else {
+					Y_filler->SetFunction([](std::vector<double> &pars, int run, void* data){
+						std::vector<double> * vals = ((temp_data*)data)->vals;
+						std::vector<short> * cuts = ((temp_data*)data)->cuts;
+						(*cuts)[run] += 1;
+						(*vals)[run] = pars[0];
+						return true;
+					});
+				}
+			}
+
+			current_exp_index = exp_ind; //TODO: add passing of exp_index to LoopThroughData instead of this trick.
+			LoopThroughData(X_filler, _x_corr_ch, _x_corr, false, true);
+			LoopThroughData(Y_filler, _y_corr_ch, _y_corr, false, true);
+
+			for (auto run = 0; run != run_size; ++run) {
+				if (2==(*cuts)[run]) {
+					vals[0] = (*vals_x)[run];
+					vals[1] = (*vals_y)[run];
+					for (auto cut = setups->phys_hist_cuts.begin(), c_end_ = setups->phys_hist_cuts.end(); apply_phys_cuts&&(cut != c_end_); ++cut)
+						if (kFALSE == (*cut)(vals, run))
+							goto _13cutted;
+					for (auto cut = setups->display_hist_cuts.begin(), c_end_ = setups->display_hist_cuts.end(); cut != c_end_; ++cut)
+						if (kFALSE == (*cut)(vals, run))
+							goto _13cutted;
+					(*operation)(vals, run);
+					_13cutted:;
+				}
+			}
+			delete X_filler;
+			delete Y_filler;
+			delete cuts;
+			delete vals_x;
+			delete vals_y;
+		}
+		current_exp_index = actual_current_exp;
+		break;
+	}
 	}
 	if (to_delete_setups)
 		delete setups;
@@ -812,6 +948,7 @@ void PostProcessor::FillHist(void* p_hist)//considers cuts and histogram tipe (v
 
 	}
 	case Type::Correlation:
+	case Type::CorrelationAll:
 	{
 		filler_op = [](std::vector<double>& pars, int run, void* data) {
 			((TH2D*)((temp_data*)data)->phist)->Fill(pars[0],pars[1]);
@@ -866,6 +1003,7 @@ std::pair<double, double> PostProcessor::hist_y_limits(void) //considering cuts
 		delete histogram_filler;
 		break;
 	}
+	case Type::CorrelationAll:
 	case Type::Correlation:
 	{
 		FunctionWrapper* histogram_filler = new FunctionWrapper(&st_data);
@@ -924,6 +1062,7 @@ std::pair<double, double> PostProcessor::hist_x_limits(void) //valid only for 2d
 	case Type::PMT_S2_int:
 	case Type::PMT_Ss:
 	case Type::Correlation:
+	case Type::CorrelationAll:
 	{
 		filler_op = [](std::vector<double>& pars, int run, void* data) {
 			std::pair<double,double>* p = ((temp_data*)data)->mm;
@@ -1115,6 +1254,7 @@ void PostProcessor::set_default_hist_setups(void)//does not affect cuts
 	case Type::PMT_S2_S:
 	case Type::PMT_S2_int:
 	case Type::Correlation:
+	case Type::CorrelationAll:
 	{
 		current_setups->N_gauss = 0;
 		current_setups->par_val.resize(0, 0);
@@ -1232,28 +1372,30 @@ void PostProcessor::update(UpdateState to_update)//TODO: optimize it?
 	x_lims.second+=(x_lims.second-x_lims.first)/current_setups->N_bins;
 	current_setups->left_limit = x_lims.first;
 	current_setups->right_limit = x_lims.second;
-	std::pair<double, double> y_lims = hist_y_limits();
-	current_setups->bottom_limit = std::min(y_lims.second, y_lims.first);
-	current_setups->top_limit = std::max(y_lims.second, y_lims.first);
-
+	if (!is_TH1D_hist(current_type)) {
+		std::pair<double, double> y_lims = hist_y_limits();
+		current_setups->bottom_limit = std::min(y_lims.second, y_lims.first);
+		current_setups->top_limit = std::max(y_lims.second, y_lims.first);
+	}
 	if (current_setups->phys_hist_cuts.empty()) { //no drawn limit
 		current_setups->left_drawn_limit = x_lims.first;
 		current_setups->right_drawn_limit = x_lims.second;
 	}
-	if (to_update&UpdateState::Histogram){
-		if (is_TH1D_hist(current_type)){
+	if (to_update&UpdateState::Histogram) {
+		if (is_TH1D_hist(current_type)) {
 			if (current_hist1 && !(to_update&UpdateState::Canvas))
 				current_hist1->Delete();
-			current_hist1 = new TH1D(hist_name().c_str(), hist_name().c_str(),
-				current_setups->N_bins, current_setups->left_limit, current_setups->right_limit);
+			current_hist1 = new TH1D(hist_name().c_str(), hist_name().c_str(), current_setups->N_bins,
+					(is_zoomed.first ? x_zoom.first :  current_setups->left_limit), (is_zoomed.first ? x_zoom.second :  current_setups->right_limit));
 			FillHist(current_hist1);
 		}
 		else {
 			if (current_hist2&&!(to_update&UpdateState::Canvas))
 				current_hist2->Delete();
-			current_hist2 = new TH2D(hist_name().c_str(), hist_name().c_str(),
-				current_setups->N_bins, current_setups->left_limit, current_setups->right_limit,
-				current_setups->N_bins, current_setups->bottom_limit, current_setups->top_limit);
+			current_hist2 = new TH2D(hist_name().c_str(), hist_name().c_str(), current_setups->N_bins,
+					(is_zoomed.first ? x_zoom.first :  current_setups->left_limit), (is_zoomed.first ? x_zoom.second :  current_setups->right_limit),
+					current_setups->N_bins,
+					(is_zoomed.second ? y_zoom.first : current_setups->bottom_limit), (is_zoomed.second ? y_zoom.second : current_setups->top_limit));
 			FillHist(current_hist2);
 		}
 	}
@@ -1268,10 +1410,11 @@ void PostProcessor::update(UpdateState to_update)//TODO: optimize it?
 			current_hist1->Draw();
 	} else {
 		if (current_hist2)
-			current_hist2->Draw();
+			current_hist2->Draw(/*"lego"*/);
 	}
 	if ((current_fit_func)&&(current_setups->fitted))
 		current_fit_func->Draw("same");
+	current_canvas->Update();
 	if (current_setups->left_drawn_limit > current_setups->left_limit){
 		if ((NULL == current_vert_line0)||(to_update&UpdateState::Canvas))
 			current_vert_line0 = new TLine();
@@ -1399,20 +1542,20 @@ void PostProcessor::update_physical(void)
 			if (0==stat_data.weight)
 				std::cout << "Warning! No mean calibration Ss value for " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
 			else
-				calibr_info.set_S1pe(current_channel, current_exp_index, stat_data.val / (double)stat_data.weight);
+				calibr_info.set_S1pe(current_channel, current_exp_index, stat_data.val / (double)stat_data.weight, stat_data.weight);
 			calibr_info.calculateS1pe(current_channel);
 			break;
 		}
-		if (meth == CalibrationInfo::Using1pe || meth == CalibrationInfo::Using1pe2pe){
+		if (meth == CalibrationInfo::Using1pe || meth == CalibrationInfo::Using1pe2pe) {
 			if (current_setups->N_gauss>0 && current_setups->fitted)
-				calibr_info.set_S1pe(current_channel, current_exp_index, current_setups->par_val[1]);
+				calibr_info.set_S1pe(current_channel, current_exp_index, current_setups->par_val[1], 1/*TODO: add calculation of N under fit*/);
 			else {
 				std::cout << "Warning! No calibration S1pe value for  " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
 			}
 		}
-		if (meth == CalibrationInfo::Using2pe || meth == CalibrationInfo::Using1pe2pe){
+		if (meth == CalibrationInfo::Using2pe || meth == CalibrationInfo::Using1pe2pe) {
 			if (current_setups->N_gauss>=2 && current_setups->fitted)
-				calibr_info.set_S2pe(current_channel, current_exp_index, current_setups->par_val[4]);
+				calibr_info.set_S2pe(current_channel, current_exp_index, current_setups->par_val[4], 1/*TODO: add calculation of N under fit*/);
 			else {
 				std::cout << "Warning! No calibration S2pe value for  " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
 			}
@@ -1537,6 +1680,26 @@ void PostProcessor::add_hist_cut(FunctionWrapper* picker, std::string name, int 
 		update(All);
 }
 
+void PostProcessor::remove_phys_cut(std::string name, bool do_update)
+{
+	if (!isValid()){
+		std::cout << "Wrong input data: no channels or experiments from AnalysisManager" << std::endl;
+		return;
+	}
+	while (true) {
+		for (auto i = current_setups->phys_hist_cuts.rbegin(); i != current_setups->phys_hist_cuts.rend(); ++i) {
+			if (i->GetName() == name){
+				current_setups->phys_hist_cuts.erase((i+1).base());
+				goto anew;
+			}
+		}
+		if (do_update)
+			update(All);
+		break;
+		anew:;
+	}
+}
+
 void PostProcessor::remove_hist_cut(std::string name, bool do_update)
 {
 	if (!isValid()){
@@ -1581,6 +1744,10 @@ void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits 
 {
 	if (!isValid()) {
 		std::cout << "Wrong input data: no channels or experiments from AnalysisManager" << std::endl;
+		return;
+	}
+	if (current_type==CorrelationAll) { //TODO: add isMultiExperiment()
+		std::cout<<"Can't use multi E data for run cut."<<std::endl;
 		return;
 	}
 	int run_size = is_PMT_type(current_type) ? 
@@ -1727,6 +1894,7 @@ void PostProcessor::set_limits(double left, double right)
 	case PMT_Ss:
 	case PMT_t_S:
 	case Correlation:
+	case CorrelationAll:
 	{
 		picker->SetFunction( [](std::vector<double> &vals, int run, void* data) {
 			return ((vals[0] <=((temp_data*)data)->mm.second) && (vals[0] >= ((temp_data*)data)->mm.first));
@@ -1760,13 +1928,7 @@ void PostProcessor::set_drawn_limits(double left, double right)
 		return;
 	}
 	std::string name = "_histogram_drawn_limits_";
-	if (isMultichannel(current_type)){
-		for (int ch=0; ch!=MPPC_channels.size(); ++ch) {
-			remove_hist_cut("_histogram_drawn_limits_", MPPC_channels[ch], false);
-		}
-		remove_hist_cut("_histogram_drawn_limits_", -1, false);
-	} else
-		remove_hist_cut("_histogram_drawn_limits_", false);
+	remove_phys_cut(name,false);
 
 	double _left = std::min(left, right);
 	double _right = std::max(left, right);
@@ -1829,6 +1991,7 @@ void PostProcessor::set_drawn_limits(double left, double right)
 	case PMT_Ss:
 	case PMT_t_S:
 	case Correlation:
+	case CorrelationAll:
 	{
 		picker->SetFunction( [](std::vector<double> &vals, int run, void* data) {
 			return ((vals[0] <=((temp_data*)data)->mm.second) && (vals[0] >= ((temp_data*)data)->mm.first));
@@ -1880,14 +2043,43 @@ void PostProcessor::unset_drawn_limits(void)
 		std::cout << "Wrong input data: no channels or experiments from AnalysisManager" << std::endl;
 		return;
 	}
-	if (isMultichannel(current_type)){
-		for (int ch=0; ch!=MPPC_channels.size(); ++ch) {
-			remove_hist_cut("_histogram_drawn_limits_", MPPC_channels[ch], false);
-		}
-		remove_hist_cut("_histogram_drawn_limits_", -1, false);
-	} else
-		remove_hist_cut("_histogram_drawn_limits_", false);
-	update(All);
+	remove_phys_cut("_histogram_drawn_limits_", true);
+}
+
+void PostProcessor::set_zoom (double xl, double xr)
+{
+	is_zoomed.first = true;
+	x_zoom.first = std::min(xl, xr);
+	x_zoom.second = std::max(xl, xr);
+	update(Histogram);
+}
+void PostProcessor::set_zoom_y (double yl, double yr)
+{
+	if (is_TH1D_hist(current_type)){
+		std::cout<<"can't set y zoom for TH1D histogram"<<std::endl;
+		return;
+	}
+	is_zoomed.second = true;
+	y_zoom.first = std::min(yl, yr);
+	y_zoom.second = std::max(yl, yr);
+	update(Histogram);
+}
+void PostProcessor::set_zoom (double xl, double xr, double yl, double yr)
+{
+	is_zoomed.first = true;
+	is_zoomed.second = true;
+	x_zoom.first = std::min(xl, xr);
+	x_zoom.second = std::max(xl, xr);
+	y_zoom.first = std::min(yl, yr);
+	y_zoom.second = std::max(yl, yr);
+	update(Histogram);
+}
+void PostProcessor::unset_zoom(bool do_update)
+{
+	is_zoomed.first = false;
+	is_zoomed.second = false;
+	if (do_update)
+		update(Histogram);
 }
 
 void PostProcessor::set_fit_gauss(int N)

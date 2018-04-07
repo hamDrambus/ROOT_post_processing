@@ -20,8 +20,10 @@ protected:
 	std::deque<std::pair<int, int> > N_used_in_calibration; //that is for calculating s1pe (S of 1 photoelectron)
 	//experiment->channel
 	std::deque<std::deque<S1pe_method> > method;
-	std::deque<std::deque<double> > avr_S1pe;//from manual fitting/analysing of histograms and with cuts applied
+	std::deque<std::deque<double> > avr_S1pe;//from manual fitting/analyzing of histograms and with cuts applied
 	std::deque<std::deque<double> > avr_S2pe;
+	std::deque<std::deque<int> > avr_S1pe_w;
+	std::deque<std::deque<int> > avr_S2pe_w;
 
 	std::deque<Bool_t> forced_s1pe;
 	std::deque<double> s1pe;	//for each mppc channel
@@ -52,9 +54,9 @@ public:
 	void set_method(int exp_ch, int ch, S1pe_method method);
 
 	//setters/getters for avr_S1pe and avr_S2pe which are used for s1pe calcualtions
-	void set_S1pe(int ch, int exp_index, double val);
+	void set_S1pe(int ch, int exp_index, double val, int weight);
 	double get_S1pe(int ch, int exp_index);
-	void set_S2pe(int ch, int exp_index, double val);
+	void set_S2pe(int ch, int exp_index, double val, int weight);
 	double get_S2pe(int ch, int exp_index);
 
 	std::deque<std::deque<std::pair<Bool_t, Bool_t> > > &recalibrate(std::deque<std::deque<double> > &S2_S,

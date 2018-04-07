@@ -15,7 +15,7 @@ AllRunsResults::AllRunsResults(/*ParameterPile::*/experiment_area experiment)
 				pmt_S2_integral.push_back(std::vector<double>());
 				vector_from_file(pmt_peaks.back(), prefix + "peaks.dat");
 				vector_from_file(pmt_S2_integral.back(), prefix + "S2_int.dat");
-				if (pmt_peaks.back().empty()/*todo||pmt_S2_integral.back().empty()*/){
+				if (pmt_peaks.back().empty()||pmt_S2_integral.back().empty()) {
 					pmt_channels.pop_back();
 					pmt_peaks.pop_back();
 					pmt_S2_integral.pop_back();

@@ -10,7 +10,7 @@
   S2_times[7]= std::pair<double,double>(40, 70);//14
   S2_times[8]= std::pair<double,double>(40, 69);//15
   
-  int exp_ind_start=post_processor->current_exp_index;
+  exp_ind_start=post_processor->current_exp_index;
   do {
     set_fit_gauss(0);
     for(int ch_ind =0, ch_end = post_processor->MPPC_channels.size();ch_ind!=ch_end;++ch_ind) {

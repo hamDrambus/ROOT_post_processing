@@ -203,6 +203,39 @@ void unset_limits(void)
 	post_processor->unset_limits();
 }
 
+void set_zoom (double xl, double xr)
+{
+	if (NULL == g_data){
+		state(kFALSE);
+		return;
+	}
+	post_processor->set_zoom(xl, xr);
+}
+void set_zoom_y (double yl, double yr)
+{
+	if (NULL == g_data){
+		state(kFALSE);
+		return;
+	}
+	post_processor->set_zoom_y(yl, yr);
+}
+void set_zoom (double xl, double xr, double yl, double yr)
+{
+	if (NULL == g_data) {
+		state(kFALSE);
+		return;
+	}
+	post_processor->set_zoom(xl, xr, yl, yr);
+}
+void unset_zoom(bool do_update)
+{
+	if (NULL == g_data){
+		state(kFALSE);
+		return;
+	}
+	post_processor->unset_zoom(do_update);
+}
+
 void next_canvas(void) //creates new canvas, so the current one will stay unchanged
 {
 	if (NULL == g_data){

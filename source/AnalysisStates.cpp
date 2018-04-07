@@ -182,7 +182,7 @@ Bool_t AnalysisStates::is_PMT_type(Type type)
 
 Bool_t AnalysisStates::isMultichannel(Type type)
 {
-	return (type == MPPC_sum_ts)||(type==MPPC_coord)||(type==MPPC_coord_x)||(type==MPPC_coord_y)||(type==MPPC_Npe_sum)||(type==Correlation);
+	return (type == MPPC_sum_ts)||(type==MPPC_coord)||(type==MPPC_coord_x)||(type==MPPC_coord_y)||(type==MPPC_Npe_sum)||(type==Correlation)||(type==CorrelationAll);
 }
 
 bool AnalysisStates::isPerRun (Type type)
@@ -197,12 +197,12 @@ bool AnalysisStates::isPerPeak (Type type)
 
 Bool_t AnalysisStates::is_TH1D_hist(Type type)
 {
-	return !((type == Type::PMT_t_S) || (type == Type::MPPC_t_S)||(type== Type::MPPC_coord)||(type==Correlation));
+	return !((type == Type::PMT_t_S) || (type == Type::MPPC_t_S)||(type== Type::MPPC_coord)||(type==Correlation)||(type==CorrelationAll));
 }
 
 bool AnalysisStates::isComposite (Type type)
 {
-	return ((type == MPPC_coord) || (type == MPPC_coord_x)||(type== MPPC_coord_y)||(type==Correlation)||(type==MPPC_Npe_sum)||(type==MPPC_S2)||(type==PMT_S2_S));
+	return ((type == MPPC_coord) || (type == MPPC_coord_x)||(type== MPPC_coord_y)||(type==Correlation)||(type==CorrelationAll)||(type==MPPC_Npe_sum)||(type==MPPC_S2)||(type==PMT_S2_S));
 }
 
 Bool_t AnalysisStates::isValid()
@@ -251,7 +251,7 @@ bool AnalysisStates::SetCorrelation(Type x, Type y, int chx, int chy)
 			_x_corr = x;
 			_y_corr = y;
 		}
-		StateChange(current_channel, current_exp_index, current_type, current_channel, current_exp_index, current_type, ok);
+		//StateChange(current_channel, current_exp_index, current_type, current_channel, current_exp_index, current_type, ok);
 		return true;
 	} else
 		std::cout<<"Can't uses these types for correlation"<<std::endl;
@@ -349,6 +349,11 @@ std::string AnalysisStates::type_name(Type type)
 	}
 	case Type::Correlation:{
 		name += "_Corr:";
+		name += type_name(_x_corr) + "&" + type_name(_y_corr);
+		break;
+	}
+	case Type::CorrelationAll:{
+		name += "_Corr_all:";
 		name += type_name(_x_corr) + "&" + type_name(_y_corr);
 		break;
 	}
