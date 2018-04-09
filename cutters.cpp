@@ -89,6 +89,8 @@ void apply_S_cut (bool do_update = true) {
       remove_hist_cut("S_max", false);
       add_hist_cut(cutter,"S_max", false);
     }
+    if (do_update)
+      update();
 }
 
 void apply_S_cut (int ch, bool do_update = true) {
@@ -109,6 +111,8 @@ void apply_S_cut (int ch, bool do_update = true) {
       remove_hist_cut("S_max", ch, false);
       add_hist_cut(cutter,"S_max", ch, false);
     }
+    if (do_update)
+      update();
 }
 
 void apply_S_t_cut (bool do_update=true) {
@@ -150,3 +154,15 @@ void apply_run_cut (int less_than_N, bool do_update = true) {
     }
 }
 
+void apply_S_min_cut (double threshold, bool do_update = true)
+{
+   double *val = new double;
+   *val = threshold;
+   FunctionWrapper* cutter = new FunctionWrapper(val);
+   if (post_processor->isComposite(post_processor->current_type))
+      cutter->SetFunction(&Peak_S_min_COMP);
+   else
+      cutter->SetFunction(&Peak_S_min);
+   remove_hist_cut("S_min_cut", false);
+   add_hist_cut(cutter,"S_min_cut", do_update);
+}

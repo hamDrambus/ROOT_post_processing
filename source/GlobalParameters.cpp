@@ -138,22 +138,24 @@ void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> 
 		
 		double coeff = (600 / 804.0)*(1.54 / (1.54*1.8 + 1.01*0.4));
 
-		PMT_V["X-ray_6kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
-		PMT_V["X-ray_8kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
-		PMT_V["X-ray_10kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
-		PMT_V["X-ray_11kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
-		PMT_V["X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
-		PMT_V["X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
+		PMT_V["X_ray_10kV_SiPM_46V_THGEM_0V_coll_6mm"] = 550;
+		PMT_V["X_ray_12kV_SiPM_46V_THGEM_0V_coll_6mm"] = 550;
+		PMT_V["X_ray_14kV_SiPM_46V_THGEM_0V_coll_6mm"] = 550;
+		PMT_V["X_ray_16kV_SiPM_46V_THGEM_0V_coll_6mm"] = 550;
+		PMT_V["X_ray_18kV_SiPM_46V_THGEM_0V_coll_6mm"] = 550;
+		PMT_V["X_ray_20kV_SiPM_46V_THGEM_0V_coll_6mm"] = 550;
 
-		PMT_dB["X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 3.98; //ratio, not actual dB
-		PMT_dB["X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 3.98;
+		PMT_dB["X_ray_14kV_SiPM_46V_THGEM_0V_coll_6mm"] = 3.98; //ratio, not actual dB
+		PMT_dB["X_ray_16kV_SiPM_46V_THGEM_0V_coll_6mm"] = 3.98;
+		PMT_dB["X_ray_18kV_SiPM_46V_THGEM_0V_coll_6mm"] = 3.98;
+		PMT_dB["X_ray_20kV_SiPM_46V_THGEM_0V_coll_6mm"] = 3.98;
 
-		experiment_fields["X-ray_6kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 6;
-		experiment_fields["X-ray_8kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 8;
-		experiment_fields["X-ray_10kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 10;
-		experiment_fields["X-ray_11kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 11;
-		experiment_fields["X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 12;
-		experiment_fields["X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 14;
+		experiment_fields["X_ray_10kV_SiPM_46V_THGEM_0V_coll_6mm"] = 6;
+		experiment_fields["X_ray_12kV_SiPM_46V_THGEM_0V_coll_6mm"] = 8;
+		experiment_fields["X_ray_14kV_SiPM_46V_THGEM_0V_coll_6mm"] = 10;
+		experiment_fields["X_ray_16kV_SiPM_46V_THGEM_0V_coll_6mm"] = 11;
+		experiment_fields["X_ray_18kV_SiPM_46V_THGEM_0V_coll_6mm"] = 12;
+		experiment_fields["X_ray_20kV_SiPM_46V_THGEM_0V_coll_6mm"] = 14;
 
 		for (auto j = experiment_fields.begin(); j != experiment_fields.end(); ++j)
 			j->second *= coeff;
@@ -194,12 +196,12 @@ void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> 
 
 		areas_to_draw.push_back(experiment_area());
 
-		areas_to_draw.back().experiments.push_back("X-ray_6kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
-		areas_to_draw.back().experiments.push_back("X-ray_8kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
-		areas_to_draw.back().experiments.push_back("X-ray_10kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
-		areas_to_draw.back().experiments.push_back("X-ray_11kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
-		areas_to_draw.back().experiments.push_back("X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
-		areas_to_draw.back().experiments.push_back("X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+		areas_to_draw.back().experiments.push_back("X_ray_10kV_SiPM_46V_THGEM_0V_coll_6mm");
+		areas_to_draw.back().experiments.push_back("X_ray_12kV_SiPM_46V_THGEM_0V_coll_6mm");
+		areas_to_draw.back().experiments.push_back("X_ray_14kV_SiPM_46V_THGEM_0V_coll_6mm");
+		areas_to_draw.back().experiments.push_back("X_ray_16kV_SiPM_46V_THGEM_0V_coll_6mm");
+		areas_to_draw.back().experiments.push_back("X_ray_18kV_SiPM_46V_THGEM_0V_coll_6mm");
+		areas_to_draw.back().experiments.push_back("X_ray_20kV_SiPM_46V_THGEM_0V_coll_6mm");
 
 		areas_to_draw.back().runs.push_pair(0, 0);
 		areas_to_draw.back().channels.push_pair(0, 1);
@@ -214,11 +216,11 @@ void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> 
 		exp_area.runs.push_pair(0, 0);
 		exp_area.sub_runs.push_pair(0, 0);
 
-		exp_area.experiments.push_back("X-ray_6kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
-		exp_area.experiments.push_back("X-ray_8kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
-		exp_area.experiments.push_back("X-ray_10kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
-		exp_area.experiments.push_back("X-ray_11kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
-		exp_area.experiments.push_back("X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
-		exp_area.experiments.push_back("X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+		exp_area.experiments.push_back("X_ray_10kV_SiPM_46V_THGEM_0V_coll_6mm");
+		exp_area.experiments.push_back("X_ray_12kV_SiPM_46V_THGEM_0V_coll_6mm");
+		exp_area.experiments.push_back("X_ray_14kV_SiPM_46V_THGEM_0V_coll_6mm");
+		exp_area.experiments.push_back("X_ray_16kV_SiPM_46V_THGEM_0V_coll_6mm");
+		exp_area.experiments.push_back("X_ray_18kV_SiPM_46V_THGEM_0V_coll_6mm");
+		exp_area.experiments.push_back("X_ray_20kV_SiPM_46V_THGEM_0V_coll_6mm");
 	}
 //};

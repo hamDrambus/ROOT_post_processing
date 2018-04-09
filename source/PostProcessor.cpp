@@ -196,7 +196,7 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation, int channel, Typ
 	int ch_ind = channel_to_index(channel, type);
 	HistogramSetups* setups;
 	bool to_delete_setups = false;
-	if ((channel = current_channel)&&(type==current_type))
+	if ((channel == current_channel)&&(type==current_type))
 		setups = current_setups;
 	else {
 		setups = get_hist_setups(experiments[current_exp_index], channel, type);
