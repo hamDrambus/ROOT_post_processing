@@ -104,6 +104,11 @@ void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> 
 //{
 	std::deque <experiment_area> areas_to_draw;
 	std::string this_path;
+
+	std::string data_prefix_path;
+	std::string calibration_file;
+	std::string data_output_path;
+
 	experiment_area exp_area;
 	int threads_number = 6; //obv. must be >=1
 
@@ -125,7 +130,7 @@ void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> 
 		return kFALSE;
 	}
 
-	void Init_globals(void)
+	void Init_globals(bool full)
 	{
 		char path[FILENAME_MAX];
 #if defined(__WIN32__)
@@ -135,35 +140,12 @@ void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> 
 #endif //__WIN32__
 		TThread::Initialize();
 		gStyle->SetOptFit();
-		
-		double coeff = (600 / 804.0)*(1.54 / (1.54*1.8 + 1.01*0.4));
 
-		PMT_V["X_ray_10kV_SiPM_46V_THGEM_0V_coll_6mm"] = 550;
-		PMT_V["X_ray_12kV_SiPM_46V_THGEM_0V_coll_6mm"] = 550;
-		PMT_V["X_ray_14kV_SiPM_46V_THGEM_0V_coll_6mm"] = 550;
-		PMT_V["X_ray_16kV_SiPM_46V_THGEM_0V_coll_6mm"] = 550;
-		PMT_V["X_ray_18kV_SiPM_46V_THGEM_0V_coll_6mm"] = 550;
-		PMT_V["X_ray_20kV_SiPM_46V_THGEM_0V_coll_6mm"] = 550;
-
-		PMT_dB["X_ray_14kV_SiPM_46V_THGEM_0V_coll_6mm"] = 3.98; //ratio, not actual dB
-		PMT_dB["X_ray_16kV_SiPM_46V_THGEM_0V_coll_6mm"] = 3.98;
-		PMT_dB["X_ray_18kV_SiPM_46V_THGEM_0V_coll_6mm"] = 3.98;
-		PMT_dB["X_ray_20kV_SiPM_46V_THGEM_0V_coll_6mm"] = 3.98;
-
-		experiment_fields["X_ray_10kV_SiPM_46V_THGEM_0V_coll_6mm"] = 6;
-		experiment_fields["X_ray_12kV_SiPM_46V_THGEM_0V_coll_6mm"] = 8;
-		experiment_fields["X_ray_14kV_SiPM_46V_THGEM_0V_coll_6mm"] = 10;
-		experiment_fields["X_ray_16kV_SiPM_46V_THGEM_0V_coll_6mm"] = 11;
-		experiment_fields["X_ray_18kV_SiPM_46V_THGEM_0V_coll_6mm"] = 12;
-		experiment_fields["X_ray_20kV_SiPM_46V_THGEM_0V_coll_6mm"] = 14;
-
-		for (auto j = experiment_fields.begin(); j != experiment_fields.end(); ++j)
-			j->second *= coeff;
-
-		calibaration_points = std::pair<int, int>(4, 6);
+		calibaration_points = std::pair<int, int>(3, 6);
 
 		double SiPM_size = 10; //mm
 		//<x,y>
+		MPPC_coords.clear();
 		MPPC_coords[32]= std::pair<double,double>(-2,-2);
 		MPPC_coords[33]= std::pair<double,double>(-1,-2);
 		MPPC_coords[34]= std::pair<double,double>(2,-2);
@@ -194,20 +176,19 @@ void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> 
 			i->second.second*=SiPM_size;
 		}
 
-		areas_to_draw.push_back(experiment_area());
-
-		areas_to_draw.back().experiments.push_back("X_ray_10kV_SiPM_46V_THGEM_0V_coll_6mm");
-		areas_to_draw.back().experiments.push_back("X_ray_12kV_SiPM_46V_THGEM_0V_coll_6mm");
-		areas_to_draw.back().experiments.push_back("X_ray_14kV_SiPM_46V_THGEM_0V_coll_6mm");
-		areas_to_draw.back().experiments.push_back("X_ray_16kV_SiPM_46V_THGEM_0V_coll_6mm");
-		areas_to_draw.back().experiments.push_back("X_ray_18kV_SiPM_46V_THGEM_0V_coll_6mm");
-		areas_to_draw.back().experiments.push_back("X_ray_20kV_SiPM_46V_THGEM_0V_coll_6mm");
-
+		if (areas_to_draw.empty())
+			areas_to_draw.push_back(experiment_area());
+		areas_to_draw.back().channels.erase();
+		areas_to_draw.back().runs.erase();
+		areas_to_draw.back().sub_runs.erase();
 		areas_to_draw.back().runs.push_pair(0, 0);
 		areas_to_draw.back().channels.push_pair(0, 1);
 		areas_to_draw.back().channels.push_pair(32, 62);
 		areas_to_draw.back().sub_runs.push_pair(0, 0);
 
+		exp_area.channels.erase();
+		exp_area.runs.erase();
+		exp_area.sub_runs.erase();
 		exp_area.channels.push_pair(0, 1);
 		exp_area.channels.push_pair(8, 8);
 		exp_area.channels.push_pair(12,12);
@@ -216,11 +197,52 @@ void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> 
 		exp_area.runs.push_pair(0, 0);
 		exp_area.sub_runs.push_pair(0, 0);
 
-		exp_area.experiments.push_back("X_ray_10kV_SiPM_46V_THGEM_0V_coll_6mm");
-		exp_area.experiments.push_back("X_ray_12kV_SiPM_46V_THGEM_0V_coll_6mm");
-		exp_area.experiments.push_back("X_ray_14kV_SiPM_46V_THGEM_0V_coll_6mm");
-		exp_area.experiments.push_back("X_ray_16kV_SiPM_46V_THGEM_0V_coll_6mm");
-		exp_area.experiments.push_back("X_ray_18kV_SiPM_46V_THGEM_0V_coll_6mm");
-		exp_area.experiments.push_back("X_ray_20kV_SiPM_46V_THGEM_0V_coll_6mm");
+		if (!full)
+			return;
+
+		data_prefix_path = "../Data/180215/results/";
+		calibration_file = "PMT_SiPM_48V_180215.dat";
+		data_output_path = "../Data/180215/results/";
+
+		PMT_V.clear();
+		PMT_V["X-ray_6kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
+		PMT_V["X-ray_8kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
+		PMT_V["X-ray_10kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
+		PMT_V["X-ray_11kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
+		PMT_V["X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
+		PMT_V["X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
+
+		PMT_dB.clear();
+		PMT_dB["X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 3.98; //ratio, not actual dB
+		PMT_dB["X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 3.98;
+
+		double coeff = (600 / 804.0)*(1.54 / (1.54*1.8 + 1.01*0.4));
+		experiment_fields.clear();
+		experiment_fields["X-ray_6kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 6;
+		experiment_fields["X-ray_8kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 8;
+		experiment_fields["X-ray_10kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 10;
+		experiment_fields["X-ray_11kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 11;
+		experiment_fields["X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 12;
+		experiment_fields["X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 14;
+
+		for (auto j = experiment_fields.begin(); j != experiment_fields.end(); ++j)
+			j->second *= coeff;
+
+		areas_to_draw.back().experiments.clear();
+		areas_to_draw.back().experiments.push_back("X-ray_6kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+		areas_to_draw.back().experiments.push_back("X-ray_8kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+		areas_to_draw.back().experiments.push_back("X-ray_10kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+		areas_to_draw.back().experiments.push_back("X-ray_11kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+		areas_to_draw.back().experiments.push_back("X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+		areas_to_draw.back().experiments.push_back("X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+
+
+		exp_area.experiments.clear();
+		exp_area.experiments.push_back("X-ray_6kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+		exp_area.experiments.push_back("X-ray_8kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+		exp_area.experiments.push_back("X-ray_10kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+		exp_area.experiments.push_back("X-ray_11kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+		exp_area.experiments.push_back("X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+		exp_area.experiments.push_back("X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
 	}
 //};

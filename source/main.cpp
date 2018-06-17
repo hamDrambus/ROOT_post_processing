@@ -1,9 +1,9 @@
 #include "main.h"
 //interactive methods
 
-void Initialize(void)
+void Initialize(bool pars_in_script)
 {
-	/*ParameterPile::*/Init_globals();
+	/*ParameterPile::*/Init_globals(!pars_in_script);
 	std::cout << "This: " <</* ParameterPile::*/this_path << std::endl;
 	manager = new AnalysisManager(/*ParameterPile::*/exp_area);
 	manager->processAllExperiments();

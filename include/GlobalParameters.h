@@ -37,6 +37,10 @@ extern PostProcessor* post_processor;
 	extern std::deque <experiment_area> areas_to_draw;
 	extern std::string this_path;
 	
+	extern std::string data_prefix_path;
+	extern std::string calibration_file;
+	extern std::string data_output_path;
+
 	extern experiment_area exp_area;
 	extern int threads_number;
 
@@ -50,7 +54,7 @@ extern PostProcessor* post_processor;
 	extern std::pair<int, int> calibaration_points;
 	extern std::map < int, std::pair<double,double> > MPPC_coords;
 
-	void Init_globals(void);
+	void Init_globals(bool full);
 //};
 void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> ys, /*ParameterPile::*/DrawEngine de = /*ParameterPile::*/ ROOT_);
 

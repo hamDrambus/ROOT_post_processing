@@ -9,7 +9,7 @@ AllRunsResults::AllRunsResults(/*ParameterPile::*/experiment_area experiment)
 		int mppc_ch = 0;
 		for (int ch = _exp.channels.get_next_index(); ch != -1; ch = _exp.channels.get_next_index()){
 			if ((ch<32)&&(ch!=2)) {
-				std::string prefix = DATA_PREFIX + DATA_PMT_VERSION + "/PMT_" + *ex + "/PMT_"+std::to_string(ch)+"/PMT_"+std::to_string(ch)+"_";
+				std::string prefix = data_prefix_path + DATA_PMT_VERSION + "/PMT_" + *ex + "/PMT_"+std::to_string(ch)+"/PMT_"+std::to_string(ch)+"_";
 				pmt_channels.push_back(ch);
 				pmt_peaks.push_back(std::deque<std::deque<peak>>());
 				pmt_S2_integral.push_back(std::vector<double>());
@@ -24,7 +24,7 @@ AllRunsResults::AllRunsResults(/*ParameterPile::*/experiment_area experiment)
 				}
 				continue;
 			}
-			std::string prefix = DATA_PREFIX+"/"+DATA_MPPC_VERSION + "/MPPCs_" + *ex + "/MPPC_" + std::to_string(ch) + "/MPPC_" + std::to_string(ch) + "_";
+			std::string prefix = data_prefix_path+"/"+DATA_MPPC_VERSION + "/MPPCs_" + *ex + "/MPPC_" + std::to_string(ch) + "/MPPC_" + std::to_string(ch) + "_";
 			
 			mppc_peaks.push_back(std::deque<std::deque<peak>>());
 			mppc_S2_S.push_back(std::vector<double>());

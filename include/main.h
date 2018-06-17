@@ -6,7 +6,7 @@
 #include "GraphicOutputManager.h"
 #include "PostProcessor.h"
 
-void Initialize(void);
+void Initialize(bool pars_in_script = true);
 void Ne(Bool_t save_state = kTRUE); //Next (E == experiment ==field)
 void Pe(Bool_t save_state = kTRUE); //Previous (E == experiment ==field)
 void Nch(Bool_t save_state = kTRUE); //Next channel

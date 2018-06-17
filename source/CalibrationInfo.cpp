@@ -300,11 +300,13 @@ std::deque<std::pair<Bool_t, Bool_t>> &CalibrationInfo::recalibrate(std::deque<d
 void CalibrationInfo::read_file(std::vector<std::pair<int/*ch*/, std::string> > &current_list)
 {
 	std::ifstream str;
-	str.open(OUTPUT_DIR + CALIBRATION_FILE);
+	str.open(data_output_path + calibration_file);
 	int ch = 0;
 	std::string val;
 	while (str.is_open() && str.good() && !str.eof()) {
 		str >> ch;
+		if (str.eof())
+			break;
 		std::getline(str,val);
 		current_list.push_back(std::pair<int, std::string>(ch, val));
 	}
@@ -317,10 +319,10 @@ void CalibrationInfo::extract_PMT_info (std::vector<std::pair<int/*ch*/, std::st
 			std::vector<std::pair<double,double> > ch_info;
 			double V, s1pe;
 			std::stringstream info(current_list[i].second);
-			while (!info.eof()&&info.good()){ //TODO: add validations of double format (throw error if string is present instead of numbers)
+			while (!info.eof()&&info.good()) { //TODO: add validations of double format (throw error if string is present instead of numbers)
 				info>>V;
-				if (info.eof()&&!info.good()){
-					std::cout<<"Warning: ch "<<current_list[i].first<<" wrong PMT calibration table"<<std::endl;
+				if (info.eof()&&!info.good()) {
+					//std::cout<<"Warning: ch "<<current_list[i].first<<" wrong PMT calibration table"<<std::endl;
 					continue;
 				}
 				info>>s1pe;
@@ -396,7 +398,7 @@ void CalibrationInfo::add_to_MPPC_info (MPPC_info_& table, int ch, double S1pe) 
 void CalibrationInfo::write_to_file (PMT_info_& PMT_table, MPPC_info_& MPPC_table)
 {
 	std::ofstream str;
-	open_output_file(OUTPUT_DIR + CALIBRATION_FILE,str);
+	open_output_file(data_output_path + calibration_file, str);
 	if (str.is_open()){
 		for (int chi = 0, _end_chi = PMT_table.size(); chi!=_end_chi; ++chi) {
 			str<<PMT_table[chi].first<<"\t";

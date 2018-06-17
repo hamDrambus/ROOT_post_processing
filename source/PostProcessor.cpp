@@ -77,15 +77,15 @@ void PostProcessor::print_hist(int ch, int exp_ind, Type type)
 {
 	std::string name;
 	if (isMultichannel(type)) {
-		name = OUTPUT_DIR + (is_PMT_type(type) ? OUTPUT_PMT_PICS : OUTPUT_MPPCS_PICS) + g_data->exp_area.experiments[exp_ind]
+		name = data_output_path + (is_PMT_type(type) ? OUTPUT_PMT_PICS : OUTPUT_MPPCS_PICS)+ type_name(type)+"/" +
+				(is_PMT_type(type) ? "PMT_" : "MPPC_")+g_data->exp_area.experiments[exp_ind]
 			+ type_name(type);
 	} else {
-		name = OUTPUT_DIR + (is_PMT_type(type) ? OUTPUT_PMT_PICS : OUTPUT_MPPCS_PICS) + g_data->exp_area.experiments[exp_ind]
+		name = data_output_path + (is_PMT_type(type) ? OUTPUT_PMT_PICS : OUTPUT_MPPCS_PICS) + g_data->exp_area.experiments[exp_ind]
 			+ "/" + (is_PMT_type(type) ? "PMT_" : "MPPC_") + std::to_string(ch)
 			+ "/" + (is_PMT_type(type) ? "PMT_" : "MPPC_") + std::to_string(ch)
 			+ type_name(type);
 	}
-	current_canvas->SaveAs((name+".png").c_str(), "png");
 	std::ofstream str;
 	open_output_file(name+".hdata", str);
 	if (is_TH1D_hist(type)) {
@@ -97,6 +97,7 @@ void PostProcessor::print_hist(int ch, int exp_ind, Type type)
 				str<<current_hist2->GetXaxis()->GetBinCenter(i)<<"\t"<<current_hist2->GetYaxis()->GetBinCenter(j)<<"\t"<<current_hist2->GetBinContent(i,j)<<std::endl;
 	}
 	str.close();
+	current_canvas->SaveAs((name+".png").c_str(), "png");
 }
 
 
@@ -145,7 +146,7 @@ HistogramSetups* PostProcessor::get_hist_setups(std::string experiment, int chan
 
 void PostProcessor::save(int channel)
 {
-	if (!isValid()){
+	if (!isValid()) {
 		std::cout << "Wrong input data: no channels or experments from AnalysisManager" << std::endl;
 		return;
 	}
@@ -160,7 +161,7 @@ void PostProcessor::save(int channel)
 			N_pe_result.push_back(data->N_pe_Double_I[pt][ch_ind]);
 	}
 	std::ofstream file;
-	open_output_file(OUTPUT_DIR + OUTPUT_MPPCS_PICS + std::to_string(channel) + "_Npe.txt", file);
+	open_output_file(data_output_path + OUTPUT_MPPCS_PICS + std::to_string(channel) + "_Npe.txt", file);
 	file << "E[kV/cm]\tN_pe_direct\tN_pe_Double_I\tN_pe_result" << std::endl;
 	for (int pt = 0; pt < data->exp_area.experiments.size(); ++pt)
 		file << data->Fields[pt] << "\t" << data->N_pe_direct[pt][ch_ind] << "\t" << data->N_pe_Double_I[pt][ch_ind] << "\t" << N_pe_result[pt] << std::endl;
@@ -1277,7 +1278,7 @@ void PostProcessor::save_all(void)
 	calibr_info.Save();
 
 	std::ofstream str;
-	open_output_file(OUTPUT_DIR+DATA_MPPC_VERSION+"/S2_manual.dat", str);
+	open_output_file(data_output_path+DATA_MPPC_VERSION+"/S2_manual.dat", str);
 	str<<"ch\\E"<<"\t";
 	for (int ee=0,_end_exp=experiments.size();ee!=_end_exp;++ee)
 		str<<data->Fields[ee]<<((ee==(_end_exp-1))? "\n": "\t");
@@ -1289,7 +1290,7 @@ void PostProcessor::save_all(void)
 	}
 	str.close();
 
-	open_output_file(OUTPUT_DIR+DATA_MPPC_VERSION+"/double_I.dat", str);
+	open_output_file(data_output_path+DATA_MPPC_VERSION+"/double_I.dat", str);
 	str<<"ch\\E"<<"\t";
 	for (int ee=0,_end_exp=experiments.size();ee!=_end_exp;++ee)
 		str<<data->Fields[ee]<<((ee==(_end_exp-1))? "\n": "\t");
@@ -1301,7 +1302,7 @@ void PostProcessor::save_all(void)
 	}
 	str.close();
 
-	open_output_file(OUTPUT_DIR+DATA_MPPC_VERSION+"/Npe_direct.dat", str);
+	open_output_file(data_output_path+DATA_MPPC_VERSION+"/Npe_direct.dat", str);
 	str<<"ch\\E"<<"\t";
 	for (int ee=0,_end_exp=experiments.size();ee!=_end_exp;++ee)
 		str<<data->Fields[ee]<<((ee==(_end_exp-1))? "\n": "\t");
@@ -1313,7 +1314,7 @@ void PostProcessor::save_all(void)
 	}
 	str.close();
 
-	open_output_file(OUTPUT_DIR+DATA_MPPC_VERSION+"/Npe_result.dat", str);
+	open_output_file(data_output_path+DATA_MPPC_VERSION+"/Npe_result.dat", str);
 	str<<"ch\\E"<<"\t";
 	for (int ee=0,_end_exp=experiments.size();ee!=_end_exp;++ee)
 		str<<data->Fields[ee]<<((ee==(_end_exp-1))? "\n": "\t");
@@ -1329,7 +1330,7 @@ void PostProcessor::save_all(void)
 void PostProcessor::plot_N_pe(int channel, GraphicOutputManager* gr_man)
 {
 	if (!isValid()){
-		std::cout << "Wrong input data: no channels or experments from AnalysisManager" << std::endl;
+		std::cout << "Wrong input data: no channels or experiments from AnalysisManager" << std::endl;
 		return;
 	}
 	int ch_ind = data->get_ch_index(channel);
@@ -1877,6 +1878,8 @@ void PostProcessor::set_limits(double left, double right)
 	case MPPC_times:
 	case PMT_times:
 	case MPPC_sum_ts:
+	case MPPC_t_S:
+	case PMT_t_S:
 	{
 		picker->SetFunction( [](std::vector<double> &vals, int run, void* data) {
 			return ((vals[4] <= ((temp_data*)data)->mm.second) && (vals[4] >= ((temp_data*)data)->mm.first));
@@ -1885,14 +1888,12 @@ void PostProcessor::set_limits(double left, double right)
 	}
 	case MPPC_Ss:
 	case MPPC_Double_I:
-	case MPPC_t_S:
 	case MPPC_S2_S:
 	case MPPC_tfinal:
 	case MPPC_tstart:
 	case MPPC_tboth:
 	case PMT_S2_int:
 	case PMT_Ss:
-	case PMT_t_S:
 	case Correlation:
 	case CorrelationAll:
 	{
@@ -1974,6 +1975,8 @@ void PostProcessor::set_drawn_limits(double left, double right)
 	case MPPC_times:
 	case PMT_times:
 	case MPPC_sum_ts:
+	case MPPC_t_S:
+	case PMT_t_S:
 	{
 		picker->SetFunction( [](std::vector<double> &vals, int run, void* data) {
 			return ((vals[4] <= ((temp_data*)data)->mm.second) && (vals[4] >= ((temp_data*)data)->mm.first));
@@ -1982,14 +1985,12 @@ void PostProcessor::set_drawn_limits(double left, double right)
 	}
 	case MPPC_Ss:
 	case MPPC_Double_I:
-	case MPPC_t_S:
 	case MPPC_S2_S:
 	case MPPC_tfinal:
 	case MPPC_tstart:
 	case MPPC_tboth:
 	case PMT_S2_int:
 	case PMT_Ss:
-	case PMT_t_S:
 	case Correlation:
 	case CorrelationAll:
 	{
