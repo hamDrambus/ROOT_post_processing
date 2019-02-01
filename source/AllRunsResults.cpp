@@ -8,7 +8,7 @@ AllRunsResults::AllRunsResults(/*ParameterPile::*/experiment_area experiment)
 	for (auto ex = _exp.experiments.begin(); ex != _exp.experiments.end(); ++ex) {
 		int mppc_ch = 0;
 		for (int ch = _exp.channels.get_next_index(); ch != -1; ch = _exp.channels.get_next_index()){
-			if ((ch<32)&&(ch!=2)) {
+			if (ch<32) {
 				std::string prefix = data_prefix_path + DATA_PMT_VERSION + "/PMT_" + *ex + "/PMT_"+std::to_string(ch)+"/PMT_"+std::to_string(ch)+"_";
 				pmt_channels.push_back(ch);
 				pmt_peaks.push_back(std::deque<std::deque<peak>>());

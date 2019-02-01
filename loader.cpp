@@ -1,9 +1,9 @@
 //call gInterpreter->AddIncludePath("C:\\Users\\Elisa\\Desktop\\Top\\Data_processing\\post_processing\\include")  before
 //this loads the project in the same order VisualStudio compiles it (.x loader.cpp)
 {
-	gSystem->SetIncludePath("-I$ROOTSYS/include -I/home/Frolov/Documents/Data_processing/post_processing/include -I/home/Frolov/Documents/Data_processing/post_processing/source -I/home/Frolov/Documents/Data_processing/post_processing/build/Debug");
-	gSystem->AddDynamicPath("/home/Frolov/Documents/Data_processing/post_processing/build/Debug");
-	gSystem->AddDynamicPath("/home/Frolov/Documents/Data_processing/post_processing/source");
+	gSystem->SetIncludePath("-I$ROOTSYS/include -I/home/frolov/Documents/Post_processing/include -I/home/frolov/Documents/Post_processing/source -I/home/frolov/Documents/Post_processing/Debug");
+	gSystem->AddDynamicPath("/home/frolov/Documents/Post_processing/Debug");
+	gSystem->AddDynamicPath("/home/frolov/Documents/Post_processing/source");
 	
 	gSystem->Load("libpost_processing.so");
 	

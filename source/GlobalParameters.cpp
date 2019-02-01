@@ -109,6 +109,13 @@ void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> 
 	std::string calibration_file;
 	std::string data_output_path;
 
+	std::string DATA_MPPC_VERSION;
+	std::string DATA_PMT_VERSION;
+
+	std::string OUTPUT_MPPCS_PICS;
+	std::string OUTPUT_PMT_PICS;
+	std::string OUTPUT_MPPCS;
+
 	experiment_area exp_area;
 	int threads_number = 6; //obv. must be >=1
 
@@ -176,6 +183,8 @@ void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> 
 			i->second.second*=SiPM_size;
 		}
 
+		if (!full)
+			return;
 		if (areas_to_draw.empty())
 			areas_to_draw.push_back(experiment_area());
 		areas_to_draw.back().channels.erase();
@@ -197,12 +206,17 @@ void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> 
 		exp_area.runs.push_pair(0, 0);
 		exp_area.sub_runs.push_pair(0, 0);
 
-		if (!full)
-			return;
 
 		data_prefix_path = "../Data/180215/results/";
 		calibration_file = "PMT_SiPM_48V_180215.dat";
 		data_output_path = "../Data/180215/results/";
+
+		DATA_MPPC_VERSION = "MPPCs_v1";
+		DATA_PMT_VERSION = "PMT_v1";
+
+		OUTPUT_MPPCS_PICS = "MPPCs_v1/MPPCs_";
+		OUTPUT_PMT_PICS = "PMT_v1/PMT_";
+		OUTPUT_MPPCS = "MPPC_";
 
 		PMT_V.clear();
 		PMT_V["X-ray_6kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;

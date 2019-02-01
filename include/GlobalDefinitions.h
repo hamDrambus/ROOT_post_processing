@@ -41,12 +41,6 @@
 #undef min
 
 #define DATA_NAME_FORMAT "^MPPCs_4_thmV/MPPC_\d{2}/MPPC_33_Double_I.dat$"
-#define DATA_MPPC_VERSION "MPPCs_v1"
-#define DATA_PMT_VERSION "PMT_v1"
-
-#define OUTPUT_MPPCS_PICS "MPPCs_v1/MPPCs_"
-#define OUTPUT_PMT_PICS "PMT_v1/PMT_"
-#define OUTPUT_MPPCS "MPPC_"
 
 #define PEAK_AVR_TIME
 //#define WEIGHTED_COORD

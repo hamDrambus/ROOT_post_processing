@@ -41,6 +41,13 @@ extern PostProcessor* post_processor;
 	extern std::string calibration_file;
 	extern std::string data_output_path;
 
+	extern std::string DATA_MPPC_VERSION;
+	extern std::string DATA_PMT_VERSION;
+
+	extern std::string OUTPUT_MPPCS_PICS;
+	extern std::string OUTPUT_PMT_PICS;
+	extern std::string OUTPUT_MPPCS;
+
 	extern experiment_area exp_area;
 	extern int threads_number;
 
