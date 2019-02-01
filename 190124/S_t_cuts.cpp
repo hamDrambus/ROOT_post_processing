@@ -11,40 +11,13 @@
   OUTPUT_MPPCS = "MPPC_";
   
   PMT_V.clear();
-  PMT_V["event_x-ray_4_thmV"] = 700;
-  PMT_V["event_x-ray_5_thmV"] = 700;
-  PMT_V["event_x-ray_6_thmV"] = 700;
-  PMT_V["event_x-ray_7_thmV"] = 700;
-  PMT_V["event_x-ray_8_thmV"] = 700;
-  PMT_V["event_x-ray_9_thmV"] = 700;
-  PMT_V["event_x-ray_10_thmV_recalib"] = 700;
-  PMT_V["event_x-ray_10_thmV"] = 550;
-  PMT_V["event_x-ray_12_thmV"] = 550;
-  PMT_V["event_x-ray_14_thmV"] = 550;
-  PMT_V["event_x-ray_16_thmV"] = 550;
-  PMT_V["event_x-ray_18_thmV"] = 550;
-  PMT_V["event_x-ray_20_thmV"] = 550;
+  PMT_V["coll6_20kV_850V_12dB_46V"] = 850;
 
   PMT_dB.clear();
-  PMT_dB["event_x-ray_10_thmV_recalib"] = 2; //ratio, not actual dB
-  PMT_dB["event_x-ray_16_thmV"] = 3.98;
-  PMT_dB["event_x-ray_18_thmV"] = 3.98;
-  PMT_dB["event_x-ray_20_thmV"] = 3.98;
+  PMT_dB["coll6_20kV_850V_12dB_46V"] = 3.98; //ratio, not actual dB
 
   experiment_fields.clear();
-  experiment_fields["event_x-ray_4_thmV"] = 4;
-  experiment_fields["event_x-ray_5_thmV"] = 5;
-  experiment_fields["event_x-ray_6_thmV"] = 6;
-  experiment_fields["event_x-ray_7_thmV"] = 7;
-  experiment_fields["event_x-ray_8_thmV"] = 8;
-  experiment_fields["event_x-ray_9_thmV"] = 9;
-  experiment_fields["event_x-ray_10_thmV_recalib"] = 9.9;
-  experiment_fields["event_x-ray_10_thmV"] = 10.1;
-  experiment_fields["event_x-ray_12_thmV"] = 12;
-  experiment_fields["event_x-ray_14_thmV"] = 14;
-  experiment_fields["event_x-ray_16_thmV"] = 16;
-  experiment_fields["event_x-ray_18_thmV"] = 18;
-  experiment_fields["event_x-ray_20_thmV"] = 20;
+  experiment_fields["coll6_20kV_850V_12dB_46V"] = 20;
   {
     double coeff = (600 / 804.0)*(1.54 / (1.54*1.8 + 1.01*0.4));
     for (auto j = experiment_fields.begin(); j != experiment_fields.end(); ++j)
@@ -54,34 +27,27 @@
   if (areas_to_draw.empty())
     areas_to_draw.push_back(experiment_area());
   areas_to_draw.back().experiments.clear();
-  areas_to_draw.back().experiments.push_back("event_x-ray_4_thmV");
-  areas_to_draw.back().experiments.push_back("event_x-ray_5_thmV");
-  areas_to_draw.back().experiments.push_back("event_x-ray_6_thmV");
-  areas_to_draw.back().experiments.push_back("event_x-ray_7_thmV");
-  areas_to_draw.back().experiments.push_back("event_x-ray_8_thmV");
-  areas_to_draw.back().experiments.push_back("event_x-ray_9_thmV");
-  areas_to_draw.back().experiments.push_back("event_x-ray_10_thmV_recalib");
-  areas_to_draw.back().experiments.push_back("event_x-ray_10_thmV");
-  areas_to_draw.back().experiments.push_back("event_x-ray_12_thmV");
-  areas_to_draw.back().experiments.push_back("event_x-ray_14_thmV");
-  areas_to_draw.back().experiments.push_back("event_x-ray_16_thmV");
-  areas_to_draw.back().experiments.push_back("event_x-ray_18_thmV");
-  areas_to_draw.back().experiments.push_back("event_x-ray_20_thmV");
-  
+  areas_to_draw.back().experiments.push_back("coll6_20kV_850V_12dB_46V");
+   
   exp_area.experiments.clear();
-  exp_area.experiments.push_back("event_x-ray_4_thmV");
-  exp_area.experiments.push_back("event_x-ray_5_thmV");
-  exp_area.experiments.push_back("event_x-ray_6_thmV");
-  exp_area.experiments.push_back("event_x-ray_7_thmV");
-  exp_area.experiments.push_back("event_x-ray_8_thmV");
-  exp_area.experiments.push_back("event_x-ray_9_thmV");
-  exp_area.experiments.push_back("event_x-ray_10_thmV_recalib");
-  exp_area.experiments.push_back("event_x-ray_10_thmV");
-  exp_area.experiments.push_back("event_x-ray_12_thmV");
-  exp_area.experiments.push_back("event_x-ray_14_thmV");
-  exp_area.experiments.push_back("event_x-ray_16_thmV");
-  exp_area.experiments.push_back("event_x-ray_18_thmV");
-  exp_area.experiments.push_back("event_x-ray_20_thmV");
+  exp_area.experiments.push_back("coll6_20kV_850V_12dB_46V");
+  if (areas_to_draw.empty())
+	areas_to_draw.push_back(experiment_area());
+  areas_to_draw.back().channels.erase();
+  areas_to_draw.back().runs.erase();
+  areas_to_draw.back().sub_runs.erase();
+  areas_to_draw.back().runs.push_pair(0, 0);
+  areas_to_draw.back().channels.push_pair(2, 5);
+  areas_to_draw.back().channels.push_pair(32, 62);
+  areas_to_draw.back().sub_runs.push_pair(0, 0);
+
+  exp_area.channels.erase();
+  exp_area.runs.erase();
+  exp_area.sub_runs.erase();
+  exp_area.channels.push_pair(2, 5);//will load only present channels
+  exp_area.channels.push_pair(32, 62);//will load only present channels
+  exp_area.runs.push_pair(0, 0);
+  exp_area.sub_runs.push_pair(0, 0);
   //end of global parameters
 
   S_T_to_exclude.resize(24);

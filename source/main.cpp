@@ -173,7 +173,7 @@ void do_fit(Bool_t update_vis)
 		state(kFALSE);
 		return;
 	}
-	post_processor->do_fit();
+	post_processor->do_fit(update_vis);
 }
 
 void draw_limits(double left, double right)

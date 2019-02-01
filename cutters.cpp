@@ -81,7 +81,7 @@ void apply_S_cut (bool do_update = true) {
       add_hist_cut(cutter,"S_min", false);
     }
     if (ch_ind<S_max_thresholds.size()) {
-      cutter = new FunctionWrapper(&S_max_thresholds[ch_ind]);
+      FunctionWrapper* cutter = new FunctionWrapper(&S_max_thresholds[ch_ind]);
       if (post_processor->isComposite(post_processor->current_type))
 	cutter->SetFunction(&Peak_S_max_COMP);
       else
@@ -106,7 +106,7 @@ void apply_S_cut (int ch, bool do_update = true) {
       add_hist_cut(cutter,"S_min",ch, false);
     }
     if (ch_ind<S_max_thresholds.size()) {
-      cutter = new FunctionWrapper(&S_max_thresholds[ch_ind]);
+      FunctionWrapper* cutter = new FunctionWrapper(&S_max_thresholds[ch_ind]);
       cutter->SetFunction(&Peak_S_max);
       remove_hist_cut("S_max", ch, false);
       add_hist_cut(cutter,"S_max", ch, false);
