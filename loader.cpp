@@ -6,7 +6,7 @@
 	gSystem->AddDynamicPath("/home/frolov/Documents/Post_processing/source");
 	
 	gSystem->Load("libpost_processing.so");
-	
+	gROOT->ProcessLine(".L cutters.cpp");
 	/*gROOT->ProcessLine(".L source/ExperimentArea.cpp+");
 	gROOT->ProcessLine(".L source/GlobalParameters.cpp+");
 	gROOT->ProcessLine(".L source/SingleRunData.cpp+");

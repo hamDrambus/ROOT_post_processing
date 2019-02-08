@@ -1,7 +1,7 @@
 #include "AnalysisStates.h"
 
 AnalysisStates::AnalysisStates(std::deque<int> &mppc_channels_, std::deque<int> &pmt_channels_, std::deque<std::string>& experiments_):
-_first_state(MPPC_Ss), _last_state(PMT_times),_x_corr(MPPC_Npe_sum),_y_corr(PMT_S2_S)
+_first_state(MPPC_Ss), _last_state(PMT_times_N),_x_corr(MPPC_Npe_sum),_y_corr(PMT_S2_S)
 {
 	MPPC_channels = mppc_channels_;
 	PMT_channels = pmt_channels_;
@@ -177,7 +177,7 @@ Bool_t AnalysisStates::PrevExp(Bool_t save)
 
 Bool_t AnalysisStates::is_PMT_type(Type type)
 {
-	return (type == PMT_S2_S || type == PMT_Ss || type == PMT_t_S || type == PMT_times|| PMT_S2_int==type);
+	return (type == PMT_S2_S || type == PMT_Ss || type == PMT_t_S || type == PMT_times|| PMT_S2_int==type || PMT_A_S == type || PMT_times_N);
 }
 
 Bool_t AnalysisStates::isMultichannel(Type type)
@@ -187,7 +187,7 @@ Bool_t AnalysisStates::isMultichannel(Type type)
 
 bool AnalysisStates::isPerRun (Type type)
 {
-	return !((type==MPPC_Ss)||(type==MPPC_t_S)||(type==MPPC_times)||(type==MPPC_sum_ts)||(type==PMT_Ss)||(type==PMT_t_S)||(type==PMT_times)||(type==MPPC_tboth));
+	return !((type==MPPC_Ss)||(type==MPPC_t_S)||(type==MPPC_A_S)||(type==MPPC_times)||(type==MPPC_times_N)||(type==MPPC_sum_ts)||(type==PMT_Ss)||(type==PMT_t_S)||(type==PMT_A_S)||(type==PMT_times)||(type==PMT_times_N)||(type==MPPC_tboth));
 }
 
 bool AnalysisStates::isPerPeak (Type type)
@@ -197,7 +197,7 @@ bool AnalysisStates::isPerPeak (Type type)
 
 Bool_t AnalysisStates::is_TH1D_hist(Type type)
 {
-	return !((type == Type::PMT_t_S) || (type == Type::MPPC_t_S)||(type== Type::MPPC_coord)||(type==Correlation)||(type==CorrelationAll));
+	return !((type == Type::PMT_t_S)||(type == Type::PMT_A_S) || (type == Type::MPPC_t_S)|| (type == Type::MPPC_A_S)||(type== Type::MPPC_coord)||(type==Correlation)||(type==CorrelationAll));
 }
 
 bool AnalysisStates::isComposite (Type type)
@@ -323,6 +323,10 @@ std::string AnalysisStates::type_name(Type type)
 		name += "_t_S";
 		break;
 	}
+	case Type::MPPC_A_S:{
+		name += "_A_S";
+		break;
+	}
 	case Type::MPPC_sum_ts:{
 		name += "_sum_ts";
 		break;
@@ -373,12 +377,24 @@ std::string AnalysisStates::type_name(Type type)
 		name += "_t_S";
 		break;
 	}
+	case Type::PMT_A_S:{
+		name += "_A_S";
+		break;
+	}
 	case Type::MPPC_times: {
 		name+="_signal_form";
 		break;
 	}
+	case Type::MPPC_times_N: {
+		name+="_signal_form_by_N_peaks";
+		break;
+	}
 	case Type::PMT_times: {
 		name+="_signal_form";
+		break;
+	}
+	case Type::PMT_times_N: {
+		name+="_signal_form_by_N_peaks";
 		break;
 	}
 	}

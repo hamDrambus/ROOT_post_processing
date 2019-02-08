@@ -2,6 +2,7 @@ std::vector<std::vector<double> > S_T_to_exclude; //per chanell, fill via S-t di
 std::vector<double> S_min_thresholds;
 std::vector<double> S_max_thresholds;
 std::vector<std::pair<double,double> > S2_times;
+std::vector<double> *x_y_regions = NULL;
 
 bool Peak_S_min (std::vector<double> &pars, int run, void* stat_data){
     return pars[0]>=(*(double*)stat_data);
@@ -12,25 +13,6 @@ bool Peak_S_max (std::vector<double> &pars, int run, void* stat_data){
 bool Peak_t_min_max (std::vector<double> &pars, int run, void* stat_data){
     return (pars[4]>=((std::pair<double,double>*)stat_data)->first)&&(pars[4]<=((std::pair<double,double>*)stat_data)->second);
 }
-//COMP for Composite
-bool Peak_S_min_COMP (std::vector<double> &pars, int run, void* stat_data){
-  if ((pars[1]==-2)&&(pars[2]==-2)&&(pars[3]==-2)&&(pars[4]==-2)) 
-    return true; 
-  else
-    return pars[1]>=(*(double*)stat_data);
-}
-bool Peak_S_max_COMP (std::vector<double> &pars, int run, void* stat_data){
-  if ((pars[1]==-2)&&(pars[2]==-2)&&(pars[3]==-2)&&(pars[4]==-2)) 
-    return true; 
-  else 
-    return pars[1]<=(*(double*)stat_data);
-}
-bool Peak_t_min_max_COMP (std::vector<double> &pars, int run, void* stat_data){
-  if ((pars[1]==-2)&&(pars[2]==-2)&&(pars[3]==-2)&&(pars[4]==-2)) 
-    return true; 
-  else  
-    return (pars[5]>=((std::pair<double,double>*)stat_data)->first)&&(pars[5]<=((std::pair<double,double>*)stat_data)->second);
-} 
 
 bool Peak_S_t_exclude (std::vector<double> &pars, int run, void* stat_data) {
   std::vector<double> *exl_region = (std::vector<double> *) stat_data;
@@ -45,19 +27,30 @@ bool Peak_S_t_exclude (std::vector<double> &pars, int run, void* stat_data) {
   return true;
 }
 
-bool Peak_S_t_exclude_COMP (std::vector<double> &pars, int run, void* stat_data) {
+bool Peak_A_S_exclude (std::vector<double> &pars, int run, void* stat_data) {
   std::vector<double> *exl_region = (std::vector<double> *) stat_data;
   //{t_min0, t_max0, S_min0, S_max0, t_min1, t_max1 ...}
-  if ((pars[1]==-2)&&(pars[2]==-2)&&(pars[3]==-2)&&(pars[4]==-2)) 
-    return true;
   if (0!=(exl_region->size()%4))
     return true;
-  double time = pars[5];
+  double time = pars[4];
   for (int i=0, _end_=exl_region->size()/4;i!=_end_;++i){
-    if ((time>=(*exl_region)[4*i])&&(time<=(*exl_region)[4*i+1])&&(pars[1]>=(*exl_region)[4*i+2])&&(pars[1]<=(*exl_region)[4*i+3]))
+    if ((time>=(*exl_region)[4*i])&&(time<=(*exl_region)[4*i+1])&&(pars[0]>=(*exl_region)[4*i+2])&&(pars[0]<=(*exl_region)[4*i+3]))
       return false;
   }
   return true;
+}
+
+bool Peak_S_t_select (std::vector<double> &pars, int run, void* stat_data) {
+  std::vector<double> *exl_region = (std::vector<double> *) stat_data;
+  //{t_min0, t_max0, S_min0, S_max0, t_min1, t_max1 ...}
+  if (0!=(exl_region->size()%4))
+    return true;
+  double time = pars[4];
+  for (int i=0, _end_=exl_region->size()/4;i!=_end_;++i){
+    if ((time>=(*exl_region)[4*i])&&(time<=(*exl_region)[4*i+1])&&(pars[0]>=(*exl_region)[4*i+2])&&(pars[0]<=(*exl_region)[4*i+3]))
+      return true;
+  }
+  return false;
 }
 
 bool Picker_Run_max (std::vector<double> &pars, int run, void* stat_data) {
@@ -65,6 +58,62 @@ bool Picker_Run_max (std::vector<double> &pars, int run, void* stat_data) {
   return run<(*Max_run);
 }
 
+void select_S_t (double t_min, double t_max, double S_min, double S_max, bool do_update=true) {
+  std::vector<double> *area = new std::vector<double>;
+  area->push_back(std::min(t_min, t_max));
+  area->push_back(std::max(t_min, t_max));
+  area->push_back(std::min(S_min, S_max));
+  area->push_back(std::max(S_min, S_max));
+  int ch_ind = post_processor->mppc_channel_to_index(post_processor->current_channel);
+  if (ch_ind<0)
+     ch_ind = post_processor->pmt_channel_to_index(post_processor->current_channel);
+  FunctionWrapper* cutter_S_T = new FunctionWrapper(area);
+  cutter_S_T->SetFunction(&Peak_S_t_select);
+  remove_hist_cut("S_T_select", false);
+  add_hist_cut(cutter_S_T, "S_T_select", do_update);
+}
+
+//Following are using std::vector<double> *x_y_regions which must be created before every call
+void select_S_t (bool do_update=true) {
+  if (x_y_regions==NULL) {
+    std::cout<<"x_y_regions vector is not created, no cuts"<<std::endl;
+    return;
+  }
+  int ch_ind = post_processor->mppc_channel_to_index(post_processor->current_channel);
+  if (ch_ind<0)
+     ch_ind = post_processor->pmt_channel_to_index(post_processor->current_channel);
+  FunctionWrapper* cutter_S_T = new FunctionWrapper(x_y_regions);
+  x_y_regions = NULL;
+  cutter_S_T->SetFunction(&Peak_S_t_select);
+  remove_hist_cut("S_T_select", false);
+  add_hist_cut(cutter_S_T, "S_T_select", do_update);
+}
+
+void exlude_S_t (bool do_update = true) {
+  if (x_y_regions==NULL) {
+    std::cout<<"x_y_regions vector is not created, no cuts"<<std::endl;
+    return;
+  }
+  FunctionWrapper* cutter_S_T = new FunctionWrapper(x_y_regions);
+  x_y_regions = NULL;
+  cutter_S_T->SetFunction(&Peak_S_t_exclude);
+  remove_hist_cut("S_T_exclude", false);
+  add_hist_cut(cutter_S_T, "S_T_exclude", do_update);
+}
+
+void exlude_A_S (bool do_update = true) {
+  if (x_y_regions==NULL) {
+    std::cout<<"x_y_regions vector is not created, no cuts"<<std::endl;
+    return;
+  }
+  FunctionWrapper* cutter_S_T = new FunctionWrapper(x_y_regions);
+  x_y_regions = NULL;
+  cutter_S_T->SetFunction(&Peak_A_S_exclude);
+  remove_hist_cut("S_T_exclude", false);
+  add_hist_cut(cutter_S_T, "S_T_exclude", do_update);
+}
+
+//Following are using data set in 'date'/S_t_cuts.cpp
 void apply_S_cut (bool do_update = true) {
     if (post_processor->isMultichannel(post_processor->current_type)) {
       std::cout<<"apply_S_cut(bool do_update):: Wrong function called for multichannel type"<<std::endl;
@@ -73,19 +122,13 @@ void apply_S_cut (bool do_update = true) {
     int ch_ind = post_processor->mppc_channel_to_index(post_processor->current_channel);
     if (ch_ind<S_min_thresholds.size()) {
       FunctionWrapper* cutter = new FunctionWrapper(&S_min_thresholds[ch_ind]);
-      if (post_processor->isComposite(post_processor->current_type))
-	cutter->SetFunction(&Peak_S_min_COMP);
-      else
-	cutter->SetFunction(&Peak_S_min);
+      cutter->SetFunction(&Peak_S_min);
       remove_hist_cut("S_min", false);
       add_hist_cut(cutter,"S_min", false);
     }
     if (ch_ind<S_max_thresholds.size()) {
       FunctionWrapper* cutter = new FunctionWrapper(&S_max_thresholds[ch_ind]);
-      if (post_processor->isComposite(post_processor->current_type))
-	cutter->SetFunction(&Peak_S_max_COMP);
-      else
-	cutter->SetFunction(&Peak_S_max);
+      cutter->SetFunction(&Peak_S_max);
       remove_hist_cut("S_max", false);
       add_hist_cut(cutter,"S_max", false);
     }
@@ -118,10 +161,7 @@ void apply_S_cut (int ch, bool do_update = true) {
 void apply_S_t_cut (bool do_update=true) {
   int ch_ind = post_processor->mppc_channel_to_index(post_processor->current_channel);
   FunctionWrapper* cutter_S_T = new FunctionWrapper(&(S_T_to_exclude[ch_ind]));
-  if (post_processor->isComposite(post_processor->current_type))
-    cutter_S_T->SetFunction(&Peak_S_t_exclude_COMP);
-  else 
-    cutter_S_T->SetFunction(&Peak_S_t_exclude);
+  cutter_S_T->SetFunction(&Peak_S_t_exclude);
   remove_hist_cut("S_T_exclude", false);
   add_hist_cut(cutter_S_T, "S_T_exclude", do_update);
 }
@@ -159,10 +199,7 @@ void apply_S_min_cut (double threshold, bool do_update = true)
    double *val = new double;
    *val = threshold;
    FunctionWrapper* cutter = new FunctionWrapper(val);
-   if (post_processor->isComposite(post_processor->current_type))
-      cutter->SetFunction(&Peak_S_min_COMP);
-   else
-      cutter->SetFunction(&Peak_S_min);
+   cutter->SetFunction(&Peak_S_min);
    remove_hist_cut("S_min_cut", false);
    add_hist_cut(cutter,"S_min_cut", do_update);
 }

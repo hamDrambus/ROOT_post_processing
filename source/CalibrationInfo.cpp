@@ -99,7 +99,7 @@ double CalibrationInfo::getPMT_S1pe(int ch, int exp_ind)
 			}
 		}
 	}
-	std::cout<<"Error: no PMT calibration for ch "<<ch<<" and experiment '"<<state_info->experiments[exp_ind]<<"'"<<std::endl;
+	//std::cout<<"Warning: no PMT calibration for ch "<<ch<<" and experiment '"<<state_info->experiments[exp_ind]<<"'"<<std::endl;
 	return -1;
 }
 void CalibrationInfo::setPMT_S1pe(int ch, double pmt_v, double val)
@@ -201,11 +201,11 @@ std::deque<std::deque<std::pair<Bool_t, Bool_t>>> &CalibrationInfo::recalibrate(
 			recalibration_sucess.back().push_back(std::pair<Bool_t, Bool_t>(kFALSE, kFALSE));
 	}
 
-	for (int ch_ind = 0; ch_ind < S2_S.back().size(); ++ch_ind){
+	for (int ch_ind = 0; ch_ind < S2_S.back().size(); ++ch_ind) {
 		if (s1pe[ch_ind] <= 0)
 			continue;
 		//calculate N_pe_direct
-		for (int exp_ind = 0; exp_ind < S2_S.size(); ++exp_ind){
+		for (int exp_ind = 0; exp_ind < S2_S.size(); ++exp_ind) {
 			S2_S[exp_ind][ch_ind] /= getS1pe(state_info->MPPC_channels[ch_ind]); //instead of s1pe[ch_ind] getS1pe is called which updates the value if necessary.
 			recalibration_sucess[exp_ind][ch_ind].first = kTRUE;
 		}

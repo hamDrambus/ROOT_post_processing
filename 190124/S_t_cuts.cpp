@@ -12,12 +12,40 @@
   
   PMT_V.clear();
   PMT_V["coll6_20kV_850V_12dB_46V"] = 850;
+  PMT_V["coll2_1foils_4kV_850V_12dB_0V"] = 850;
+  PMT_V["coll2_1foils_5kV_850V_12dB_0V"] = 850;
+  PMT_V["coll2_1foils_6kV_850V_12dB_0V"] = 850;
+  PMT_V["coll2_1foils_7kV_850V_12dB_0V"] = 850;
+  PMT_V["coll2_1foils_8kV_850V_12dB_0V"] = 850;
+  PMT_V["coll2_1foils_9kV_850V_12dB_0V"] = 850;
+  PMT_V["coll2_1foils_10kV_850V_12dB_0V"] = 850;
+  PMT_V["coll2_2foils_10kV_850V_12dB_0V"] = 850;
+  PMT_V["coll2_2foils_12kV_850V_12dB_0V"] = 850;
+  PMT_V["coll2_2foils_14kV_850V_12dB_0V"] = 850;
+  PMT_V["coll2_2foils_16kV_850V_12dB_0V"] = 850;
+  PMT_V["coll2_2foils_18kV_850V_12dB_0V"] = 850;
+  PMT_V["coll2_2foils_20kV_850V_12dB_0V"] = 850;
+
 
   PMT_dB.clear();
   PMT_dB["coll6_20kV_850V_12dB_46V"] = 3.98; //ratio, not actual dB
 
   experiment_fields.clear();
   experiment_fields["coll6_20kV_850V_12dB_46V"] = 20;
+  experiment_fields["coll2_1foils_4kV_850V_12dB_0V"] = 4;
+  experiment_fields["coll2_1foils_5kV_850V_12dB_0V"] = 5;
+  experiment_fields["coll2_1foils_6kV_850V_12dB_0V"] = 6;
+  experiment_fields["coll2_1foils_7kV_850V_12dB_0V"] = 7;
+  experiment_fields["coll2_1foils_8kV_850V_12dB_0V"] = 8;
+  experiment_fields["coll2_1foils_9kV_850V_12dB_0V"] = 9;
+  experiment_fields["coll2_1foils_10kV_850V_12dB_0V"] = 10;
+  experiment_fields["coll2_2foils_10kV_850V_12dB_0V"] = 10.01;
+  experiment_fields["coll2_2foils_12kV_850V_12dB_0V"] = 12;
+  experiment_fields["coll2_2foils_14kV_850V_12dB_0V"] = 14;
+  experiment_fields["coll2_2foils_16kV_850V_12dB_0V"] = 16;
+  experiment_fields["coll2_2foils_18kV_850V_12dB_0V"] = 18;
+  experiment_fields["coll2_2foils_20kV_850V_12dB_0V"] = 20;
+
   {
     double coeff = (600 / 804.0)*(1.54 / (1.54*1.8 + 1.01*0.4));
     for (auto j = experiment_fields.begin(); j != experiment_fields.end(); ++j)
@@ -30,7 +58,21 @@
   areas_to_draw.back().experiments.push_back("coll6_20kV_850V_12dB_46V");
    
   exp_area.experiments.clear();
-  exp_area.experiments.push_back("coll6_20kV_850V_12dB_46V");
+  //exp_area.experiments.push_back("coll6_20kV_850V_12dB_46V");
+  exp_area.experiments.push_back("coll2_1foils_4kV_850V_12dB_0V");
+  exp_area.experiments.push_back("coll2_1foils_5kV_850V_12dB_0V");
+  exp_area.experiments.push_back("coll2_1foils_6kV_850V_12dB_0V");
+  exp_area.experiments.push_back("coll2_1foils_7kV_850V_12dB_0V");
+  exp_area.experiments.push_back("coll2_1foils_8kV_850V_12dB_0V");
+  exp_area.experiments.push_back("coll2_1foils_9kV_850V_12dB_0V");
+  exp_area.experiments.push_back("coll2_1foils_10kV_850V_12dB_0V");
+  exp_area.experiments.push_back("coll2_2foils_10kV_850V_12dB_0V");
+  exp_area.experiments.push_back("coll2_2foils_12kV_850V_12dB_0V");
+  exp_area.experiments.push_back("coll2_2foils_14kV_850V_12dB_0V");
+  exp_area.experiments.push_back("coll2_2foils_16kV_850V_12dB_0V");
+  exp_area.experiments.push_back("coll2_2foils_18kV_850V_12dB_0V");
+  exp_area.experiments.push_back("coll2_2foils_20kV_850V_12dB_0V");
+
   if (areas_to_draw.empty())
 	areas_to_draw.push_back(experiment_area());
   areas_to_draw.back().channels.erase();

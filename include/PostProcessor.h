@@ -74,6 +74,7 @@ protected:
 	void FillHist(void* p_hist);//considers cuts and histogram tipe (void*)==either TH1D* or TH2D*
 	//see function for std::vector<double> &vals usage in cuts' picker
 	int numOfFills(void);
+	int numOfRuns (void);
 	std::pair<double, double> hist_x_limits(void); //considering cuts
 	std::pair<double, double> hist_y_limits(void); //valid only for 2d plots
 	void set_default_hist_setups(void);//
@@ -90,7 +91,7 @@ protected:
 	void print_hist(int ch, int exp_ind, Type type);
 
 public:
-	void LoopThroughData(FunctionWrapper* operation, int channel, Type type, bool apply_phys_cuts, bool apply_run_cuts);
+	void LoopThroughData(FunctionWrapper* operation, int channel, Type type, bool apply_phys_cuts, bool apply_run_cuts, bool apply_hist_cuts = true);
 
 	void update(UpdateState to_update = All); //mandates:	1)update current picture. (only displayed histogram but not a png, as well as TLines and TF1)
 	//								2)update physical parameters obtained from the current hist
