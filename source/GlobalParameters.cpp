@@ -26,7 +26,8 @@ std::vector<double>::iterator iter_add(std::vector<double>::iterator& to, int wh
 	return ((int)(end - to) < what) ? end : to + what;
 }
 
-void open_output_file(std::string name, std::ofstream &str)
+
+void open_output_file(std::string name, std::ofstream &str, std::ios_base::openmode _mode)
 {
 	std::string folder = name;
 	while ((folder.back() != '\\') &&(folder.back()!='/') &&!folder.empty())
@@ -46,9 +47,9 @@ void open_output_file(std::string name, std::ofstream &str)
 	struct stat st;
 	stat(folder.c_str(),&st);
 	if(!S_ISDIR(st.st_mode)){
-		int code = system(("mkdir \"" + folder + "\"").c_str());
+		int code = system(("mkdir -p \"" + folder + "\"").c_str());
 			if (code)
-				std::cout << "mkdir error: " << code << std::endl;
+				std::cout << "mkdir -p error: " << code << std::endl;
 	}
 #endif //_WIN32__
 	str.open(name.c_str(), std::ios_base::trunc);
@@ -147,7 +148,8 @@ void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> 
 #endif //__WIN32__
 		TThread::Initialize();
 		gStyle->SetOptFit();
-
+		gStyle->SetStatY(0.9);
+		gStyle->SetStatX(0.9);
 		calibaration_points = std::pair<int, int>(3, 6);
 
 		double SiPM_size = 10; //mm

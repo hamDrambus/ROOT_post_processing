@@ -21,17 +21,18 @@
 //8) AnalysisStates::is_TH1D_hist
 
 //9) void PostProcessor::LoopThroughData(FunctionWrapper*);
-//10) void PostProcessor::FillHist(void* p_hist)
-//11) int PostProcessor::numOfFills(void);
-//12) std::pair<double, double> PostProcessor::hist_x_limits(void);
-//13) std::pair<double, double> PostProcessor::hist_y_limits(void);
+//10) void PostProcessor::print_hist(int ch, int exp_ind, Type type);
+//11) void PostProcessor::FillHist(void* p_hist)
+//12) int PostProcessor::numOfFills(int channel, Type type);
+//13) std::pair<double, double> PostProcessor::hist_x_limits(void);
+//14) std::pair<double, double> PostProcessor::hist_y_limits(void);
 
-//14) void PostProcessor::set_default_hist_setups(void);
+//15) void PostProcessor::set_default_hist_setups(void);
 
-//15) void PostProcessor::update_physical(void);
-//16) void PostProcessor::set_limits(double left, double right);
-//17) void PostProcessor::set_drawn_limits(double left, double right);
-//18) void PostProcessor::set_as_run_cut(std::string name)
+//16) void PostProcessor::update_physical(void);
+//17) void PostProcessor::set_limits(double left, double right);
+//18) void PostProcessor::set_drawn_limits(double left, double right);
+//19) void PostProcessor::set_as_run_cut(std::string name)
 
 
 //TODO: rename display_cuts from HistogramSetups (counter-intuitive)
@@ -73,7 +74,7 @@ protected:
 
 	void FillHist(void* p_hist);//considers cuts and histogram tipe (void*)==either TH1D* or TH2D*
 	//see function for std::vector<double> &vals usage in cuts' picker
-	int numOfFills(void);
+	int numOfFills(int channel, Type type);
 	int numOfRuns (void);
 	std::pair<double, double> hist_x_limits(void); //considering cuts
 	std::pair<double, double> hist_y_limits(void); //valid only for 2d plots

@@ -73,6 +73,53 @@ void select_S_t (double t_min, double t_max, double S_min, double S_max, bool do
   add_hist_cut(cutter_S_T, "S_T_select", do_update);
 }
 
+//multichannel case
+void select_S_t_MC (double t_min, double t_max, double S_min, double S_max, bool do_update=true) {
+  std::vector<double> *area = new std::vector<double>;
+  area->push_back(std::min(t_min, t_max));
+  area->push_back(std::max(t_min, t_max));
+  area->push_back(std::min(S_min, S_max));
+  area->push_back(std::max(S_min, S_max));
+  FunctionWrapper* cutter_S_T = new FunctionWrapper(area);
+  cutter_S_T->SetFunction(&Peak_S_t_select);
+  if (post_processor->is_PMT_type(post_processor->current_type)) {
+     for (int ch_ind = 0; ch_ind!=post_processor->PMT_channels.size(); ++ch_ind) {
+        remove_hist_cut("S_T_select", post_processor->PMT_channels[ch_ind], false);
+        add_hist_cut(cutter_S_T, "S_T_select", post_processor->PMT_channels[ch_ind], false);
+     }
+  } else {
+     for (int ch_ind = 0; ch_ind!=post_processor->MPPC_channels.size(); ++ch_ind) {
+        remove_hist_cut("S_T_select", post_processor->MPPC_channels[ch_ind], false);
+        add_hist_cut(cutter_S_T, "S_T_select", post_processor->MPPC_channels[ch_ind], false);
+     }
+  }
+  if (do_update)
+     update();
+}
+
+bool Peak_exclude_all (std::vector<double> &pars, int run, void* stat_data) {
+  return false;
+}
+
+void turn_off_ch (int ch, bool do_update = true) {
+  if (!post_processor->isMultichannel(post_processor->current_type)) {
+     std::cout<<"Error: can't use this functoin for single channel type"<<std::endl;
+     return;
+  }
+  FunctionWrapper* cutter_ = new FunctionWrapper(NULL);
+  cutter_->SetFunction(&Peak_exclude_all);
+  remove_hist_cut("ch_off", ch, false);
+  add_hist_cut(cutter_, "ch_off", ch, do_update);
+}
+
+void turn_on_ch (int ch, bool do_update = true) {
+  if (!post_processor->isMultichannel(post_processor->current_type)) {
+     std::cout<<"Error: can't use this functoin for single channel type"<<std::endl;
+     return;
+  }
+  remove_hist_cut("ch_off", ch, do_update);
+}
+
 //Following are using std::vector<double> *x_y_regions which must be created before every call
 void select_S_t (bool do_update=true) {
   if (x_y_regions==NULL) {

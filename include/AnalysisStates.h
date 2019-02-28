@@ -12,7 +12,7 @@ class AnalysisStates {
 public:
 	enum Type {
 		MPPC_Ss, MPPC_t_S, MPPC_A_S, MPPC_Double_I, MPPC_S2_S, MPPC_times, MPPC_times_N, MPPC_sum_ts, MPPC_coord, MPPC_coord_x, MPPC_coord_y, MPPC_Npe_sum, MPPC_S2, MPPC_tfinal, MPPC_tstart, MPPC_tboth,
-		Correlation /*uses x,y Type's cuts*/,CorrelationAll, PMT_S2_S, PMT_S2_int, PMT_Ss, PMT_t_S, PMT_A_S, PMT_times, PMT_times_N};
+		Correlation /*uses x,y Type's cuts*/,CorrelationAll, PMT_S2_S, PMT_S2_int, PMT_Ss, PMT_t_S, PMT_A_S, PMT_times, PMT_times_N, PMT_sum_N};
 protected:
 	const Type _first_state;
 	const Type _last_state;

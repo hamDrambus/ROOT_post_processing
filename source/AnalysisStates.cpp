@@ -1,7 +1,7 @@
 #include "AnalysisStates.h"
 
 AnalysisStates::AnalysisStates(std::deque<int> &mppc_channels_, std::deque<int> &pmt_channels_, std::deque<std::string>& experiments_):
-_first_state(MPPC_Ss), _last_state(PMT_times_N),_x_corr(MPPC_Npe_sum),_y_corr(PMT_S2_S)
+_first_state(MPPC_Ss), _last_state(PMT_sum_N),_x_corr(MPPC_Npe_sum),_y_corr(PMT_S2_S)
 {
 	MPPC_channels = mppc_channels_;
 	PMT_channels = pmt_channels_;
@@ -177,12 +177,12 @@ Bool_t AnalysisStates::PrevExp(Bool_t save)
 
 Bool_t AnalysisStates::is_PMT_type(Type type)
 {
-	return (type == PMT_S2_S || type == PMT_Ss || type == PMT_t_S || type == PMT_times|| PMT_S2_int==type || PMT_A_S == type || PMT_times_N);
+	return (type == PMT_S2_S || type == PMT_Ss || type == PMT_t_S || type == PMT_times|| PMT_S2_int==type || PMT_A_S == type || PMT_times_N == type || PMT_sum_N == type);
 }
 
 Bool_t AnalysisStates::isMultichannel(Type type)
 {
-	return (type == MPPC_sum_ts)||(type==MPPC_coord)||(type==MPPC_coord_x)||(type==MPPC_coord_y)||(type==MPPC_Npe_sum)||(type==Correlation)||(type==CorrelationAll);
+	return (type == MPPC_sum_ts)||(type==MPPC_coord)||(type==MPPC_coord_x)||(type==MPPC_coord_y)||(type==MPPC_Npe_sum)||(type==Correlation)||(type==CorrelationAll)||(type==PMT_sum_N);
 }
 
 bool AnalysisStates::isPerRun (Type type)
@@ -202,7 +202,7 @@ Bool_t AnalysisStates::is_TH1D_hist(Type type)
 
 bool AnalysisStates::isComposite (Type type)
 {
-	return ((type == MPPC_coord) || (type == MPPC_coord_x)||(type== MPPC_coord_y)||(type==Correlation)||(type==CorrelationAll)||(type==MPPC_Npe_sum)||(type==MPPC_S2)||(type==PMT_S2_S));
+	return ((type == MPPC_coord) || (type == MPPC_coord_x)||(type== MPPC_coord_y)||(type==Correlation)||(type==CorrelationAll)||(type==MPPC_Npe_sum)||(type==MPPC_S2)||(type==PMT_S2_S)||(type==PMT_sum_N));
 }
 
 Bool_t AnalysisStates::isValid()
@@ -228,7 +228,7 @@ Bool_t AnalysisStates::isValid()
 	if (pmt_ch && !(is_PMT_type(current_type)))
 		return kFALSE;
 	//PMT_S2_S, PMT_Ss, PMT_t_S
-	if (mppc_ch && is_PMT_type(current_type))
+	if (mppc_ch && (is_PMT_type(current_type)))
 		return kFALSE;
 	return kTRUE;
 }
@@ -395,6 +395,10 @@ std::string AnalysisStates::type_name(Type type)
 	}
 	case Type::PMT_times_N: {
 		name+="_signal_form_by_N_peaks";
+		break;
+	}
+	case Type::PMT_sum_N: {
+		name+="_sum_of_N_peaks";
 		break;
 	}
 	}

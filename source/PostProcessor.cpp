@@ -70,7 +70,7 @@ std::string PostProcessor::hist_name()
 
 void PostProcessor::print_hist(void)
 {
-	print_hist(current_channel,current_exp_index,current_type);
+	print_hist(current_channel, current_exp_index, current_type);
 }
 
 void PostProcessor::print_hist(int ch, int exp_ind, Type type)
@@ -86,16 +86,116 @@ void PostProcessor::print_hist(int ch, int exp_ind, Type type)
 			+ "/" + (is_PMT_type(type) ? "PMT_" : "MPPC_") + std::to_string(ch)
 			+ type_name(type);
 	}
+
 	std::ofstream str;
-	open_output_file(name+".hdata", str);
-	if (is_TH1D_hist(type)) {
-		for (int i=1, _end_ = current_hist1->GetNbinsX();i<=_end_;++i)
-			str<<current_hist1->GetBinCenter(i)<<"\t"<<current_hist1->GetBinContent(i)<<std::endl;
-	} else {
-		for (int i=1, _end_ = current_hist2->GetNbinsX();i<=_end_;++i)
-			for (int j=1, _end_2 = current_hist2->GetNbinsY();j<=_end_2;++j)
-				str<<current_hist2->GetXaxis()->GetBinCenter(i)<<"\t"<<current_hist2->GetYaxis()->GetBinCenter(j)<<"\t"<<current_hist2->GetBinContent(i,j)<<std::endl;
+	open_output_file(name+".hdata", str, std::ios_base::trunc | std::ios_base::binary);
+	std::size_t real_size = numOfFills(ch, type);
+	str.write((char*)&real_size, sizeof(std::size_t));
+	struct temp_data {
+		std::ofstream* str;
+		int ch_size;
+	} st_data;
+	st_data.str = &str;
+	st_data.ch_size = is_PMT_type(type) ? PMT_channels.size() : MPPC_channels.size();
+	FunctionWrapper* writer_to_file = new FunctionWrapper(&st_data);
+	switch (type)
+	{
+	case MPPC_coord:
+	{
+		writer_to_file->SetFunction([](std::vector<double> &pars, int run, void* data) {
+			((temp_data*)data)->str->write((char*)&pars[((temp_data*)data)->ch_size], sizeof(double));
+			((temp_data*)data)->str->write((char*)&pars[((temp_data*)data)->ch_size+1], sizeof(double));
+			return true;
+		});
+		break;
 	}
+	case MPPC_coord_x:
+	case MPPC_Npe_sum:
+	{
+		writer_to_file->SetFunction([](std::vector<double> &pars, int run, void* data) {
+			((temp_data*)data)->str->write((char*)&pars[((temp_data*)data)->ch_size], sizeof(double));
+			return true;
+		});
+		break;
+	}
+	case MPPC_coord_y:
+	{
+		writer_to_file->SetFunction([](std::vector<double> &pars, int run, void* data) {
+			((temp_data*)data)->str->write((char*)&pars[((temp_data*)data)->ch_size+1], sizeof(double));
+			return true;
+		});
+		break;
+	}
+	case MPPC_times:
+	case MPPC_times_N:
+	case PMT_times:
+	case PMT_times_N:
+	case MPPC_sum_ts:
+	{
+		writer_to_file->SetFunction([](std::vector<double>& pars, int run, void* data) {
+			((temp_data*)data)->str->write((char*)&pars[4], sizeof(double));
+			return true;
+		});
+		break;
+	}
+	case MPPC_t_S:
+	case PMT_t_S:
+	{
+		writer_to_file->SetFunction([](std::vector<double>& pars, int run, void* data) {
+			((temp_data*)data)->str->write((char*)&pars[4], sizeof(double));
+			((temp_data*)data)->str->write((char*)&pars[0], sizeof(double));
+			return true;
+		});
+		break;
+	}
+	case MPPC_A_S:
+	case PMT_A_S:
+	{
+		writer_to_file->SetFunction([](std::vector<double>& pars, int run, void* data) {
+			((temp_data*)data)->str->write((char*)&pars[1], sizeof(double));
+			((temp_data*)data)->str->write((char*)&pars[0], sizeof(double));
+			return true;
+		});
+		break;
+	}
+	case PMT_S2_S:
+	case MPPC_S2:
+	case MPPC_Ss:
+	case MPPC_Double_I:
+	case MPPC_S2_S:
+	case MPPC_tfinal:
+	case MPPC_tstart:
+	case MPPC_tboth:
+	case PMT_S2_int:
+	case PMT_Ss:
+	{
+		writer_to_file->SetFunction([](std::vector<double>& pars, int run, void* data) {
+			((temp_data*)data)->str->write((char*)&pars[0], sizeof(double));
+			return true;
+		});
+		break;
+	}
+	case Correlation:
+	case CorrelationAll:
+	{
+		writer_to_file->SetFunction([](std::vector<double>& pars, int run, void* data) {
+			((temp_data*)data)->str->write((char*)&pars[0], sizeof(double));
+			((temp_data*)data)->str->write((char*)&pars[1], sizeof(double));
+			return true;
+		});
+		break;
+	}
+	case PMT_sum_N:
+	{
+		writer_to_file->SetFunction([](std::vector<double>& pars, int run, void* data) {
+			((temp_data*)data)->str->write((char*)&pars[((temp_data*)data)->ch_size], sizeof(double));
+			return true;
+		});
+		break;
+	}
+	}
+	LoopThroughData(writer_to_file, ch, type, false, true);
+	delete writer_to_file;
 	str.close();
 	current_canvas->SaveAs((name+".png").c_str(), "png");
 }
@@ -197,6 +297,9 @@ PMT_S2_int		S2_int		------		------		------		------		------
 PMT_Ss			peak.S		peak.A		peak.left	peak.right	peak.t		------
 PMT_t_S			peak.S		peak.A		peak.left	peak.right	peak.t		------	=== PMT_Ss
 PMT_times		peak.S		peak.A		peak.left	peak.right	peak.t		------	===	PMT_Ss
+PMT_sum_N
+	1st level:	peak.S		peak.A		peak.left	peak.right	peak.t		------				//per channel, cuts with corresponding channel called.
+	2nd level:	Npeaks[0]	Np[1]	...	Np[PMT_channels.size()-1]		NpSum					//cuts with channel -1 called.
 */
 void PostProcessor::LoopThroughData(FunctionWrapper* operation, int channel, Type type, bool apply_phys_cuts, bool apply_run_cuts, bool apply_hist_cuts)
 {
@@ -505,10 +608,6 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation, int channel, Typ
 					goto _9cutted;
 			for (int chan_ind=0,_ch_ind_end_= MPPC_channels.size(); chan_ind!=_ch_ind_end_;++chan_ind) {
 				for (int pk = 0, pk_end = data->mppc_peaks[current_exp_index][chan_ind][run].size(); pk != pk_end; ++pk) {
-					if((run==1544)||(run==1545)){
-						double temp =0;
-						temp*=temp;
-					}
 					cut_data[0] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].S;
 					cut_data[1] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].A;
 					cut_data[2] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].left;
@@ -888,6 +987,56 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation, int channel, Typ
 		current_exp_index = actual_current_exp;
 		break;
 	}
+	case Type::PMT_sum_N:
+	{
+		int run_size = data->pmt_peaks[current_exp_index][0].size();
+		std::vector<double> Ns (PMT_channels.size()+1);
+		std::vector<double> cut_data(5);
+		for (auto run = 0; run != run_size; ++run) {
+			for (auto cut = RunCuts[current_exp_index].begin(), c_end_ = RunCuts[current_exp_index].end(); (cut != c_end_)&&apply_run_cuts; ++cut)
+				if (kFALSE == cut->GetAccept(run))//not calculating it here!
+					goto _14cutted;
+			Ns[PMT_channels.size()]=0;
+			for (int chan_ind=0,_ch_ind_end_= PMT_channels.size(); chan_ind<_ch_ind_end_;++chan_ind) {
+				double N = 0;
+				for (int pk = 0, pk_end = data->mppc_peaks[current_exp_index][chan_ind][run].size(); pk != pk_end; ++pk) {
+					cut_data[0] = data->pmt_peaks[current_exp_index][chan_ind][run][pk].S;
+					cut_data[1] = data->pmt_peaks[current_exp_index][chan_ind][run][pk].A;
+					cut_data[2] = data->pmt_peaks[current_exp_index][chan_ind][run][pk].left;
+					cut_data[3] = data->pmt_peaks[current_exp_index][chan_ind][run][pk].right;
+					cut_data[4] =
+#ifdef PEAK_AVR_TIME
+							data->pmt_peaks[current_exp_index][chan_ind][run][pk].t;
+#else
+							0.5*(cut_data[3]+cut_data[2]);
+#endif
+					for (auto cut = setups->phys_hist_cuts.begin(), c_end_ = setups->phys_hist_cuts.end(); apply_phys_cuts&&(cut != c_end_); ++cut)
+						if (cut->GetChannel()==PMT_channels[chan_ind])
+							if (kFALSE == (*cut)(cut_data, run))
+								goto _14cutted1;
+					for (auto cut = setups->display_hist_cuts.begin(), c_end_ = setups->display_hist_cuts.end(); apply_hist_cuts&&(cut != c_end_); ++cut)
+						if (cut->GetChannel()==PMT_channels[chan_ind])
+							if (kFALSE == (*cut)(cut_data, run))
+								goto _14cutted1;
+					++N;
+					_14cutted1:;
+				}
+				Ns[chan_ind] = N;
+				Ns[PMT_channels.size()]+=Ns[chan_ind];
+			}
+			for (auto cut = setups->phys_hist_cuts.begin(), c_end_ = setups->phys_hist_cuts.end(); apply_phys_cuts&&(cut != c_end_); ++cut)
+				if (cut->GetChannel()==-1)
+					if (kFALSE == (*cut)(Ns, run))
+						goto _14cutted;
+			for (auto cut = setups->display_hist_cuts.begin(), c_end_ = setups->display_hist_cuts.end(); apply_hist_cuts&&(cut != c_end_); ++cut)
+				if (cut->GetChannel()==-1)
+					if (kFALSE == (*cut)(Ns, run))
+						goto _14cutted;
+			(*operation)(Ns, run);
+			_14cutted:;
+		}
+		break;
+	}
 	}
 	if (to_delete_setups)
 		delete setups;
@@ -900,7 +1049,7 @@ void PostProcessor::FillHist(void* p_hist)//considers cuts and histogram tipe (v
 		int ch_size;
 	} st_data;
 	st_data.phist = p_hist;
-	st_data.ch_size = MPPC_channels.size();
+	st_data.ch_size = is_PMT_type(current_type) ? PMT_channels.size() : MPPC_channels.size();
 	FunctionWrapper* histogram_filler = new FunctionWrapper(&st_data);
 	CUTTER filler_op;
 	switch (current_type)
@@ -951,6 +1100,7 @@ void PostProcessor::FillHist(void* p_hist)//considers cuts and histogram tipe (v
 	}
 	case Type::MPPC_Npe_sum:
 	case Type::MPPC_coord_x:
+	case Type::PMT_sum_N:
 	{
 		filler_op = [](std::vector<double>& pars, int run, void* data) {
 			((TH1D*)((temp_data*)data)->phist)->Fill(pars[((temp_data*)data)->ch_size]);
@@ -1001,7 +1151,7 @@ void PostProcessor::FillHist(void* p_hist)//considers cuts and histogram tipe (v
 	delete histogram_filler;
 }
 
-int PostProcessor::numOfFills(void) //TODO: maybe for the case of filling histograms with weights (MPPC_times and PMT_times) make summing if weights.
+int PostProcessor::numOfFills(int channel, Type type) //TODO: maybe for the case of filling histograms with weights (MPPC_times and PMT_times) make summing if weights.
 {
 	int ret = 0;
 	FunctionWrapper* histogram_filler = new FunctionWrapper(&ret);
@@ -1011,7 +1161,7 @@ int PostProcessor::numOfFills(void) //TODO: maybe for the case of filling histog
 		return true;
 	};
 	histogram_filler->SetFunction(filler_op);
-	LoopThroughData(histogram_filler, current_channel, current_type, false, true);
+	LoopThroughData(histogram_filler, channel, type, false, true);
 	delete histogram_filler;
 	return ret;
 }
@@ -1103,7 +1253,7 @@ std::pair<double, double> PostProcessor::hist_x_limits(void) //valid only for 2d
 		int ch_size;
 	} st_data;
 	st_data.mm = &ret;
-	st_data.ch_size = MPPC_channels.size();
+	st_data.ch_size = is_PMT_type(current_type) ? PMT_channels.size() : MPPC_channels.size();
 	FunctionWrapper* histogram_filler = new FunctionWrapper(&st_data);
 	CUTTER filler_op;
 	switch (current_type)
@@ -1159,6 +1309,7 @@ std::pair<double, double> PostProcessor::hist_x_limits(void) //valid only for 2d
 	case Type::MPPC_Npe_sum:
 	case Type::MPPC_coord_x:
 	case Type::MPPC_coord:
+	case Type::PMT_sum_N:
 	{
 		filler_op = [](std::vector<double>& pars, int run, void* data) {
 			std::pair<double,double>* p = ((temp_data*)data)->mm;
@@ -1187,7 +1338,7 @@ std::pair<double, double> PostProcessor::hist_x_limits(void) //valid only for 2d
 
 void PostProcessor::set_default_hist_setups(void)//does not affect cuts
 {
-	int _N_ = numOfFills();
+	int _N_ = numOfFills(current_channel, current_type);
 	current_setups->N_bins = _N_;
 	current_setups->N_bins = std::max(1,(int)std::round(std::sqrt(current_setups->N_bins)));
 	std::pair<double, double> x_lims = hist_x_limits();
@@ -1331,6 +1482,7 @@ void PostProcessor::set_default_hist_setups(void)//does not affect cuts
 	case Type::PMT_S2_int:
 	case Type::Correlation:
 	case Type::CorrelationAll:
+	case Type::PMT_sum_N:
 	{
 		current_setups->N_gauss = 0;
 		current_setups->par_val.resize(0, 0);
@@ -1800,6 +1952,19 @@ void PostProcessor::add_hist_cut(FunctionWrapper* picker, std::string name, int 
 		std::cout << "\t Use add_hist_cut(FunctionWrapper*, std::string) instead."<<std::endl;
 		return;
 	}
+	if (is_PMT_type(current_type)){
+		int ch_ind = pmt_channel_to_index(channel);
+		if (ch_ind<0) {
+			std::cout<<"PostProcessor::add_hist_cut(FunctionWrapper*, std::string, int) Error:No such channel for type '"<<type_name(current_type)<<"'. No cut set."<<std::endl;
+			return;
+		}
+	} else {
+		int ch_ind = mppc_channel_to_index(channel);
+		if (ch_ind<0) {
+			std::cout<<"PostProcessor::add_hist_cut(FunctionWrapper*, std::string, int) Error:No such channel for type '"<<type_name(current_type)<<"'. No cut set."<<std::endl;
+			return;
+		}
+	}
 	current_setups->display_hist_cuts.push_back(EventCut(0, EventCut::HistCut, name));
 	current_setups->display_hist_cuts.back().SetPicker(picker);
 	current_setups->display_hist_cuts.back().SetChannel(channel);
@@ -1969,7 +2134,7 @@ void PostProcessor::set_limits(double left, double right)
 	};
 	temp_data * st_data = new temp_data;
 	st_data->mm = std::pair<double, double>(_left, _right);
-	st_data->ch_size = MPPC_channels.size();
+	st_data->ch_size = is_PMT_type(current_type) ? PMT_channels.size() : MPPC_channels.size();
 
 	FunctionWrapper *picker = new FunctionWrapper(st_data);
 	switch (current_type)
@@ -1977,6 +2142,7 @@ void PostProcessor::set_limits(double left, double right)
 	case MPPC_coord:
 	case MPPC_coord_x:
 	case MPPC_Npe_sum:
+	case PMT_sum_N:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			return ((vals[((temp_data*)data)->ch_size] <= ((temp_data*)data)->mm.second) && (vals[((temp_data*)data)->ch_size] >= ((temp_data*)data)->mm.first));
@@ -2069,7 +2235,7 @@ void PostProcessor::set_drawn_limits(double left, double right)
 	};
 	temp_data* st_data = new temp_data;
 	st_data->mm = std::pair<double, double>(_left, _right);
-	st_data->ch_size = MPPC_channels.size();
+	st_data->ch_size = is_PMT_type(current_type) ? PMT_channels.size() : MPPC_channels.size();
 
 	FunctionWrapper *picker = new FunctionWrapper(st_data);
 	switch (current_type)
@@ -2077,6 +2243,7 @@ void PostProcessor::set_drawn_limits(double left, double right)
 	case MPPC_coord:
 	case MPPC_coord_x:
 	case MPPC_Npe_sum:
+	case PMT_sum_N:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			return ((vals[((temp_data*)data)->ch_size] <= ((temp_data*)data)->mm.second) && (vals[((temp_data*)data)->ch_size] >= ((temp_data*)data)->mm.first));
@@ -2227,7 +2394,7 @@ void PostProcessor::set_fit_gauss(int N)
 	current_setups->par_left_limits.resize(current_setups->N_gauss * 3);
 	current_setups->par_right_limits.resize(current_setups->N_gauss * 3);
 	if (was_N < N){
-		int _N_in_hist = numOfFills();
+		int _N_in_hist = numOfFills(current_channel, current_type);
 		for (int nn = was_N; nn != current_setups->N_gauss; ++nn){
 			current_setups->par_left_limits[nn] = 0;
 			current_setups->par_right_limits[nn] = std::max(1, 2 * (int)std::sqrt(_N_in_hist));

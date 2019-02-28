@@ -59,7 +59,7 @@
 
 typedef bool(*CUTTER)(std::vector<double>& pars, int run_n, void* stat_data);
 
-void open_output_file(std::string name, std::ofstream &str);
+void open_output_file(std::string name, std::ofstream &str, std::ios_base::openmode _mode = std::ios_base::trunc);
 
 
 #if defined(__WIN32__)
