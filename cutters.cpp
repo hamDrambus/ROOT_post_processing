@@ -32,11 +32,29 @@ bool Peak_A_S_exclude (std::vector<double> &pars, int run, void* stat_data) {
   //{t_min0, t_max0, S_min0, S_max0, t_min1, t_max1 ...}
   if (0!=(exl_region->size()%4))
     return true;
-  double time = pars[4];
+  double time = pars[1];
   for (int i=0, _end_=exl_region->size()/4;i!=_end_;++i){
     if ((time>=(*exl_region)[4*i])&&(time<=(*exl_region)[4*i+1])&&(pars[0]>=(*exl_region)[4*i+2])&&(pars[0]<=(*exl_region)[4*i+3]))
       return false;
   }
+  return true;
+}
+
+bool Peak_A_S_exclude_fast_PMT (std::vector<double> &pars, int run, void* stat_data) {
+  std::vector<double> *exl_region = (std::vector<double> *) stat_data;
+  //{A_min, A0, S0, A1, S1, A_max}
+  if (6>exl_region->size())
+    return true;
+  double A_min = (*exl_region)[0];
+  double A0 = (*exl_region)[1];
+  double S0 = (*exl_region)[2];
+  double A1 = (*exl_region)[3];
+  double S1 = (*exl_region)[4];
+  double A_max = (*exl_region)[5];
+  if (pars[1]<A_min)
+     return false;
+  if ((pars[1]<A_max)&&(pars[0]< (S0 + (S1-S0)*(pars[1]-A0)/(A1-A0)) ))
+     return false;    
   return true;
 }
 
@@ -156,8 +174,20 @@ void exlude_A_S (bool do_update = true) {
   FunctionWrapper* cutter_S_T = new FunctionWrapper(x_y_regions);
   x_y_regions = NULL;
   cutter_S_T->SetFunction(&Peak_A_S_exclude);
-  remove_hist_cut("S_T_exclude", false);
-  add_hist_cut(cutter_S_T, "S_T_exclude", do_update);
+  remove_hist_cut("A_S_exclude", false);
+  add_hist_cut(cutter_S_T, "A_S_exclude", do_update);
+}
+
+void exlude_A_S_fPMT (bool do_update = true) {
+  if (x_y_regions==NULL) {
+    std::cout<<"x_y_regions vector is not created, no cuts"<<std::endl;
+    return;
+  }
+  FunctionWrapper* cutter_A_S = new FunctionWrapper(x_y_regions);
+  x_y_regions = NULL;
+  cutter_A_S->SetFunction(&Peak_A_S_exclude_fast_PMT);
+  remove_hist_cut("A_S_exclude_fPMT", false);
+  add_hist_cut(cutter_A_S, "A_S_exclude_fPMT", do_update);
 }
 
 //Following are using data set in 'date'/S_t_cuts.cpp

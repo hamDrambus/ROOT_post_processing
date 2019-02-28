@@ -999,7 +999,7 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation, int channel, Typ
 			Ns[PMT_channels.size()]=0;
 			for (int chan_ind=0,_ch_ind_end_= PMT_channels.size(); chan_ind<_ch_ind_end_;++chan_ind) {
 				double N = 0;
-				for (int pk = 0, pk_end = data->mppc_peaks[current_exp_index][chan_ind][run].size(); pk != pk_end; ++pk) {
+				for (int pk = 0, pk_end = data->pmt_peaks[current_exp_index][chan_ind][run].size(); pk != pk_end; ++pk) {
 					cut_data[0] = data->pmt_peaks[current_exp_index][chan_ind][run][pk].S;
 					cut_data[1] = data->pmt_peaks[current_exp_index][chan_ind][run][pk].A;
 					cut_data[2] = data->pmt_peaks[current_exp_index][chan_ind][run][pk].left;
