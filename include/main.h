@@ -6,6 +6,22 @@
 #include "GraphicOutputManager.h"
 #include "PostProcessor.h"
 
+
+/*TODO: rework types (and names):
+*	unite mppc and pmt peak analysis - there is a lot of repeating code
+* TODO: implement GotoCh()
+* TODO: move parts of code in cutters.cpp to the main program
+* TODO: cleanly separate initialization in hard-coded and externally loaded scripts
+* TODO: share cuts across types, e.g. A_S cut for ch8 PMT_A_S is the automatically used for signal forms or S2byN signal etc.
+* TODO*: for Cd time analysis: signal <time> per run per ch
+* TODO: remove all data except peaks?
+* TODO: unite some multichannel types, e.g. MPPC_times and MPPC_times_sum
+* 	the first type can be realized as second one with cuts turning off unneeded channels
+* TODO: add drawing cuts on relevant histograms. (with PolyLine)
+* 	Maybe and render function for EventCut
+* TODO: work out which commands exactly will be needed to obtain signal forms
+*	and optimize interface based on that.
+*/
 void Initialize(bool pars_in_script = true);
 void Ne(Bool_t save_state = kTRUE); //Next (E == experiment ==field)
 void Pe(Bool_t save_state = kTRUE); //Previous (E == experiment ==field)
