@@ -1,7 +1,7 @@
 #include "AnalysisStates.h"
 
 AnalysisStates::AnalysisStates(std::deque<int> &mppc_channels_, std::deque<int> &pmt_channels_, std::deque<std::string>& experiments_):
-_first_state(MPPC_Ss), _last_state(PMT_sum_N),_x_corr(MPPC_Npe_sum),_y_corr(PMT_S2_S)
+_first_state(MPPC_Ss), _last_state(PMT_sum_N),_x_corr(MPPC_Npe_sum),_y_corr(PMT_S2_S), ch_ind_loop(0), type_loop(_first_state)
 {
 	MPPC_channels = mppc_channels_;
 	PMT_channels = pmt_channels_;
@@ -15,6 +15,8 @@ _first_state(MPPC_Ss), _last_state(PMT_sum_N),_x_corr(MPPC_Npe_sum),_y_corr(PMT_
 		current_channel = PMT_last_ch;
 		current_type = PMT_Ss;
 	}
+	PMT_last_type = PMT_t_S;
+	MPPC_last_type = _first_state;
 	if (MPPC_last_ch<0)
 		_x_corr = PMT_S2_S;
 	if (PMT_last_ch<0)
@@ -23,12 +25,25 @@ _first_state(MPPC_Ss), _last_state(PMT_sum_N),_x_corr(MPPC_Npe_sum),_y_corr(PMT_
 	_y_corr_ch = is_PMT_type(_y_corr) ? PMT_last_ch : MPPC_last_ch;
 }
 
-Bool_t AnalysisStates::StateChange(int to_ch, int to_exp, Type to_type, int from_ch, int from_exp, Type from_type, Bool_t save)
+AnalysisStates:: ~AnalysisStates()
+{}
+
+Bool_t AnalysisStates::StateChange(int to_ch, int to_exp, Type to_type, int from_ch, int from_exp, Type from_type)
 {
+	if (!isMultichannel(to_type)) {
+		if (is_PMT_type(to_type))
+			PMT_last_ch = to_ch;
+		else
+			MPPC_last_ch = to_ch;
+	}
+	if (is_PMT_type(to_type))
+		PMT_last_type = to_type;
+	else
+		MPPC_last_type = to_type;
 	return !((to_ch == from_ch)&&(to_exp==from_exp)&&(to_type==from_type));
 }
 
-Bool_t AnalysisStates::NextType(Bool_t save)
+Bool_t AnalysisStates::NextType(void)
 {
 	if (!isValid())
 		return kFALSE;
@@ -37,20 +52,20 @@ Bool_t AnalysisStates::NextType(Bool_t save)
 	Type prev_type = current_type;
 	do {
 		current_type = (current_type == _last_state) ? _first_state : (Type)(current_type + 1);
-		//changed from PMT to MPPC and channels became invalid
-		if (!is_PMT_type(current_type) && is_PMT_type(prev_type)){
-			PMT_last_ch = current_channel;
-			current_channel = MPPC_last_ch;
-		}
-		if (is_PMT_type(current_type) && !is_PMT_type(prev_type)){
-			MPPC_last_ch = current_channel;
-			current_channel = PMT_last_ch;
+		if (isMultichannel(current_type)) {
+			current_channel = -1;
+		} else {
+			//changed from PMT to MPPC and channels became invalid
+			if (is_PMT_type(current_type) != is_PMT_type(prev_type))
+				current_channel = is_PMT_type(current_type) ? PMT_last_ch : MPPC_last_ch;
+			else
+				current_channel = prev_ch;
 		}
 	} while (!isValid());//invalid here means that there is no PMT or MPPC to which the switch have happened
-	return StateChange(current_channel,current_exp_index,current_type,prev_ch,prev_exp,prev_type,save);
+	return StateChange(current_channel,current_exp_index,current_type,prev_ch,prev_exp,prev_type);
 }
 
-bool AnalysisStates::GotoT(Type to_type, bool save)
+bool AnalysisStates::GotoT(Type to_type)
 {
 	if (!isValid())
 		return kFALSE;
@@ -58,22 +73,23 @@ bool AnalysisStates::GotoT(Type to_type, bool save)
 	int prev_exp = current_exp_index;
 	Type prev_type = current_type;
 	current_type = to_type;
-	if (!is_PMT_type(current_type) && is_PMT_type(prev_type)){
-		PMT_last_ch = current_channel;
-		current_channel = MPPC_last_ch;
-	}
-	if (is_PMT_type(current_type) && !is_PMT_type(prev_type)){
-		MPPC_last_ch = current_channel;
-		current_channel = PMT_last_ch;
+	if (isMultichannel(current_type)) {
+		current_channel = -1;
+	} else {
+		//changed from PMT to MPPC and channels became invalid
+		if (is_PMT_type(current_type) != is_PMT_type(prev_type))
+			current_channel = is_PMT_type(current_type) ? PMT_last_ch : MPPC_last_ch;
+		else
+			current_channel = prev_ch;
 	}
 	if (!isValid()){
 		std::cout<<"can't go to "<<type_name(current_type)<<" type (no channels)"<<std::endl;
 		current_type = prev_type;
 	}
-	return StateChange(current_channel,current_exp_index,current_type,prev_ch,prev_exp,prev_type,save);
+	return StateChange(current_channel,current_exp_index,current_type,prev_ch,prev_exp,prev_type);
 }
 
-Bool_t AnalysisStates::PrevType(Bool_t save)
+Bool_t AnalysisStates::PrevType(void)
 {
 	if (!isValid())
 		return kFALSE;
@@ -82,20 +98,20 @@ Bool_t AnalysisStates::PrevType(Bool_t save)
 	Type prev_type = current_type;
 	do {
 		current_type = (current_type == _first_state) ? _last_state : (Type)(current_type - 1);
-		//changed from PMT to MPPC and channels became invalid
-		if (!is_PMT_type(current_type) && is_PMT_type(prev_type)){
-			PMT_last_ch = current_channel;
-			current_channel = MPPC_last_ch;
-		}
-		if (is_PMT_type(current_type) && !is_PMT_type(prev_type)){
-			MPPC_last_ch = current_channel;
-			current_channel = PMT_last_ch;
+		if (isMultichannel(current_type)) {
+			current_channel = -1;
+		} else {
+			//changed from PMT to MPPC and channels became invalid
+			if (is_PMT_type(current_type) != is_PMT_type(prev_type))
+				current_channel = is_PMT_type(current_type) ? PMT_last_ch : MPPC_last_ch;
+			else
+				current_channel = prev_ch;
 		}
 	} while (!isValid());//invalid here means that there is no PMT or MPPC to which the switch have happened
-	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type, save);
+	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type);
 }
 
-Bool_t AnalysisStates::NextCh(Bool_t save)
+Bool_t AnalysisStates::NextCh(void)
 {
 	if (!isValid())
 		return kFALSE;
@@ -105,7 +121,7 @@ Bool_t AnalysisStates::NextCh(Bool_t save)
 	
 	if (isMultichannel(current_type)){
 		std::cout<<"Warning: current type has no channels"<<std::endl;
-		return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type, save);
+		return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type);
 	}
 
 	if (is_PMT_type(current_type)){
@@ -121,10 +137,10 @@ Bool_t AnalysisStates::NextCh(Bool_t save)
 				break;
 			}
 	}
-	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type, save);
+	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type);
 }
 
-Bool_t AnalysisStates::PrevCh(Bool_t save)
+Bool_t AnalysisStates::PrevCh(void)
 {
 	if (!isValid())
 		return kFALSE;
@@ -132,9 +148,9 @@ Bool_t AnalysisStates::PrevCh(Bool_t save)
 	int prev_exp = current_exp_index;
 	Type prev_type = current_type;
 
-	if (isMultichannel(current_type)){
+	if (isMultichannel(current_type)) {
 		std::cout<<"Warning: current type has no channels"<<std::endl;
-		return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type, save);
+		return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type);
 	}
 
 	if (is_PMT_type(current_type)){
@@ -150,10 +166,50 @@ Bool_t AnalysisStates::PrevCh(Bool_t save)
 				break;
 			}
 	}
-	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type, save);
+	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type);
 }
 
-Bool_t AnalysisStates::NextExp(Bool_t save)
+Bool_t AnalysisStates::GotoCh(int channel) //ignores types
+{
+	if (!isValid())
+		return kFALSE;
+	int prev_ch = current_channel;
+	int prev_exp = current_exp_index;
+	Type prev_type = current_type;
+
+	if (-1==channel) {
+		if (isMultichannel(current_type)) {
+			return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type);
+		}
+		Type mch_type = (current_type == _last_state ? _first_state : (Type)(current_type+1));
+		while (!isMultichannel(mch_type)&&mch_type!=current_type) {
+			mch_type = (mch_type == _last_state ? _first_state : (Type)(mch_type+1));
+		}
+		if (mch_type==current_type){
+			std::cout<<"Warning: Can't proceed to -1 channel - no multichannel type"<<std::endl;
+		}
+		current_type = mch_type;
+		return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type);
+	}
+
+	int ind_pmt = pmt_channel_to_index(channel);
+	int ind_mppc = mppc_channel_to_index(channel);
+	if (ind_pmt<0 && ind_mppc<0) {
+		std::cout<<"Error: no such channel for either PMT or MPPC"<<std::endl;
+		return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type);
+	}
+	current_channel = channel;
+	if (!(ind_pmt<0)) {
+		if (!is_PMT_type(current_type))
+			current_type = PMT_last_type;
+	} else {
+		if (is_PMT_type(current_type))
+			current_type = MPPC_last_type;
+	}
+	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type);
+}
+
+Bool_t AnalysisStates::NextExp(void)
 {
 	if (!isValid())
 		return kFALSE;
@@ -161,10 +217,10 @@ Bool_t AnalysisStates::NextExp(Bool_t save)
 	int prev_exp = current_exp_index;
 	Type prev_type = current_type;
 	current_exp_index = (current_exp_index == (experiments.size()-1)) ? 0 : current_exp_index+1;
-	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type, save);
+	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type);
 }
 
-Bool_t AnalysisStates::PrevExp(Bool_t save)
+Bool_t AnalysisStates::PrevExp(void)
 {
 	if (!isValid())
 		return kFALSE;
@@ -172,7 +228,7 @@ Bool_t AnalysisStates::PrevExp(Bool_t save)
 	int prev_exp = current_exp_index;
 	Type prev_type = current_type;
 	current_exp_index = (current_exp_index == 0) ? (experiments.size() - 1) : current_exp_index - 1;
-	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type, save);
+	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type);
 }
 
 Bool_t AnalysisStates::is_PMT_type(Type type)
@@ -183,16 +239,6 @@ Bool_t AnalysisStates::is_PMT_type(Type type)
 Bool_t AnalysisStates::isMultichannel(Type type)
 {
 	return (type == MPPC_sum_ts)||(type==MPPC_coord)||(type==MPPC_coord_x)||(type==MPPC_coord_y)||(type==MPPC_Npe_sum)||(type==Correlation)||(type==CorrelationAll)||(type==PMT_sum_N);
-}
-
-bool AnalysisStates::isPerRun (Type type)
-{
-	return !((type==MPPC_Ss)||(type==MPPC_t_S)||(type==MPPC_A_S)||(type==MPPC_times)||(type==MPPC_times_N)||(type==MPPC_sum_ts)||(type==PMT_Ss)||(type==PMT_t_S)||(type==PMT_A_S)||(type==PMT_times)||(type==PMT_times_N)||(type==MPPC_tboth));
-}
-
-bool AnalysisStates::isPerPeak (Type type)
-{
-	return !((type==MPPC_Double_I)||(type==MPPC_S2_S)||(type==MPPC_tfinal)||(type==MPPC_tstart)||(type==MPPC_tboth)||(type==Correlation)||(type==PMT_S2_int));
 }
 
 Bool_t AnalysisStates::is_TH1D_hist(Type type)
@@ -210,6 +256,9 @@ Bool_t AnalysisStates::isValid()
 	if (MPPC_channels.empty() && PMT_channels.empty())
 		return kFALSE;
 	
+	if (-1==current_channel&&isMultichannel(current_type))
+		return (is_PMT_type(current_type)&&!PMT_channels.empty())||(!is_PMT_type(current_type)&&!MPPC_channels.empty());
+
 	Bool_t mppc_ch = kFALSE;
 	for (auto i = MPPC_channels.begin(), _end_ = MPPC_channels.end(); i != _end_; ++i)
 		if (current_channel == *i){
@@ -237,11 +286,11 @@ bool AnalysisStates::SetCorrelation(Type x, Type y, int chx, int chy)
 {
 	if (isPerRun(x)&&is_TH1D_hist(x)&&is_TH1D_hist(y)&&isPerRun(y)){
 		bool ok = true;
-		if (channel_to_index(chx, x)<0){
+		if (channel_to_index(chx, x)<0) {
 			std::cout<<"Channel x is invalid."<< std::endl;
 			ok = false;
 		}
-		if (channel_to_index(chy, y)<0){
+		if (channel_to_index(chy, y)<0) {
 			std::cout<<"Channel y is invalid."<< std::endl;
 			ok = false;
 		}
@@ -260,21 +309,68 @@ bool AnalysisStates::SetCorrelation(Type x, Type y, int chx, int chy)
 
 int AnalysisStates::channel_to_index(int ch)
 {
-	if (is_PMT_type(current_type))
-		return pmt_channel_to_index(ch);
-	else
-		return mppc_channel_to_index(ch);
-	return -1;
+	return channel_to_index(ch, current_type);
 }
 
 int AnalysisStates::channel_to_index(int ch, Type type)
 {
+	if (isMultichannel(type)) {
+		return (-1==ch ? 0 : -1);
+	}
 	if (is_PMT_type(type))
 		return pmt_channel_to_index(ch);
 	else
 		return mppc_channel_to_index(ch);
 	return -1;
 }
+
+void AnalysisStates::loop_channels_reset(void)
+{
+	ch_ind_loop=0;
+}
+
+bool AnalysisStates::loop_channels (Type type, int &ch, int &ch_ind)
+{
+	if(type!=type_loop)
+		loop_channels_reset();
+	type_loop = type;
+	if (isMultichannel(type_loop)) {
+		if (ch_ind_loop>0) {
+			ch = -1;
+			ch_ind = -1;
+			loop_channels_reset();
+			return false;
+		}
+		ch = -1;
+		ch_ind = 0;
+		++ch_ind_loop;
+		return true;
+	}
+	if (is_PMT_type(type_loop)) {
+		if (ch_ind_loop>=PMT_channels.size()) {
+			ch = -1;
+			ch_ind = -1;
+			loop_channels_reset();
+			return false;
+		}
+		ch = PMT_channels[ch_ind_loop];
+		ch_ind = ch_ind_loop;
+		++ch_ind_loop;
+		return true;
+	} else {
+		if (ch_ind_loop>=MPPC_channels.size()) {
+			ch = -1;
+			ch_ind = -1;
+			loop_channels_reset();
+			return false;
+		}
+		ch = MPPC_channels[ch_ind_loop];
+		ch_ind = ch_ind_loop;
+		++ch_ind_loop;
+		return true;
+	}
+}
+
 
 int AnalysisStates::mppc_channel_to_index(int ch)
 {

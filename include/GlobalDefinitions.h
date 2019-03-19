@@ -58,9 +58,10 @@
 #define D_REV_ITERATOR std::vector<double>::reverse_iterator
 
 typedef bool(*CUTTER)(std::vector<double>& pars, int run_n, void* stat_data);
+typedef bool(*CUTTER_DRAW)(TCanvas* can, void* stat_data);
 
 void open_output_file(std::string name, std::ofstream &str, std::ios_base::openmode _mode = std::ios_base::trunc);
-
+bool confirm_action (std::string action);
 
 #if defined(__WIN32__)
 #define INVOKE_GNUPLOT(a) system(("start \"\" \"%GNUPLOT%\\gnuplot.exe\" -c \"" + a + "\"").c_str())
@@ -81,6 +82,5 @@ public:
 #endif
 	peak();
 };
-
 
 #endif

@@ -10,7 +10,7 @@
 //TODO: CorrelationAll is not only multichannel but also multiexperiment.
 class AnalysisStates {
 public:
-	enum Type {
+	enum Type : std::size_t {
 		MPPC_Ss, MPPC_t_S, MPPC_A_S, MPPC_Double_I, MPPC_S2_S, MPPC_times, MPPC_times_N, MPPC_sum_ts, MPPC_coord, MPPC_coord_x, MPPC_coord_y, MPPC_Npe_sum, MPPC_S2, MPPC_tfinal, MPPC_tstart, MPPC_tboth,
 		Correlation /*uses x,y Type's cuts*/,CorrelationAll, PMT_S2_S, PMT_S2_int, PMT_Ss, PMT_t_S, PMT_A_S, PMT_times, PMT_times_N, PMT_sum_N};
 protected:
@@ -22,9 +22,16 @@ protected:
 	int _y_corr_ch;
 	int MPPC_last_ch;
 	int PMT_last_ch;
-	virtual Bool_t StateChange(int to_ch, int to_exp, Type to_type, int from_ch, int from_exp, Type from_type,Bool_t save);
-	int channel_to_index(int ch);
-	int channel_to_index(int ch, Type type);
+	Type MPPC_last_type;
+	Type PMT_last_type;
+	virtual Bool_t StateChange(int to_ch, int to_exp, Type to_type, int from_ch, int from_exp, Type from_type);
+	int channel_to_index(int ch); //TODO: changed!
+	int channel_to_index(int ch, Type type); //TODO: changed!
+
+	void loop_channels_reset(void);
+	bool loop_channels (Type type, int &ch, int &ch_ind);
+	int ch_ind_loop;
+	Type type_loop;
 public:
 	bool SetCorrelation(Type x, Type y, int chx, int chy);
 	int mppc_channel_to_index(int ch);
@@ -36,19 +43,19 @@ public:
 	int current_channel;
 	int current_exp_index;
 	std::string type_name(Type type);
-	AnalysisStates(std::deque<int> &mppc_channsels_, std::deque<int> &pmt_channsels_, std::deque<std::string>& experiments_);
-	Bool_t NextType(Bool_t save = kTRUE);
-	Bool_t PrevType(Bool_t save = kTRUE);
-	bool GotoT(Type to_type, bool save = true);
-	Bool_t NextCh(Bool_t save = kTRUE);
-	Bool_t PrevCh(Bool_t save = kTRUE);
-	Bool_t NextExp(Bool_t save = kTRUE);
-	Bool_t PrevExp(Bool_t save = kTRUE);
+	AnalysisStates(std::deque<int> &mppc_channels_, std::deque<int> &pmt_channels_, std::deque<std::string>& experiments_);
+	virtual ~AnalysisStates();
+	Bool_t NextType(void);
+	Bool_t PrevType(void);
+	bool GotoT(Type to_type);
+	Bool_t NextCh(void);
+	Bool_t PrevCh(void);
+	Bool_t GotoCh(int channels);
+	Bool_t NextExp(void);
+	Bool_t PrevExp(void);
 	Bool_t isValid();
 	Bool_t isMultichannel(Type type);
 	Bool_t is_TH1D_hist(Type type);
-	bool isPerRun (Type type);
-	bool isPerPeak (Type type);
 	bool isComposite (Type type);
 	Bool_t is_PMT_type(Type type);
 };

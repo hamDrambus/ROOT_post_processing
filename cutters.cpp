@@ -1,4 +1,4 @@
-std::vector<std::vector<double> > S_T_to_exclude; //per chanell, fill via S-t distribution in "S_t_cuts.cpp"
+std::vector<std::vector<double> > S_T_to_exclude; //per channel, fill via S-t distribution in "S_t_cuts.cpp"
 std::vector<double> S_min_thresholds;
 std::vector<double> S_max_thresholds;
 std::vector<std::pair<double,double> > S2_times;
@@ -87,8 +87,8 @@ void select_S_t (double t_min, double t_max, double S_min, double S_max, bool do
      ch_ind = post_processor->pmt_channel_to_index(post_processor->current_channel);
   FunctionWrapper* cutter_S_T = new FunctionWrapper(area);
   cutter_S_T->SetFunction(&Peak_S_t_select);
-  remove_hist_cut("S_T_select", false);
-  add_hist_cut(cutter_S_T, "S_T_select", do_update);
+  remove_hist_cut("S_T_select");
+  add_hist_cut(cutter_S_T, "S_T_select");
 }
 
 //multichannel case
@@ -102,13 +102,13 @@ void select_S_t_MC (double t_min, double t_max, double S_min, double S_max, bool
   cutter_S_T->SetFunction(&Peak_S_t_select);
   if (post_processor->is_PMT_type(post_processor->current_type)) {
      for (int ch_ind = 0; ch_ind!=post_processor->PMT_channels.size(); ++ch_ind) {
-        remove_hist_cut("S_T_select", post_processor->PMT_channels[ch_ind], false);
-        add_hist_cut(cutter_S_T, "S_T_select", post_processor->PMT_channels[ch_ind], false);
+        remove_hist_cut("S_T_select", post_processor->PMT_channels[ch_ind]);
+        add_hist_cut(cutter_S_T, "S_T_select", post_processor->PMT_channels[ch_ind]);
      }
   } else {
      for (int ch_ind = 0; ch_ind!=post_processor->MPPC_channels.size(); ++ch_ind) {
-        remove_hist_cut("S_T_select", post_processor->MPPC_channels[ch_ind], false);
-        add_hist_cut(cutter_S_T, "S_T_select", post_processor->MPPC_channels[ch_ind], false);
+        remove_hist_cut("S_T_select", post_processor->MPPC_channels[ch_ind]);
+        add_hist_cut(cutter_S_T, "S_T_select", post_processor->MPPC_channels[ch_ind]);
      }
   }
   if (do_update)
@@ -126,8 +126,8 @@ void turn_off_ch (int ch, bool do_update = true) {
   }
   FunctionWrapper* cutter_ = new FunctionWrapper(NULL);
   cutter_->SetFunction(&Peak_exclude_all);
-  remove_hist_cut("ch_off", ch, false);
-  add_hist_cut(cutter_, "ch_off", ch, do_update);
+  remove_hist_cut("ch_off", ch);
+  add_hist_cut(cutter_, "ch_off", ch);
 }
 
 void turn_on_ch (int ch, bool do_update = true) {
@@ -135,7 +135,9 @@ void turn_on_ch (int ch, bool do_update = true) {
      std::cout<<"Error: can't use this functoin for single channel type"<<std::endl;
      return;
   }
-  remove_hist_cut("ch_off", ch, do_update);
+  remove_hist_cut("ch_off", ch);
+	if (do_update)
+     update();
 }
 
 //Following are using std::vector<double> *x_y_regions which must be created before every call
@@ -150,8 +152,8 @@ void select_S_t (bool do_update=true) {
   FunctionWrapper* cutter_S_T = new FunctionWrapper(x_y_regions);
   x_y_regions = NULL;
   cutter_S_T->SetFunction(&Peak_S_t_select);
-  remove_hist_cut("S_T_select", false);
-  add_hist_cut(cutter_S_T, "S_T_select", do_update);
+  remove_hist_cut("S_T_select");
+  add_hist_cut(cutter_S_T, "S_T_select");
 }
 
 void exlude_S_t (bool do_update = true) {
@@ -162,8 +164,8 @@ void exlude_S_t (bool do_update = true) {
   FunctionWrapper* cutter_S_T = new FunctionWrapper(x_y_regions);
   x_y_regions = NULL;
   cutter_S_T->SetFunction(&Peak_S_t_exclude);
-  remove_hist_cut("S_T_exclude", false);
-  add_hist_cut(cutter_S_T, "S_T_exclude", do_update);
+  remove_hist_cut("S_T_exclude");
+  add_hist_cut(cutter_S_T, "S_T_exclude");
 }
 
 void exlude_A_S (bool do_update = true) {
@@ -174,8 +176,8 @@ void exlude_A_S (bool do_update = true) {
   FunctionWrapper* cutter_S_T = new FunctionWrapper(x_y_regions);
   x_y_regions = NULL;
   cutter_S_T->SetFunction(&Peak_A_S_exclude);
-  remove_hist_cut("A_S_exclude", false);
-  add_hist_cut(cutter_S_T, "A_S_exclude", do_update);
+  remove_hist_cut("A_S_exclude");
+  add_hist_cut(cutter_S_T, "A_S_exclude");
 }
 
 void exlude_A_S_fPMT (bool do_update = true) {
@@ -186,8 +188,8 @@ void exlude_A_S_fPMT (bool do_update = true) {
   FunctionWrapper* cutter_A_S = new FunctionWrapper(x_y_regions);
   x_y_regions = NULL;
   cutter_A_S->SetFunction(&Peak_A_S_exclude_fast_PMT);
-  remove_hist_cut("A_S_exclude_fPMT", false);
-  add_hist_cut(cutter_A_S, "A_S_exclude_fPMT", do_update);
+  remove_hist_cut("A_S_exclude_fPMT");
+  add_hist_cut(cutter_A_S, "A_S_exclude_fPMT");
 }
 
 //Following are using data set in 'date'/S_t_cuts.cpp
@@ -200,14 +202,14 @@ void apply_S_cut (bool do_update = true) {
     if (ch_ind<S_min_thresholds.size()) {
       FunctionWrapper* cutter = new FunctionWrapper(&S_min_thresholds[ch_ind]);
       cutter->SetFunction(&Peak_S_min);
-      remove_hist_cut("S_min", false);
-      add_hist_cut(cutter,"S_min", false);
+      remove_hist_cut("S_min");
+      add_hist_cut(cutter,"S_min");
     }
     if (ch_ind<S_max_thresholds.size()) {
       FunctionWrapper* cutter = new FunctionWrapper(&S_max_thresholds[ch_ind]);
       cutter->SetFunction(&Peak_S_max);
-      remove_hist_cut("S_max", false);
-      add_hist_cut(cutter,"S_max", false);
+      remove_hist_cut("S_max");
+      add_hist_cut(cutter,"S_max");
     }
     if (do_update)
       update();
@@ -222,14 +224,14 @@ void apply_S_cut (int ch, bool do_update = true) {
     if (ch_ind<S_min_thresholds.size()) {
       FunctionWrapper* cutter = new FunctionWrapper(&S_min_thresholds[ch_ind]);
       cutter->SetFunction(&Peak_S_min);
-      remove_hist_cut("S_min",ch, false);
-      add_hist_cut(cutter,"S_min",ch, false);
+      remove_hist_cut("S_min",ch);
+      add_hist_cut(cutter,"S_min",ch);
     }
     if (ch_ind<S_max_thresholds.size()) {
       FunctionWrapper* cutter = new FunctionWrapper(&S_max_thresholds[ch_ind]);
       cutter->SetFunction(&Peak_S_max);
-      remove_hist_cut("S_max", ch, false);
-      add_hist_cut(cutter,"S_max", ch, false);
+      remove_hist_cut("S_max", ch);
+      add_hist_cut(cutter,"S_max", ch);
     }
     if (do_update)
       update();
@@ -239,16 +241,16 @@ void apply_S_t_cut (bool do_update=true) {
   int ch_ind = post_processor->mppc_channel_to_index(post_processor->current_channel);
   FunctionWrapper* cutter_S_T = new FunctionWrapper(&(S_T_to_exclude[ch_ind]));
   cutter_S_T->SetFunction(&Peak_S_t_exclude);
-  remove_hist_cut("S_T_exclude", false);
-  add_hist_cut(cutter_S_T, "S_T_exclude", do_update);
+  remove_hist_cut("S_T_exclude");
+  add_hist_cut(cutter_S_T, "S_T_exclude");
 }
 
 void apply_S_t_cut (int ch, bool do_update = true) {
   int ch_ind = post_processor->mppc_channel_to_index(ch);
   FunctionWrapper* cutter_S_T = new FunctionWrapper(&(S_T_to_exclude[ch_ind]));
   cutter_S_T->SetFunction(&Peak_S_t_exclude);
-  remove_hist_cut("S_T_exclude", ch, false);
-  add_hist_cut(cutter_S_T, "S_T_exclude", ch, do_update);
+  remove_hist_cut("S_T_exclude", ch);
+  add_hist_cut(cutter_S_T, "S_T_exclude", ch);
 }
 
 void apply_run_cut (int less_than_N, bool do_update = true) {
@@ -259,15 +261,15 @@ void apply_run_cut (int less_than_N, bool do_update = true) {
     cutter->SetFunction(&Picker_Run_max);
     unset_as_run_cut("Run_N_max");
     if (post_processor->isMultichannel(post_processor->current_type)){
-      remove_hist_cut("Run_N_max", -1, false);
-      add_hist_cut(cutter,"Run_N_max", -1, false);
+      remove_hist_cut("Run_N_max", -1);
+      add_hist_cut(cutter,"Run_N_max", -1);
       set_as_run_cut("Run_N_max");
-      remove_hist_cut("Run_N_max",-1, do_update);
+      remove_hist_cut("Run_N_max",-1);
     } else {
-      remove_hist_cut("Run_N_max", false);
-      add_hist_cut(cutter,"Run_N_max", false);
+      remove_hist_cut("Run_N_max");
+      add_hist_cut(cutter,"Run_N_max");
       set_as_run_cut("Run_N_max");
-      remove_hist_cut("Run_N_max", do_update);
+      remove_hist_cut("Run_N_max");
     }
 }
 
@@ -277,6 +279,6 @@ void apply_S_min_cut (double threshold, bool do_update = true)
    *val = threshold;
    FunctionWrapper* cutter = new FunctionWrapper(val);
    cutter->SetFunction(&Peak_S_min);
-   remove_hist_cut("S_min_cut", false);
-   add_hist_cut(cutter,"S_min_cut", do_update);
+   remove_hist_cut("S_min_cut");
+   add_hist_cut(cutter,"S_min_cut");
 }

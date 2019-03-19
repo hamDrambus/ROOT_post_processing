@@ -58,6 +58,18 @@ void open_output_file(std::string name, std::ofstream &str, std::ios_base::openm
 	}
 }
 
+bool confirm_action (std::string action)
+{
+	std::cout<<"Confirm "<<action<<": y/n"<<std::endl;
+	std::string a;
+	std::cin>>a;
+	if (a=="y"||a=="Y"||a=="yes"||a=="Yes") {
+		return true;
+	}
+	std::cout<<action<<" denied"<<std::endl;
+	return false;
+}
+
 void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> ys,/* ParameterPile::*/DrawEngine de)
 {
 	if (xs.size() != ys.size()){
@@ -99,6 +111,372 @@ void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> 
 		file.close();
 		INVOKE_GNUPLOT(this_path + "/temp_gnuplot_files/script.sc");
 	}
+}
+
+// Ported from Garfield (method GRCONV):
+// Clip the specified polygon to the view region; return the clipped polygon.
+// px: the x-vertices of the polygon
+// py: the y-vertices of the polygon
+// cx: to contain the x-vertices of the clipped polygon
+// cy: to contain the y-vertices of the clipped polygon
+void ViewFEMesh_My::ClipToView(std::vector<double>& px, std::vector<double>& py,
+                            std::vector<double>& cx, std::vector<double>& cy) {
+
+  // Get the number and coordinates of the polygon vertices.
+  int pN = (int)px.size();
+
+  // Clear the vectors to contain the final polygon.
+  cx.clear();
+  cy.clear();
+
+  // Set up the view vertices.
+  std::vector<double> vx, vy;
+  for (auto i = viewRegion.begin(),_end_=viewRegion.end();i!=_end_;++i){
+	  vx.push_back(i->x);
+	  vy.push_back(i->y);
+  }
+
+  int vN = (int)vx.size();
+
+  // Do nothing if we have less than 2 points.
+  if (pN < 2) return;
+
+  // Loop over the polygon vertices.
+  for (int i = 0; i < pN; ++i) {
+
+    // Flag for skipping check for edge intersection.
+    bool skip = false;
+
+    // Loop over the view vertices.
+    for (int j = 0; j < vN; ++j) {
+
+      // Determine whether this vertex lies on a view edge:
+      //  if so add the vertex to the final polygon.
+      if (OnLine(vx[j % vN], vy[j % vN], vx[(j + 1) % vN], vy[(j + 1) % vN],
+                 px[i], py[i])) {
+
+        // Add the vertex.
+        cx.push_back(px[i]);
+        cy.push_back(py[i]);
+
+        // Skip edge intersection check in this case.
+        skip = true;
+      }
+
+      // Determine whether a corner of the view area lies on this edge:
+      //  if so add the corner to the final polygon.
+      if (OnLine(px[i % pN], py[i % pN], px[(i + 1) % pN], py[(i + 1) % pN],
+                 vx[j], vy[j])) {
+
+        // Add the vertex.
+        cx.push_back(vx[j]);
+        cy.push_back(vy[j]);
+
+        // Skip edge intersection check in this case.
+        skip = true;
+      }
+    }
+
+    // If we have not skipped the edge intersection check, look for an
+    // intersection between this edge and the view edges.
+    if (!skip) {
+
+      // Loop over the view vertices.
+      for (int j = 0; j < vN; ++j) {
+
+        // Check for a crossing with this edge;
+        //  if one exists, add the crossing point.
+        double xc = 0., yc = 0.;
+        if (LinesCrossed(vx[j % vN], vy[j % vN], vx[(j + 1) % vN],
+                         vy[(j + 1) % vN], px[i % pN], py[i % pN],
+                         px[(i + 1) % pN], py[(i + 1) % pN], xc, yc)) {
+
+          // Add a vertex.
+          cx.push_back(xc);
+          cy.push_back(yc);
+        }
+      }
+    }
+  }
+
+  // Find all view field vertices inside the polygon.
+  for (int j = 0; j < vN; ++j) {
+
+    // Test whether this vertex is inside the polygon.
+    //  If so, add it to the final polygon.
+    bool edge = false;
+    if (IsInPolygon(vx[j], vy[j], px, py, edge)) {
+
+      // Add the view vertex.
+      cx.push_back(vx[j]);
+      cy.push_back(vy[j]);
+    }
+  }
+
+  // Find all polygon vertices inside the box.
+  for (int i = 0; i < pN; ++i) {
+
+    // Test whether this vertex is inside the view.
+    //  If so, add it to the final polygon.
+    bool edge = false;
+    if (IsInPolygon(px[i], py[i], vx, vy, edge)) {
+
+      // Add the polygon vertex.
+      cx.push_back(px[i]);
+      cy.push_back(py[i]);
+    }
+  }
+}
+
+// Ported from Garfield (function INTERD):
+// Returns true if the point (x,y) is inside of the specified polygon.
+// x: the x-coordinate
+// y: the y-coordinate
+// px: the x-vertices of the polygon
+// py: the y-vertices of the polygon
+// edge: a variable set to true if the point is located on the polygon edge
+bool ViewFEMesh_My::IsInPolygon(double x, double y, std::vector<double>& px,
+                             std::vector<double>& py, bool& edge) {
+
+  // Get the number and coordinates of the polygon vertices.
+  int pN = (int)px.size();
+
+  // Handle the special case of less than 2 vertices.
+  if (pN < 2) return false;
+  // Handle the special case of exactly 2 vertices (a line).
+  if (pN == 2) return OnLine(px[0], py[0], px[1], py[1], x, y);
+
+  // Set the minimum and maximum coordinates of all polygon vertices.
+  double px_min = px[0], py_min = py[0];
+  double px_max = px[0], py_max = py[0];
+  for (int i = 0; i < pN; ++i) {
+    px_min = std::min(px_min, px[i]);
+    py_min = std::min(py_min, py[i]);
+    px_max = std::max(px_max, px[i]);
+    py_max = std::max(py_max, py[i]);
+  }
+
+  // Set the tolerances
+  double xtol = 1.0e-10 * std::max(std::abs(px_min), std::abs(px_max));
+  double ytol = 1.0e-10 * std::max(std::abs(py_min), std::abs(py_max));
+  if (xtol <= 0) xtol = 1.0e-10;
+  if (ytol <= 0) ytol = 1.0e-10;
+
+  // If we have essentially one x value, check to see if y is in range.
+  if (std::abs(px_max - px_min) < xtol) {
+    edge = (y > (py_min - ytol) && y < (py_max + ytol) &&
+            std::abs(px_max + px_min - 2 * x) < xtol);
+    return false;
+  }
+  // If we have essentially one y value, check to see if x is in range.
+  if (std::abs(py_max - py_min) < ytol) {
+    edge = (x > (px_min - xtol) && x < (px_max + xtol) &&
+            std::abs(py_max + py_min - 2 * y) < ytol);
+    return false;
+  }
+
+  // Set "infinity" points.
+  double xinf = px_min - std::abs(px_max - px_min);
+  double yinf = py_min - std::abs(py_max - py_min);
+
+  // Loop until successful or maximum iterations (100) reached.
+  int niter = 0;
+  bool done = false;
+  int ncross = 0;
+
+  while (!done && niter < 100) {
+
+    // Assume we will finish on this loop.
+    done = true;
+
+    // Loop over all edges, counting the number of edges crossed by a line
+    //  extending from (x,y) to (xinf,yinf).
+    ncross = 0;
+    for (int i = 0; (done && i < pN); ++i) {
+
+      // Determine whether the point lies on the edge.
+      if (OnLine(px[i % pN], py[i % pN], px[(i + 1) % pN], py[(i + 1) % pN], x,
+                 y)) {
+
+        edge = true;
+        return false;
+      }
+
+      // Determine whether this edge is crossed; if so increment the counter.
+      double xc = 0., yc = 0.;
+      if (LinesCrossed(x, y, xinf, yinf, px[i % pN], py[i % pN],
+                       px[(i + 1) % pN], py[(i + 1) % pN], xc, yc))
+        ++ncross;
+
+      // Ensure this vertex is not crossed by the line from (x,y)
+      //  to (xinf,yinf); if so recompute (xinf,yinf) and start over.
+      if (OnLine(x, y, xinf, yinf, px[i], py[i])) {
+
+        // Recompute (xinf,yinf).
+        xinf = px_min - RndmUniform() * std::abs(px_max - xinf);
+        yinf = py_min - RndmUniform() * std::abs(py_max - yinf);
+
+        // Start over.
+        done = false;
+        ++niter;
+      }
+    }
+  }
+
+  // If we failed to finish iterating, return false.
+  if (niter >= 100) {
+    std::cerr << className << "::IsInPolygon: unable to determine whether ("
+              << x << ", " << y << ") is inside a polygon.  Returning false.\n";
+    return false;
+  }
+
+  // Point is inside for an odd, nonzero number of crossings.
+  return (ncross != 2 * (ncross / 2));
+}
+
+//
+// Determines whether the line connecting points (x1,y1) and (x2,y2)
+//  and the line connecting points (u1,v1) and (u2,v2) cross somewhere
+//  between the 4 points.  Sets the crossing point in (xc, yc).
+//
+// Ported from Garfield function CROSSD
+//
+//0 - not crossed, 1 - crossed, 2 - crossed at ends
+int ViewFEMesh_My::LinesCrossed(double x1, double y1, double x2, double y2,
+                              double u1, double v1, double u2, double v2,
+                              double& xc, double& yc) {
+
+  // Set the tolerances.
+  double xtol =
+      1.0e-10 *
+      std::max(std::abs(x1),
+               std::max(std::abs(x2), std::max(std::abs(u1), std::abs(u2))));
+  double ytol =
+      1.0e-10 *
+      std::max(std::abs(y1),
+               std::max(std::abs(y2), std::max(std::abs(v1), std::abs(v2))));
+  if (xtol <= 0) xtol = 1.0e-10;
+  if (ytol <= 0) ytol = 1.0e-10;
+
+  // Compute the distances and determinant (dx,dy) x (du,dv).
+  double dy = y2 - y1;
+  double dv = v2 - v1;
+  double dx = x1 - x2;
+  double du = u1 - u2;
+  double det = dy * du - dx * dv;
+
+  // Check for crossing because one of the endpoints is on both lines.
+  if (OnLine(x1, y1, x2, y2, u1, v1)) {
+    xc = u1;
+    yc = v1;
+    return 2;
+  } else if (OnLine(x1, y1, x2, y2, u2, v2)) {
+    xc = u2;
+    yc = v2;
+    return 2;
+  } else if (OnLine(u1, v1, u2, v2, x1, y1)) {
+    xc = x1;
+    yc = y1;
+    return 2;
+  } else if (OnLine(u1, v1, u2, v2, x2, y2)) {
+    xc = x2;
+    yc = y2;
+    return 2;
+  }
+  // Check if the lines are parallel (zero determinant).
+  else if (std::abs(det) < xtol * ytol)
+    return 0;
+  // No special case: compute point of intersection.
+  else {
+
+    // Solve crossing equations.
+    xc = (du * (x1 * y2 - x2 * y1) - dx * (u1 * v2 - u2 * v1)) / det;
+    yc = ((-1 * dv) * (x1 * y2 - x2 * y1) + dy * (u1 * v2 - u2 * v1)) / det;
+
+    // Determine if this point is on both lines.
+    if (OnLine(x1, y1, x2, y2, xc, yc) && OnLine(u1, v1, u2, v2, xc, yc))
+      return 1;
+  }
+
+  // The lines do not cross if we have reached this point.
+  return 0;
+}
+
+//
+// Determines whether the point (u,v) lies on the line connecting
+//  points (x1,y1) and (x2,y2).
+//
+// Ported from Garfield function ONLIND
+//
+bool ViewFEMesh_My::OnLine(double x1, double y1, double x2, double y2, double u,
+                        double v) {
+
+  // Set the tolerances
+  double xtol =
+      1.0e-10 * std::max(std::abs(x1), std::max(std::abs(x2), std::abs(u)));
+  double ytol =
+      1.0e-10 * std::max(std::abs(y1), std::max(std::abs(y2), std::abs(v)));
+  if (xtol <= 0) xtol = 1.0e-10;
+  if (ytol <= 0) ytol = 1.0e-10;
+
+  // To store the coordinates of the comparison point
+  double xc = 0, yc = 0;
+
+  // Check if (u,v) is the point (x1,y1) or (x2,y2)
+  if ((std::abs(x1 - u) <= xtol && std::abs(y1 - v) <= ytol) ||
+      (std::abs(x2 - u) <= xtol && std::abs(y2 - v) <= ytol)) {
+    return true;
+  }
+  // Check if the line is actually a point
+  else if (std::abs(x1 - x2) <= xtol && std::abs(y1 - y2) <= ytol) {
+    return false;
+  }
+  // Choose (x1,y1) as starting point if closer to (u,v)
+  else if (std::abs(u - x1) + std::abs(v - y1) <
+           std::abs(u - x2) + std::abs(v - y2)) {
+
+    // Compute the component of the line from (x1,y1) to (u,v)
+    //  along the line from (x1,y1) to (x2,y2)
+    double dpar = ((u - x1) * (x2 - x1) + (v - y1) * (y2 - y1)) /
+                  ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+
+    // Determine the point on the line to which to compare (u,v)
+    if (dpar < 0.0) {
+      xc = x1;
+      yc = y1;
+    } else if (dpar > 1.0) {
+      xc = x2;
+      yc = y2;
+    } else {
+      xc = x1 + dpar * (x2 - x1);
+      yc = y1 + dpar * (y2 - y1);
+    }
+  }
+  // Choose (x2,y2) as starting point if closer to (u,v)
+  else {
+
+    // Compute the component of the line from (x2,y2) to (u,v)
+    //  along the line from (x2,y2) to (x1,y1)
+    double dpar = ((u - x2) * (x1 - x2) + (v - y2) * (y1 - y2)) /
+                  ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+
+    // Determine the point on the line to which to compare (u,v)
+    if (dpar < 0.0) {
+      xc = x2;
+      yc = y2;
+    } else if (dpar > 1.0) {
+      xc = x1;
+      yc = y1;
+    } else {
+      xc = x2 + dpar * (x1 - x2);
+      yc = y2 + dpar * (y1 - y2);
+    }
+  }
+
+  // Compare the calculated point to (u,v)
+  if (std::abs(u - xc) < xtol && std::abs(v - yc) < ytol) return true;
+
+  return false;
 }
 
 //namespace ParameterPile

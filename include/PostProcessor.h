@@ -14,13 +14,11 @@
 //1) AnalysisStates::AnalysisStates (first/last state)
 //2) AnalysisStates::isMultichannel();
 //3) AnalysisStates::is_PMT_type
-//4) AnalysisStates::isPerRun
-//5) AnalysisStates::isPerPeak
-//6) AnalysisStates::isComposite
-//7) std::string AnalysisStates::type_name(Type type);
-//8) AnalysisStates::is_TH1D_hist
+//4) AnalysisStates::isComposite
+//5) std::string AnalysisStates::type_name(Type type);
+//6) AnalysisStates::is_TH1D_hist
 
-//9) void PostProcessor::LoopThroughData(FunctionWrapper*);
+//7) void PostProcessor::LoopThroughData(FunctionWrapper*);
 //10) void PostProcessor::print_hist(int ch, int exp_ind, Type type);
 //11) void PostProcessor::FillHist(void* p_hist)
 //12) int PostProcessor::numOfFills(int channel, Type type);
@@ -35,94 +33,69 @@
 //19) void PostProcessor::set_as_run_cut(std::string name)
 
 
-//TODO: rename display_cuts from HistogramSetups (counter-intuitive)
-
-class PostProcessor : public AnalysisStates {
+class PostProcessor : public CanvasSetups {
 public:
 	enum UpdateState {Histogram=0x1,FitFunction=0x2,Fit=0x4,Results = 0x8, All = Histogram|FitFunction|Fit|Results, AllFit = FitFunction|Fit,
 		Canvas = 0x10, NewCanvas = Canvas|Histogram|AllFit};
 protected:
-	HistogramSetups* current_setups;
-	TCanvas *current_canvas;
-	int canvas_n;
-	TF1 *current_fit_func;
-	TH1D *current_hist1;
-	TH2D *current_hist2;
-	TLine *current_vert_line0;
-	TLine *current_vert_line1;
-	
-	std::pair<double, double> x_zoom, y_zoom;
-	std::pair<bool, bool> is_zoomed;
-
 	AllExperimentsResults* data;
 
-	//experiment->channel->{Ss,S2_S,Double_I}
-	std::deque<std::deque<std::deque<HistogramSetups*> > > manual_setups;
-	//experiment->cut array
-	std::deque < std::deque<EventCut> > RunCuts;
-
-	//experiment->channel
-	std::deque <std::deque<double> > avr_S2_S; //initial (automatic) values are set in processAllExperiments
+	std::deque <std::deque<double> > avr_S2_S;	//TODO: reorganize? //initial (automatic) values are set in processAllExperiments
 	std::deque <std::deque<double> > avr_Double_I;
 	std::deque <double> PMT3_avr_S2_S;
 	std::deque <double> PMT1_avr_S2_S;
 
-	virtual Bool_t StateChange(int to_ch, int to_exp, Type to_type, int from_ch, int from_exp, Type from_type,Bool_t save);
+	virtual Bool_t StateChange(int to_ch, int to_exp, Type to_type, std::size_t to_canvas, int from_ch, int from_exp, Type from_type, std::size_t from_canvas);
 	
-	void set_hist_setups(HistogramSetups* setups, std::string exp, int channel, Type type);//does not call update
-	HistogramSetups* get_hist_setups(std::string exp, int channel, Type type);//does not call update
-
-	void FillHist(void* p_hist);//considers cuts and histogram tipe (void*)==either TH1D* or TH2D*
-	//see function for std::vector<double> &vals usage in cuts' picker
+	void FillHist(void* p_hist);//considers cuts and histogram type (void*)==either TH1D* or TH2D*
+	//see function LoopThroughData for std::vector<double> &vals usage in cuts' picker
 	int numOfFills(int channel, Type type);
 	int numOfRuns (void);
-	std::pair<double, double> hist_x_limits(void); //considering cuts
+	std::pair<double, double> hist_x_limits(bool consider_displayed_cuts = false); //considering cuts
 	std::pair<double, double> hist_y_limits(void); //valid only for 2d plots
-	void set_default_hist_setups(void);//
+	void default_hist_setups(HistogramSetups*);
 
-	TF1* create_fit_function(HistogramSetups* func);
-	void update_fit_function(bool do_delete); //uses current_fit_func and current_setups
-	//TODO: add setting average S2 and double I without manual setups. Maybe as exit() method, which will
-	//set S2 and double integral with NULL HistogramSetups by default and won't touch the calibration
 	void update_physical(void); //2nd and 3rd mandates of ::update(void)
 	void update_Npe(void);		//4th part of ::update(void). TODO: actually it is better to move it to CalibrationInfo.
 
 	std::string hist_name();
-	void print_hist(void);
-	void print_hist(int ch, int exp_ind, Type type);
+	void print_hist(std::string path); //use "" for default path
+	void print_hist(int ch, int exp_ind, Type type, std::string path);
 
 public:
 	void LoopThroughData(FunctionWrapper* operation, int channel, Type type, bool apply_phys_cuts, bool apply_run_cuts, bool apply_hist_cuts = true);
 
-	void update(UpdateState to_update = All); //mandates:	1)update current picture. (only displayed histogram but not a png, as well as TLines and TF1)
+	void update(UpdateState to_update = All); //mandates:	1)update current picture. (only displayed histogram but not a png, as well as TF1)
 	//								2)update physical parameters obtained from the current hist
 	//								3)in case it is calibration hist (Ss), update calibration
 	//								4)recalibrate Npe.
-	//png is saved at exit or next/prev function.
-	PostProcessor(AllExperimentsResults* results); //results must be already processed, e.g. loaded
+	//png and raw data are saved manually via interface
+	PostProcessor(AllExperimentsResults* results); //results must be already processed, i.e. loaded
 	CalibrationInfo calibr_info;
-	//TODO: save current setups and picture without moving to other {ch,exp,type}
+
 	void save(int ch);	//TODO: make that it saves results such as calibration and Npe(E) (for both PMT and MPPC). That is updates only one line in calibr. file
 	void save_all(void);
+	void saveAs(std::string path);
 	
+	void clear(void);	//clear cuts for current histogram. Run cuts derived from it are not touched
+	void clearAll(void); //clear everything, return to initial state (leaves all existing histograms empty)
+
 	void plot_N_pe(int ch, GraphicOutputManager* gr_man);
 
-	//~done: will be done to the fullest from root macros. Then can add code from there. TO DO: add several default cuts (e.g. from left/right limit)
-	void add_hist_cut(FunctionWrapper *picker, std::string name = "", bool update = true);
-	void add_hist_cut(FunctionWrapper* picker, std::string name, int channel, bool update = true);
-	void remove_hist_cut(std::string name = "", bool update = true);
-	void remove_hist_cut(std::string name, int ch, bool update = true);
-	void remove_phys_cut(std::string name, bool update = true);
-	void set_as_run_cut(std::string name = "");//adds current drawn_limits in HistogramSetups to runs cut (from current exp, channel and type)
-	void unset_as_run_cut(std::string name = "");//deletes current exp,ch and type from current cuts (if present) deletes from back, that is
+	//adding/removing cuts does not update histogram. This is done because adding of several cuts in succession is often necessary
+	void add_hist_cut(FunctionWrapper *picker, std::string name, bool affect_hist);
+	void add_hist_cut(FunctionWrapper *picker, std::string name, int channel, bool affect_hist);
+	int list_hist_cuts (void);
+	void remove_hist_cut(int index);
+	void remove_hist_cut(std::string name);
+	void remove_hist_cut(std::string name, int ch);
+	void set_as_run_cut(std::string name);//adds current drawn_limits in HistogramSetups to runs cut (from current exp, channel and type)
+	int list_run_cuts (void);
+	void unset_as_run_cut(std::string name);//deletes current exp,ch and type from current cuts (if present) deletes from back, that is
 	//if a single exp,ch,type produces several EventCuts, unset must be called respective amount of times
-	void do_fit(Bool_t upd_vis = kTRUE);
-
+	void do_fit(bool do_fit);
 	void set_N_bins(int N);
-	void set_limits(double left, double right);
-	void set_drawn_limits(double left, double right);
-	void unset_limits(void);
-	void unset_drawn_limits(void);
+
 
 	void set_zoom (double xl, double xr);
 	void set_zoom_y (double yl, double yr);
@@ -133,9 +106,13 @@ public:
 	void set_parameter_val(int index, double val);
 	void set_parameter_limits(int index, double left, double right);
 
-	void new_canvas(void);
-
 	void status(Bool_t full);
+
+	//done via general methods in the main
+	//void set_limits(double left, double right);
+	//void set_drawn_limits(double left, double right);
+	//void unset_limits(void);
+	//void unset_drawn_limits(void);
 };
 
 #endif

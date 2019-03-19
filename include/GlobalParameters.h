@@ -18,6 +18,25 @@
 
 std::vector<double>::iterator iter_add(std::vector<double>::iterator& to, int what, std::vector<double>::iterator& end);
 
+struct LimitPoint{
+		double x;
+		double y;
+		double z;
+};
+
+struct LimitEdge{
+	LimitPoint a;
+	LimitPoint b;
+};
+
+class viewRegion {
+public:
+	std::vector<LimitPoint> view_poligon; //in one plane
+	viewRegion(double x_min, double y_min, double x_max, double y_max);
+};
+
+std::vector<LimitPoint> viewRegion;
+
 class AnalysisManager;
 class AllExperimentsResults;
 class PostProcessor;
