@@ -88,23 +88,23 @@ void draw_limits(double left, double right);	//2 tier method
 void set_limits(double left, double right);		//2 tier method
 void unset_limits(void);						//2 tier method
 
-void cut_S_t_rect_exclude(double t_min, double t_max, double S_min, double S_max, bool drawn, int channel = -1);
-void cut_S_t_rect_exclude(std::vector<double> region, bool drawn, int channel = -1); //region is {t_min0, t_max0, S_min0, S_max0, t_min1, t_max1 ...}
+void cut_S_t_rect_exclude(double t_min, double t_max, double S_min, double S_max, bool drawn, int channel = -1, std::string name = "");
+void cut_S_t_rect_exclude(std::vector<double> region, bool drawn, int channel = -1, std::string name = ""); //region is {t_min0, t_max0, S_min0, S_max0, t_min1, t_max1 ...}
 //remcut is for remove_cut
-void remcut_S_t_rect_exclude(int channel = -1);
+void remcut_S_t_rect_exclude(int channel = -1, std::string name = "");
 
-void cut_S_t_rect_select(double t_min, double t_max, double S_min, double S_max, bool drawn, int channel = -1);
-void cut_S_t_rect_select(std::vector<double> region, bool drawn, int channel = -1); //region is {t_min0, t_max0, S_min0, S_max0, t_min1, t_max1 ...}
-void remcut_S_t_rect_select(int channel = -1);
+void cut_S_t_rect_select(double t_min, double t_max, double S_min, double S_max, bool drawn, int channel = -1, std::string name = "");
+void cut_S_t_rect_select(std::vector<double> region, bool drawn, int channel = -1, std::string name = ""); //region is {t_min0, t_max0, S_min0, S_max0, t_min1, t_max1 ...}
+void remcut_S_t_rect_select(int channel = -1, std::string name = "");
 
-void cut_A_S_rect_exclude(double A_min, double A_max, double S_min, double S_max, bool drawn, int channel = -1);
-void cut_A_S_rect_exclude(std::vector<double> region, bool drawn, int channel = -1); //region is {A_min0, A_max0, S_min0, S_max0, A_min1, A_max1 ...}
-void remcut_A_S_rect_exclude(int channel = -1);
+void cut_A_S_rect_exclude(double A_min, double A_max, double S_min, double S_max, bool drawn, int channel = -1, std::string name = "");
+void cut_A_S_rect_exclude(std::vector<double> region, bool drawn, int channel = -1, std::string name = ""); //region is {A_min0, A_max0, S_min0, S_max0, A_min1, A_max1 ...}
+void remcut_A_S_rect_exclude(int channel = -1, std::string name = "");
 
-void cut_S(double S_min, double S_max, bool drawn, int channel = -1);
-void remcut_S(int channel = -1);
-void cut_t(double t_min, double t_max, bool drawn, int channel = -1);
-void remcut_t(int channel = -1);
+void cut_S(double S_min, double S_max, bool drawn, int channel = -1, std::string name = "");
+void remcut_S(int channel = -1, std::string name = "");
+void cut_t(double t_min, double t_max, bool drawn, int channel = -1, std::string name = "");
+void remcut_t(int channel = -1, std::string name = "");
 
 //(turn_)off/on
 void off_ch (int ch); //for multichannel types (e.g. signal form of all SiPMs (MPPCs)). TODO: single channel case may be implemented with multichannel one - decrease the number of types
@@ -112,7 +112,7 @@ void on_ch (int ch);
 
 //region is {A_min, A0, S0, A1, S1, A_max}, draw it for clarification, e.g.:
 //ch(7); add_S_t_fast_PMT(region, true); //- will display cuts with red lines
-void cut_S_t_fast_PMT(std::vector<double> region, bool drawn, int channel = -1);
-void remcut_S_t_fast_PMT(int channel = -1);
+void cut_S_t_fast_PMT(std::vector<double> region, bool drawn, int channel = -1, std::string _name = "");
+void remcut_S_t_fast_PMT(int channel = -1, std::string _name = "");
 
 #endif

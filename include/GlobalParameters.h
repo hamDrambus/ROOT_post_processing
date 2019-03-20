@@ -18,24 +18,36 @@
 
 std::vector<double>::iterator iter_add(std::vector<double>::iterator& to, int what, std::vector<double>::iterator& end);
 
-struct LimitPoint{
-		double x;
-		double y;
-		double z;
-};
-
-struct LimitEdge{
-	LimitPoint a;
-	LimitPoint b;
-};
-
-class viewRegion {
+class viewRegion { //helper class for drawing cuts (clipping lines to pad axes)
+protected:
+	std::vector<double> view_xs;
+	std::vector<double> view_ys;
+	std::vector<double> line_xs;
+	std::vector<double> line_ys;
 public:
-	std::vector<LimitPoint> view_poligon; //in one plane
-	viewRegion(double x_min, double y_min, double x_max, double y_max);
-};
+	viewRegion(double x_min, double y_min, double x_max, double y_max); //constructs rectangular view region
+	viewRegion(std::vector<double> &xs, std::vector<double> &ys); //constructs rectangular from polyline defined by xs,ys
+	viewRegion(); //no view region
+	void view_push(double x, double y);
+	bool get_view(std::size_t index, double &x, double &y) const;
+	bool set_view(std::size_t index, double x, double y);
+	std::size_t get_view_size(void) const;
+	void ClipToView(const std::vector<double>& px, const std::vector<double>& py, std::vector<double>& cx, std::vector<double>& cy) const;
+	static bool IsInPolygon(double x, double y, const std::vector<double>& px, const std::vector<double>& py, bool& edge);
+	//0 - not crossed, 1 - crossed, 2 - crossed at ends
+	static int LinesCrossed(double x1, double y1, double x2, double y2,
+		double u1, double v1, double u2, double v2, double& xc, double& yc);
+	static bool OnLine(double x1, double y1, double x2, double y2, double u, double v);
 
-std::vector<LimitPoint> viewRegion;
+	void polyline_push(double x, double y);
+	bool get_polyline(std::size_t ind, double &x, double &y) const;
+	bool set_polyline(std::size_t ind, double x, double y);
+	void set_polyline(const std::vector<double> &x, const std::vector<double> &y);
+	std::size_t get_polyline_size(void) const;
+	void clear_polyline(void);
+
+	TPolyLine get_clipped_polyline(void) const;
+};
 
 class AnalysisManager;
 class AllExperimentsResults;

@@ -51,7 +51,7 @@ void open_output_file(std::string name, std::ofstream &str, std::ios_base::openm
 			if (code)
 				std::cout << "mkdir -p error: " << code << std::endl;
 	}
-#endif //_WIN32__
+#endif //__WIN32__
 	str.open(name.c_str(), std::ios_base::trunc);
 	if (!str.is_open()){
 		std::cout << "Failed to open \"" << name << "\"" << std::endl;
@@ -113,14 +113,189 @@ void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> 
 	}
 }
 
+viewRegion::viewRegion(double x_min, double y_min, double x_max, double y_max) //constructs rectangular view region
+{
+	view_xs.push_back(x_min);
+	view_ys.push_back(y_min);
+	view_xs.push_back(x_min);
+	view_ys.push_back(y_max);
+	view_xs.push_back(x_max);
+	view_ys.push_back(y_max);
+	view_xs.push_back(x_max);
+	view_ys.push_back(y_min);
+}
+
+viewRegion::viewRegion(std::vector<double> &xs, std::vector<double> &ys) //constructs rectangular from polyline defined by xs,ys
+{
+	if (xs.size() != ys.size()) {
+		std::cout << "viewRegion::viewRegion: Warning x-y size mismatch, points are ignored";
+		return;
+	}
+	view_xs = xs;
+	view_ys = ys;
+}
+
+viewRegion::viewRegion() //no view region
+{}
+
+void viewRegion::view_push(double x, double y)
+{
+	view_xs.push_back(x);
+	view_ys.push_back(y);
+}
+
+bool viewRegion::get_view(std::size_t index, double &x, double &y) const
+{
+	if (index >= view_xs.size())
+		return false;
+	x = view_xs[index];
+	y = view_ys[index];
+	return true;
+}
+
+bool viewRegion::set_view(std::size_t index, double x, double y)
+{
+	if (index >= view_xs.size()) {
+		view_xs.resize(index+1, x);
+		view_ys.resize(index+1, y);
+		return true;
+	}
+	view_xs[index] = x;
+	view_ys[index] = y;
+	return true;
+}
+
+std::size_t viewRegion::get_view_size(void) const
+{
+	return view_xs.size();
+}
+
+void viewRegion::polyline_push(double x, double y)
+{
+	line_xs.push_back(x);
+	line_ys.push_back(y);
+}
+
+bool viewRegion::get_polyline(std::size_t ind, double &x, double &y) const
+{
+	if (ind >= line_xs.size())
+		return false;
+	x = line_xs[ind];
+	y = line_ys[ind];
+	return true;
+}
+
+bool viewRegion::set_polyline(std::size_t ind, double x, double y)
+{
+	if (ind >= line_xs.size()) {
+		line_xs.resize(ind + 1, x);
+		line_ys.resize(ind + 1, y);
+		return true;
+	}
+	line_xs[ind] = x;
+	line_ys[ind] = y;
+	return true;
+}
+
+void viewRegion::set_polyline(const std::vector<double> &x, const std::vector<double> &y)
+{
+	if (x.size() != y.size()) {
+		std::cout << "viewRegion::set_polyline: Warning x-y size mismatch, points are ignored";
+		return;
+	}
+	line_xs = x;
+	line_ys = y;
+}
+
+std::size_t viewRegion::get_polyline_size(void) const
+{
+	return line_xs.size();
+}
+
+TPolyLine viewRegion::get_clipped_polyline(void) const
+{
+	std::vector<double> clipped_xs, clipped_ys;
+	ClipToView(line_xs, line_ys, clipped_xs, clipped_ys);
+	TPolyLine ret(clipped_xs.size(), &clipped_xs[0], &clipped_ys[0]);
+	return ret;
+}
+
+void viewRegion::clear_polyline(void)
+{
+	line_xs.clear();
+	line_ys.clear();
+}
+
+//0 - not crossed, 1 - crossed, 2 - crossed at ends
+int viewRegion::LinesCrossed(double x1, double y1, double x2, double y2,
+	double u1, double v1, double u2, double v2, double& xc, double& yc)
+{
+	// Set the tolerances.
+	double xtol =
+		1.0e-10 *
+		std::max(std::abs(x1),
+			std::max(std::abs(x2), std::max(std::abs(u1), std::abs(u2))));
+	double ytol =
+		1.0e-10 *
+		std::max(std::abs(y1),
+			std::max(std::abs(y2), std::max(std::abs(v1), std::abs(v2))));
+	if (xtol <= 0) xtol = 1.0e-10;
+	if (ytol <= 0) ytol = 1.0e-10;
+
+	// Compute the distances and determinant (dx,dy) x (du,dv).
+	double dy = y2 - y1;
+	double dv = v2 - v1;
+	double dx = x1 - x2;
+	double du = u1 - u2;
+	double det = dy * du - dx * dv;
+
+	// Check for crossing because one of the endpoints is on both lines.
+	if (OnLine(x1, y1, x2, y2, u1, v1)) {
+		xc = u1;
+		yc = v1;
+		return 2;
+	}
+	else if (OnLine(x1, y1, x2, y2, u2, v2)) {
+		xc = u2;
+		yc = v2;
+		return 2;
+	}
+	else if (OnLine(u1, v1, u2, v2, x1, y1)) {
+		xc = x1;
+		yc = y1;
+		return 2;
+	}
+	else if (OnLine(u1, v1, u2, v2, x2, y2)) {
+		xc = x2;
+		yc = y2;
+		return 2;
+	}
+	// Check if the lines are parallel (zero determinant).
+	else if (std::abs(det) < xtol * ytol)
+		return 0;
+	// No special case: compute point of intersection.
+	else {
+
+		// Solve crossing equations.
+		xc = (du * (x1 * y2 - x2 * y1) - dx * (u1 * v2 - u2 * v1)) / det;
+		yc = ((-1 * dv) * (x1 * y2 - x2 * y1) + dy * (u1 * v2 - u2 * v1)) / det;
+
+		// Determine if this point is on both lines.
+		if (OnLine(x1, y1, x2, y2, xc, yc) && OnLine(u1, v1, u2, v2, xc, yc))
+			return 1;
+	}
+	// The lines do not cross if we have reached this point.
+	return 0;
+}
+
 // Ported from Garfield (method GRCONV):
 // Clip the specified polygon to the view region; return the clipped polygon.
 // px: the x-vertices of the polygon
 // py: the y-vertices of the polygon
 // cx: to contain the x-vertices of the clipped polygon
 // cy: to contain the y-vertices of the clipped polygon
-void ViewFEMesh_My::ClipToView(std::vector<double>& px, std::vector<double>& py,
-                            std::vector<double>& cx, std::vector<double>& cy) {
+void viewRegion::ClipToView(const std::vector<double>& px, const std::vector<double>& py,
+                            std::vector<double>& cx, std::vector<double>& cy) const {
 
   // Get the number and coordinates of the polygon vertices.
   int pN = (int)px.size();
@@ -130,11 +305,7 @@ void ViewFEMesh_My::ClipToView(std::vector<double>& px, std::vector<double>& py,
   cy.clear();
 
   // Set up the view vertices.
-  std::vector<double> vx, vy;
-  for (auto i = viewRegion.begin(),_end_=viewRegion.end();i!=_end_;++i){
-	  vx.push_back(i->x);
-	  vy.push_back(i->y);
-  }
+  std::vector<double> vx = view_xs, vy = view_ys;
 
   int vN = (int)vx.size();
 
@@ -235,8 +406,8 @@ void ViewFEMesh_My::ClipToView(std::vector<double>& px, std::vector<double>& py,
 // px: the x-vertices of the polygon
 // py: the y-vertices of the polygon
 // edge: a variable set to true if the point is located on the polygon edge
-bool ViewFEMesh_My::IsInPolygon(double x, double y, std::vector<double>& px,
-                             std::vector<double>& py, bool& edge) {
+bool viewRegion::IsInPolygon(double x, double y, const std::vector<double>& px,
+                             const std::vector<double>& py, bool& edge) {
 
   // Get the number and coordinates of the polygon vertices.
   int pN = (int)px.size();
@@ -284,6 +455,7 @@ bool ViewFEMesh_My::IsInPolygon(double x, double y, std::vector<double>& px,
   bool done = false;
   int ncross = 0;
 
+  TRandom *rand = new TRandom1();
   while (!done && niter < 100) {
 
     // Assume we will finish on this loop.
@@ -313,8 +485,8 @@ bool ViewFEMesh_My::IsInPolygon(double x, double y, std::vector<double>& px,
       if (OnLine(x, y, xinf, yinf, px[i], py[i])) {
 
         // Recompute (xinf,yinf).
-        xinf = px_min - RndmUniform() * std::abs(px_max - xinf);
-        yinf = py_min - RndmUniform() * std::abs(py_max - yinf);
+		xinf = px_min - rand->Uniform() * std::abs(px_max - xinf);
+        yinf = py_min - rand->Uniform() * std::abs(py_max - yinf);
 
         // Start over.
         done = false;
@@ -325,7 +497,7 @@ bool ViewFEMesh_My::IsInPolygon(double x, double y, std::vector<double>& px,
 
   // If we failed to finish iterating, return false.
   if (niter >= 100) {
-    std::cerr << className << "::IsInPolygon: unable to determine whether ("
+    std::cerr <<"viewRegion::IsInPolygon: unable to determine whether ("
               << x << ", " << y << ") is inside a polygon.  Returning false.\n";
     return false;
   }
@@ -342,7 +514,7 @@ bool ViewFEMesh_My::IsInPolygon(double x, double y, std::vector<double>& px,
 // Ported from Garfield function CROSSD
 //
 //0 - not crossed, 1 - crossed, 2 - crossed at ends
-int ViewFEMesh_My::LinesCrossed(double x1, double y1, double x2, double y2,
+int viewRegion::LinesCrossed(double x1, double y1, double x2, double y2,
                               double u1, double v1, double u2, double v2,
                               double& xc, double& yc) {
 
@@ -408,9 +580,8 @@ int ViewFEMesh_My::LinesCrossed(double x1, double y1, double x2, double y2,
 //
 // Ported from Garfield function ONLIND
 //
-bool ViewFEMesh_My::OnLine(double x1, double y1, double x2, double y2, double u,
+bool viewRegion::OnLine(double x1, double y1, double x2, double y2, double u,
                         double v) {
-
   // Set the tolerances
   double xtol =
       1.0e-10 * std::max(std::abs(x1), std::max(std::abs(x2), std::abs(u)));

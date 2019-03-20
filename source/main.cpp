@@ -599,8 +599,9 @@ void unset_limits(void) //2 tier method
 	update();
 }
 
+//region is {t_min0, t_max0, S_min0, S_max0, t_min1, t_max1 ...}
 FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do not call from the CINT
-{
+{	
 	struct temp_data {
 		std::vector<double> reg;
 		int ch_size;
@@ -633,7 +634,7 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 		picker->SetFunction( [](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
 			for (int i=0, _end_=da->reg.size()/4; i!=_end_; ++i){
-			    if ((vals[4]>=da->reg[4*i])&&(vals[4]<=da->reg[4*i+1])&&(vals[0]>=da->reg[4*i+2])&&(vals[0]<=da->reg[4*i+3]))
+			    if ((vals[4]>=da->reg[4*i])&&(vals[4]<= da->reg[4*i+1])&&(vals[0]>= da->reg[4*i+2])&&(vals[0]<= da->reg[4*i+3]))
 			      return false;
 			  }
 			return true;
@@ -662,38 +663,585 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 	picker->SetDrawFunction([](TCanvas *can, void* Data) {
 		if (NULL==can || NULL==Data)
 			return false;
-		temp_data* data = (temp_data*) Data;
-		for (int i=0, _end_=data->reg.size()/4; i!=_end_; ++i) {
-				copy functions from my additions to garfield
-				TPolyLine
-				if ((vals[4]>=da->reg[4*i])&&(vals[4]<=da->reg[4*i+1])&&(vals[0]>=da->reg[4*i+2])&&(vals[0]<=da->reg[4*i+3]))
-				  return false;
-			  }
-			return true;
-		double x_inter1 = data->reg[0], y_inter1;
-		double x_inter2 = data->reg[5], y_inter2;
-		x_inter1 = da
-		if (can->GetUxmin()<=data->mm.first) {
-			TLine *line1 = new TLine();
-			line1->SetX1(data->mm.first);
-			line1->SetX2(data->mm.first);
-			line1->SetY1(can->GetUymin());
-			line1->SetY2(can->GetUymax());
-			line1->SetLineColor(kRed);
-			line1->Draw("same");
-		}
-		if (can->GetUxmax()>=data->mm.second) {
-			TLine *line2 = new TLine();
-			line2->SetX1(data->mm.second);
-			line2->SetX2(data->mm.second);
-			line2->SetY1(can->GetUymin());
-			line2->SetY2(can->GetUymax());
-			line2->SetLineColor(kRed);
-			line2->Draw("same");
+		temp_data* da = (temp_data*) Data;
+		viewRegion region(can->GetUxmin(), can->GetUymin(), can->GetUxmax(), can->GetUymax());
+		for (int i = 0, _end_ = da->reg.size() / 4; i != _end_; ++i) {
+			region.clear_polyline();
+			region.polyline_push(da->reg[4 * i + 0], da->reg[4 * i + 2]);
+			region.polyline_push(da->reg[4 * i + 0], da->reg[4 * i + 3]);
+			region.polyline_push(da->reg[4 * i + 1], da->reg[4 * i + 3]);
+			region.polyline_push(da->reg[4 * i + 1], da->reg[4 * i + 2]);
+			region.polyline_push(da->reg[4 * i + 0], da->reg[4 * i + 2]);
+			TPolyLine line = region.get_clipped_polyline();
+			line.SetLineColor(kRed);
+			line.Draw("same");
 		}
 		return true;
 	});
 	return picker;
 }
 
+void cut_S_t_rect_exclude(double t_min, double t_max, double S_min, double S_max, bool drawn, int channel, std::string _name)
+{
+	std::vector<double> region;
+	region.push_back(t_min);
+	region.push_back(t_max);
+	region.push_back(S_min);
+	region.push_back(S_max);
+	cut_S_t_rect_exclude(region, drawn, channel, _name);
+}
 
+//region is {t_min0, t_max0, S_min0, S_max0, t_min1, t_max1 ...}
+void cut_S_t_rect_exclude(std::vector<double> region, bool drawn, int channel, std::string _name)
+{
+	if (NULL == g_data) {
+		state(kFALSE);
+		return;
+	}
+	if (-1 == channel) {
+		if (post_processor->isMultichannel(post_processor->current_type)) {
+			std::cout << "Can't use -1 channel for this cut and multichannel type" << std::endl;
+			return;
+		}
+		std::cout << "Using default channel : "<<(channel = post_processor->current_channel)<<std::endl;
+	}
+	std::string name = ((_name=="") ? "_S_t_exclude_" : _name);
+	FunctionWrapper *picker = create_S_t_rect_exclude_cut(region);
+	if (NULL == picker) {
+		std::cout << "This cut is impossible for current type ("<<post_processor->type_name(post_processor->current_type)<<")"<<std::endl;
+		return;
+	}
+	post_processor->add_hist_cut(picker, name, channel, !drawn);
+	update();
+}
+//remcut is for remove_cut
+void remcut_S_t_rect_exclude(int channel, std::string _name)
+{
+	if (NULL == g_data) {
+		state(kFALSE);
+		return;
+	}
+	if (-1 == channel) {
+		if (post_processor->isMultichannel(post_processor->current_type)) {
+			std::cout << "Can't use -1 channel for this cut and multichannel type" << std::endl;
+			return;
+		}
+		std::cout << "Using default channel : " << (channel = post_processor->current_channel) << std::endl;
+	}
+	std::string name = ((_name == "") ? "_S_t_exclude_" : _name);
+	post_processor->remove_hist_cut(name, channel);
+}
+
+//region is {t_min0, t_max0, S_min0, S_max0, t_min1, t_max1 ...}
+FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not call from the CINT
+{
+	struct temp_data {
+		std::vector<double> reg;
+		int ch_size;
+	};
+	temp_data * st_data = new temp_data;
+	st_data->reg = region;
+	st_data->ch_size = post_processor->is_PMT_type(post_processor->current_type) ? post_processor->PMT_channels.size() : post_processor->MPPC_channels.size();
+	FunctionWrapper *picker = new FunctionWrapper(st_data);
+	switch (post_processor->current_type)
+	{
+	case AnalysisStates::MPPC_coord:
+	case AnalysisStates::MPPC_coord_x:
+	case AnalysisStates::MPPC_coord_y:
+	case AnalysisStates::PMT_t_S:
+	case AnalysisStates::PMT_Ss:
+	case AnalysisStates::PMT_A_S:
+	case AnalysisStates::PMT_S2_S:
+	case AnalysisStates::PMT_sum_N:
+	case AnalysisStates::PMT_times:
+	case AnalysisStates::PMT_times_N:
+	case AnalysisStates::MPPC_t_S:
+	case AnalysisStates::MPPC_A_S:
+	case AnalysisStates::MPPC_S2:
+	case AnalysisStates::MPPC_Ss:
+	case AnalysisStates::MPPC_sum_ts:
+	case AnalysisStates::MPPC_times:
+	case AnalysisStates::MPPC_times_N:
+	case AnalysisStates::MPPC_Npe_sum:
+	{
+		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
+			temp_data* da = (temp_data*)data;
+			for (int i = 0, _end_ = da->reg.size() / 4; i != _end_; ++i) {
+				if ((vals[4] >= da->reg[4 * i]) && (vals[4] <= da->reg[4 * i + 1]) && (vals[0] >= da->reg[4 * i + 2]) && (vals[0] <= da->reg[4 * i + 3]))
+					return true;
+			}
+			return false;
+		});
+		break;
+	}
+	case AnalysisStates::PMT_S2_int:
+	case AnalysisStates::MPPC_S2_S:
+	case AnalysisStates::MPPC_Double_I:
+	case AnalysisStates::MPPC_tfinal:
+	case AnalysisStates::MPPC_tstart:
+	case AnalysisStates::MPPC_tboth:
+	case AnalysisStates::Correlation:
+	case AnalysisStates::CorrelationAll:
+	{
+		delete picker;
+		return NULL;
+	}
+	default:
+	{
+		std::cout << "Error: unknown type - you forgot to implement it in \"create_S_t_rect_select_cut\"" << std::endl;
+		delete picker;
+		return NULL;
+	}
+	}
+	picker->SetDrawFunction([](TCanvas *can, void* Data) {
+		if (NULL == can || NULL == Data)
+			return false;
+		temp_data* da = (temp_data*)Data;
+		viewRegion region(can->GetUxmin(), can->GetUymin(), can->GetUxmax(), can->GetUymax());
+		for (int i = 0, _end_ = da->reg.size() / 4; i != _end_; ++i) {
+			region.clear_polyline();
+			region.polyline_push(da->reg[4 * i + 0], da->reg[4 * i + 2]);
+			region.polyline_push(da->reg[4 * i + 0], da->reg[4 * i + 3]);
+			region.polyline_push(da->reg[4 * i + 1], da->reg[4 * i + 3]);
+			region.polyline_push(da->reg[4 * i + 1], da->reg[4 * i + 2]);
+			region.polyline_push(da->reg[4 * i + 0], da->reg[4 * i + 2]);
+			TPolyLine line = region.get_clipped_polyline();
+			line.SetLineColor(kRed);
+			line.Draw("same");
+		}
+		return true;
+	});
+	return picker;
+}
+
+void cut_S_t_rect_select(double t_min, double t_max, double S_min, double S_max, bool drawn, int channel, std::string _name)
+{
+	std::vector<double> region;
+	region.push_back(t_min);
+	region.push_back(t_max);
+	region.push_back(S_min);
+	region.push_back(S_max);
+	cut_S_t_rect_select(region, drawn, channel, _name);
+}
+//region is {t_min0, t_max0, S_min0, S_max0, t_min1, t_max1 ...}
+void cut_S_t_rect_select(std::vector<double> region, bool drawn, int channel, std::string _name)
+{
+	if (NULL == g_data) {
+		state(kFALSE);
+		return;
+	}
+	if (-1 == channel) {
+		if (post_processor->isMultichannel(post_processor->current_type)) {
+			std::cout << "Can't use -1 channel for this cut and multichannel type" << std::endl;
+			return;
+		}
+		std::cout << "Using default channel : " << (channel = post_processor->current_channel) << std::endl;
+	}
+	std::string name = ((_name == "") ? "_S_t_select_" : _name);
+	FunctionWrapper *picker = create_S_t_rect_select_cut(region);
+	if (NULL == picker) {
+		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
+		return;
+	}
+	post_processor->add_hist_cut(picker, name, channel, !drawn);
+	update();
+}
+
+void remcut_S_t_rect_select(int channel, std::string _name)
+{
+	if (NULL == g_data) {
+		state(kFALSE);
+		return;
+	}
+	if (-1 == channel) {
+		if (post_processor->isMultichannel(post_processor->current_type)) {
+			std::cout << "Can't use -1 channel for this cut and multichannel type" << std::endl;
+			return;
+		}
+		std::cout << "Using default channel : " << (channel = post_processor->current_channel) << std::endl;
+	}
+	std::string name = ((_name == "") ? "_S_t_select_" : _name);
+	post_processor->remove_hist_cut(name, channel);
+}
+
+//region is {A_min0, A_max0, S_min0, S_max0, A_min1, A_max1 ...}
+FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do not call from the CINT
+{
+	struct temp_data {
+		std::vector<double> reg;
+		int ch_size;
+	};
+	temp_data * st_data = new temp_data;
+	st_data->reg = region;
+	st_data->ch_size = post_processor->is_PMT_type(post_processor->current_type) ? post_processor->PMT_channels.size() : post_processor->MPPC_channels.size();
+	FunctionWrapper *picker = new FunctionWrapper(st_data);
+	switch (post_processor->current_type)
+	{
+	case AnalysisStates::MPPC_coord:
+	case AnalysisStates::MPPC_coord_x:
+	case AnalysisStates::MPPC_coord_y:
+	case AnalysisStates::PMT_t_S:
+	case AnalysisStates::PMT_Ss:
+	case AnalysisStates::PMT_A_S:
+	case AnalysisStates::PMT_S2_S:
+	case AnalysisStates::PMT_sum_N:
+	case AnalysisStates::PMT_times:
+	case AnalysisStates::PMT_times_N:
+	case AnalysisStates::MPPC_t_S:
+	case AnalysisStates::MPPC_A_S:
+	case AnalysisStates::MPPC_S2:
+	case AnalysisStates::MPPC_Ss:
+	case AnalysisStates::MPPC_sum_ts:
+	case AnalysisStates::MPPC_times:
+	case AnalysisStates::MPPC_times_N:
+	case AnalysisStates::MPPC_Npe_sum:
+	{
+		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
+			temp_data* da = (temp_data*)data;
+			for (int i = 0, _end_ = da->reg.size() / 4; i != _end_; ++i) {
+				if ((vals[1] >= da->reg[4 * i]) && (vals[1] <= da->reg[4 * i + 1]) && (vals[0] >= da->reg[4 * i + 2]) && (vals[0] <= da->reg[4 * i + 3]))
+					return true;
+			}
+			return false;
+		});
+		break;
+	}
+	case AnalysisStates::PMT_S2_int:
+	case AnalysisStates::MPPC_S2_S:
+	case AnalysisStates::MPPC_Double_I:
+	case AnalysisStates::MPPC_tfinal:
+	case AnalysisStates::MPPC_tstart:
+	case AnalysisStates::MPPC_tboth:
+	case AnalysisStates::Correlation:
+	case AnalysisStates::CorrelationAll:
+	{
+		delete picker;
+		return NULL;
+	}
+	default:
+	{
+		std::cout << "Error: unknown type - you forgot to implement it in \"create_S_t_rect_select_cut\"" << std::endl;
+		delete picker;
+		return NULL;
+	}
+	}
+	picker->SetDrawFunction([](TCanvas *can, void* Data) {
+		if (NULL == can || NULL == Data)
+			return false;
+		temp_data* da = (temp_data*)Data;
+		viewRegion region(can->GetUxmin(), can->GetUymin(), can->GetUxmax(), can->GetUymax());
+		for (int i = 0, _end_ = da->reg.size() / 4; i != _end_; ++i) {
+			region.clear_polyline();
+			region.polyline_push(da->reg[4 * i + 0], da->reg[4 * i + 2]);
+			region.polyline_push(da->reg[4 * i + 0], da->reg[4 * i + 3]);
+			region.polyline_push(da->reg[4 * i + 1], da->reg[4 * i + 3]);
+			region.polyline_push(da->reg[4 * i + 1], da->reg[4 * i + 2]);
+			region.polyline_push(da->reg[4 * i + 0], da->reg[4 * i + 2]);
+			TPolyLine line = region.get_clipped_polyline();
+			line.SetLineColor(kRed);
+			line.Draw("same");
+		}
+		return true;
+	});
+	return picker;
+}
+
+void cut_A_S_rect_exclude(double A_min, double A_max, double S_min, double S_max, bool drawn, int channel, std::string _name)
+{
+	std::vector<double> region;
+	region.push_back(A_min);
+	region.push_back(A_max);
+	region.push_back(S_min);
+	region.push_back(S_max);
+	cut_A_S_rect_exclude(region, drawn, channel, _name);
+}
+//region is {A_min0, A_max0, S_min0, S_max0, A_min1, A_max1 ...}
+void cut_A_S_rect_exclude(std::vector<double> region, bool drawn, int channel, std::string _name)
+{
+	if (NULL == g_data) {
+		state(kFALSE);
+		return;
+	}
+	if (-1 == channel) {
+		if (post_processor->isMultichannel(post_processor->current_type)) {
+			std::cout << "Can't use -1 channel for this cut and multichannel type" << std::endl;
+			return;
+		}
+		std::cout << "Using default channel : " << (channel = post_processor->current_channel) << std::endl;
+	}
+	std::string name = ((_name == "") ? "_A_S_exclude_" : _name);
+	FunctionWrapper *picker = create_A_S_rect_exclude_cut(region);
+	if (NULL == picker) {
+		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
+		return;
+	}
+	post_processor->add_hist_cut(picker, name, channel, !drawn);
+	update();
+}
+
+void remcut_A_S_rect_exclude(int channel, std::string _name)
+{
+	if (NULL == g_data) {
+		state(kFALSE);
+		return;
+	}
+	if (-1 == channel) {
+		if (post_processor->isMultichannel(post_processor->current_type)) {
+			std::cout << "Can't use -1 channel for this cut and multichannel type" << std::endl;
+			return;
+		}
+		std::cout << "Using default channel : " << (channel = post_processor->current_channel) << std::endl;
+	}
+	std::string name = ((_name == "") ? "_A_S_exclude_" : _name);
+	post_processor->remove_hist_cut(name, channel);
+}
+
+void cut_S(double S_min, double S_max, bool drawn, int channel, std::string _name)
+{
+	std::string name = ((_name == "") ? "_S_cut_" : _name);
+	cut_S_t_rect_select(-DBL_MAX, DBL_MAX, S_min, S_max, drawn, channel, name);
+}
+
+void remcut_S(int channel, std::string _name)
+{
+	std::string name = ((_name == "") ? "_S_cut_" : _name);
+	remcut_S_t_rect_select();
+}
+
+void cut_t(double t_min, double t_max, bool drawn, int channel, std::string _name)
+{
+	std::string name = ((_name == "") ? "_t_cut_" : _name);
+	cut_S_t_rect_select(t_min, t_max, -DBL_MAX, DBL_MAX, drawn, channel, name);
+}
+
+void remcut_t(int channel, std::string _name)
+{
+	std::string name = ((_name == "") ? "_t_cut_" : _name);
+	remcut_S_t_rect_select();
+}
+
+FunctionWrapper* create_off_ch_cut(int channel) //do not call from the CINT
+{
+	struct temp_data {
+		int channel;
+		int ch_size;
+	};
+	temp_data * st_data = new temp_data;
+	st_data->channel = channel;
+	st_data->ch_size = post_processor->is_PMT_type(post_processor->current_type) ? post_processor->PMT_channels.size() : post_processor->MPPC_channels.size();
+	FunctionWrapper *picker = new FunctionWrapper(st_data);
+	switch (post_processor->current_type)
+	{
+	case AnalysisStates::MPPC_coord:
+	case AnalysisStates::MPPC_coord_x:
+	case AnalysisStates::MPPC_coord_y:
+	case AnalysisStates::PMT_t_S:
+	case AnalysisStates::PMT_Ss:
+	case AnalysisStates::PMT_A_S:
+	case AnalysisStates::PMT_S2_S:
+	case AnalysisStates::PMT_sum_N:
+	case AnalysisStates::PMT_times:
+	case AnalysisStates::PMT_times_N:
+	case AnalysisStates::MPPC_t_S:
+	case AnalysisStates::MPPC_A_S:
+	case AnalysisStates::MPPC_S2:
+	case AnalysisStates::MPPC_Ss:
+	case AnalysisStates::MPPC_sum_ts:
+	case AnalysisStates::MPPC_times:
+	case AnalysisStates::MPPC_times_N:
+	case AnalysisStates::MPPC_Npe_sum:
+	{
+		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
+			return false;
+		});
+		break;
+	}
+	case AnalysisStates::PMT_S2_int:
+	case AnalysisStates::MPPC_S2_S:
+	case AnalysisStates::MPPC_Double_I:
+	case AnalysisStates::MPPC_tfinal:
+	case AnalysisStates::MPPC_tstart:
+	case AnalysisStates::MPPC_tboth:
+	case AnalysisStates::Correlation:
+	case AnalysisStates::CorrelationAll:
+	{
+		delete picker;
+		return NULL;
+	}
+	default:
+	{
+		std::cout << "Error: unknown type - you forgot to implement it in \"create_S_t_rect_select_cut\"" << std::endl;
+		delete picker;
+		return NULL;
+	}
+	}
+	return picker;
+}
+
+//for multichannel types (e.g. signal form of all SiPMs (MPPCs)). TODO: single channel case may be implemented with multichannel one - decrease the number of types
+void off_ch(int ch)
+{
+	if (NULL == g_data) {
+		state(kFALSE);
+		return;
+	}
+	if (!post_processor->isMultichannel(post_processor->current_type)) {
+		std::cout << "Error: can't use this functoin for single channel type" << std::endl;
+		return;
+	}
+	FunctionWrapper* picker = create_off_ch_cut(ch);
+	if (NULL == picker) {
+		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
+		return;
+	}
+	add_hist_cut(picker, "ch_off", ch);
+	update();
+}
+
+void on_ch(int ch)
+{
+	if (NULL == g_data) {
+		state(kFALSE);
+		return;
+	}
+	remove_hist_cut("ch_off", ch);
+}
+
+//region is {A_min, A0, S0, A1, S1, A_max}
+FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not call from the CINT
+{
+	struct temp_data {
+		std::vector<double> reg;
+		int ch_size;
+	};
+	temp_data * st_data = new temp_data;
+	st_data->reg = region;
+	st_data->ch_size = post_processor->is_PMT_type(post_processor->current_type) ? post_processor->PMT_channels.size() : post_processor->MPPC_channels.size();
+	FunctionWrapper *picker = new FunctionWrapper(st_data);
+	switch (post_processor->current_type)
+	{
+	case AnalysisStates::MPPC_coord:
+	case AnalysisStates::MPPC_coord_x:
+	case AnalysisStates::MPPC_coord_y:
+	case AnalysisStates::PMT_t_S:
+	case AnalysisStates::PMT_Ss:
+	case AnalysisStates::PMT_A_S:
+	case AnalysisStates::PMT_S2_S:
+	case AnalysisStates::PMT_sum_N:
+	case AnalysisStates::PMT_times:
+	case AnalysisStates::PMT_times_N:
+	case AnalysisStates::MPPC_t_S:
+	case AnalysisStates::MPPC_A_S:
+	case AnalysisStates::MPPC_S2:
+	case AnalysisStates::MPPC_Ss:
+	case AnalysisStates::MPPC_sum_ts:
+	case AnalysisStates::MPPC_times:
+	case AnalysisStates::MPPC_times_N:
+	case AnalysisStates::MPPC_Npe_sum:
+	{
+		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
+			//{A_min, A0, S0, A1, S1, A_max}
+			std::vector <double> reg = ((temp_data*)data)->reg;
+			if (6 > reg.size())
+				return true;
+			double A_min = reg[0];
+			double A0 = reg[1];
+			double S0 = reg[2];
+			double A1 = reg[3];
+			double S1 = reg[4];
+			double A_max = reg[5];
+			if (vals[1]<A_min)
+				return false;
+			if ((vals[1]<A_max) && (vals[0]< (S0 + (S1 - S0)*(vals[1] - A0) / (A1 - A0))))
+				return false;
+			return true;
+		});
+		break;
+	}
+	case AnalysisStates::PMT_S2_int:
+	case AnalysisStates::MPPC_S2_S:
+	case AnalysisStates::MPPC_Double_I:
+	case AnalysisStates::MPPC_tfinal:
+	case AnalysisStates::MPPC_tstart:
+	case AnalysisStates::MPPC_tboth:
+	case AnalysisStates::Correlation:
+	case AnalysisStates::CorrelationAll:
+	{
+		delete picker;
+		return NULL;
+	}
+	default:
+	{
+		std::cout << "Error: unknown type - you forgot to implement it in \"create_S_t_rect_select_cut\"" << std::endl;
+		delete picker;
+		return NULL;
+	}
+	}
+	picker->SetDrawFunction([](TCanvas *can, void* Data) {
+		if (NULL == can || NULL == Data)
+			return false;
+		//{A_min, A0, S0, A1, S1, A_max}
+		std::vector <double> reg = ((temp_data*)Data)->reg;
+		if (6 > reg.size())
+			return false;
+		double A_min = reg[0];
+		double A0 = reg[1];
+		double S0 = reg[2];
+		double A1 = reg[3];
+		double S1 = reg[4];
+		double A_max = reg[5];
+		double S_intersect_A_min = S0 + (S1 - S0)*(A_min - A0) / (A1 - A0);
+		double S_intersect_A_max = S0 + (S1 - S0)*(A_max - A0) / (A1 - A0);
+		viewRegion region(can->GetUxmin(), can->GetUymin(), can->GetUxmax(), can->GetUymax());
+		region.polyline_push(A_min, DBL_MAX);
+		region.polyline_push(A_min, S_intersect_A_min);
+		region.polyline_push(A_max, S_intersect_A_max);
+		region.polyline_push(A_max, -DBL_MAX);
+		TPolyLine line = region.get_clipped_polyline();
+		line.SetLineColor(kRed);
+		line.Draw("same");
+		return true;
+	});
+	return picker;
+}
+//region is {A_min, A0, S0, A1, S1, A_max}, draw it for clarification, e.g.:
+//ch(7); add_S_t_fast_PMT(region, true); //- will display cuts with red lines
+void cut_S_t_fast_PMT(std::vector<double> region, bool drawn, int channel, std::string _name)
+{
+	if (NULL == g_data) {
+		state(kFALSE);
+		return;
+	}
+	if (-1 == channel) {
+		if (post_processor->isMultichannel(post_processor->current_type)) {
+			std::cout << "Can't use -1 channel for this cut and multichannel type" << std::endl;
+			return;
+		}
+		std::cout << "Using default channel : " << (channel = post_processor->current_channel) << std::endl;
+	}
+	std::string name = ((_name == "") ? "_S_t_fastPMT_" : _name);
+	FunctionWrapper *picker = create_A_S_fastPMT_cut(region);
+	if (NULL == picker) {
+		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
+		return;
+	}
+	post_processor->add_hist_cut(picker, name, channel, !drawn);
+	update();
+}
+
+void remcut_S_t_fast_PMT(int channel, std::string _name)
+{
+	if (NULL == g_data) {
+		state(kFALSE);
+		return;
+	}
+	if (-1 == channel) {
+		if (post_processor->isMultichannel(post_processor->current_type)) {
+			std::cout << "Can't use -1 channel for thi cut and multichannel type" << std::endl;
+			return;
+		}
+		std::cout << "Using default channel : " << (channel = post_processor->current_channel) << std::endl;
+	}
+	std::string name = ((_name == "") ? "_S_t_fastPMT_" : _name);
+	post_processor->remove_hist_cut(name, channel);
+}

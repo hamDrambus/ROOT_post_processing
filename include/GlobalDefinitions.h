@@ -1,7 +1,7 @@
 #ifndef GLOBAL_DEFINITIONS_H
 #define GLOBAL_DEFINITIONS_H
 
-//#define __WIN32__
+#define __WIN32__
 
 #include <iostream>
 #include <fstream>
@@ -13,6 +13,7 @@
 
 #if defined(__WIN32__)
 #include <direct.h>
+#include <windows.h>
 #else
 #include <dirent.h>
 #include <errno.h>
@@ -30,10 +31,12 @@
 #include <TF1.h>
 #include <TMath.h>
 #include <Math/Point2D.h>
+#include <TRandom1.h>
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TCanvas.h"
 #include "TLine.h"
+#include "TPolyLine.h"
 #include "TStyle.h"
 #define _TEMP_CODE
 
