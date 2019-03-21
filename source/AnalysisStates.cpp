@@ -236,6 +236,12 @@ Bool_t AnalysisStates::is_PMT_type(Type type)
 	return (type == PMT_S2_S || type == PMT_Ss || type == PMT_t_S || type == PMT_times|| PMT_S2_int==type || PMT_A_S == type || PMT_times_N == type || PMT_sum_N == type);
 }
 
+Bool_t AnalysisStates::isPerRun(Type type)
+{
+	return type==MPPC_Double_I || type==MPPC_S2_S|| type==MPPC_coord|| type==MPPC_coord_x|| type==MPPC_coord_y|| type==MPPC_Npe_sum||
+			type==MPPC_S2|| type==MPPC_tfinal|| type==MPPC_tstart|| type==Correlation|| type==CorrelationAll|| type== PMT_S2_S|| type== PMT_S2_int;
+}
+
 Bool_t AnalysisStates::isMultichannel(Type type)
 {
 	return (type == MPPC_sum_ts)||(type==MPPC_coord)||(type==MPPC_coord_x)||(type==MPPC_coord_y)||(type==MPPC_Npe_sum)||(type==Correlation)||(type==CorrelationAll)||(type==PMT_sum_N);

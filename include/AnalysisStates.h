@@ -54,6 +54,7 @@ public:
 	Bool_t NextExp(void);
 	Bool_t PrevExp(void);
 	Bool_t isValid();
+	Bool_t isPerRun(Type type);
 	Bool_t isMultichannel(Type type);
 	Bool_t is_TH1D_hist(Type type);
 	bool isComposite (Type type);

@@ -46,7 +46,7 @@ public:
 	std::size_t get_polyline_size(void) const;
 	void clear_polyline(void);
 
-	TPolyLine get_clipped_polyline(void) const;
+	TPolyLine* get_clipped_polyline(void) const;
 };
 
 class AnalysisManager;

@@ -1456,10 +1456,10 @@ void PostProcessor::update(UpdateState to_update)//TODO: optimize it?
 			if (hist)
 				hist->Draw(/*"lego"*/);
 		}
+		canvas->Update(); //required for updates axes which are used in drawing cuts
 		TF1* ff = get_current_fit_function();
 		if (ff && setups->fitted)
 			ff->Draw("same");
-		//canvas->Update();
 		for (auto cut = setups->hist_cuts.begin(), cut_end_ = setups->hist_cuts.end(); cut!=cut_end_; ++cut) {
 			if (!cut->GetAffectingHistogram()) //no point in drawing already applied to histogram cuts
 				cut->Draw(canvas);

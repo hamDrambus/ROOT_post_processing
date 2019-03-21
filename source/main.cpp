@@ -672,9 +672,9 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 			region.polyline_push(da->reg[4 * i + 1], da->reg[4 * i + 3]);
 			region.polyline_push(da->reg[4 * i + 1], da->reg[4 * i + 2]);
 			region.polyline_push(da->reg[4 * i + 0], da->reg[4 * i + 2]);
-			TPolyLine line = region.get_clipped_polyline();
-			line.SetLineColor(kRed);
-			line.Draw("same");
+			TPolyLine *line = region.get_clipped_polyline();
+			line->SetLineColor(kRed);
+			line->Draw("same");
 		}
 		return true;
 	});
@@ -805,9 +805,9 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 			region.polyline_push(da->reg[4 * i + 1], da->reg[4 * i + 3]);
 			region.polyline_push(da->reg[4 * i + 1], da->reg[4 * i + 2]);
 			region.polyline_push(da->reg[4 * i + 0], da->reg[4 * i + 2]);
-			TPolyLine line = region.get_clipped_polyline();
-			line.SetLineColor(kRed);
-			line.Draw("same");
+			TPolyLine *line = region.get_clipped_polyline();
+			line->SetLineColor(kRed);
+			line->Draw("same");
 		}
 		return true;
 	});
@@ -937,9 +937,9 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 			region.polyline_push(da->reg[4 * i + 1], da->reg[4 * i + 3]);
 			region.polyline_push(da->reg[4 * i + 1], da->reg[4 * i + 2]);
 			region.polyline_push(da->reg[4 * i + 0], da->reg[4 * i + 2]);
-			TPolyLine line = region.get_clipped_polyline();
-			line.SetLineColor(kRed);
-			line.Draw("same");
+			TPolyLine *line = region.get_clipped_polyline();
+			line->SetLineColor(kRed);
+			line->Draw("same");
 		}
 		return true;
 	});
@@ -1197,9 +1197,9 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 		region.polyline_push(A_min, S_intersect_A_min);
 		region.polyline_push(A_max, S_intersect_A_max);
 		region.polyline_push(A_max, -DBL_MAX);
-		TPolyLine line = region.get_clipped_polyline();
-		line.SetLineColor(kRed);
-		line.Draw("same");
+		TPolyLine *line = region.get_clipped_polyline();
+		line->SetLineColor(kRed);
+		line->Draw("same");
 		return true;
 	});
 	return picker;
@@ -1237,7 +1237,7 @@ void remcut_S_t_fast_PMT(int channel, std::string _name)
 	}
 	if (-1 == channel) {
 		if (post_processor->isMultichannel(post_processor->current_type)) {
-			std::cout << "Can't use -1 channel for thi cut and multichannel type" << std::endl;
+			std::cout << "Can't use -1 channel for this cut and multichannel type" << std::endl;
 			return;
 		}
 		std::cout << "Using default channel : " << (channel = post_processor->current_channel) << std::endl;

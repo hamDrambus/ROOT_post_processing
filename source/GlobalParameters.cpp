@@ -212,11 +212,11 @@ std::size_t viewRegion::get_polyline_size(void) const
 	return line_xs.size();
 }
 
-TPolyLine viewRegion::get_clipped_polyline(void) const
+TPolyLine *viewRegion::get_clipped_polyline(void) const
 {
 	std::vector<double> clipped_xs, clipped_ys;
 	ClipToView(line_xs, line_ys, clipped_xs, clipped_ys);
-	TPolyLine ret(clipped_xs.size(), &clipped_xs[0], &clipped_ys[0]);
+	TPolyLine* ret = new TPolyLine(clipped_xs.size(), &clipped_xs[0], &clipped_ys[0]);
 	return ret;
 }
 
@@ -504,74 +504,6 @@ bool viewRegion::IsInPolygon(double x, double y, const std::vector<double>& px,
 
   // Point is inside for an odd, nonzero number of crossings.
   return (ncross != 2 * (ncross / 2));
-}
-
-//
-// Determines whether the line connecting points (x1,y1) and (x2,y2)
-//  and the line connecting points (u1,v1) and (u2,v2) cross somewhere
-//  between the 4 points.  Sets the crossing point in (xc, yc).
-//
-// Ported from Garfield function CROSSD
-//
-//0 - not crossed, 1 - crossed, 2 - crossed at ends
-int viewRegion::LinesCrossed(double x1, double y1, double x2, double y2,
-                              double u1, double v1, double u2, double v2,
-                              double& xc, double& yc) {
-
-  // Set the tolerances.
-  double xtol =
-      1.0e-10 *
-      std::max(std::abs(x1),
-               std::max(std::abs(x2), std::max(std::abs(u1), std::abs(u2))));
-  double ytol =
-      1.0e-10 *
-      std::max(std::abs(y1),
-               std::max(std::abs(y2), std::max(std::abs(v1), std::abs(v2))));
-  if (xtol <= 0) xtol = 1.0e-10;
-  if (ytol <= 0) ytol = 1.0e-10;
-
-  // Compute the distances and determinant (dx,dy) x (du,dv).
-  double dy = y2 - y1;
-  double dv = v2 - v1;
-  double dx = x1 - x2;
-  double du = u1 - u2;
-  double det = dy * du - dx * dv;
-
-  // Check for crossing because one of the endpoints is on both lines.
-  if (OnLine(x1, y1, x2, y2, u1, v1)) {
-    xc = u1;
-    yc = v1;
-    return 2;
-  } else if (OnLine(x1, y1, x2, y2, u2, v2)) {
-    xc = u2;
-    yc = v2;
-    return 2;
-  } else if (OnLine(u1, v1, u2, v2, x1, y1)) {
-    xc = x1;
-    yc = y1;
-    return 2;
-  } else if (OnLine(u1, v1, u2, v2, x2, y2)) {
-    xc = x2;
-    yc = y2;
-    return 2;
-  }
-  // Check if the lines are parallel (zero determinant).
-  else if (std::abs(det) < xtol * ytol)
-    return 0;
-  // No special case: compute point of intersection.
-  else {
-
-    // Solve crossing equations.
-    xc = (du * (x1 * y2 - x2 * y1) - dx * (u1 * v2 - u2 * v1)) / det;
-    yc = ((-1 * dv) * (x1 * y2 - x2 * y1) + dy * (u1 * v2 - u2 * v1)) / det;
-
-    // Determine if this point is on both lines.
-    if (OnLine(x1, y1, x2, y2, xc, yc) && OnLine(u1, v1, u2, v2, xc, yc))
-      return 1;
-  }
-
-  // The lines do not cross if we have reached this point.
-  return 0;
 }
 
 //
