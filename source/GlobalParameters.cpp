@@ -230,6 +230,84 @@ void viewRegion::clear_polyline(void)
 int viewRegion::LinesCrossed(double x1, double y1, double x2, double y2,
 	double u1, double v1, double u2, double v2, double& xc, double& yc)
 {
+	//check infinity points: //TODO: write all cases properly
+	double finite_x_max = 0, finite_y_max = 0;
+	finite_x_max = (x1!=DBL_MAX && x1!=-DBL_MAX ? std::max(std::fabs(x1), finite_x_max) : finite_x_max);
+	finite_x_max = (x2!=DBL_MAX && x2!=-DBL_MAX ? std::max(std::fabs(x2), finite_x_max) : finite_x_max);
+	finite_x_max = (u1!=DBL_MAX && u1!=-DBL_MAX ? std::max(std::fabs(u1), finite_x_max) : finite_x_max);
+	finite_x_max = (u2!=DBL_MAX && u2!=-DBL_MAX ? std::max(std::fabs(u2), finite_x_max) : finite_x_max);
+	finite_y_max = (y1!=DBL_MAX && y1!=-DBL_MAX ? std::max(std::fabs(y1), finite_y_max) : finite_y_max);
+	finite_y_max = (y2!=DBL_MAX && y2!=-DBL_MAX ? std::max(std::fabs(y2), finite_y_max) : finite_y_max);
+	finite_y_max = (v1!=DBL_MAX && v1!=-DBL_MAX ? std::max(std::fabs(v1), finite_y_max) : finite_y_max);
+	finite_y_max = (v2!=DBL_MAX && v2!=-DBL_MAX ? std::max(std::fabs(v2), finite_y_max) : finite_y_max);
+
+	if ((x1==DBL_MAX)&&(y1==DBL_MAX))
+		return 0;
+	if (x1==DBL_MAX) {
+		x1 = finite_x_max;
+		y1 = y2;
+	}
+	if (x2==DBL_MAX) {
+		x2 = finite_x_max;
+		y2 = y1;
+	}
+	if (x1==-DBL_MAX) {
+		x1 = -finite_x_max;
+		y1 = y2;
+	}
+	if (x2==-DBL_MAX) {
+		x2 = -finite_x_max;
+		y2 = y1;
+	}
+	if (y1==DBL_MAX) {
+		y1 = finite_y_max;
+		x1 = x2;
+	}
+	if (y2==DBL_MAX) {
+		y2 = finite_y_max;
+		x2 = x1;
+	}
+	if (y1==-DBL_MAX) {
+		y1 = -finite_y_max;
+		x1 = x2;
+	}
+	if (y2==-DBL_MAX) {
+		y2 = -finite_y_max;
+		x2 = x1;
+	}
+
+	if (u1==DBL_MAX) {
+		u1 = finite_x_max;
+		v1 = v2;
+	}
+	if (u2==DBL_MAX) {
+		u2 = finite_x_max;
+		v2 = v1;
+	}
+	if (u1==-DBL_MAX) {
+		u1 = -finite_x_max;
+		v1 = v2;
+	}
+	if (u2==-DBL_MAX) {
+		u2 = -finite_x_max;
+		v2 = v1;
+	}
+	if (v1==DBL_MAX) {
+		v1 = finite_y_max;
+		u1 = u2;
+	}
+	if (v2==DBL_MAX) {
+		v2 = finite_y_max;
+		u2 = u1;
+	}
+	if (v1==-DBL_MAX) {
+		v1 = -finite_y_max;
+		u1 = u2;
+	}
+	if (v2==-DBL_MAX) {
+		v2 = -finite_y_max;
+		u2 = u1;
+	}
 	// Set the tolerances.
 	double xtol =
 		1.0e-10 *
@@ -312,12 +390,9 @@ void viewRegion::ClipToView(const std::vector<double>& px, const std::vector<dou
   // Do nothing if we have less than 2 points.
   if (pN < 2) return;
 
-  // Loop over the polygon vertices.
+  // Loop over the polygon vertices. (Omit last index to avoid unnecessary loop)
   for (int i = 0; i < pN; ++i) {
-
-    // Flag for skipping check for edge intersection.
-    bool skip = false;
-
+    std::vector <double> tx, ty;
     // Loop over the view vertices.
     for (int j = 0; j < vN; ++j) {
 
@@ -325,13 +400,9 @@ void viewRegion::ClipToView(const std::vector<double>& px, const std::vector<dou
       //  if so add the vertex to the final polygon.
       if (OnLine(vx[j % vN], vy[j % vN], vx[(j + 1) % vN], vy[(j + 1) % vN],
                  px[i], py[i])) {
-
         // Add the vertex.
-        cx.push_back(px[i]);
-        cy.push_back(py[i]);
-
-        // Skip edge intersection check in this case.
-        skip = true;
+        tx.push_back(px[i]);
+        ty.push_back(py[i]);
       }
 
       // Determine whether a corner of the view area lies on this edge:
@@ -340,61 +411,61 @@ void viewRegion::ClipToView(const std::vector<double>& px, const std::vector<dou
                  vx[j], vy[j])) {
 
         // Add the vertex.
-        cx.push_back(vx[j]);
-        cy.push_back(vy[j]);
-
-        // Skip edge intersection check in this case.
-        skip = true;
+        tx.push_back(vx[j]);
+        ty.push_back(vy[j]);
       }
     }
 
-    // If we have not skipped the edge intersection check, look for an
-    // intersection between this edge and the view edges.
-    if (!skip) {
+    // Loop over the view vertices.
+    for (int j = 0; (j < vN)&&(i!=pN-1); ++j) {
+		// Check for a crossing with this edge;
+		//  if one exists, add the crossing point.
+		double xc = 0., yc = 0.;
+		if (LinesCrossed(vx[j % vN], vy[j % vN], vx[(j + 1) % vN],
+						 vy[(j + 1) % vN], px[i % pN], py[i % pN],
+						 px[(i + 1) % pN], py[(i + 1) % pN], xc, yc)) {
 
-      // Loop over the view vertices.
-      for (int j = 0; j < vN; ++j) {
-
-        // Check for a crossing with this edge;
-        //  if one exists, add the crossing point.
-        double xc = 0., yc = 0.;
-        if (LinesCrossed(vx[j % vN], vy[j % vN], vx[(j + 1) % vN],
-                         vy[(j + 1) % vN], px[i % pN], py[i % pN],
-                         px[(i + 1) % pN], py[(i + 1) % pN], xc, yc)) {
-
-          // Add a vertex.
-          cx.push_back(xc);
-          cy.push_back(yc);
-        }
-      }
-    }
-  }
-
-  // Find all view field vertices inside the polygon.
-  for (int j = 0; j < vN; ++j) {
-
-    // Test whether this vertex is inside the polygon.
-    //  If so, add it to the final polygon.
-    bool edge = false;
-    if (IsInPolygon(vx[j], vy[j], px, py, edge)) {
-
-      // Add the view vertex.
-      cx.push_back(vx[j]);
-      cy.push_back(vy[j]);
-    }
-  }
-
-  // Find all polygon vertices inside the box.
-  for (int i = 0; i < pN; ++i) {
-
-    // Test whether this vertex is inside the view.
-    //  If so, add it to the final polygon.
+		  // Add a vertex.
+		  tx.push_back(xc);
+		  ty.push_back(yc);
+		}
+	}
+    // Test whether this vertex is inside the view polygon.
+   //  If so, add it to the final line.
     bool edge = false;
     if (IsInPolygon(px[i], py[i], vx, vy, edge)) {
+	  // Add the view vertex.
+	  tx.push_back(px[i]);
+	  ty.push_back(py[i]);
+	}
 
-      // Add the polygon vertex.
-      cx.push_back(px[i]);
-      cy.push_back(py[i]);
+    //in case several points are added to tx ty there is need to sort them according to p[j] pv[j+1]
+    if (std::fabs(px[(i + 1) % vN] - px[i % vN]) > std::fabs(py[(i + 1) % vN] - py[i % vN])) {
+		bool direction = px[(i + 1) % vN] > px[i % vN];
+		while (tx.size()!=0) {
+			std::size_t first_point = 0;
+			for (std::size_t b=0, b_end_ = tx.size(); b!=b_end_; ++b) { //can modify it to splitting polyline into several
+				if ((direction && tx[first_point] > tx[b])||(!direction && tx[first_point] < tx[b]))
+					first_point = b;
+			}
+			cx.push_back(tx[first_point]);
+			cy.push_back(ty[first_point]);
+			tx.erase(tx.begin()+first_point);
+			ty.erase(ty.begin()+first_point);
+		}
+    } else {
+    	bool direction = py[(i + 1) % vN] > py[i % vN];
+		while (tx.size()!=0) {
+			std::size_t first_point = 0;
+			for (std::size_t b=0, b_end_ = tx.size(); b!=b_end_; ++b) { //can modify it to splitting polyline into several
+				if ((direction && ty[first_point] > ty[b])||(!direction && ty[first_point] < ty[b]))
+					first_point = b;
+			}
+			cx.push_back(tx[first_point]);
+			cy.push_back(ty[first_point]);
+			tx.erase(tx.begin()+first_point);
+			ty.erase(ty.begin()+first_point);
+		}
     }
   }
 }

@@ -460,6 +460,7 @@ FunctionWrapper* create_vertical_lines_cut(double left, double right) //do not c
 	case AnalysisStates::MPPC_coord_x:
 	case AnalysisStates::MPPC_Npe_sum:
 	case AnalysisStates::PMT_sum_N:
+	case AnalysisStates::PMT_Npe_sum:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			return ((vals[((temp_data*)data)->ch_size] <= ((temp_data*)data)->mm.second) && (vals[((temp_data*)data)->ch_size] >= ((temp_data*)data)->mm.first));
@@ -630,6 +631,7 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 	case AnalysisStates::MPPC_times:
 	case AnalysisStates::MPPC_times_N:
 	case AnalysisStates::MPPC_Npe_sum:
+	case AnalysisStates::PMT_Npe_sum:
 	{
 		picker->SetFunction( [](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -763,6 +765,7 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 	case AnalysisStates::MPPC_times:
 	case AnalysisStates::MPPC_times_N:
 	case AnalysisStates::MPPC_Npe_sum:
+	case AnalysisStates::PMT_Npe_sum:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -895,6 +898,7 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 	case AnalysisStates::MPPC_times:
 	case AnalysisStates::MPPC_times_N:
 	case AnalysisStates::MPPC_Npe_sum:
+	case AnalysisStates::PMT_Npe_sum:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -1050,6 +1054,7 @@ FunctionWrapper* create_off_ch_cut(int channel) //do not call from the CINT
 	case AnalysisStates::MPPC_times:
 	case AnalysisStates::MPPC_times_N:
 	case AnalysisStates::MPPC_Npe_sum:
+	case AnalysisStates::PMT_Npe_sum:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			return false;
@@ -1138,6 +1143,7 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 	case AnalysisStates::MPPC_times:
 	case AnalysisStates::MPPC_times_N:
 	case AnalysisStates::MPPC_Npe_sum:
+	case AnalysisStates::PMT_Npe_sum:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			//{A_min, A0, S0, A1, S1, A_max}
@@ -1206,7 +1212,7 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 }
 //region is {A_min, A0, S0, A1, S1, A_max}, draw it for clarification, e.g.:
 //ch(7); add_S_t_fast_PMT(region, true); //- will display cuts with red lines
-void cut_S_t_fast_PMT(std::vector<double> region, bool drawn, int channel, std::string _name)
+void cut_A_S_fast_PMT(std::vector<double> region, bool drawn, int channel, std::string _name)
 {
 	if (NULL == g_data) {
 		state(kFALSE);
@@ -1229,7 +1235,7 @@ void cut_S_t_fast_PMT(std::vector<double> region, bool drawn, int channel, std::
 	update();
 }
 
-void remcut_S_t_fast_PMT(int channel, std::string _name)
+void remcut_A_S_fast_PMT(int channel, std::string _name)
 {
 	if (NULL == g_data) {
 		state(kFALSE);

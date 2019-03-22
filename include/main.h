@@ -9,21 +9,21 @@
 
 /*TODO: rework types (and names):
 *	unite mppc and pmt peak analysis - there is a lot of repeating code
-* TODO: unite hist and physical cuts into one. Add bool affect_histogram to EventCut class.
-* TODO: implement GotoCh()
-* TODO: move parts of code in cutters.cpp to the main program
+* DONE: unite hist and physical cuts into one. Add bool affect_histogram to EventCut class.
+* DONE: implement GotoCh()
+* DONE: move parts of code in cutters.cpp to the main program
 * TODO: cleanly separate initialization in hard-coded and externally loaded scripts
 * TODO: share cuts across types, e.g. A_S cut for ch8 PMT_A_S is the automatically used for signal forms or S2byN signal etc.
 * TODO*: for Cd time analysis: signal <time> per run per ch
 * TODO: remove all data except peaks?
 * TODO: unite some multichannel types, e.g. MPPC_times and MPPC_times_sum
 * 	the first type can be realized as second one with cuts turning off unneeded channels
-* TODO: add drawing cuts on relevant histograms. (with PolyLine)
+* DONE: add drawing cuts on relevant histograms. (with PolyLine)
 * 	Maybe and render function for EventCut
 * TODO: work out which commands exactly will be needed to obtain signal forms
 *	and optimize interface based on that.
 */
-//TODO: new interface:
+//DONE: new interface:
 //+//
 void Initialize(bool pars_in_script = true);
 void ch(int ch); //Go to channel. Does not save previous hist in file but does save parameters such as cuts
@@ -112,7 +112,7 @@ void on_ch (int ch);
 
 //region is {A_min, A0, S0, A1, S1, A_max}, draw it for clarification, e.g.:
 //ch(7); add_S_t_fast_PMT(region, true); //- will display cuts with red lines
-void cut_S_t_fast_PMT(std::vector<double> region, bool drawn, int channel = -1, std::string _name = "");
-void remcut_S_t_fast_PMT(int channel = -1, std::string _name = "");
+void cut_A_S_fast_PMT(std::vector<double> region, bool drawn, int channel = -1, std::string _name = "");
+void remcut_A_S_fast_PMT(int channel = -1, std::string _name = "");
 
 #endif

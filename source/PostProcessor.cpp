@@ -74,6 +74,7 @@ void PostProcessor::print_hist(int ch, int exp_ind, Type type, std::string path)
 	}
 	case MPPC_coord_x:
 	case MPPC_Npe_sum:
+	case PMT_Npe_sum:
 	{
 		writer_to_file->SetFunction([](std::vector<double> &pars, int run, void* data) {
 			((temp_data*)data)->str->write((char*)&pars[((temp_data*)data)->ch_size], sizeof(double));
@@ -589,6 +590,49 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation, int channel, Typ
 		}
 		break;
 	}
+	case Type::PMT_Npe_sum:
+	{
+		int run_size = data->pmt_peaks[current_exp_index][0].size();
+		std::vector<double> Npes (PMT_channels.size()+1);
+		std::vector<double> cut_data(5);
+		for (auto run = 0; run != run_size; ++run) {
+			for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); (cut != c_end_)&&apply_run_cuts; ++cut)
+				if (kFALSE == cut->GetAccept(run))//not calculating it here!
+					goto _11_5_cutted;
+			Npes[PMT_channels.size()]=0;
+			for (int chan_ind=0,_ch_ind_end_= PMT_channels.size(); chan_ind<_ch_ind_end_;++chan_ind) {
+				double S2 = 0;
+				for (int pk = 0, pk_end = data->pmt_peaks[current_exp_index][chan_ind][run].size(); pk != pk_end; ++pk) {
+					cut_data[0] = data->pmt_peaks[current_exp_index][chan_ind][run][pk].S;
+					cut_data[1] = data->pmt_peaks[current_exp_index][chan_ind][run][pk].A;
+					cut_data[2] = data->pmt_peaks[current_exp_index][chan_ind][run][pk].left;
+					cut_data[3] = data->pmt_peaks[current_exp_index][chan_ind][run][pk].right;
+					cut_data[4] =
+#ifdef PEAK_AVR_TIME
+							data->pmt_peaks[current_exp_index][chan_ind][run][pk].t;
+#else
+							0.5*(cut_data[3]+cut_data[2]);
+#endif
+					for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut)
+						if ((cut->GetChannel()==PMT_channels[chan_ind])&&((apply_hist_cuts&&cut->GetAffectingHistogram())||(apply_phys_cuts&&!cut->GetAffectingHistogram())))
+							if (kFALSE == (*cut)(cut_data, run))
+								goto _11_5_cutted1;
+					S2+=cut_data[0];
+					_11_5_cutted1:;
+				}
+				S2=(calibr_info.getPMT_S1pe(PMT_channels[chan_ind], current_exp_index) > 0 ? S2/calibr_info.getPMT_S1pe(PMT_channels[chan_ind], current_exp_index) : 0);
+				Npes[chan_ind] = S2;//std::round(S2);
+				Npes[PMT_channels.size()]+=Npes[chan_ind];
+			}
+			for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut)
+				if ((cut->GetChannel()==-1)&&((apply_hist_cuts&&cut->GetAffectingHistogram())||(apply_phys_cuts&&!cut->GetAffectingHistogram())))
+					if (kFALSE == (*cut)(Npes, run))
+						goto _11_5_cutted;
+			(*operation)(Npes, run);
+			_11_5_cutted:;
+		}
+		break;
+	}
 	case Type::MPPC_Npe_sum:
 	{
 		int run_size = data->mppc_peaks[current_exp_index][0].size();
@@ -961,6 +1005,7 @@ void PostProcessor::FillHist(void* p_hist)//considers cuts and histogram tipe (v
 	case Type::MPPC_Npe_sum:
 	case Type::MPPC_coord_x:
 	case Type::PMT_sum_N:
+	case Type::PMT_Npe_sum:
 	{
 		filler_op = [](std::vector<double>& pars, int run, void* data) {
 			((TH1D*)((temp_data*)data)->phist)->Fill(pars[((temp_data*)data)->ch_size]);
@@ -1172,6 +1217,7 @@ std::pair<double, double> PostProcessor::hist_x_limits(bool consider_displayed_c
 	case Type::MPPC_coord_x:
 	case Type::MPPC_coord:
 	case Type::PMT_sum_N:
+	case Type::PMT_Npe_sum:
 	{
 		filler_op = [](std::vector<double>& pars, int run, void* data) {
 			std::pair<double,double>* p = ((temp_data*)data)->mm;

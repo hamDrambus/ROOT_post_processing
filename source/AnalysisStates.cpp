@@ -77,7 +77,7 @@ bool AnalysisStates::GotoT(Type to_type)
 		current_channel = -1;
 	} else {
 		//changed from PMT to MPPC and channels became invalid
-		if (is_PMT_type(current_type) != is_PMT_type(prev_type))
+		if (is_PMT_type(current_type) != is_PMT_type(prev_type) || isMultichannel(prev_type))
 			current_channel = is_PMT_type(current_type) ? PMT_last_ch : MPPC_last_ch;
 		else
 			current_channel = prev_ch;
@@ -233,18 +233,18 @@ Bool_t AnalysisStates::PrevExp(void)
 
 Bool_t AnalysisStates::is_PMT_type(Type type)
 {
-	return (type == PMT_S2_S || type == PMT_Ss || type == PMT_t_S || type == PMT_times|| PMT_S2_int==type || PMT_A_S == type || PMT_times_N == type || PMT_sum_N == type);
+	return (type == PMT_S2_S || type == PMT_Ss || type == PMT_t_S || type == PMT_times|| PMT_S2_int==type || PMT_A_S == type || PMT_times_N == type || PMT_sum_N == type || PMT_Npe_sum==type);
 }
 
 Bool_t AnalysisStates::isPerRun(Type type)
 {
 	return type==MPPC_Double_I || type==MPPC_S2_S|| type==MPPC_coord|| type==MPPC_coord_x|| type==MPPC_coord_y|| type==MPPC_Npe_sum||
-			type==MPPC_S2|| type==MPPC_tfinal|| type==MPPC_tstart|| type==Correlation|| type==CorrelationAll|| type== PMT_S2_S|| type== PMT_S2_int;
+			type==MPPC_S2|| type==MPPC_tfinal|| type==MPPC_tstart|| type==Correlation|| type==CorrelationAll|| type== PMT_S2_S|| type== PMT_S2_int ||type==PMT_Npe_sum;
 }
 
 Bool_t AnalysisStates::isMultichannel(Type type)
 {
-	return (type == MPPC_sum_ts)||(type==MPPC_coord)||(type==MPPC_coord_x)||(type==MPPC_coord_y)||(type==MPPC_Npe_sum)||(type==Correlation)||(type==CorrelationAll)||(type==PMT_sum_N);
+	return (type == MPPC_sum_ts)||(type==MPPC_coord)||(type==MPPC_coord_x)||(type==MPPC_coord_y)||(type==MPPC_Npe_sum)||(type==Correlation)||(type==CorrelationAll)||(type==PMT_sum_N)||(type==PMT_Npe_sum);
 }
 
 Bool_t AnalysisStates::is_TH1D_hist(Type type)
@@ -254,7 +254,7 @@ Bool_t AnalysisStates::is_TH1D_hist(Type type)
 
 bool AnalysisStates::isComposite (Type type)
 {
-	return ((type == MPPC_coord) || (type == MPPC_coord_x)||(type== MPPC_coord_y)||(type==Correlation)||(type==CorrelationAll)||(type==MPPC_Npe_sum)||(type==MPPC_S2)||(type==PMT_S2_S)||(type==PMT_sum_N));
+	return ((type == MPPC_coord) || (type == MPPC_coord_x)||(type== MPPC_coord_y)||(type==Correlation)||(type==CorrelationAll)||(type==MPPC_Npe_sum)||(type==MPPC_S2)||(type==PMT_S2_S)||(type==PMT_sum_N)||(type==PMT_Npe_sum));
 }
 
 Bool_t AnalysisStates::isValid()
@@ -465,6 +465,10 @@ std::string AnalysisStates::type_name(Type type)
 	}
 	case Type::PMT_S2_S:{
 		name += "_S2_S";
+		break;
+	}
+	case Type::PMT_Npe_sum:{
+		name += "_Npe_sum";
 		break;
 	}
 	case Type::PMT_S2_int: {

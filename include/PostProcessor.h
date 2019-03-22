@@ -13,25 +13,28 @@
 //for adding new types of analysis - dependence on AnalysisStates::Type
 //1) AnalysisStates::AnalysisStates (first/last state)
 //2) AnalysisStates::isMultichannel();
-//3) AnalysisStates::is_PMT_type
-//4) AnalysisStates::isComposite
-//5) std::string AnalysisStates::type_name(Type type);
-//6) AnalysisStates::is_TH1D_hist
+//3) AnalysisStates::isPerRun(Type type);
+//4) AnalysisStates::is_PMT_type
+//5) AnalysisStates::isComposite
+//6) std::string AnalysisStates::type_name(Type type);
+//7) AnalysisStates::is_TH1D_hist
 
-//7) void PostProcessor::LoopThroughData(FunctionWrapper*);
-//10) void PostProcessor::print_hist(int ch, int exp_ind, Type type);
-//11) void PostProcessor::FillHist(void* p_hist)
-//12) int PostProcessor::numOfFills(int channel, Type type);
-//13) std::pair<double, double> PostProcessor::hist_x_limits(void);
-//14) std::pair<double, double> PostProcessor::hist_y_limits(void);
+//8) void PostProcessor::LoopThroughData(FunctionWrapper*);
+//9) void PostProcessor::print_hist(int ch, int exp_ind, Type type);
+//10) void PostProcessor::FillHist(void* p_hist)
+//11) int PostProcessor::numOfFills(int channel, Type type);
+//12) std::pair<double, double> PostProcessor::hist_x_limits(void);
+//13) std::pair<double, double> PostProcessor::hist_y_limits(void);
+//14) void PostProcessor::default_hist_setups(void);
 
-//15) void PostProcessor::set_default_hist_setups(void);
-
-//16) void PostProcessor::update_physical(void);
-//17) void PostProcessor::set_limits(double left, double right);
-//18) void PostProcessor::set_drawn_limits(double left, double right);
-//19) void PostProcessor::set_as_run_cut(std::string name)
-
+//15) void PostProcessor::update_physical(void);
+//16) 2nd tier methods in main:
+//	FunctionWrapper* create_vertical_lines_cut(double left, double right)
+//	FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region)
+//	FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region)
+//	FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region)
+//	FunctionWrapper* create_off_ch_cut(int channel)
+//	FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region)
 
 class PostProcessor : public CanvasSetups {
 public:
