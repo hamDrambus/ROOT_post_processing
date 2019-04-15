@@ -14,12 +14,15 @@ AllRunsResults::AllRunsResults(/*ParameterPile::*/experiment_area experiment)
 				pmt_peaks.push_back(std::deque<std::deque<peak>>());
 				pmt_S2_integral.push_back(std::vector<double>());
 				vector_from_file(pmt_peaks.back(), prefix + "peaks.dat");
-				vector_from_file(pmt_S2_integral.back(), prefix + "S2_int.dat");
-				if (pmt_peaks.back().empty()||pmt_S2_integral.back().empty()) {
+				vector_from_file(pmt_S2_integral.back(), prefix + "S2_int.dat"); //pmt_S2_integral is not necessary for all channels
+				if (pmt_peaks.back().empty()) {
 					pmt_channels.pop_back();
 					pmt_peaks.pop_back();
 					pmt_S2_integral.pop_back();
 				} else {
+					if (pmt_S2_integral.back().empty()) { //In order to not change post processing program, fill array with dummy values.
+						pmt_S2_integral.back().resize(pmt_peaks.back().size(), -1);
+					}
 					std::cout << "Loaded channel " << ch << std::endl;
 				}
 				continue;

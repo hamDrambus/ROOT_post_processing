@@ -1500,7 +1500,7 @@ void PostProcessor::update(UpdateState to_update)//TODO: optimize it?
 		} else {
 			TH2D* hist = get_current_hist2();
 			if (hist)
-				hist->Draw(/*"lego"*/);
+				hist->Draw("colz"/*"lego"*/);
 		}
 		canvas->Update(); //required for updates axes which are used in drawing cuts
 		TF1* ff = get_current_fit_function();
@@ -1621,19 +1621,21 @@ void PostProcessor::update_physical(void)
 	case Type::MPPC_Ss:
 	{
 		CalibrationInfo::S1pe_method meth = calibr_info.get_method(current_exp_index, current_channel);
+		LoopThroughData(mean_taker, current_channel, current_type, true, true, true);
+		if (0==stat_data.weight)
+			std::cout << "Warning! No mean Ss value for current histogram: " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
+		else
+			std::cout << "Current mean value = "<<stat_data.val / (double)stat_data.weight << std::endl;
 		if (meth == CalibrationInfo::Ignore) {
 			calibr_info.calculateS1pe(current_channel);
-			std::cout << "S1pe = "<<calibr_info.getS1pe(current_channel) << std::endl;
+			std::cout << "Resulting calibration S1pe = "<<calibr_info.getS1pe(current_channel) << std::endl;
 			break;
 		}
 		if (meth == CalibrationInfo::UsingMean) {
-			LoopThroughData(mean_taker, current_channel, current_type, true, true, true);
-			if (0==stat_data.weight)
-				std::cout << "Warning! No mean calibration Ss value for " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
-			else
+			if (0!=stat_data.weight)
 				calibr_info.set_S1pe(current_channel, current_exp_index, stat_data.val / (double)stat_data.weight, stat_data.weight);
 			calibr_info.calculateS1pe(current_channel);
-			std::cout << "S1pe = "<<calibr_info.getS1pe(current_channel) << std::endl;
+			std::cout << "Resulting calibration S1pe = "<<calibr_info.getS1pe(current_channel) << std::endl;
 			break;
 		}
 		if (meth == CalibrationInfo::Using1pe || meth == CalibrationInfo::Using1pe2pe) {
@@ -1651,7 +1653,7 @@ void PostProcessor::update_physical(void)
 			}
 		}
 		calibr_info.calculateS1pe(current_channel);
-		std::cout << "S1pe = "<<calibr_info.getS1pe(current_channel) << std::endl;
+		std::cout << "Resulting calibration S1pe = "<<calibr_info.getS1pe(current_channel) << std::endl;
 		break;
 	}
 	case Type::PMT_Ss:

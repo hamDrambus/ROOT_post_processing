@@ -78,6 +78,7 @@ public:
 
 	void save(int ch);	//TODO: make that it saves results such as calibration and Npe(E) (for both PMT and MPPC). That is updates only one line in calibr. file
 	void save_all(void);
+	//TODO: save_calibration(void)
 	void saveAs(std::string path);
 	
 	void clear(void);	//clear cuts for current histogram. Run cuts derived from it are not touched

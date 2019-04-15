@@ -178,13 +178,13 @@ void set_zoom (double xl, double xr, double yl, double yr)
 	post_processor->set_zoom(xl, xr, yl, yr);
 }
 
-void unset_zoom(bool do_update)
+void unset_zoom(void)
 {
 	if (NULL == g_data) {
 		state(kFALSE);
 		return;
 	}
-	post_processor->unset_zoom(do_update);
+	post_processor->unset_zoom();
 }
 
 void next_canvas(void) //creates new canvas or goes to the next existing. The current one will stay unchanged.
@@ -407,7 +407,7 @@ void unset_1peS(void)
 	post_processor->calibr_info.unsetS1pe(post_processor->current_channel);
 }
 
-void use_mean(Bool_t do_use) //uses mean value of data instead of gauss' mean. May be usefull for S2_S
+void set_use_mean(Bool_t do_use) //uses mean value of data instead of gauss' mean. May be usefull for S2_S
 {
 	if (NULL == g_data) {
 		state(kFALSE);
@@ -1100,7 +1100,7 @@ void off_ch(int ch)
 		return;
 	}
 	add_hist_cut(picker, "ch_off", ch);
-	update();
+	//update(); it is required oftentimes to remove many channels.
 }
 
 void on_ch(int ch)
