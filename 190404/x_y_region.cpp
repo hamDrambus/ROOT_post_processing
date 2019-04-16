@@ -3,7 +3,9 @@
 	//x_y_regions = {60, 61, 0, 1, 121, 122, 0, 1};	
 	//x_y_regions = {14.5, 15.5, 0, 1, 138, 138.5, 0, 1};
 	//For fast PMT A-S cuts:		
-	x_y_regions = {0.5, 0, 4, 1.6, 11, 1e5}; //ch16 Cd_20kV_850V_46V
+	//x_y_regions = {0.5, 0, 4, 1.6, 11, 1e5}; //ch16 Cd_20kV_850V_46V
+	x_y_regions = {-1, 0.04, 0, 0.8, 0.105, 1e3}//ch15 Cd_20kV_850V_46V
+	//x_y_regions = {-1, 0.020, 0.017, 0.1, 0.0, 1e3}//ch15 Cd_20kV_850V_46V	
 	/*if (6 <=x_y_regions.size()) {
 		std::vector<double> xs = {0.006, 0.006};
 		std::vector<double> ys = {10 , 0.0025};

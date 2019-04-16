@@ -104,14 +104,14 @@ cut_vals[59] = std::pair<double, double> (0.0009, 0.009);
 		std::map<int, std::pair<double, double> > cut_vals;
 		if (post_processor->experiments[post_processor->current_exp_index] == "190404_Cd_20kV_850V_46V_th250mV") {
 			//SiPM (MPPC) channel - (Smin, Smax). Set by hand for each experiment and channel.			
-cut_vals[8] = std::pair<double, double> (0., 0.);
-cut_vals[9] = std::pair<double, double> (0., 0.);
-cut_vals[10] = std::pair<double, double> (0., 0.);
-cut_vals[11] = std::pair<double, double> (0., 0.);
+cut_vals[8] = std::pair<double, double> (0.0, 0.002);
+cut_vals[9] = std::pair<double, double> (0.0, 0.002);
+cut_vals[10] = std::pair<double, double> (0.0, 0.002);
+cut_vals[11] = std::pair<double, double> (0.0, 0.002);
 cut_vals[12] = std::pair<double, double> (0.0, 0.5);
 cut_vals[13] = std::pair<double, double> (0.0, 0.5);
 cut_vals[14] = std::pair<double, double> (0.0, 0.5);
-cut_vals[15] = std::pair<double, double> (0.0, 0.5);
+cut_vals[15] = std::pair<double, double> (0.0, 0.5); //A-S cuts required!
 cut_vals[16] = std::pair<double, double> (0.0, 0.5);
 		}
 		if (post_processor->experiments[post_processor->current_exp_index] == "190404_Cd_20kV_850V_46V_th250mV_0") {

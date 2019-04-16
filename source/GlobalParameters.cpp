@@ -26,6 +26,43 @@ std::vector<double>::iterator iter_add(std::vector<double>::iterator& to, int wh
 	return ((int)(end - to) < what) ? end : to + what;
 }
 
+int getIndex(const std::deque<int>& channels, int ch)
+{
+	for (std::size_t i = 0, i_end_ = channels.size(); i!=i_end_; ++i)
+		if (channels[i]==ch)
+			return i;
+	return -1;
+}
+
+int getIndex(const std::vector<int>& channels, int ch)
+{
+	for (std::size_t i = 0, i_end_ = channels.size(); i!=i_end_; ++i)
+		if (channels[i]==ch)
+			return i;
+	return -1;
+}
+
+std::string strtoken(std::string &in, std::string break_symbs)
+{
+	std::string out;
+	while (!in.empty())
+	{
+		char a = in.front();
+		in.erase(in.begin());
+		bool break_ = false;
+		for (auto h = break_symbs.begin(); h != break_symbs.end(); ++h)
+			if (a == *h) {
+				break_ = true;
+				break;
+			}
+		if ((break_) && (out.empty()))
+			continue;
+		if (break_)
+			return out;
+		out.push_back(a);
+	}
+	return out;
+}
 
 void open_output_file(std::string name, std::ofstream &str, std::ios_base::openmode _mode)
 {
@@ -678,6 +715,7 @@ bool viewRegion::OnLine(double x1, double y1, double x2, double y2, double u,
 
 	std::map < std::string, double > experiment_fields;
 	std::map < std::string, double > PMT_V;
+	std::map < std::string, double > MPPC_V;
 	std::map < std::string, double > PMT_dB;
 	std::pair<int, int> calibaration_points;
 	std::map < int, std::pair<double,double> > MPPC_coords;

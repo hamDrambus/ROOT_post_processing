@@ -17,6 +17,9 @@
 #define ROOT_BL_CALL_V8 spec->Background(f_ys, ys.size(), 20,	TSpectrum::kBackIncreasingWindow, TSpectrum::kBackOrder2, kFALSE, TSpectrum::kBackSmoothing3, kFALSE);
 
 std::vector<double>::iterator iter_add(std::vector<double>::iterator& to, int what, std::vector<double>::iterator& end);
+int getIndex(const std::deque<int>& channels, int ch);
+int getIndex(const std::vector<int>& channels, int ch);
+std::string strtoken(std::string &in, std::string break_symbs);
 
 class viewRegion { //helper class for drawing cuts (clipping lines to pad axes)
 protected:
@@ -88,6 +91,7 @@ extern PostProcessor* post_processor;
 
 	extern std::map < std::string, double > experiment_fields;
 	extern std::map < std::string, double > PMT_V;
+	extern std::map < std::string, double > MPPC_V;
 	extern std::map < std::string, double > PMT_dB;
 	extern std::pair<int, int> calibaration_points;
 	extern std::map < int, std::pair<double,double> > MPPC_coords;
