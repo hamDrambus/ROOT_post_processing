@@ -71,6 +71,7 @@ void clear(void);	//clear cuts for current histogram. Run cuts derived from it a
 void clearAll(void); //clear everything, return to initial state (leaves all existing histograms empty)
 
 //Calibration methods:
+void calib_status(Bool_t uncalibrated_only = false);
 void draw_Npe(void);
 void add_1peS(void);
 void add_2peS(void);
@@ -79,6 +80,8 @@ void rem_2peS(void);
 void set_1peS(double val);
 void unset_1peS(void);
 void set_use_mean(Bool_t do_use = true);
+void calib_load(std::string fname = ""); //if fname=="" uses file location from global parameters
+void calib_save(std::string fname = "");
 //TODO: remove?
 void set_calib_N(int from, int to);//in order to set default use invalid values
 void Exit(Bool_t save = kTRUE);

@@ -33,7 +33,7 @@ state_info(data)
 
 void CalibrationInfo::S1pe_exp::set_S1pe_exp(int ch, double val, int weight)
 {
-	if (ch<0 || ch>avr_S1pe.size()) {
+	if (ch<0 || ch>=avr_S1pe.size()) {
 		std::cerr<<"CalibrationInfo::S1pe_exp::set_S1pe_exp: Error: ch_index "<<ch<<"is out of range"<<std::endl;
 		return;
 	}
@@ -43,16 +43,25 @@ void CalibrationInfo::S1pe_exp::set_S1pe_exp(int ch, double val, int weight)
 
 double CalibrationInfo::S1pe_exp::get_S1pe_exp(int ch) const
 {
-	if (ch<0 || ch>avr_S1pe.size()) {
+	if (ch<0 || ch>=avr_S1pe.size()) {
 		std::cerr<<"CalibrationInfo::S1pe_exp::get_S1pe_exp: Error: ch_index "<<ch<<"is out of range"<<std::endl;
 		return -1;
 	}
 	return avr_S1pe[ch];
 }
 
+int CalibrationInfo::S1pe_exp::get_S1pe_w_exp(int ch) const
+{
+	if (ch<0 || ch >= avr_S1pe.size()) {
+		std::cerr << "CalibrationInfo::S1pe_exp::get_S1pe_w_exp: Error: ch_index " << ch << "is out of range" << std::endl;
+		return -1;
+	}
+	return avr_S1pe_w[ch];
+}
+
 void CalibrationInfo::S1pe_exp::set_S2pe_exp(int ch, double val, int weight)
 {
-	if (ch<0 || ch>avr_S1pe.size()) {
+	if (ch<0 || ch>=avr_S1pe.size()) {
 		std::cerr<<"CalibrationInfo::S1pe_exp::set_S2pe_exp: Error: ch_index "<<ch<<"is out of range"<<std::endl;
 		return;
 	}
@@ -62,16 +71,25 @@ void CalibrationInfo::S1pe_exp::set_S2pe_exp(int ch, double val, int weight)
 
 double CalibrationInfo::S1pe_exp::get_S2pe_exp(int ch) const
 {
-	if (ch<0 || ch>avr_S1pe.size()) {
+	if (ch<0 || ch>=avr_S1pe.size()) {
 		std::cerr<<"CalibrationInfo::S1pe_exp::get_S2pe_exp: Error: ch_index "<<ch<<"is out of range"<<std::endl;
 		return -1;
 	}
 	return avr_S2pe[ch];
 }
 
-CalibrationInfo::S1pe_method CalibrationInfo::S1pe_exp::get_method(int ch)
+int CalibrationInfo::S1pe_exp::get_S2pe_w_exp(int ch) const
 {
-	if (ch<0 || ch>avr_S1pe.size()) {
+	if (ch<0 || ch >= avr_S1pe.size()) {
+		std::cerr << "CalibrationInfo::S1pe_exp::get_S2pe_w_exp: Error: ch_index " << ch << "is out of range" << std::endl;
+		return -1;
+	}
+	return avr_S2pe_w[ch];
+}
+
+CalibrationInfo::S1pe_method CalibrationInfo::S1pe_exp::get_method(int ch) const
+{
+	if (ch<0 || ch>=avr_S1pe.size()) {
 		std::cerr<<"CalibrationInfo::S1pe_exp::get_method: Error: ch_index "<<ch<<"is out of range"<<std::endl;
 		return CalibrationInfo::S1pe_method::Ignore;
 	}
@@ -80,7 +98,7 @@ CalibrationInfo::S1pe_method CalibrationInfo::S1pe_exp::get_method(int ch)
 
 void CalibrationInfo::S1pe_exp::set_method(int ch, S1pe_method meth)
 {
-	if (ch<0 || ch>avr_S1pe.size()) {
+	if (ch<0 || ch>=avr_S1pe.size()) {
 		std::cerr<<"CalibrationInfo::S1pe_exp::set_method: Error: ch_index "<<ch<<"is out of range"<<std::endl;
 		return;
 	}
@@ -103,7 +121,16 @@ int CalibrationInfo::ch_to_index(int ch) const
 		return state_info->PMT_channels.size() + mppc_i;
 }
 
-std::vector<int> CalibrationInfo::translate_V_to_exp (int ch, double V)
+int CalibrationInfo::ch_index_to_ch(int ch_index) const
+{
+	std::size_t pmt_sz = state_info->PMT_channels.size();
+	if (ch_index<0 || ch_index > pmt_sz + state_info->MPPC_channels.size())
+		return INT_MIN;
+	else
+		return (ch_index >= pmt_sz ? state_info->MPPC_channels[ch_index - pmt_sz] : state_info->PMT_channels[ch_index]);
+}
+
+std::vector<int> CalibrationInfo::translate_V_to_exp (int ch, double V) const
 {
 	std::vector<int> ret;
 	for (std::size_t i = 0, i_end_= state_info->experiments.size(); i!=i_end_; ++i) {
@@ -128,7 +155,7 @@ std::vector<int> CalibrationInfo::translate_V_to_exp (int ch, double V)
 	return ret;
 }
 
-double CalibrationInfo::translate_exp_to_V (int ch, int exp_index)
+double CalibrationInfo::translate_exp_to_V (int ch, int exp_index) const
 {
 	std::string exp_str = state_info->experiments[exp_index];
 	if (getIndex(state_info->PMT_channels, ch)>=0) {
@@ -144,8 +171,9 @@ double CalibrationInfo::translate_exp_to_V (int ch, int exp_index)
 	return -1;
 }
 
-void CalibrationInfo::read_file(std::ifstream &str, std::vector<std::pair<int/*ch*/, std::string> > &current_list)
+bool CalibrationInfo::read_file(std::ifstream &str, std::deque<S1pe> & to_table) const
 {
+	bool loaded = false;
 	int ch = 0;
 	std::string line, word;
 	while (str.is_open() && str.good() && !str.eof()) {
@@ -155,261 +183,369 @@ void CalibrationInfo::read_file(std::ifstream &str, std::vector<std::pair<int/*c
 			if (word[0]=='/' && word[1]=='/') //ignore primitive comment
 				continue;
 		}
-		if (word.empty())
+		try {
+			ch = std::stoi(word);
+		} catch (...) {
 			continue;
-		ch = std::stoi(word);
-		current_list.push_back(std::pair<int, std::string>(ch, line));
+		}
+		int ch_index = ch_to_index(ch);
+		if (ch_index < 0) //irrelevant channel
+			continue;
+		std::map<double, double> V_s1pe_to_add;
+		while (!line.empty()) {
+			double V, s1pe;
+			try {
+				word = strtoken(line, " \t,");
+				V = std::stod(word);
+				word = strtoken(line, " \t,");
+				s1pe = std::stod(word);
+			} catch (...) {
+				break;
+			}
+			loaded = true;
+			if (V_s1pe_to_add.find(V) != V_s1pe_to_add.end()) {
+				V_s1pe_to_add[V] = s1pe;
+			} else {
+				std::cerr << "CalibrationInfo::extract_calibration_info: Warninig: ch " << ch << " contains the same V (" << V << ")" << std::endl;
+				std::cerr << "\tExtra values are ignored" << std::endl;
+			}
+		}
+		for (auto vv = V_s1pe_to_add.begin(), vv_end_ = V_s1pe_to_add.end(); vv != vv_end_; ++vv)
+			add_calibration_info(to_table, ch, vv->first, vv->second);
 	}
+	return loaded;
 }
 
-void CalibrationInfo::extract_calibration_info (std::vector<std::pair<int/*ch*/, std::string> > &current_list)
+void CalibrationInfo::add_calibration_info (std::deque<S1pe> & to_table, int ch, double V, double S1pe) const //preserves sorting, updates if necessary
 {
-	for (int i=0,_end_ = current_list.size(); i!=_end_; ++i) {
-		std::deque<std::pair<double, double> > ch_info;
-		double V, s1pe;
-		std::stringstream info(current_list[i].second);
-		while (!info.eof()&&info.good()) { //TODO: add validations of double format (throw error if string is present instead of numbers)
-			info>>V;
-			if (info.eof()&&!info.good()) {
-				//std::cout<<"Warning: ch "<<current_list[i].first<<" wrong PMT calibration table"<<std::endl;
+	int ch_index = ch_to_index(ch);
+	if (ch_index < 0) //irrelevant channel
+		return;
+
+	if (to_table.size() > ch_index) {
+		std::cerr << "CalibrationInfo::add_calibration_info: Error: index issue: table does not coutain channel " << ch << std::endl;
+		return;
+	}
+
+	auto entry = to_table[ch_index].find(V);
+	if (entry != to_table[ch_index].end()) {//modify if value not forced
+		if (entry->second.first) {
+			std::cout << "CalibrationInfo::add_calibration_info: Warning: forced value of s1pe for ch " << ch << "V=" << V << " is not updated" << std::endl;
+		} else
+			entry->second.second = S1pe;
+	} else
+		to_table[ch_index][V] = std::pair<bool, double>(false, S1pe);
+}
+
+bool CalibrationInfo::write_to_file(std::ofstream &str, std::deque<S1pe>& table) const
+{
+	if (str.is_open()) {
+		for (std::size_t chi = 0, chi_end_ = table.size(); chi != chi_end_; ++chi) {
+			int ch = ch_index_to_ch(chi);
+			if (INT_MIN == ch)
 				continue;
+			str << ch << "\t";
+			for (auto i = table[chi].begin(), i_end_ = table[chi].end(); i != i_end_; ++i) {
+				str << i->first<< "\t" << i->second.second << "\t";
 			}
-			info>>s1pe;
-			bool unique = true;
-			for (std::size_t vv=0, vv_end_=ch_info.size(); vv!=vv_end_; ++vv) {
-				if (ch_info[vv].first==V) {
-					std::cerr<<"CalibrationInfo::extract_calibration_info: Warninig: ch "<<current_list[i].first<<" contains the same V ("<<V<<")"<<std::endl;
-					std::cerr<<"\tExtra values are ignored"<<std::endl;
-					unique = false;
-					break;
-				}
-			}
-			if (unique)
-				ch_info.push_back(std::pair<double, double>(V, s1pe));
+			str << std::endl;
 		}
-		for (std::size_t vv=0, vv_end_=ch_info.size(); vv!=vv_end_; ++vv) {
-			add_calibration_info(s1pe_, current_list[i].first, ch_info[vv].first, ch_info[vv].second);
-		}
+		return true;
 	}
+	return false;
 }
 
-void CalibrationInfo::add_calibration_info (std::deque<S1pe> & table, int ch, double V, double S1pe) //preserves sorting, updates if necessary
+double CalibrationInfo::get_S1pe(int ch, double V) const
 {
-	for (int chi = 0, _end_chi = table.size(); chi!=_end_chi; ++chi) {
-		if (table[chi].first==ch) { //modify, table[i].second is supposed to be not empty.
-			for (int i = 0, _end_ = table[chi].second.size(); i!=_end_; ++i) {
-				if (table[chi].second[i].first==V) {
-					table[chi].second[i].second = S1pe;
-					return;
-				}
-				if ((V<table[chi].second[i].first) && ((0==i) ? true : (table[chi].second[i-1].first<ch))) {
-					table[chi].second.insert(table[chi].second.begin()+i, std::pair<double, double >(V,S1pe));
-					return;
-				}
+	int ch_index = ch_to_index(ch);
+	if (ch_index >= 0 && ch_index <s1pe_.size()) {
+		auto entry = s1pe_[ch_index].find(V);
+		if (s1pe_[ch_index].end() != entry)
+			return entry->second.second;
+	}
+	return -1;
+}
+
+double CalibrationInfo::set_S1pe(int ch, double V, double val)
+{
+	int ch_index = ch_to_index(ch);
+	if (ch_index >= 0 && ch_index <s1pe_.size()) {
+		auto entry = s1pe_[ch_index].find(V);
+		if (s1pe_[ch_index].end() != entry) {
+			if (!entry->second.first)
+				entry->second.second = val;
+		} else
+			s1pe_[ch_index][V] = std::pair<bool, double>(false, val);
+	}
+	return -1;
+}
+
+void CalibrationInfo::force_S1pe(int ch, double V, double val) //forces specific value which is not erased by calculateS1pe
+{
+	int ch_index = ch_to_index(ch);
+	if (ch_index >= 0 && ch_index <s1pe_.size()) {
+		auto entry = s1pe_[ch_index].find(V);
+		if (s1pe_[ch_index].end() != entry) {
+			entry->second.second = val;
+			entry->second.first = true;
+		} else
+			s1pe_[ch_index][V] = std::pair<bool, double>(true, val);
+	}
+	return;
+}
+
+void CalibrationInfo::unforce_S1pe(int ch, double V)//does not erase/loads from file forced value, which cannot be calculated from experiment.
+{
+	int ch_index = ch_to_index(ch);
+	if (ch_index >= 0 && ch_index <s1pe_.size()) {
+		auto entry = s1pe_[ch_index].find(V);
+		if (s1pe_[ch_index].end() != entry) {
+			entry->second.first = false;
+			calculateS1pe(ch, V);
+		}
+	}
+	return;
+}
+
+CalibrationInfo::S1pe_method CalibrationInfo::get_method(int ch, int exp_ch) const//called from PostProcessor
+{
+	int ch_index = ch_to_index(ch);
+	if (ch_index >= 0 && ch_index <s1pe_.size() && exp_ch < s1pe_exp_.size() && exp_ch>=0)
+		return s1pe_exp_[exp_ch].get_method(ch_index);
+	return Ignore;
+}
+
+void CalibrationInfo::set_method(int ch, int exp_ch, S1pe_method method)
+{
+	int ch_index = ch_to_index(ch);
+	if (ch_index >= 0 && ch_index <s1pe_.size() && exp_ch < s1pe_exp_.size() && exp_ch >= 0)
+		s1pe_exp_[exp_ch].set_method(ch_index, method);
+}
+
+void CalibrationInfo::set_S1pe_exp(int ch, int exp_index, double val, int weight)
+{
+	int ch_index = ch_to_index(ch);
+	if (ch_index >= 0 && ch_index <s1pe_.size() && exp_index < s1pe_exp_.size() && exp_index >= 0)
+		s1pe_exp_[exp_index].set_S1pe_exp(ch_index, val, weight);
+}
+
+double CalibrationInfo::get_S1pe_exp(int ch, int exp_index) const
+{
+	int ch_index = ch_to_index(ch);
+	if (ch_index >= 0 && ch_index <s1pe_.size() && exp_index < s1pe_exp_.size() && exp_index >= 0)
+		return s1pe_exp_[exp_index].get_S1pe_exp(ch_index);
+	return -1;
+}
+
+int CalibrationInfo::get_S1pe_weight_exp(int ch, int exp_index) const
+{
+	int ch_index = ch_to_index(ch);
+	if (ch_index >= 0 && ch_index <s1pe_.size() && exp_index < s1pe_exp_.size() && exp_index >= 0)
+		return s1pe_exp_[exp_index].get_S1pe_w_exp(ch_index);
+	return 0;
+}
+
+void CalibrationInfo::set_S2pe_exp(int ch, int exp_index, double val, int weight)
+{
+	int ch_index = ch_to_index(ch);
+	if (ch_index >= 0 && ch_index <s1pe_.size() && exp_index < s1pe_exp_.size() && exp_index >= 0)
+		s1pe_exp_[exp_index].set_S2pe_exp(ch_index, val, weight);
+}
+
+double CalibrationInfo::get_S2pe_exp(int ch, int exp_index) const
+{
+	int ch_index = ch_to_index(ch);
+	if (ch_index >= 0 && ch_index <s1pe_.size() && exp_index < s1pe_exp_.size() && exp_index >= 0)
+		return s1pe_exp_[exp_index].get_S2pe_exp(ch_index);
+	return -1;
+}
+
+int CalibrationInfo::get_S2pe_weight_exp(int ch, int exp_index) const
+{
+	int ch_index = ch_to_index(ch);
+	if (ch_index >= 0 && ch_index <s1pe_.size() && exp_index < s1pe_exp_.size() && exp_index >= 0)
+		return s1pe_exp_[exp_index].get_S2pe_w_exp(ch_index);
+	return 0;
+}
+
+double CalibrationInfo::calculateS1pe(int ch, double V) //from experimental avr_S1pe
+{
+	int ch_index = ch_to_index(ch);
+	if (ch_index < 0 || ch_index >= s1pe_.size())
+		return;
+	auto entry = s1pe_[ch_index].find(V);
+	if (s1pe_[ch_index].end() != entry) //if entry is empty but if there exists valid calculated S1pe it'll be written
+		if (entry->second.first) //forced, no point in calculations, since it won't be written
+			return entry->second.second;
+	std::vector<int> exps = translate_V_to_exp(ch, V);
+	double val = 0;
+	int n_used = 0;
+	for (auto e = exps.begin(), e_end_ = exps.end(); e != e_end_; ++e) {
+		S1pe_method meth = get_method(ch, *e);
+		if (Using1pe == meth|| Using1pe2pe == meth || UsingMean == meth) {
+			double exp_s1pe = get_S1pe_exp(ch, *e);
+			int exp_s1pe_w = get_S1pe_weight_exp(ch, *e);
+			if (exp_s1pe_w > 0 && exp_s1pe > 0) {
+				val += exp_s1pe_w * exp_s1pe;
+				n_used += exp_s1pe_w;
 			}
-			table[chi].second.insert(table[chi].second.end(), std::pair<double, double >(V,S1pe));
 		}
-		if ((ch<table[chi].first) && ((0==chi) ? true : (table[chi-1].first<ch))) {//insert
-			std::vector<std::pair<double, double> > temp;
-			temp.push_back(std::pair<double, double >(V,S1pe));
-			std::pair<int, std::vector<std::pair<double, double> > > temp2(ch, temp);
-			table.insert(table.begin()+chi, temp2);
-			return;
-		}
-	}
-	std::vector<std::pair<double, double> > temp;
-	temp.push_back(std::pair<double, double >(V,S1pe));
-	std::pair<int, std::vector<std::pair<double, double> > > temp2(ch, temp);
-	table.insert(table.end(), temp2);
-}
-void CalibrationInfo::add_to_PMT_info (PMT_info_& table, int ch, double V, double S1pe) //preserves sorting, updates if necessary
-{
-	for (int chi = 0, _end_chi = table.size(); chi!=_end_chi; ++chi) {
-		if (table[chi].first==ch) { //modify, table[i].second is supposed to be not empty.
-			for (int i = 0, _end_ = table[chi].second.size(); i!=_end_; ++i) {
-				if (table[chi].second[i].first==V) {
-					table[chi].second[i].second = S1pe;
-					return;
-				}
-				if ((V<table[chi].second[i].first) && ((0==i) ? true : (table[chi].second[i-1].first<ch))) {
-					table[chi].second.insert(table[chi].second.begin()+i, std::pair<double, double >(V,S1pe));
-					return;
-				}
+		if (Using2pe == meth || Using1pe2pe == meth) {
+			double exp_s2pe = get_S2pe_exp(ch, *e);
+			int exp_s2pe_w = get_S2pe_weight_exp(ch, *e);
+			if (exp_s2pe_w > 0 && exp_s2pe > 0) {
+				val += 0.5*exp_s2pe_w * exp_s2pe;
+				n_used += exp_s2pe_w;
 			}
-			table[chi].second.insert(table[chi].second.end(), std::pair<double, double >(V,S1pe));
-		}
-		if ((ch<table[chi].first) && ((0==chi) ? true : (table[chi-1].first<ch))) {//insert
-			std::vector<std::pair<double, double> > temp;
-			temp.push_back(std::pair<double, double >(V,S1pe));
-			std::pair<int, std::vector<std::pair<double, double> > > temp2(ch, temp);
-			table.insert(table.begin()+chi, temp2);
-			return;
 		}
 	}
-	std::vector<std::pair<double, double> > temp;
-	temp.push_back(std::pair<double, double >(V,S1pe));
-	std::pair<int, std::vector<std::pair<double, double> > > temp2(ch, temp);
-	table.insert(table.end(), temp2);
+	if (n_used) {
+		val = val / n_used;
+		set_S1pe(ch, V, val);
+	} //do not update otherwise (or calibrations from file will always be overwritten)
+	auto entry = s1pe_[ch_index].find(V);
+	if (s1pe_[ch_index].end() != entry) //if entry is empty but if there exists valid calculated S1pe it'll be written
+		return entry->second.second;
+	return -1;
 }
-void CalibrationInfo::add_to_MPPC_info (MPPC_info_& table, int ch, double S1pe)         //preserves sorting, updates if necessary
+
+void CalibrationInfo::calculateS1pe(int ch) //for all V present.
 {
-	for (int chi = 0, _end_chi = table.size(); chi!=_end_chi; ++chi) {
-		if (table[chi].first==ch) { //modify, table[i].second is supposed to be not empty.
-			table[chi].second = S1pe;
-			return;
-		}
-		if ((ch<table[chi].first) && ((0==chi) ? true : (table[chi-1].first<ch))) {//insert
-			table.insert(table.begin()+chi,std::pair<int, double>(ch,S1pe));
-			return;
-		}
+	std::map<double, bool> Vs;
+	for (std::size_t i = 0, i_end_ = state_info->experiments.size(); i != i_end_; ++i) {
+		double V = translate_exp_to_V(ch, i);
+		Vs[V] = true;
 	}
-	table.insert(table.end(),std::pair<int, double>(ch,S1pe));
+	for (auto i = Vs.begin(), i_end_ = Vs.end(); i != i_end_; ++i)
+		calculateS1pe(ch, i->first);
 }
-void CalibrationInfo::write_to_file (PMT_info_& PMT_table, MPPC_info_& MPPC_table)
+
+void CalibrationInfo::calculateS1pe(void) //for all channels and V.
 {
+	for (auto ch = state_info->PMT_channels.begin(), ch_end_ = state_info->PMT_channels.end(); ch != ch_end_; ++ch)
+		calculateS1pe(*ch);
+	for (auto ch = state_info->MPPC_channels.begin(), ch_end_ = state_info->MPPC_channels.end(); ch != ch_end_; ++ch)
+		calculateS1pe(*ch);
+}
+
+void CalibrationInfo::Save(std::string fname) const //Adds info to the file, not overrides it entirely
+{
+	std::deque<S1pe> file_table;
+	std::ifstream istr;
+	istr.open(fname);
+	read_file(istr, file_table);
+	istr.close();
+	for (std::size_t chi = 0, chi_end_ = s1pe_.size(); chi != chi_end_; ++chi)
+		for (auto vv = s1pe_[chi].begin(), vv_end_ = s1pe_[chi].end(); vv != vv_end_; ++vv)
+			add_calibration_info(file_table, ch_index_to_ch(chi), vv->first, vv->second.second);
 	std::ofstream str;
-	open_output_file(data_output_path + calibration_file, str);
-	if (str.is_open()){
-		for (int chi = 0, _end_chi = PMT_table.size(); chi!=_end_chi; ++chi) {
-			str<<PMT_table[chi].first<<"\t";
-			for (int i = 0, _end_ = PMT_table[chi].second.size(); i!=_end_; ++i) {
-				str<<PMT_table[chi].second[i].first<<"\t"<<PMT_table[chi].second[i].second<<"\t";
-			}
-			str<<std::endl;
-		}
-		for (int chi = 0, _end_chi = MPPC_table.size(); chi!=_end_chi; ++chi) {
-			str<<MPPC_table[chi].first<<"\t"<<MPPC_table[chi].second<<std::endl;
-		}
-	}
+	open_output_file(fname, str, std::ios_base::trunc);
+	if (write_to_file(str, file_table))
+		std::cout << "Saved calibration to \"" << fname << "\"" << std::endl;
+	else
+		std::cout << "Failed to save calibration to \"" << fname << "\"" << std::endl;
 	str.close();
 }
 
-	std::deque<S1pe_exp> s1pe_exp_; //for each experiment.
-protected:
-	const AnalysisStates* state_info; //for channels only
-
-	std::deque<std::pair<int, int> > N_used_in_calibration; //that is for calculating s1pe (S of 1 photoelectron)
-	void read_file(std::vector<std::pair<int/*ch*/, std::string> > &current_list);
-	void extract_calibration_info (std::vector<std::pair<int/*ch*/, std::string> > &current_list, std::deque<S1pe> &table);
-	void add_calibration_info (std::deque<S1pe> & table, int ch, double V, double S1pe); //preserves sorting, updates if necessary
-	void write_to_file (std::ofstream &str, std::deque<S1pe>& table);
-
-public:
-	CalibrationInfo(const AnalysisStates* data);
-	double getPMT_S1pe(int ch, int exp_ind) const;
-	void forcePMT_S1pe(int ch, double pmt_v, double val); //forces specific value which is not erased by calculateS1pe
-	void unforcePMT_S1pe(int ch, double pmt_v); //forces specific value which is not erased by calculateS1pe
-	double getMPPC_S1pe(int ch, int exp_ind) const;
-	void unforceMPPC_S1pe(int ch, double pmt_v); //forces specific value which is not erased by calculateS1pe
-
-	double calculateS1pe(int ch, double V); //from experimental avr_S1pe
-	double calculateS1pe(int ch); //for all V present.
-	double calculateS1pe(void); //for all channels and V.
-
-	//setters/getters for avr_S1pe and avr_S2pe which are used for s1pe calculations
-	S1pe_method get_method(int ch, int exp_ch) const;//called from PostProcessor
-	void set_method(int ch, int exp_ch, S1pe_method method);
-	void set_S1pe_exp(int ch, int exp_index, double val, int weight);
-	double get_S1pe_exp(int ch, int exp_index) const;
-	void set_S2pe_exp(int ch, int exp_index, double val, int weight);
-	double get_S2pe_exp(int ch, int exp_index) const;
-
-	void Save(std::string fname) const;
-	bool Load(std::string fname);
-
-	//For recalibration of double integral to Npe
-	//All methods below are for MPPC only
-	void set_N_calib(int ch, int from, int to);
-	void set_N_calib(int ch, std::pair<int, int>);
-	std::pair<int, int> get_N_calib(int ch);
-	std::deque<std::deque<std::pair<Bool_t, Bool_t> > > &recalibrate(std::deque<std::deque<double> > &S2_S,
-		std::deque<std::deque<double> >  &Double_I, std::vector<double>& Fields);//sets S2_S and Double_I to N_pe. returns success vector
-	std::deque<std::pair<Bool_t, Bool_t> > &recalibrate(std::deque<double> &S2_S,
-		std::deque<double> &Double_I, std::vector<double>& Fields, int channel);//sets S2_S and Double_I to N_pe. returns success vector
-
-
-double CalibrationInfo::calculateS1pe(int channel)
+bool CalibrationInfo::Load(std::string fname)
 {
-	int ch_ind = state_info->mppc_channel_to_index(channel);
-	if (ch_ind < 0)
-		return -1;
-	if (forced_s1pe[ch_ind])
-		return s1pe[ch_ind];
-	double val = 0;
-	int n_used = 0;
-	for (auto e = avr_S1pe.begin(), _end_ = avr_S1pe.end(); e != _end_; ++e) {
-		std::size_t exp_ind = e - avr_S1pe.begin();
-		if (Using1pe == method[exp_ind][ch_ind] || Using1pe2pe == method[exp_ind][ch_ind] 
-			|| UsingMean == method[exp_ind][ch_ind]){
-			if (avr_S1pe[exp_ind][ch_ind] > 0){
-				val += avr_S1pe[exp_ind][ch_ind]*avr_S1pe_w[exp_ind][ch_ind];
-				n_used+= avr_S1pe_w[exp_ind][ch_ind];
+	std::ifstream str;
+	str.open(fname);
+	if (read_file(str, s1pe_))
+		std::cout << "Loaded calibration from \"" << fname << "\"" << std::endl;
+	else
+		std::cout << "Faield to load calibration from \"" << fname << "\"" << std::endl;
+	str.close();
+	if (!isFull(false))
+		std::cout << "Warning: not all [ch, V] have calibration. Run 'calib_status(false)' to display missing channels and voltages" << std::endl;
+}
+
+bool CalibrationInfo::isFull(bool display_bad) const
+{
+	if (display_bad)
+		std::cout << "[ch-V] without calibration: " << std::endl;
+
+	auto process_ch = [&] (int ch) -> bool {
+		std::map<double, bool> Vs;
+		bool is_first = true;
+		for (std::size_t i = 0, i_end_ = state_info->experiments.size(); i != i_end_; ++i) {
+			double V = translate_exp_to_V(ch, i);
+			Vs[V] = true;
+		}
+		for (auto vv = Vs.begin(), vv_end_ = Vs.end(); vv != vv_end_; ++vv) {
+			if (-1 == get_S1pe(ch, vv->first)) {
+				if (display_bad) {
+					if (is_first) {
+						is_first = false;
+						std::cout << "ch " << ch << " V = " << vv->first << "\t";
+					} else {
+						std::cout << vv->first << "\t";
+					}
+				} else
+					return false;
 			}
 		}
-		if (Using2pe == method[exp_ind][ch_ind] || Using1pe2pe == method[exp_ind][ch_ind]){
-			if (avr_S2pe[exp_ind][ch_ind] > 0){
-				val += 0.5*avr_S2pe[exp_ind][ch_ind]*avr_S2pe_w[exp_ind][ch_ind];
-				n_used += avr_S2pe_w[exp_ind][ch_ind];
-			}
+		if (!is_first)
+			std::cout << std::endl;
+		return is_first;
+	};
+
+	for (auto ch = state_info->PMT_channels.begin(), ch_end_ = state_info->PMT_channels.end(); ch != ch_end_; ++ch) {
+		bool is_full = process_ch(*ch);
+		if (!display_bad && !is_full)
+			return false;
+	}
+	for (auto ch = state_info->MPPC_channels.begin(), ch_end_ = state_info->MPPC_channels.end(); ch != ch_end_; ++ch) {
+		bool is_full = process_ch(*ch);
+		if (!display_bad && !is_full)
+			return false;
+	}
+}
+
+void CalibrationInfo::status(bool display_all) const
+{
+	if (display_all)
+		std::cout << "Calibration table: " << std::endl;
+	else
+		std::cout << "[ch-V] without calibration: " << std::endl;
+
+	auto process_ch = [&](int ch) {
+		std::map<double, bool> Vs;
+		bool is_first = true;
+		for (std::size_t i = 0, i_end_ = state_info->experiments.size(); i != i_end_; ++i) {
+			double V = translate_exp_to_V(ch, i);
+			Vs[V] = true;
 		}
-	}
-	val = n_used ? val / n_used : s1pe[ch_ind];//does not invalidate s1pe (in case it was loaded)
-	s1pe[ch_ind] = val;
-	return val;
-}
-
-double CalibrationInfo::getS1pe(int channel)
-{
-	int ch_ind = state_info->mppc_channel_to_index(channel);
-	if (ch_ind < 0)
-		return -1;
-	return s1pe[ch_ind];
-}
-void CalibrationInfo::setS1pe(int channel, double val)
-{
-	int ch_ind = state_info->mppc_channel_to_index(channel);
-	if (ch_ind < 0)
-		return;
-	s1pe[ch_ind] = val;
-	forced_s1pe[ch_ind] = kTRUE;
-}
-
-void CalibrationInfo::unsetS1pe(int ch)
-{
-	int ch_ind = state_info->mppc_channel_to_index(ch);
-	if (ch_ind < 0)
-		return;
-	forced_s1pe[ch_ind] = kFALSE;
-	calculateS1pe(ch);
-}
-
-double CalibrationInfo::getPMT_S1pe(int ch, int exp_ind)
-{
-	double ratio = 1;
-	if (PMT_dB.find(state_info->experiments[exp_ind])!=PMT_dB.end()) {
-		ratio = PMT_dB.find(state_info->experiments[exp_ind])->second;
-	}
-	if (PMT_V.find(state_info->experiments[exp_ind])!=PMT_V.end()) {
-		double V = PMT_V.find(state_info->experiments[exp_ind])->second;
-		if (0==ch){
-			if (s1pe_PMT3.find(V)!=s1pe_PMT3.end()) {
-				return (s1pe_PMT3.find(V)->second)/ratio;
+		if (!display_all) {
+			for (auto vv = Vs.begin(), vv_end_ = Vs.end(); vv != vv_end_; ++vv) {
+				if (-1 == get_S1pe(ch, vv->first)) {
+					if (is_first) {
+						is_first = false;
+						std::cout << "ch " << ch << " V = " << vv->first << "\t";
+					} else {
+						std::cout << vv->first << "\t";
+					}
+				}
 			}
-		} else { //1==ch
-			if (s1pe_PMT1.find(V)!=s1pe_PMT1.end()) {
-				return (s1pe_PMT1.find(V)->second);
-			}
+			if (!is_first)
+				std::cout << std::endl;
+		} else {
+			std::cout << "V =\t";
+			for (auto vv = Vs.begin(), vv_end_ = Vs.end(); vv != vv_end_; ++vv)
+				std::cout << vv->first << "\t";
+			std::cout << std::endl<<"ch "<<ch<<"\t";
+			for (auto vv = Vs.begin(), vv_end_ = Vs.end(); vv != vv_end_; ++vv)
+				std::cout << get_S1pe(ch, vv->first) << "\t";
+			std::cout << std::endl;
 		}
+	};
+
+	for (auto ch = state_info->PMT_channels.begin(), ch_end_ = state_info->PMT_channels.end(); ch != ch_end_; ++ch) {
+		process_ch(*ch);
 	}
-	//std::cout<<"Warning: no PMT calibration for ch "<<ch<<" and experiment '"<<state_info->experiments[exp_ind]<<"'"<<std::endl;
-	return -1;
-}
-void CalibrationInfo::setPMT_S1pe(int ch, double pmt_v, double val)
-{
-	if (0 == ch)
-		s1pe_PMT3[pmt_v] = val;
-	if (1 == ch)
-		s1pe_PMT1[pmt_v] = val;
+	for (auto ch = state_info->MPPC_channels.begin(), ch_end_ = state_info->MPPC_channels.end(); ch != ch_end_; ++ch) {
+		process_ch(*ch);
+	}
 }
 
 void CalibrationInfo::set_N_calib(int ch, int from, int to)
@@ -419,76 +555,20 @@ void CalibrationInfo::set_N_calib(int ch, int from, int to)
 
 void CalibrationInfo::set_N_calib(int channel, std::pair<int, int> val)
 {
-	int ch_ind = state_info->mppc_channel_to_index(channel);
+	int ch_ind = ch_to_index(channel);
 	if (ch_ind < 0)
 		return;
 	N_used_in_calibration[ch_ind] = val;
 }
 
-std::pair<int, int> CalibrationInfo::get_N_calib(int ch)
+std::pair<int, int> CalibrationInfo::get_N_calib(int ch) const
 {
-	int ch_ind = state_info->mppc_channel_to_index(ch);
+	int ch_ind = ch_to_index(ch);
 	if (ch_ind < 0)
 		return std::pair<int,int>(-1,-1);
 	return N_used_in_calibration[ch_ind];
 }
-
-CalibrationInfo::S1pe_method CalibrationInfo::get_method(int exp_ch, int ch)//called from PostProcessor
-{
-	int ch_ind = state_info->mppc_channel_to_index(ch);
-	if (ch_ind < 0)
-		return Ignore;
-	return method[exp_ch][ch_ind];
-}
-
-void CalibrationInfo::set_method(int exp_ch, int ch, S1pe_method meth)
-{
-	int ch_ind = state_info->mppc_channel_to_index(ch);
-	if (ch_ind < 0)
-		return;
-	method[exp_ch][ch_ind] = meth;
-	if (Ignore==meth) { //TODO: actually in other cases update is required as well.
-		avr_S1pe[exp_ch][ch_ind] = -1;
-		avr_S1pe_w[exp_ch][ch_ind] = 0;
-		avr_S2pe[exp_ch][ch_ind] = -1;
-		avr_S2pe_w[exp_ch][ch_ind] = 0;
-	}
-}
-
-//setters/getters for avr_S1pe and avr_S2pe which are used for s1pe calculations
-void CalibrationInfo::set_S1pe(int ch, int exp_index, double val, int weight)
-{
-	int ch_ind = state_info->mppc_channel_to_index(ch);
-	if (ch_ind < 0)
-		return;
-	avr_S1pe[exp_index][ch_ind] = val;
-	avr_S1pe_w[exp_index][ch_ind] = weight;
-	calculateS1pe(ch);
-}
-double CalibrationInfo::get_S1pe(int ch, int exp_index)
-{
-	int ch_ind = state_info->mppc_channel_to_index(ch);
-	if (ch_ind < 0)
-		return -1;
-	return avr_S1pe[exp_index][ch_ind];
-}
-void CalibrationInfo::set_S2pe(int ch, int exp_index, double val, int weight)
-{
-	int ch_ind = state_info->mppc_channel_to_index(ch);
-	if (ch_ind < 0)
-		return;
-	avr_S2pe[exp_index][ch_ind] = val;
-	avr_S2pe_w[exp_index][ch_ind] = weight;
-	calculateS1pe(ch);
-}
-double CalibrationInfo::get_S2pe(int ch, int exp_index)
-{
-	int ch_ind = state_info->mppc_channel_to_index(ch);
-	if (ch_ind < 0)
-		return -1;
-	return avr_S2pe[exp_index][ch_ind];
-}
-
+/*
 //TODO: set double I calibration from pre set parameters (e.g. from file or ParameterPile)
 //S2_S and Double_I must be the full and same size [experiment]x[mppc_channel]
 //sets S2_S and Double_I to N_pe
@@ -598,191 +678,4 @@ std::deque<std::pair<Bool_t, Bool_t>> &CalibrationInfo::recalibrate(std::deque<d
 
 	return recalibration_sucess;
 }
-
-void CalibrationInfo::read_file(std::vector<std::pair<int/*ch*/, std::string> > &current_list)
-{
-	std::ifstream str;
-	str.open(data_output_path + calibration_file);
-	int ch = 0;
-	std::string val;
-	while (str.is_open() && str.good() && !str.eof()) {
-		str >> ch;
-		if (str.eof())
-			break;
-		std::getline(str,val);
-		current_list.push_back(std::pair<int, std::string>(ch, val));
-	}
-	str.close();
-}
-void CalibrationInfo::extract_PMT_info (std::vector<std::pair<int/*ch*/, std::string> > &current_list, PMT_info_ &PMT_table)
-{
-	for (int i=0,_end_ = current_list.size();i!=_end_;++i){
-		if (current_list[i].first<32) {//PMT channels
-			std::vector<std::pair<double,double> > ch_info;
-			double V, s1pe;
-			std::stringstream info(current_list[i].second);
-			while (!info.eof()&&info.good()) { //TODO: add validations of double format (throw error if string is present instead of numbers)
-				info>>V;
-				if (info.eof()&&!info.good()) {
-					//std::cout<<"Warning: ch "<<current_list[i].first<<" wrong PMT calibration table"<<std::endl;
-					continue;
-				}
-				info>>s1pe;
-				ch_info.push_back(std::pair<double, double>(V, s1pe));
-			}
-			if (ch_info.size()>0)
-				PMT_table.push_back(std::pair<int,std::vector<std::pair<double,double> > >(current_list[i].first, ch_info));
-		}
-	}
-}
-void CalibrationInfo::extract_MPPC_info (std::vector<std::pair<int/*ch*/, std::string> > &current_list, MPPC_info_ &MPPC_table)
-{
-	for (int i=0,_end_ = current_list.size();i!=_end_;++i) {
-		if (current_list[i].first>=32) {//MPPC channels
-			double _s1pe;
-			int num=0;
-			std::stringstream info(current_list[i].second);
-			while (!info.eof()&&info.good()){ //TODO: add validations of double format (throw error if string is present instead of numbers)
-				info>>_s1pe;
-				++num;
-				MPPC_table.push_back(std::pair<double, double>(current_list[i].first, _s1pe));
-				if (info.good()){
-					std::cout<<"Warning: ch "<<current_list[i].first<<" wrong SiPM calibration: more than 1 value present"<<std::endl;
-				}
-				break;
-			}
-		}
-	}
-}
-void CalibrationInfo::add_to_PMT_info (PMT_info_& table, int ch, double V, double S1pe) //preserves sorting, updates if necessary
-{
-	for (int chi = 0, _end_chi = table.size(); chi!=_end_chi; ++chi) {
-		if (table[chi].first==ch) { //modify, table[i].second is supposed to be not empty.
-			for (int i = 0, _end_ = table[chi].second.size(); i!=_end_; ++i) {
-				if (table[chi].second[i].first==V) {
-					table[chi].second[i].second = S1pe;
-					return;
-				}
-				if ((V<table[chi].second[i].first) && ((0==i) ? true : (table[chi].second[i-1].first<ch))) {
-					table[chi].second.insert(table[chi].second.begin()+i, std::pair<double, double >(V,S1pe));
-					return;
-				}
-			}
-			table[chi].second.insert(table[chi].second.end(), std::pair<double, double >(V,S1pe));
-		}
-		if ((ch<table[chi].first) && ((0==chi) ? true : (table[chi-1].first<ch))) {//insert
-			std::vector<std::pair<double, double> > temp;
-			temp.push_back(std::pair<double, double >(V,S1pe));
-			std::pair<int, std::vector<std::pair<double, double> > > temp2(ch, temp);
-			table.insert(table.begin()+chi, temp2);
-			return;
-		}
-	}
-	std::vector<std::pair<double, double> > temp;
-	temp.push_back(std::pair<double, double >(V,S1pe));
-	std::pair<int, std::vector<std::pair<double, double> > > temp2(ch, temp);
-	table.insert(table.end(), temp2);
-}
-void CalibrationInfo::add_to_MPPC_info (MPPC_info_& table, int ch, double S1pe)         //preserves sorting, updates if necessary
-{
-	for (int chi = 0, _end_chi = table.size(); chi!=_end_chi; ++chi) {
-		if (table[chi].first==ch) { //modify, table[i].second is supposed to be not empty.
-			table[chi].second = S1pe;
-			return;
-		}
-		if ((ch<table[chi].first) && ((0==chi) ? true : (table[chi-1].first<ch))) {//insert
-			table.insert(table.begin()+chi,std::pair<int, double>(ch,S1pe));
-			return;
-		}
-	}
-	table.insert(table.end(),std::pair<int, double>(ch,S1pe));
-}
-void CalibrationInfo::write_to_file (PMT_info_& PMT_table, MPPC_info_& MPPC_table)
-{
-	std::ofstream str;
-	open_output_file(data_output_path + calibration_file, str);
-	if (str.is_open()){
-		for (int chi = 0, _end_chi = PMT_table.size(); chi!=_end_chi; ++chi) {
-			str<<PMT_table[chi].first<<"\t";
-			for (int i = 0, _end_ = PMT_table[chi].second.size(); i!=_end_; ++i) {
-				str<<PMT_table[chi].second[i].first<<"\t"<<PMT_table[chi].second[i].second<<"\t";
-			}
-			str<<std::endl;
-		}
-		for (int chi = 0, _end_chi = MPPC_table.size(); chi!=_end_chi; ++chi) {
-			str<<MPPC_table[chi].first<<"\t"<<MPPC_table[chi].second<<std::endl;
-		}
-	}
-	str.close();
-}
-
-void CalibrationInfo::Save(void) //TODO: this function does not work on empty file (empty list_)
-{
-	std::vector<std::pair<int, std::string>> list_;
-	read_file(list_);
-
-	PMT_info_ PMT_table;
-	MPPC_info_ MPPC_table;
-
-	extract_PMT_info (list_, PMT_table);
-	extract_MPPC_info (list_, MPPC_table);
-
-	for (auto ch = state_info->PMT_channels.begin(), ch_end_ = state_info->PMT_channels.end(); ch != ch_end_; ++ch) {
-		if (0==*ch){
-			for (auto v_s = s1pe_PMT3.begin(),_end_v_s = s1pe_PMT3.end();v_s!=_end_v_s;++v_s) {
-				add_to_PMT_info(PMT_table, *ch, v_s->first, v_s->second);
-			}
-		}
-		if (1==*ch){
-			for (auto v_s = s1pe_PMT1.begin(),_end_v_s = s1pe_PMT1.end();v_s!=_end_v_s;++v_s) {
-				add_to_PMT_info(PMT_table, *ch, v_s->first, v_s->second);
-			}
-		}
-	}
-
-	for (auto ch = state_info->MPPC_channels.begin(), ch_end_ = state_info->MPPC_channels.end(); ch != ch_end_; ++ch) {
-		add_to_MPPC_info(MPPC_table, *ch, getS1pe(*ch));
-	}
-
-	write_to_file(PMT_table, MPPC_table);
-}
-
-void CalibrationInfo::Load(void)
-{
-	std::vector<std::pair<int, std::string>> list_;
-	read_file(list_);
-
-	PMT_info_ PMT_table;
-	MPPC_info_ MPPC_table;
-
-	extract_PMT_info (list_, PMT_table);
-	extract_MPPC_info (list_, MPPC_table);
-
-	for (auto ch = state_info->MPPC_channels.begin(), ch_end_ = state_info->MPPC_channels.end(); ch != ch_end_; ++ch) {
-		for (auto ch_e = MPPC_table.begin(), ch_e_end_ = MPPC_table.end(); ch_e != ch_e_end_; ++ch_e) {
-			if (*ch == ch_e->first) {
-				int index = state_info->mppc_channel_to_index(*ch);
-				if (index >= 0)
-					s1pe[index] = ch_e->second;
-			}
-		}
-	}
-
-	for (auto ch = state_info->PMT_channels.begin(), ch_end_ = state_info->PMT_channels.end(); ch != ch_end_; ++ch) {
-		for (auto ch_e = PMT_table.begin(), ch_e_end_ = PMT_table.end(); ch_e != ch_e_end_; ++ch_e) {
-			if (*ch == ch_e->first) {
-				if (0==*ch) {
-					s1pe_PMT3.clear();
-					for (auto v_s = ch_e->second.begin(), _end_v_s = ch_e->second.end(); v_s!=_end_v_s; ++v_s)
-						s1pe_PMT3.insert(*v_s);
-				}
-				if (1==*ch) {
-					s1pe_PMT1.clear();
-					for (auto v_s = ch_e->second.begin(), _end_v_s = ch_e->second.end(); v_s!=_end_v_s; ++v_s)
-						s1pe_PMT1.insert(*v_s);
-				}
-			}
-		}
-	}
-
-}
+*/

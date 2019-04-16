@@ -1,7 +1,7 @@
 #include "PostProcessor.h"
 
 PostProcessor::PostProcessor(AllExperimentsResults* _data) : 
-CanvasSetups(_data->mppc_channels,_data->pmt_channels, _data->exp_area.experiments), calibr_info(this)
+CanvasSetups(_data->mppc_channels,_data->pmt_channels, _data->exp_area.experiments), calibr_info(this, data_output_path + calibration_file)
 {
 	if (!isValid()){
 		std::cout << "Wrong input data: no channels or experiments from AnalysisManager" << std::endl;
@@ -239,6 +239,7 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation, int channel, Typ
 	std::deque<EventCut> empty;
 	std::deque<EventCut> *hist_cuts = (NULL==setups ? &empty : &(setups->hist_cuts));
 	std::deque<EventCut> *run_cuts = (NULL== get_run_cuts(current_exp_index) ? &empty : get_run_cuts(current_exp_index));
+	std::string exp_str = experiments[current_exp_index];
 	switch (type)
 	{
 	case Type::MPPC_Double_I:
@@ -423,7 +424,9 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation, int channel, Typ
 				S2 += cut_data[0];
 			_6cutted1:;
 			}
-			cut_data[1] = calibr_info.getPMT_S1pe(channel, current_exp_index);
+			auto entry = PMT_V.find(exp_str);
+			double V = (entry == PMT_V.end() ? 0 : entry->second);
+			cut_data[1] = calibr_info.get_S1pe(channel, V);
 			cut_data[0] = cut_data[1]>0 ? S2/cut_data[1] : S2;//1st parameter cut must be applied only if the rest 4 parameters are -2. -1 is reserved for invalid peaks
 			cut_data[1] = -2;
 			cut_data[2] = -2;
@@ -448,7 +451,9 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation, int channel, Typ
 				if (kFALSE == cut->GetAccept(run))//not calculating it here!
 					goto _7cutted;
 			cut_data[0] = data->PMT_S2_int[current_exp_index][ch_ind][run];
-			S1pe = calibr_info.getPMT_S1pe(channel,current_exp_index);
+			auto entry = PMT_V.find(exp_str);
+			double V = (entry == PMT_V.end() ? 0 : entry->second);
+			S1pe = calibr_info.get_S1pe(channel, V);
 			cut_data[0] = S1pe>0 ? cut_data[0]/S1pe : cut_data[0];
 			for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut)
 				if ((apply_hist_cuts&&cut->GetAffectingHistogram())||(apply_phys_cuts&&!cut->GetAffectingHistogram()))
@@ -561,7 +566,9 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation, int channel, Typ
 					S2+=cut_data[0];
 					_10cutted1:;
 				}
-				S2=(calibr_info.getS1pe(MPPC_channels[chan_ind]) > 0 ? S2/calibr_info.getS1pe(MPPC_channels[chan_ind]) : 0);
+				auto entry = MPPC_V.find(exp_str);
+				double V = (entry == MPPC_V.end() ? 0 : entry->second);
+				S2=(calibr_info.get_S1pe(MPPC_channels[chan_ind], V) > 0 ? S2/calibr_info.get_S1pe(MPPC_channels[chan_ind], V) : 0);
 				Npes[chan_ind] = std::round(S2);
 				if (MPPC_coords.find(MPPC_channels[chan_ind])!=MPPC_coords.end()){
 					Npe_sum+=Npes[chan_ind];
@@ -620,7 +627,9 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation, int channel, Typ
 					S2+=cut_data[0];
 					_11_5_cutted1:;
 				}
-				S2=(calibr_info.getPMT_S1pe(PMT_channels[chan_ind], current_exp_index) > 0 ? S2/calibr_info.getPMT_S1pe(PMT_channels[chan_ind], current_exp_index) : 0);
+				auto entry = PMT_V.find(exp_str);
+				double V = (entry == PMT_V.end() ? 0 : entry->second);
+				S2=(calibr_info.get_S1pe(PMT_channels[chan_ind], V) > 0 ? S2/calibr_info.get_S1pe(PMT_channels[chan_ind], V) : 0);
 				Npes[chan_ind] = S2;//std::round(S2);
 				Npes[PMT_channels.size()]+=Npes[chan_ind];
 			}
@@ -663,7 +672,9 @@ void PostProcessor::LoopThroughData(FunctionWrapper* operation, int channel, Typ
 					S2+=cut_data[0];
 					_11cutted1:;
 				}
-				S2=(calibr_info.getS1pe(MPPC_channels[chan_ind]) > 0 ? S2/calibr_info.getS1pe(MPPC_channels[chan_ind]) : 0);
+				auto entry = MPPC_V.find(exp_str);
+				double V = (entry == MPPC_V.end() ? 0 : entry->second);
+				S2=(calibr_info.get_S1pe(MPPC_channels[chan_ind], V) > 0 ? S2/calibr_info.get_S1pe(MPPC_channels[chan_ind], V) : 0);
 				Npes[chan_ind] = std::round(S2);
 				Npes[MPPC_channels.size()]+=Npes[chan_ind];
 			}
@@ -1311,7 +1322,7 @@ void PostProcessor::save_all(void)
 	}
 	for (int ch = data->exp_area.channels.get_next_index(); ch != -1; ch = data->exp_area.channels.get_next_index())
 		save(ch);
-	calibr_info.Save();
+	calibr_info.Save(data_output_path + calibration_file);
 
 	std::ofstream str;
 	open_output_file(data_output_path+DATA_MPPC_VERSION+"/S2_manual.dat", str);
@@ -1456,18 +1467,36 @@ void PostProcessor::update(UpdateState to_update)//TODO: optimize it?
 		std::pair<double, double> y_lims = hist_y_limits();
 		if (to_update&UpdateState::Histogram) {
 			if (is_TH1D_hist(current_type)) {
-				TH1D new_hist1(hist_name().c_str(), hist_name().c_str(), setups->N_bins,
-						(is_zoomed().first ? get_current_x_zoom().first :  x_lims.first),
-						(is_zoomed().first ? get_current_x_zoom().second :  x_lims.second));
-				set_hist1(&new_hist1);
+				TH1D* hist = get_current_hist1();
+				if (NULL == hist) {
+					TH1D new_hist1(hist_name().c_str(), hist_name().c_str(), setups->N_bins,
+							(is_zoomed().first ? get_current_x_zoom().first :  x_lims.first),
+							(is_zoomed().first ? get_current_x_zoom().second :  x_lims.second));
+					set_hist1(&new_hist1);
+				} else {
+					hist->Reset("M");
+					hist->SetBins(setups->N_bins,
+						(is_zoomed().first ? get_current_x_zoom().first : x_lims.first),
+						(is_zoomed().first ? get_current_x_zoom().second : x_lims.second));
+				}
 				FillHist(get_current_hist1());
 			} else {
-				TH2D new_hist2 (hist_name().c_str(), hist_name().c_str(), setups->N_bins,
-						(is_zoomed().first ? get_current_x_zoom().first :  x_lims.first),
-						(is_zoomed().first ? get_current_x_zoom().second :  x_lims.second), setups->N_bins,
+				TH2D* hist = get_current_hist2();
+				if (NULL == hist) {
+					TH2D new_hist2(hist_name().c_str(), hist_name().c_str(), setups->N_bins,
+						(is_zoomed().first ? get_current_x_zoom().first : x_lims.first),
+						(is_zoomed().first ? get_current_x_zoom().second : x_lims.second), setups->N_bins,
 						(is_zoomed().second ? get_current_y_zoom().first : y_lims.first),
-						(is_zoomed().second ? get_current_y_zoom().second :  y_lims.second));
-				set_hist2(&new_hist2);
+						(is_zoomed().second ? get_current_y_zoom().second : y_lims.second));
+					set_hist2(&new_hist2);
+				} else {
+					hist->Reset("M");
+					hist->SetBins(setups->N_bins,
+						(is_zoomed().first ? get_current_x_zoom().first : x_lims.first),
+						(is_zoomed().first ? get_current_x_zoom().second : x_lims.second), setups->N_bins,
+						(is_zoomed().second ? get_current_y_zoom().first : y_lims.first),
+						(is_zoomed().second ? get_current_y_zoom().second : y_lims.second));
+				}
 				FillHist(get_current_hist2());
 			}
 		}
@@ -1527,7 +1556,7 @@ void PostProcessor::update_Npe(void)
 			data->N_pe_Double_I[exp][ch] = avr_Double_I[exp][ch];
 		}
 	}
-	calibr_info.recalibrate(data->N_pe_direct, data->N_pe_Double_I, data->Fields);
+	//calibr_info.recalibrate(data->N_pe_direct, data->N_pe_Double_I, data->Fields);
 	for (int exp = 0, exp_end_ = data->N_pe_direct.size(); exp != exp_end_; ++exp) {
 		for (int ch = 0, ch_end_ = MPPC_channels.size(); ch != ch_end_; ++ch) {
 			if (exp > calibr_info.get_N_calib(MPPC_channels[ch]).first)
@@ -1535,12 +1564,14 @@ void PostProcessor::update_Npe(void)
 			else
 				data->N_pe_result[exp][ch] = data->N_pe_direct[exp][ch];
 		}
+		auto entry = PMT_V.find(experiments[exp]);
+		double V = (entry == PMT_V.end() ? 0 : entry->second);
 		if (!data->N_pe_PMT3.empty())
-			if (calibr_info.getPMT_S1pe(0, exp)>0)
-				data->N_pe_PMT3[exp] = PMT3_avr_S2_S[exp] / calibr_info.getPMT_S1pe(0, exp);
+			if (calibr_info.get_S1pe(0, exp)>0)
+				data->N_pe_PMT3[exp] = PMT3_avr_S2_S[exp] / calibr_info.get_S1pe(0, exp);
 		if (!data->N_pe_PMT1.empty())
-			if (calibr_info.getPMT_S1pe(1, exp)>0)
-				data->N_pe_PMT1[exp] = PMT1_avr_S2_S[exp] / calibr_info.getPMT_S1pe(1, exp);
+			if (calibr_info.get_S1pe(1, exp)>0)
+				data->N_pe_PMT1[exp] = PMT1_avr_S2_S[exp] / calibr_info.get_S1pe(1, exp);
 	}
 }
 
@@ -1563,6 +1594,7 @@ void PostProcessor::update_physical(void)
 		(((temp_data*)data)->val)+=pars[0];
 		return true;
 	});
+	std::string exp_str = experiments[current_exp_index];
 	switch (current_type){
 	case Type::MPPC_Double_I:
 	{
@@ -1620,51 +1652,82 @@ void PostProcessor::update_physical(void)
 	}
 	case Type::MPPC_Ss:
 	{
-		CalibrationInfo::S1pe_method meth = calibr_info.get_method(current_exp_index, current_channel);
+		CalibrationInfo::S1pe_method meth = calibr_info.get_method(current_channel, current_exp_index);
+		auto entry = MPPC_V.find(exp_str);
+		double V = (entry == MPPC_V.end() ? 0 : entry->second);
 		LoopThroughData(mean_taker, current_channel, current_type, true, true, true);
 		if (0==stat_data.weight)
 			std::cout << "Warning! No mean Ss value for current histogram: " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
 		else
 			std::cout << "Current mean value = "<<stat_data.val / (double)stat_data.weight << std::endl;
 		if (meth == CalibrationInfo::Ignore) {
-			calibr_info.calculateS1pe(current_channel);
-			std::cout << "Resulting calibration S1pe = "<<calibr_info.getS1pe(current_channel) << std::endl;
+			calibr_info.calculateS1pe(current_channel, V);
+			std::cout << "Resulting calibration S1pe = "<<calibr_info.get_S1pe(current_channel, V) << std::endl;
 			break;
 		}
 		if (meth == CalibrationInfo::UsingMean) {
-			if (0!=stat_data.weight)
-				calibr_info.set_S1pe(current_channel, current_exp_index, stat_data.val / (double)stat_data.weight, stat_data.weight);
-			calibr_info.calculateS1pe(current_channel);
-			std::cout << "Resulting calibration S1pe = "<<calibr_info.getS1pe(current_channel) << std::endl;
+			if (0 != stat_data.weight)
+				calibr_info.set_S1pe_exp(current_channel, current_exp_index, stat_data.val / (double)stat_data.weight, stat_data.weight);
+			calibr_info.calculateS1pe(current_channel, V);
+			std::cout << "Resulting calibration S1pe = "<<calibr_info.get_S1pe(current_channel, V) << std::endl;
 			break;
 		}
 		if (meth == CalibrationInfo::Using1pe || meth == CalibrationInfo::Using1pe2pe) {
 			if (setups->N_gauss>0 && setups->fitted)
-				calibr_info.set_S1pe(current_channel, current_exp_index, setups->par_val[1], 1/*TODO: add calculation of N under fit*/);
+				calibr_info.set_S1pe_exp(current_channel, current_exp_index, setups->par_val[1], 1/*TODO: add calculation of N under fit*/);
 			else {
 				std::cout << "Warning! No calibration S1pe value for  " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
 			}
 		}
 		if (meth == CalibrationInfo::Using2pe || meth == CalibrationInfo::Using1pe2pe) {
 			if (setups->N_gauss>=2 && setups->fitted)
-				calibr_info.set_S2pe(current_channel, current_exp_index, setups->par_val[4], 1/*TODO: add calculation of N under fit*/);
+				calibr_info.set_S2pe_exp(current_channel, current_exp_index, setups->par_val[4], 1/*TODO: add calculation of N under fit*/);
 			else {
 				std::cout << "Warning! No calibration S2pe value for  " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
 			}
 		}
-		calibr_info.calculateS1pe(current_channel);
-		std::cout << "Resulting calibration S1pe = "<<calibr_info.getS1pe(current_channel) << std::endl;
+		calibr_info.calculateS1pe(current_channel, V);
+		std::cout << "Resulting calibration S1pe = "<<calibr_info.get_S1pe(current_channel, V) << std::endl;
 		break;
 	}
 	case Type::PMT_Ss:
 	{
+		CalibrationInfo::S1pe_method meth = calibr_info.get_method(current_channel, current_exp_index);
+		auto entry = PMT_V.find(exp_str);
+		double V = (entry == PMT_V.end() ? 0 : entry->second);
 		LoopThroughData(mean_taker, current_channel, current_type, true, true, true);
 		if (0==stat_data.weight)
 			std::cout << "Warning! No mean calibration Ss value for " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
-		else {
-			//calibr_info.set_S1pe(current_channel, current_exp_index, stat_data.val / (double)stat_data.weight, stat_data.weight);
+		else
 			std::cout << "S1pe(mean) = "<<stat_data.val / (double)stat_data.weight << std::endl;
+		if (meth == CalibrationInfo::Ignore) {
+			calibr_info.calculateS1pe(current_channel, V);
+			std::cout << "Resulting calibration S1pe = " << calibr_info.get_S1pe(current_channel, V) << std::endl;
+			break;
 		}
+		if (meth == CalibrationInfo::UsingMean) {
+			if (0 != stat_data.weight)
+				calibr_info.set_S1pe_exp(current_channel, current_exp_index, stat_data.val / (double)stat_data.weight, stat_data.weight);
+			calibr_info.calculateS1pe(current_channel, V);
+			std::cout << "Resulting calibration S1pe = " << calibr_info.get_S1pe(current_channel, V) << std::endl;
+			break;
+		}
+		if (meth == CalibrationInfo::Using1pe || meth == CalibrationInfo::Using1pe2pe) {
+			if (setups->N_gauss>0 && setups->fitted)
+				calibr_info.set_S1pe_exp(current_channel, current_exp_index, setups->par_val[1], 1/*TODO: add calculation of N under fit*/);
+			else {
+				std::cout << "Warning! No calibration S1pe value for  " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
+			}
+		}
+		if (meth == CalibrationInfo::Using2pe || meth == CalibrationInfo::Using1pe2pe) {
+			if (setups->N_gauss >= 2 && setups->fitted)
+				calibr_info.set_S2pe_exp(current_channel, current_exp_index, setups->par_val[4], 1/*TODO: add calculation of N under fit*/);
+			else {
+				std::cout << "Warning! No calibration S2pe value for  " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
+			}
+		}
+		calibr_info.calculateS1pe(current_channel, V);
+		std::cout << "Resulting calibration S1pe = " << calibr_info.get_S1pe(current_channel, V) << std::endl;
 		break;
 	}
 	case Type::PMT_S2_S:
@@ -1993,12 +2056,12 @@ void PostProcessor::set_N_bins(int N)
 
 void PostProcessor::set_zoom (double xl, double xr)
 {
-	std::pair<double, double> x_lims = hist_x_limits(), x_zoom, y_zoom = std::pair<double, double>(-DBL_MAX, DBL_MAX);
+	std::pair<double, double> x_zoom, y_zoom = std::pair<double, double>(-DBL_MAX, DBL_MAX);
 	//std::pair<double, double> y_lims = hist_y_limits();
 	x_zoom.first = std::min(xl, xr);
 	x_zoom.second = std::max(xl, xr);
-	x_zoom.first = std::max(x_zoom.first, x_lims.first);
-	x_zoom.second = std::min(x_zoom.second, x_lims.second);
+	//x_zoom.first = std::max(x_zoom.first, x_lims.first);
+	//x_zoom.second = std::min(x_zoom.second, x_lims.second);
 	CanvasSetups::set_zoom(x_zoom, y_zoom);
 	update(Histogram);
 }
@@ -2009,27 +2072,27 @@ void PostProcessor::set_zoom_y (double yl, double yr)
 		std::cout<<"can't set y zoom for TH1D histogram"<<std::endl;
 		return;
 	}
-	std::pair<double, double> y_lims = hist_y_limits(), y_zoom, x_zoom = std::pair<double, double>(-DBL_MAX, DBL_MAX);
+	std::pair<double, double> y_zoom, x_zoom = std::pair<double, double>(-DBL_MAX, DBL_MAX);
 	//std::pair<double, double> y_lims = hist_y_limits();
 	y_zoom.first = std::min(yl, yr);
 	y_zoom.second = std::max(yl, yr);
-	y_zoom.first = std::max(y_zoom.first, y_lims.first);
-	y_zoom.second = std::min(y_zoom.second, y_lims.second);
+	//y_zoom.first = std::max(y_zoom.first, y_lims.first);
+	//y_zoom.second = std::min(y_zoom.second, y_lims.second);
 	CanvasSetups::set_zoom(x_zoom, y_zoom);
 	update(Histogram);
 }
 
 void PostProcessor::set_zoom (double xl, double xr, double yl, double yr)
 {
-	std::pair<double, double> x_lims = hist_x_limits(), y_lims = hist_y_limits(), y_zoom, x_zoom;
+	std::pair<double, double> y_zoom, x_zoom;
 	x_zoom.first = std::min(xl, xr);
 	x_zoom.second = std::max(xl, xr);
-	x_zoom.first = std::max(x_zoom.first, x_lims.first);
-	x_zoom.second = std::min(x_zoom.second, x_lims.second);
+	//x_zoom.first = std::max(x_zoom.first, x_lims.first);
+	//x_zoom.second = std::min(x_zoom.second, x_lims.second);
 	y_zoom.first = std::min(yl, yr);
 	y_zoom.second = std::max(yl, yr);
-	y_zoom.first = std::max(y_zoom.first, y_lims.first);
-	y_zoom.second = std::min(y_zoom.second, y_lims.second);
+	//y_zoom.first = std::max(y_zoom.first, y_lims.first);
+	//y_zoom.second = std::min(y_zoom.second, y_lims.second);
 	CanvasSetups::set_zoom(x_zoom, y_zoom);
 	update(Histogram);
 }

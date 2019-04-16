@@ -18,67 +18,73 @@ public:
 protected:
 	std::deque<S1pe> s1pe_; //for each channel. First go PMT channels, then MPPC
 	class S1pe_exp {
-	protected:
+	public:
 		//per channel
 		std::deque<S1pe_method> method;
 		std::deque<double> avr_S1pe;//from manual fitting/analyzing of histograms and with cuts applied
 		std::deque<double> avr_S2pe;
 		std::deque<int> avr_S1pe_w; //weight
 		std::deque<int> avr_S2pe_w;
-	public:
 		//setters/getters for avr_S1pe and avr_S2pe which are used for s1pe calculations
 		void set_S1pe_exp(int ch, double val, int weight);
 		double get_S1pe_exp(int ch) const;
+		int get_S1pe_w_exp(int ch) const;
 		void set_S2pe_exp(int ch, double val, int weight);
 		double get_S2pe_exp(int ch) const;
-		S1pe_method get_method(int ch);//called from PostProcessor
+		int get_S2pe_w_exp(int ch) const;
+		S1pe_method get_method(int ch) const;//called from PostProcessor
 		void set_method(int ch, S1pe_method method);
 	};
 	std::deque<S1pe_exp> s1pe_exp_; //for each experiment.
 protected:
 	const AnalysisStates* state_info; //for channels only
 	int ch_to_index(int ch) const;
+	int ch_index_to_ch(int ch_index) const;
 
 	std::deque<std::pair<int, int> > N_used_in_calibration; //that is for calculating s1pe (S of 1 photoelectron)
-	void read_file(std::ifstream &str, std::vector<std::pair<int/*ch*/, std::string> > &current_list);
-	void extract_calibration_info (std::vector<std::pair<int/*ch*/, std::string> > &current_list);
-	void add_calibration_info (std::deque<S1pe> & table, int ch, double V, double S1pe); //preserves sorting, updates if necessary
-	void write_to_file (std::ofstream &str, std::deque<S1pe>& table);
+	bool read_file(std::ifstream &str, std::deque<S1pe> & to_table) const; //if to_table is not empty, it modifies its content. Does not override forced values. 
+	void add_calibration_info (std::deque<S1pe> & to_table, int ch, double V, double S1pe) const; //preserves sorting, updates if necessary
+	bool write_to_file (std::ofstream &str, std::deque<S1pe>& table) const;
 
-	std::vector<int> translate_V_to_exp (int ch, double V);
-	double translate_exp_to_V (int ch, int exp_index);
+	std::vector<int> translate_V_to_exp (int ch, double V) const;
+	double translate_exp_to_V (int ch, int exp_index) const;
 public:
 	CalibrationInfo(const AnalysisStates* data, std::string fname);
-	double getPMT_S1pe(int ch, int exp_ind) const;
-	void forcePMT_S1pe(int ch, double pmt_v, double val); //forces specific value which is not erased by calculateS1pe
-	void unforcePMT_S1pe(int ch, double pmt_v); //forces specific value which is not erased by calculateS1pe
-	double getMPPC_S1pe(int ch, int exp_ind) const;
-	void unforceMPPC_S1pe(int ch, double pmt_v); //forces specific value which is not erased by calculateS1pe
+	double get_S1pe(int ch, double V) const; //TODO: rewrite with boost::optional
+	double set_S1pe(int ch, double V, double val);
+	void force_S1pe(int ch, double pmt_v, double val); //forces specific value which is not erased by calculateS1pe
+	void unforce_S1pe(int ch, double pmt_v); //forces specific value which is not erased by calculateS1pe
 
 	double calculateS1pe(int ch, double V); //from experimental avr_S1pe
-	double calculateS1pe(int ch); //for all V present.
-	double calculateS1pe(void); //for all channels and V.
+	void calculateS1pe(int ch); //for all V present.
+	void calculateS1pe(void); //for all channels and V.
 
 	//setters/getters for avr_S1pe and avr_S2pe which are used for s1pe calculations
 	S1pe_method get_method(int ch, int exp_ch) const;//called from PostProcessor
 	void set_method(int ch, int exp_ch, S1pe_method method);
 	void set_S1pe_exp(int ch, int exp_index, double val, int weight);
 	double get_S1pe_exp(int ch, int exp_index) const;
+	int get_S1pe_weight_exp(int ch, int exp_index) const;
 	void set_S2pe_exp(int ch, int exp_index, double val, int weight);
 	double get_S2pe_exp(int ch, int exp_index) const;
+	int get_S2pe_weight_exp(int ch, int exp_index) const;
 
-	void Save(std::string fname) const;
-	bool Load(std::string fname);
+	void Save(std::string fname) const; //Adds info to the file, not overrides it entirely
+	bool Load(std::string fname); //Does not override already calculated or set manually values.
+	bool isFull(bool dispaly_bad) const;
+	void status(bool dispaly_all) const;
 
 	//For recalibration of double integral to Npe
 	//All methods below are for MPPC only
 	void set_N_calib(int ch, int from, int to);
 	void set_N_calib(int ch, std::pair<int, int>);
-	std::pair<int, int> get_N_calib(int ch);
+	std::pair<int, int> get_N_calib(int ch) const;
+	/* //TODO: implement. Possibly change function declarations
 	std::deque<std::deque<std::pair<Bool_t, Bool_t> > > &recalibrate(std::deque<std::deque<double> > &S2_S,
 		std::deque<std::deque<double> >  &Double_I, std::vector<double>& Fields);//sets S2_S and Double_I to N_pe. returns success vector
 	std::deque<std::pair<Bool_t, Bool_t> > &recalibrate(std::deque<double> &S2_S,
 		std::deque<double> &Double_I, std::vector<double>& Fields, int channel);//sets S2_S and Double_I to N_pe. returns success vector
+	*/
 };
 
 #endif

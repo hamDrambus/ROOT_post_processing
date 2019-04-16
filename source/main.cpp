@@ -84,6 +84,15 @@ void saveas(std::string path) //"" - use default path: "Data/results/{PMT_v1|MPP
 	post_processor->saveAs(path);
 }
 
+void calib_status(Bool_t uncalibrated_only)
+{
+	if (NULL == post_processor) {
+		state(kFALSE);
+		return;
+	}
+	post_processor->calibr_info.status(!uncalibrated_only);
+}
+
 void status(Bool_t full) //displays current state
 {
 	state(full);
@@ -395,7 +404,24 @@ void set_1peS(double val)
 		state(kFALSE);
 		return;
 	}
-	post_processor->calibr_info.setS1pe(post_processor->current_channel,val);
+	if (post_processor->isMultichannel(post_processor->current_type)) {
+		std::cerr << "Can't set s1pe for multichannel type" << std::endl;
+		return;
+	}
+	double V = 0;
+	if (post_processor->is_PMT_type(post_processor->current_type)) {
+		auto entry = PMT_V.find(post_processor->experiments[post_processor->current_exp_index]);
+		if (entry != PMT_V.end())
+			V = entry->second;
+	} else {
+		auto entry = MPPC_V.find(post_processor->experiments[post_processor->current_exp_index]);
+		if (entry != MPPC_V.end())
+			V = entry->second;
+	}
+	if (V!=0)
+		post_processor->calibr_info.force_S1pe(post_processor->current_channel, V, val);
+	else
+		std::cerr << "Can't find voltage for current experiment and channel" << std::endl;
 }
 
 void unset_1peS(void)
@@ -404,7 +430,24 @@ void unset_1peS(void)
 		state(kFALSE);
 		return;
 	}
-	post_processor->calibr_info.unsetS1pe(post_processor->current_channel);
+	if (post_processor->isMultichannel(post_processor->current_type)) {
+		std::cerr << "Can't set s1pe for multichannel type" << std::endl;
+		return;
+	}
+	double V = 0;
+	if (post_processor->is_PMT_type(post_processor->current_type)) {
+		auto entry = PMT_V.find(post_processor->experiments[post_processor->current_exp_index]);
+		if (entry != PMT_V.end())
+			V = entry->second;
+	} else {
+		auto entry = MPPC_V.find(post_processor->experiments[post_processor->current_exp_index]);
+		if (entry != MPPC_V.end())
+			V = entry->second;
+	}
+	if (V != 0)
+		post_processor->calibr_info.unforce_S1pe(post_processor->current_channel, V);
+	else
+		std::cerr << "Can't find voltage for current experiment and channel" << std::endl;
 }
 
 void set_use_mean(Bool_t do_use) //uses mean value of data instead of gauss' mean. May be usefull for S2_S
@@ -421,6 +464,28 @@ void set_use_mean(Bool_t do_use) //uses mean value of data instead of gauss' mea
 			prev_method = CalibrationInfo::Ignore;
 		post_processor->calibr_info.set_method(post_processor->current_exp_index, post_processor->current_channel, prev_method);
 	}
+}
+
+void calib_load(std::string fname) //if fname=="" uses file location from global parameters
+{
+	if (NULL == g_data) {
+		state(kFALSE);
+		return;
+	}
+	if (fname == "")
+		fname = data_output_path + calibration_file;
+	post_processor->calibr_info.Load(fname);
+}
+
+void calib_save(std::string fname)
+{
+	if (NULL == g_data) {
+		state(kFALSE);
+		return;
+	}
+	if (fname == "")
+		fname = data_output_path + calibration_file;
+	post_processor->calibr_info.Save(fname); 
 }
 
 //TODO: remove?

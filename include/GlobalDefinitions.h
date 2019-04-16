@@ -1,8 +1,6 @@
 #ifndef GLOBAL_DEFINITIONS_H
 #define GLOBAL_DEFINITIONS_H
 
-//#define __WIN32__
-
 #include <iostream>
 #include <fstream>
 #include <vector>
