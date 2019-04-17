@@ -84,7 +84,7 @@ void calib_load(std::string fname = ""); //if fname=="" uses file location from 
 void calib_save(std::string fname = "");
 //TODO: remove?
 void set_calib_N(int from, int to);//in order to set default use invalid values
-void Exit(Bool_t save = kTRUE);
+void Exit(Bool_t save = kTRUE); //It's better do not call it and save all relevant info manually
 
 //Often used cutting functions: (in order to decrease code in ROOT's macros)
 void draw_limits(double left, double right);	//2 tier method

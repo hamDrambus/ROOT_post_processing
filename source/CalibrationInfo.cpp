@@ -203,7 +203,7 @@ bool CalibrationInfo::read_file(std::ifstream &str, std::deque<S1pe> & to_table)
 				break;
 			}
 			loaded = true;
-			if (V_s1pe_to_add.find(V) != V_s1pe_to_add.end()) {
+			if (V_s1pe_to_add.find(V) == V_s1pe_to_add.end()) {
 				V_s1pe_to_add[V] = s1pe;
 			} else {
 				std::cerr << "CalibrationInfo::extract_calibration_info: Warninig: ch " << ch << " contains the same V (" << V << ")" << std::endl;
@@ -222,7 +222,7 @@ void CalibrationInfo::add_calibration_info (std::deque<S1pe> & to_table, int ch,
 	if (ch_index < 0) //irrelevant channel
 		return;
 
-	if (to_table.size() > ch_index) {
+	if (to_table.size() <= ch_index) {
 		std::cerr << "CalibrationInfo::add_calibration_info: Error: index issue: table does not coutain channel " << ch << std::endl;
 		return;
 	}
@@ -372,7 +372,7 @@ double CalibrationInfo::calculateS1pe(int ch, double V) //from experimental avr_
 {
 	int ch_index = ch_to_index(ch);
 	if (ch_index < 0 || ch_index >= s1pe_.size())
-		return;
+		return -1;
 	auto entry = s1pe_[ch_index].find(V);
 	if (s1pe_[ch_index].end() != entry) //if entry is empty but if there exists valid calculated S1pe it'll be written
 		if (entry->second.first) //forced, no point in calculations, since it won't be written
@@ -403,7 +403,7 @@ double CalibrationInfo::calculateS1pe(int ch, double V) //from experimental avr_
 		val = val / n_used;
 		set_S1pe(ch, V, val);
 	} //do not update otherwise (or calibrations from file will always be overwritten)
-	auto entry = s1pe_[ch_index].find(V);
+	entry = s1pe_[ch_index].find(V);
 	if (s1pe_[ch_index].end() != entry) //if entry is empty but if there exists valid calculated S1pe it'll be written
 		return entry->second.second;
 	return -1;
@@ -451,13 +451,15 @@ bool CalibrationInfo::Load(std::string fname)
 {
 	std::ifstream str;
 	str.open(fname);
-	if (read_file(str, s1pe_))
+	bool ret = read_file(str, s1pe_);
+	if (ret)
 		std::cout << "Loaded calibration from \"" << fname << "\"" << std::endl;
 	else
-		std::cout << "Faield to load calibration from \"" << fname << "\"" << std::endl;
+		std::cout << "Failed to load calibration from \"" << fname << "\"" << std::endl;
 	str.close();
 	if (!isFull(false))
-		std::cout << "Warning: not all [ch, V] have calibration. Run 'calib_status(false)' to display missing channels and voltages" << std::endl;
+		std::cout << "Warning: not all [ch, V] have calibration. Run 'calib_status(true)' to display missing channels and voltages" << std::endl;
+	return ret;
 }
 
 bool CalibrationInfo::isFull(bool display_bad) const
@@ -500,6 +502,7 @@ bool CalibrationInfo::isFull(bool display_bad) const
 		if (!display_bad && !is_full)
 			return false;
 	}
+	return true;
 }
 
 void CalibrationInfo::status(bool display_all) const

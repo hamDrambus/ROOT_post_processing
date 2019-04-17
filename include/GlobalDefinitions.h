@@ -8,6 +8,7 @@
 #include <deque>
 #include <string.h>
 #include <sstream>
+#include <climits>
 
 #if defined(__WIN32__)
 #include <direct.h>

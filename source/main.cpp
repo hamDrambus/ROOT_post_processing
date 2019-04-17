@@ -18,6 +18,28 @@ void ch(int ch)
 		state(kFALSE);
 		return;
 	}
+	if (post_processor->isMultichannel(post_processor->current_type)) {
+		int pmt_ind = post_processor->pmt_channel_to_index(ch);
+		int mppc_ind = post_processor->mppc_channel_to_index(ch);
+		if (pmt_ind>=0 && post_processor->is_PMT_type(post_processor->current_type)) {
+			for (auto i = post_processor->PMT_channels.begin(), i_end_ = post_processor->PMT_channels.end(); i!=i_end_; ++i)
+				off_ch(*i);
+			on_ch(ch);
+			std::cout<<"Only "<<ch<<" ch is turned on"<<std::endl;
+			update();
+			return;
+		}
+		if (mppc_ind>=0 && ! post_processor->is_PMT_type(post_processor->current_type)) {
+			for (auto i = post_processor->MPPC_channels.begin(), i_end_ = post_processor->MPPC_channels.end(); i!=i_end_; ++i)
+				off_ch(*i);
+			on_ch(ch);
+			std::cout<<"Only "<<ch<<" ch is turned on"<<std::endl;
+			update();
+			return;
+		}
+		std::cout<<"Error: no such channel for either PMT or MPPC"<<std::endl;
+		return;
+	}
 	post_processor->GotoCh(ch);
 }
 
@@ -234,7 +256,7 @@ void add_hist_cut(FunctionWrapper *picker, std::string name, int ch, bool draw)
 		state(kFALSE);
 		return;
 	}
-	post_processor->add_hist_cut(picker, name, ch, draw);
+	post_processor->add_hist_cut(picker, name, ch, !draw);
 }
 
 void add_hist_cut(FunctionWrapper *picker, std::string name, bool draw)
@@ -244,7 +266,7 @@ void add_hist_cut(FunctionWrapper *picker, std::string name, bool draw)
 		state(kFALSE);
 		return;
 	}
-	post_processor->add_hist_cut(picker, name, draw);
+	post_processor->add_hist_cut(picker, name, !draw);
 }
 
 int list_hist_cuts (void)//returns number of cuts
@@ -1164,7 +1186,7 @@ void off_ch(int ch)
 		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
 		return;
 	}
-	add_hist_cut(picker, "ch_off", ch);
+	add_hist_cut(picker, "ch_off", ch, false);
 	//update(); it is required oftentimes to remove many channels.
 }
 
