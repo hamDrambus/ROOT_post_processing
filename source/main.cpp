@@ -819,6 +819,7 @@ void remcut_S_t_rect_exclude(int channel, std::string _name)
 	}
 	std::string name = ((_name == "") ? "_S_t_exclude_" : _name);
 	post_processor->remove_hist_cut(name, channel);
+	update();
 }
 
 //region is {t_min0, t_max0, S_min0, S_max0, t_min1, t_max1 ...}
@@ -952,6 +953,7 @@ void remcut_S_t_rect_select(int channel, std::string _name)
 	}
 	std::string name = ((_name == "") ? "_S_t_select_" : _name);
 	post_processor->remove_hist_cut(name, channel);
+	update();
 }
 
 //region is {A_min0, A_max0, S_min0, S_max0, A_min1, A_max1 ...}
@@ -991,9 +993,9 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 			temp_data* da = (temp_data*)data;
 			for (int i = 0, _end_ = da->reg.size() / 4; i != _end_; ++i) {
 				if ((vals[1] >= da->reg[4 * i]) && (vals[1] <= da->reg[4 * i + 1]) && (vals[0] >= da->reg[4 * i + 2]) && (vals[0] <= da->reg[4 * i + 3]))
-					return true;
+					return false;
 			}
-			return false;
+			return true;
 		});
 		break;
 	}
@@ -1085,6 +1087,7 @@ void remcut_A_S_rect_exclude(int channel, std::string _name)
 	}
 	std::string name = ((_name == "") ? "_A_S_exclude_" : _name);
 	post_processor->remove_hist_cut(name, channel);
+	update();
 }
 
 void cut_S(double S_min, double S_max, bool drawn, int channel, std::string _name)
@@ -1337,4 +1340,5 @@ void remcut_A_S_fast_PMT(int channel, std::string _name)
 	}
 	std::string name = ((_name == "") ? "_S_t_fastPMT_" : _name);
 	post_processor->remove_hist_cut(name, channel);
+	update();
 }

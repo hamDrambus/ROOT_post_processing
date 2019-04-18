@@ -1,7 +1,7 @@
 {
   //From global parameters:
   data_prefix_path = "../Data/190404/results/";
-  calibration_file = "PMT_SiPM_46V_190404.dat";
+  calibration_file = "PMT_SiPM_190404.dat";
   data_output_path = "../Data/190404/results/";
   DATA_MPPC_VERSION = "MPPCs_v1";
   DATA_PMT_VERSION = "PMT_v1";
@@ -11,10 +11,14 @@
   OUTPUT_MPPCS = "MPPC_";
 
   exp_area.experiments.clear();
-  exp_area.experiments.push_back("190404_Cd_20kV_850V_46V_th250mV");
-  exp_area.experiments.push_back("190404_Cd_20kV_850V_46V_th250mV_0");
+  //exp_area.experiments.push_back("190404_Cd_20kV_850V_46V_th250mV");
+  //exp_area.experiments.push_back("190404_Cd_20kV_850V_46V_th250mV_0");
   exp_area.experiments.push_back("190404_Cd_18kV_850V_46V_th230mV");
   //exp_area.experiments.push_back("190404_Cd_16kV_850V_46V_th210mV");
+  //exp_area.experiments.push_back("190404_Cd_14kV_850V_46V_th200mV");
+  //exp_area.experiments.push_back("190404_Cd_12kV_850V_46V_th160mV");
+  //exp_area.experiments.push_back("190404_Cd_10kV_850V_46V_th150mV");
+  //exp_area.experiments.push_back("190404_Cd_8kV_850V_46V_th140mV");
   
   PMT_V.clear();
   MPPC_V.clear();
@@ -30,6 +34,10 @@
   experiment_fields["190404_Cd_20kV_850V_46V_th250mV"] = 20;
   experiment_fields["190404_Cd_18kV_850V_46V_th230mV"] = 18;
   experiment_fields["190404_Cd_16kV_850V_46V_th210mV"] = 16;
+  experiment_fields["190404_Cd_14kV_850V_46V_th200mV"] = 14;
+  experiment_fields["190404_Cd_12kV_850V_46V_th160mV"] = 12;
+  experiment_fields["190404_Cd_10kV_850V_46V_th150mV"] = 10;
+  experiment_fields["190404_Cd_8kV_850V_46V_th140mV"] = 8;
   
   {
     double coeff = (600 / 804.0)*(1.54 / (1.54*1.8 + 1.01*0.4));

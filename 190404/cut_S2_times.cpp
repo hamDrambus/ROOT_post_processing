@@ -3,6 +3,11 @@
 		double from = 25;
 		double to = 70;	//20kV
 		to = 65; //18 kV
+		//to = 70; //16 kV
+		//to = 70; //14 kV
+		//to = 70; //12 kV
+		//to = 80; //10 kV
+		//to = 80; //8 kV
 		if (post_processor->isMultichannel(post_processor->current_type)) {
 			for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 				int chan = post_processor->MPPC_channels[ich];
@@ -15,6 +20,11 @@
 		double from = 25;
 		double to = 70;
 		to = 65; //18 kV
+		//to = 70; //16 kV
+		//to = 70; //14 kV
+		//to = 70; //12 kV
+		//to = 80; //10 kV
+		//to = 80; //8 kV
 		if (post_processor->isMultichannel(post_processor->current_type)) {
 			for (int ich =0; ich!= post_processor->PMT_channels.size(); ++ich) {
 				int chan = post_processor->PMT_channels[ich];

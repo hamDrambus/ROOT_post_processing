@@ -1791,7 +1791,7 @@ void PostProcessor::update_physical(void)
 		else {
 			std::pair<double, double> drawn_limits = hist_x_limits(true);
 			std::cout <<"N runs = "<< numOfRuns() << " S  = "<<stat_data.val<< " Npeaks = "<<stat_data.weight<<" dT = "
-					<<drawn_limits.second - drawn_limits.first;
+					<<drawn_limits.second - drawn_limits.first<<std::endl;
 		}
 		break;
 	}

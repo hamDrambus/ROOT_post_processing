@@ -1,0 +1,66 @@
+0.	(check init.cpp parameters)
+	root -l	
+	.x loader.cpp
+	.x 190404/init.cpp
+	Initialize()
+
+1. First, determine selection of valid peaks and calibration.
+For this case, only Ss cuts (on peak area) are used.
+Calibration is used for each MPPC channel for t[0, 19us] and t[~60-80, 160us]. By mean bewteen draw_limits(manually)
+In the same manner conduct calibrations of slow PMTs. In their case, there is no 2phe peak and additional A-S cuts may be
+required to remove noize in PMT_Ss histogram. Fast PMTs (chs 8-11) can't be calibrated by Ss.
+Ideally every experiment and channel (both SiPM) should have Ss and A-S cuts. It's too much in practice, moreover
+they have minor effect of Npe distributions. Ss do affect signal forms however.
+In this analysis Ss cuts are chosen basen on 20kV only and used for every field.
+A-S cut is used only for ch15 and ch16. So calibration:
+
+	ty(AnalysisStates::MPPC_Ss)
+	ch(32)
+	cut_S_t_rect_selection(~60, 170, 0, 1e5) //better use 60-160us instead of 0-19 because of larger statistics. 
+	set_limits(0, ~0.01)
+	use_mean()
+	draw_limits(~0.001, ~0.0026)
+	//write minimal draw_limit value and maximum set_limits value as Ss cut value into 190404/cut_Ss.cpp
+	saveas("190404/results/Cd_46V_20kV_850V/Ss32")
+	ch(33)	
+	... continue for every channel
+	...
+	calibr_save()
+
+	ch(12)
+	ty(AnalysisStates::PMT_Ss)
+	cut_S_t_rect_selection(~60, 170, 0, 1e5)
+	ty(AnalysisStates::PMT_A_S) //check that it's reasonable.
+	cut_S_t_rect_selection(~60, 170, 0, 1e5)
+	//Points below visible line-shaped cluster are noize, but not the line itself!
+	//Also points on the line near 0,0 bloing to noize by its exclusion is requred
+	//only if noize can't be separated from 1phe on PMT_Ss 
+	ty(AnalysisStates::PMT_t_S) //may be useful as well
+	ty(AnalysisStates::PMT_Ss)
+	set_limits(0, ~0.01)
+	use_mean()
+	draw_limits(~0.001, ~0.0026)
+	//write minimal draw_limit value and maximum set_limits value as Ss cut value into 190404/cut_Ss.cpp
+	saveas("190404/results/Cd_46V_20kV_850V/Ss12")
+	ch(13)	
+	... continue for every channel
+	...
+	calibr_save()
+
+	//write Ss cut values for fast PMTs as well into 190404/cut_Ss.cpp (not precise, just glance at PMT_Ss chs 8-11
+
+This is rough selection. Ideally Ss and A-S cuts should be done for each experiment.
+
+1. N photoelectrons, signal forms.: //note 190404: ch43 has poor contact.
+	a) PMT ch 16 (independent, only S2_S (by area)	
+	b) estimate S2 signal time window and write it into 190404/cut_S2_times.cpp
+	c) slow PMT chs 12-15 Npe by S/S1phe
+	d) slow PMT chs 12-15 Npe by counting peaks (by N)
+	e) fast PMT chs 8-11 Npe by counting peaks (by N)
+	f) SiPM Npe by S/S1phe
+	g) select events form Cd peak of slow PMT by S/S1phe
+	h) fast PMT chs 8-11 Npe by N in Cd peak
+	i) fast+slow PMT forms by N and S in Cd peak
+	j) SiPM Npe by S/S1phe in Cd peak
+	k) SiPM form by S for all channels
+	l) SiPM form by S and by N for ch 34 and 38 (edge and central ones)
