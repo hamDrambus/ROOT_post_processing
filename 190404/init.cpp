@@ -13,12 +13,12 @@
   exp_area.experiments.clear();
   //exp_area.experiments.push_back("190404_Cd_20kV_850V_46V_th250mV");
   //exp_area.experiments.push_back("190404_Cd_20kV_850V_46V_th250mV_0");
-  exp_area.experiments.push_back("190404_Cd_18kV_850V_46V_th230mV");
-  //exp_area.experiments.push_back("190404_Cd_16kV_850V_46V_th210mV");
-  //exp_area.experiments.push_back("190404_Cd_14kV_850V_46V_th200mV");
-  //exp_area.experiments.push_back("190404_Cd_12kV_850V_46V_th160mV");
-  //exp_area.experiments.push_back("190404_Cd_10kV_850V_46V_th150mV");
-  //exp_area.experiments.push_back("190404_Cd_8kV_850V_46V_th140mV");
+  //exp_area.experiments.push_back("190404_Cd_18kV_850V_46V_th230mV");
+  exp_area.experiments.push_back("190404_Cd_16kV_850V_46V_th210mV");
+  exp_area.experiments.push_back("190404_Cd_14kV_850V_46V_th200mV");
+  exp_area.experiments.push_back("190404_Cd_12kV_850V_46V_th160mV");
+  exp_area.experiments.push_back("190404_Cd_10kV_850V_46V_th150mV");
+  exp_area.experiments.push_back("190404_Cd_8kV_850V_46V_th140mV");
   
   PMT_V.clear();
   MPPC_V.clear();

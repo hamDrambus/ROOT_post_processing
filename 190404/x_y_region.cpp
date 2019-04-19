@@ -41,7 +41,7 @@
 	//Cd_8kV_850V_46V
 	//x_y_regions = {29, 39, 0, 1e5}; //ch16 t-S
 	/*
-	for (int chn = 34; chn<=44; ++chn) {
+	for (int chn = 32; chn<=44; ++chn) {
 		ch(chn);
 		std::string name = "190404/results/Cd_46V_8kV_850V/NpeSoS1pe_"+std::to_string(chn)+"_25-80us_Cd_peak";
 		saveas(name);
