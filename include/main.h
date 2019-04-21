@@ -118,4 +118,11 @@ void on_ch (int ch);
 void cut_A_S_fast_PMT(std::vector<double> region, bool drawn, int channel = -1, std::string _name = "");
 void remcut_A_S_fast_PMT(int channel = -1, std::string _name = "");
 
+#ifdef _COMPLIE_MAIN_
+int main(int argc, char* argv[]) {
+	TestSignalGenerator("test/");
+	return 0;
+}
+#endif
+
 #endif

@@ -15,8 +15,6 @@ public:
 	typedef std::map<double, std::pair<bool, double> > S1pe; //{V, (is_forced, S1pe[V*us])}
 	//is_forced==false means S1pe calculated during analysis overrides values read from the calibration file.
 	//typedef std::vector<std::pair<int/*ch*/, double/*S1pe*/> > MPPC_info_;
-protected:
-	std::deque<S1pe> s1pe_; //for each channel. First go PMT channels, then MPPC
 	class S1pe_exp {
 	public:
 		//per channel
@@ -35,6 +33,8 @@ protected:
 		S1pe_method get_method(int ch) const;//called from PostProcessor
 		void set_method(int ch, S1pe_method method);
 	};
+protected:
+	std::deque<S1pe> s1pe_; //for each channel. First go PMT channels, then MPPC
 	std::deque<S1pe_exp> s1pe_exp_; //for each experiment.
 protected:
 	const AnalysisStates* state_info; //for channels only

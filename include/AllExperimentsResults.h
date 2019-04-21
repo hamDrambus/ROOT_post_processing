@@ -5,7 +5,6 @@
 #include "AllRunsResults.h"
 #include "PolynomialFit.h"
 #include "PostProcessor.h"
-#include "TF1.h"
 
 class AnalysisManager;
 class PostProcessor;

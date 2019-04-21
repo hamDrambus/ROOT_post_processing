@@ -1,23 +1,34 @@
 #ifndef GLOBAL_DEFINITIONS_H
 #define GLOBAL_DEFINITIONS_H
 
+#ifndef __ROOTCLING__
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <map>
 #include <deque>
+#include <map>
 #include <string.h>
 #include <sstream>
 #include <climits>
+#include <algorithm>
+//#include <functional>
 
-#if defined(__WIN32__)
+#include <sehmap.h>
+
+#if defined (__WIN32__)
 #include <direct.h>
-#include <windows.h>
+#include <Windows4Root.h>
 #else
 #include <dirent.h>
 #include <errno.h>
 #include <sys/stat.h>
 #endif
+
+#undef max
+#undef min
+
+#include <boost/random/gamma_distribution.hpp>
+#include <boost/random/inversive_congruential.hpp>
 
 #include <TROOT.h>
 #include <TThread.h>
@@ -27,22 +38,25 @@
 #include <TGraph.h>
 #include <Rtypes.h>
 #include <TVector.h>
+#include "TMatrixD.h"
+#include "TVectorD.h"
 #include <TF1.h>
 #include <TMath.h>
 #include <Math/Point2D.h>
 #include <TRandom1.h>
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TH1I.h"
 #include "TCanvas.h"
 #include "TLine.h"
 #include "TPolyLine.h"
 #include "TStyle.h"
+//#include "Math/Unuran.h"
+
+#endif //__CINT__
 #define _TEMP_CODE
 
-#undef max
-#undef min
-
-#define DATA_NAME_FORMAT "^MPPCs_4_thmV/MPPC_\d{2}/MPPC_33_Double_I.dat$"
+//#define _COMPLIE_MAIN_
 
 #define PEAK_AVR_TIME
 //#define WEIGHTED_COORD
@@ -64,6 +78,13 @@ typedef bool(*CUTTER_DRAW)(TCanvas* can, void* stat_data);
 
 void open_output_file(std::string name, std::ofstream &str, std::ios_base::openmode _mode = std::ios_base::trunc);
 bool confirm_action (std::string action);
+int getIndex(const std::vector<int>& channels, int ch); //TODO: template
+int getIndex(const std::deque<int>& channels, int ch);
+
+class TestSignalGenerator {
+public:
+	TestSignalGenerator(std::string prefix);
+};
 
 #if defined(__WIN32__)
 #define INVOKE_GNUPLOT(a) system(("start \"\" \"%GNUPLOT%\\gnuplot.exe\" -c \"" + a + "\"").c_str())

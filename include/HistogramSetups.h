@@ -24,12 +24,13 @@ public:
 
 class CanvasSetups : public AnalysisStates //just helper class, has no fancy functionality in itself
 {
-protected:
+public:
 	struct stateS {
 		int exp_index;
 		int channel;
 		Type type;
 	};
+protected:
 	std::deque<stateS> canvases_states; //for each canvas
 	std::size_t canvas_ind;
 	std::deque<TCanvas*> canvases;

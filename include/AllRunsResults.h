@@ -1,10 +1,6 @@
 #ifndef ALL_RUNS_RESULTS_H
 #define ALL_RUNS_RESULTS_H
 
-#include "TH1D.h"
-#include "TH1I.h"
-#include "TLine.h"
-#include "TStyle.h"
 #include "GlobalParameters.h"
 #include "SingleRunResults.h"
 
@@ -12,6 +8,7 @@ class AnalysisManager;
 class SingleRunData;
 class SingleRunResults;
 class AllExperimentsResults;
+class TestSignalGenerator;
 
 class AllRunsResults
 {
@@ -19,7 +16,7 @@ protected:
 	int N_of_runs;
 	int Iteration_N;
 	/*ParameterPile::*/experiment_area _exp;
-	
+	std::vector<bool> _valid; //per run
 	std::deque<std::vector<double> > mppc_S2_S; //size == mppc channels (depends on experiment area)
 	std::deque<std::vector<double> > mppc_S2_start_time; //size == mppc channels (depends on experiment area)
 	std::deque<std::vector<double> > mppc_S2_finish_time; //size == mppc channels (depends on experiment area)
@@ -36,6 +33,9 @@ protected:
 	TF1* createMPPCFitFunc(TH1D* hist, std::string name);*/
 	void vector_from_file(std::vector<double> &what, std::string fname);
 	void vector_from_file(std::deque<std::deque<peak> > &pks, std::string fname);
+	void vector_to_file(std::deque<std::deque<std::deque<peak> > > &pks, int ch_ind, std::string fname, std::string title = "MPPC_peaks");
+	void vector_to_file(std::deque<std::vector<double> > &what, int ch_ind, std::string fname, std::string title = "MPPC");
+	void vector_to_file(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &ydisps, std::string fname, std::string title = "Average");
 public:
 	AllRunsResults(/*ParameterPile::*/experiment_area experiment);//only experiment and channels are important here
 	void processAllRuns(std::deque<SingleRunResults> &single_results);
@@ -45,9 +45,12 @@ public:
 	void Clear(void);
 	int Iteration(void) const;
 
+	bool SaveTo(std::string prefix);
+
 	friend AnalysisManager;
 	friend SingleRunData;
 	friend AllExperimentsResults;
+	friend TestSignalGenerator;
 };
 
 

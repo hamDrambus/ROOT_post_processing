@@ -129,6 +129,96 @@ void AllRunsResults::vector_from_file(std::deque<std::deque<peak>> &pks, std::st
 	str.close();
 }
 
+
+void vector_to_file(DVECTOR &xs, DVECTOR &ys, DVECTOR &ydisps, std::string fname, std::string title)
+{
+	std::ofstream str;
+	open_output_file(fname, str, std::ios_base::trunc);
+	str << "//" << title << std::endl;
+	if ((xs.size() != ys.size()) || (xs.size() != ydisps.size()))
+		str << "//x-y-y_disp size mismatch" << std::endl;
+	else
+		for (std::size_t i = 0, i_end_ = xs.size(); i != i_end_; ++i)
+			str << xs[i] << "\t" << ys[i] << "\t" << ydisps[i] << std::endl;
+	str.close();
+}
+
+void AllRunsResults::vector_to_file(std::deque<std::deque<std::deque<peak> > > &pks, int ch_ind, std::string fname, std::string title)
+{
+	std::ofstream str;
+	open_output_file(fname, str, std::ios_base::trunc | std::ios_base::binary);
+	std::size_t real_size = 0;
+	for (std::size_t run = 0, run_end_ = pks.size(); run != run_end_; ++run)
+		if (_valid[run])
+			++real_size;
+	str.write((char*)&real_size, sizeof(std::size_t));
+	for (std::size_t run = 0, run_end_ = pks.size(); run != run_end_; ++run) {
+		if (!_valid[run])
+			continue;
+		std::size_t pk_end_ = pks[run][ch_ind].size();
+		str.write((char*)&pk_end_, sizeof(std::size_t));
+		for (std::size_t p = 0; p != pk_end_; ++p) {
+			str.write((char*)&pks[run][ch_ind][p].left, sizeof(double));
+			str.write((char*)&pks[run][ch_ind][p].right, sizeof(double));
+			str.write((char*)&pks[run][ch_ind][p].S, sizeof(double));
+			str.write((char*)&pks[run][ch_ind][p].A, sizeof(double));
+			str.write((char*)&pks[run][ch_ind][p].t, sizeof(double));
+		}
+	}
+	str.close();
+}
+
+void AllRunsResults::vector_to_file(std::deque<std::vector<double> > &what, int ch_ind, std::string fname, std::string title)
+{
+	std::ofstream str;
+	open_output_file(fname, str, std::ios_base::trunc | std::ios_base::binary);
+	std::size_t real_size = 0;
+	for (std::size_t run = 0, run_end_ = what.size(); run != run_end_; ++run)
+		if (_valid[run])
+			++real_size;
+	str.write((char*)&real_size, sizeof(std::size_t));
+	for (std::size_t run = 0, run_end_ = what.size(); run != run_end_; ++run)
+		if (_valid[run])
+			str.write((char*)&what[run][ch_ind], sizeof(double));
+	str.close();
+}
+
+void AllRunsResults::vector_to_file(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &ydisps, std::string fname, std::string title)
+{
+	std::ofstream str;
+	open_output_file(fname, str, std::ios_base::trunc);
+	str << "//" << title << std::endl;
+	str << "//t [us]\tsignal\terror" << std::endl;
+	for (auto x = xs.begin(), y = ys.begin(), d = ydisps.begin(), x_end_ = xs.end(), y_end_ = ys.end(), d_end_ = ydisps.end(); (x != x_end_) && (y != y_end_) && (d != d_end_); ++x, ++y, ++d)
+		str << *x << '\t' << *y << '\t' << *d << std::endl;
+	str.close();
+}
+
+bool AllRunsResults::SaveTo(std::string prefix)
+{
+	if (_exp.experiments.empty()) {
+		std::cout << "Nothing to save" << std::endl;
+		return false;
+	}
+	std::string exp_str = _exp.experiments.front();
+	for (std::size_t ch = 0; ch < pmt_channels.size(); ++ch) {
+		std::stringstream ch_str;
+		ch_str << pmt_channels[ch];
+		std::string output_prefix = prefix + DATA_PMT_VERSION + "/PMT_" + exp_str + "/PMT_" + std::to_string(ch) + "/PMT_" + std::to_string(ch) + "_";
+		vector_to_file(pmt_peaks, ch, output_prefix + "peaks.dat");
+		vector_to_file(pmt_S2_integral, ch, output_prefix + "S2_int.dat");
+	}
+	for (int ch = 0; ch < mppc_channels.size(); ++ch) {
+		std::string output_prefix = prefix + "/" + DATA_MPPC_VERSION + "/MPPCs_" + exp_str + "/MPPC_" + std::to_string(ch) + "/MPPC_" + std::to_string(ch) + "_";
+		vector_to_file(mppc_S2_S, ch, output_prefix + "S2_S.dat", "MPPC_S2");
+		vector_to_file(mppc_S2_start_time, ch, output_prefix + "S2_start_t.dat", "MPPC_st");
+		vector_to_file(mppc_S2_finish_time, ch, output_prefix + "S2_finish_t.dat", "MPPC_fin");
+		vector_to_file(mppc_Double_Is, ch, output_prefix + "double_I.dat", "MPPC_II");
+		vector_to_file(mppc_peaks, ch, output_prefix + "peaks.dat", "MPPC_peaks");
+	}
+	return true;
+}
+
 int AllRunsResults::Iteration(void) const
 {	return Iteration_N;}
 

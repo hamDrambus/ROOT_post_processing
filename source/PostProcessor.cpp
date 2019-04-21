@@ -1061,6 +1061,10 @@ void PostProcessor::FillHist(void* p_hist)//considers cuts and histogram tipe (v
 		};
 		break;
 	}
+	default: {
+		std::cerr << "FillHist: Warning! Not implemented type "<<std::endl;
+		filler_op = NULL;
+	}
 	}
 	histogram_filler->SetFunction(filler_op);
 	LoopThroughData(histogram_filler, current_channel, current_type, false, true, true);
@@ -1247,6 +1251,10 @@ std::pair<double, double> PostProcessor::hist_x_limits(bool consider_displayed_c
 			return true;
 		};
 		break;
+	}
+	default: {
+		std::cerr << "hist_x_limits: Warning! Not implemented type " << std::endl;
+		filler_op = NULL;
 	}
 	}
 	histogram_filler->SetFunction(filler_op);
@@ -1926,6 +1934,39 @@ void PostProcessor::remove_hist_cut(std::string name)
 	}
 }
 
+int PostProcessor::list_hist_cuts(void)
+{
+	HistogramSetups *setups = get_hist_setups();
+	if (NULL == setups) {
+		std::cout << "PostProcessor::list_hist_cuts: Error: NULL setups" << std::endl;
+		return 0;
+	}
+	std::cout << "\tHistogram cuts [" << setups->hist_cuts.size() << "]: \"name\":channel# | "<<std::endl;
+	for (auto i = setups->hist_cuts.begin(), _end_ = setups->hist_cuts.end(); i != _end_; ++i)
+		std::cout <<"\""<< i->GetName()<<"\"" << (i->GetAffectingHistogram() ? ":" : "(Only shown):")<<i->GetChannel() << (((i == (_end_ - 1)) ? "" : " | "));
+	std::cout << std::endl;
+	return setups->hist_cuts.size();
+}
+
+int PostProcessor::list_run_cuts(void)
+{
+	HistogramSetups *setups = get_hist_setups();
+	if (NULL == setups) {
+		std::cout << "PostProcessor::list_run_cuts: Error: NULL setups" << std::endl;
+		return 0;
+	}
+	std::deque<EventCut> *RunCuts = get_run_cuts(current_exp_index);
+	if (NULL == RunCuts) {
+		std::cout << "PostProcessor::list_run_cuts: Error: NULL RunCuts" << std::endl;
+		return 0;
+	}
+	std::cout << "RunCuts [" << RunCuts->size() << "]: ";
+	for (auto i = RunCuts->begin(), _end_ = RunCuts->end(); i != _end_; ++i)
+		std::cout << (i->GetName()) << ((i == (_end_ - 1)) ? "" : " | ");
+	std::cout << std::endl;
+	return RunCuts->size();
+}
+
 void PostProcessor::remove_hist_cut(std::string name, int ch)
 {
 	if (!isValid()){
@@ -2232,27 +2273,14 @@ void PostProcessor::status(Bool_t full)
 			std::cout<<"PostProcessor::status: Error: NULL setups"<<std::endl;
 			return;
 		}
-		std::deque<EventCut> *RunCuts = get_run_cuts(current_exp_index);
-		if (NULL==RunCuts) {
-			std::cout<<"PostProcessor::status: Error: NULL RunCuts"<<std::endl;
-		} else {
-			std::cout<<"RunCuts ["<< RunCuts->size()<<"]: ";
-			for (auto i = RunCuts->begin(), _end_ = RunCuts->end(); i != _end_; ++i)
-				std::cout << (i->GetName()) << ((i == (_end_ - 1)) ? "" : " | ");
-			std::cout << std::endl;
-		}
-
+		list_run_cuts();
+	
 		std::pair<double, double> x_lims = hist_x_limits(), x_drawn_lims = hist_x_limits(true);
 		std::cout << "Current_setups: " << std::hex << setups << std::dec << std::endl;
 		std::cout << "\tleft_limit: " << x_lims.first << std::endl;
 		std::cout << "\tright_limit: " << x_lims.second << std::endl;
 		std::cout << "\tleft_drawn_limit: " << x_drawn_lims.first << std::endl;
 		std::cout << "\tright_drawn_limit: " << x_drawn_lims.second << std::endl;
-		std::cout << "\thist_cuts [" << setups->hist_cuts.size() << "]: ";
-		for (auto i = setups->hist_cuts.begin(), _end_ = setups->hist_cuts.end(); i != _end_; ++i)
-			std::cout << i->GetName() << (i->GetAffectingHistogram() ? "" : "(Only shown)") << (((i == (_end_ - 1)) ? "" : " | "));
-		std::cout << std::endl;
-
 		std::cout << "\tN_gauss: " << setups->N_gauss << std::endl;
 		std::cout << "\tN_bins: " << setups->N_bins << std::endl;
 		std::cout << "\tpar_val [" << setups->par_val.size() << "]: ";
@@ -2269,5 +2297,6 @@ void PostProcessor::status(Bool_t full)
 		std::cout << std::endl;
 		std::cout << "\tusing fit: " << setups->use_fit << std::endl;
 		std::cout << "\tfitted: " << setups->fitted << std::endl;
+		list_hist_cuts();
 	}
 }

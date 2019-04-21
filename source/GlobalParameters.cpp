@@ -4,7 +4,7 @@
 #endif
 
 #include "GlobalParameters.h"
-
+#include "AllRunsResults.h"
 
 //TODO: some functions must be moved to PostProcessor class. (then I won't need the std::vector<double>* get_data methods)
 
@@ -105,6 +105,182 @@ bool confirm_action (std::string action)
 	}
 	std::cout<<action<<" denied"<<std::endl;
 	return false;
+}
+
+TestSignalGenerator::TestSignalGenerator(std::string prefix)
+{
+	double t_from = 0, t_to = 110;
+	std::vector<std::string> exp0 = { "10V_exp", "15V_exp" };
+	std::vector<int> chs = { 2, 3, 4, 5, 6 }; //PMTs
+	for (int i = 32; i <= 48; chs.push_back(i++)); //MPPCs
+	TRandom1 *rand = new TRandom1(42);
+	boost::random::hellekalek1995 rand2;
+	//ROOT::Math::TRandomEngine rand2; - root v6 on windows doest not have GSL libraries. v5 does though.
+	std::vector<std::vector<double> > Nphe_signal_avr;
+	std::vector<std::vector<double> > Nphe_noise_avr;
+	std::vector<std::vector<double> > signal_time;
+	for (std::size_t e = 0, e_end_ = exp0.size(); e != e_end_; ++e) { //set expected signal and noise values for each exp and channel
+		Nphe_signal_avr.push_back(std::vector<double>());
+		Nphe_noise_avr.push_back(std::vector<double>());
+		signal_time.push_back(std::vector<double>());
+		for (std::size_t c = 0, c_end_ = chs.size(); c != c_end_; ++c) {
+			if (chs[c] < 6) {
+				Nphe_signal_avr[e].push_back(rand->Poisson(12.5 *(1 + e / 4)));
+				Nphe_noise_avr[e].push_back(rand->Poisson(2.5));
+				signal_time[e].push_back(40 * (1 + e / 4));
+				continue;
+			}
+			if (chs[c] == 6) {
+				Nphe_signal_avr[e].push_back(10 * (1 + e / 4));
+				Nphe_noise_avr[e].push_back(4);
+				signal_time[e].push_back(43 * (1 + e / 4));
+				continue;
+			}
+			Nphe_signal_avr[e].push_back(rand->Poisson((15 + chs[c] / 10))*(1 + e / 3));
+			Nphe_noise_avr[e].push_back(rand->Poisson(3 + chs[c] / 30));
+			signal_time[e].push_back(30 * (1 + e / 4));
+		}
+	}
+	//peak parameters (A, S, 1phe-2phe distr, signal form, dt peak)
+	//per channel. See their meaning in the generation
+	std::vector<double> dts(chs.size());
+	std::vector<double> dts_sigma(chs.size());
+	std::vector<std::pair<double, double> > dts_mm(chs.size());
+	std::vector<double> SoA(chs.size()); //not precise, sigma is linear from the smallest S to the largest ones
+	std::vector<double> SoA_sigma(chs.size()); //maximum value
+	std::vector<double> S1phe(chs.size()); //S1phe is distributed according to gamma. This value is mean a= k= 2.3
+	std::vector<boost::random::gamma_distribution<double> > gamma_generators; //each channel has different, but fixed parameters.
+	std::vector<double> signal_time_sigma(chs.size()); //noise sigma is fixed at 30.
+	std::vector<double> Nphe(chs.size()); //poisson distribution over number of 1phe peak, 2phe peak ...
+	for (std::size_t c = 0, c_end_ = chs.size(); c != c_end_; ++c) {
+		if (chs[c] < 6) {
+			dts[c] = std::fabs(rand->Gaus(1.0, 0.1));
+			dts_sigma[c] = 0.3;
+			dts_mm[c] = std::pair<double, double>(0.3, 2.0);
+			SoA[c] = std::fabs(rand->Gaus(1.0, 0.1));
+			SoA_sigma[c] = 0.08;
+			S1phe[c] = 6;
+			gamma_generators.push_back(boost::random::gamma_distribution<double>(2.3, S1phe[c]/2.3)); //(k, theta) E[x] = k*th == S1phe[c]
+			signal_time_sigma[c] = 12;
+			Nphe[c] = 0.25;
+			continue;
+		}
+		if (chs[c] == 6) {
+			dts[c] = std::fabs(rand->Gaus(1.0, 0.1));
+			dts_sigma[c] = 0.3;
+			dts_mm[c] = std::pair<double, double>(0.3, 2.0);
+			SoA[c] = std::fabs(rand->Gaus(1.0, 0.1));
+			SoA_sigma[c] = 0.1;
+			S1phe[c] = 5;
+			signal_time_sigma[c] = 14;
+			Nphe[c] = 0.10;
+			continue;
+		}
+		dts[c] = std::fabs(rand->Gaus(0.4, 0.06));
+		dts_sigma[c] = 0.2;
+		dts_mm[c] = std::pair<double, double>(0.01, 1.0);
+		SoA[c] = (1 + rand->Poisson(5.0)) / 6;
+		SoA_sigma[c] = (1 + rand->Poisson(5.0)) / 200;
+		S1phe[c] = 6;
+		signal_time_sigma[c] = 10;
+		Nphe[c] = 0.35;
+	}
+	//generate events into memory
+	experiment_area area;
+	std::deque<AllRunsResults> data;
+	for (std::size_t e = 0, e_end_ = exp0.size(); e != e_end_; ++e) {
+		data.push_back(AllRunsResults(area));
+		std::size_t event_end_ = (e == 0 ? 21000 : 30000);
+		data.back()._valid.resize(event_end_, true);
+		for (std::size_t c = 0, c_end_ = chs.size(); c != c_end_; ++c) {
+			if (chs[c] < 32) {
+				data.back().pmt_channels.push_back(chs[c]);
+				data.back().pmt_peaks.push_back(std::deque<std::deque<peak> >(event_end_));
+				data.back().pmt_S2_integral.push_back(std::vector<double>(event_end_));
+			} else {
+				data.back().mppc_channels.push_back(chs[c]);
+				data.back().mppc_peaks.push_back(std::deque<std::deque<peak> >(event_end_));
+				data.back().mppc_Double_Is.push_back(std::vector<double>(event_end_));
+				data.back().mppc_S2_S.push_back(std::vector<double>(event_end_));
+				data.back().mppc_S2_finish_time.push_back(std::vector<double>(event_end_));
+				data.back().mppc_S2_start_time.push_back(std::vector<double>(event_end_));
+			}
+		}
+		for (std::size_t event = 0; event != event_end_; ++event) {
+			bool is_noise = (rand->Uniform() < 0.4);
+			bool is_gaus_noise = (rand->Uniform() < 0.3); //time distribution of noise
+			std::size_t mppc_index = 0;
+			std::size_t pmt_index = 0;
+			for (std::size_t c = 0, c_end_ = chs.size(); c != c_end_; ++c) {
+				int Nphe_ = (is_noise ? rand->Poisson(Nphe_noise_avr[e][c]) : rand->Poisson(Nphe_signal_avr[e][c]));
+				bool is_pmt = (chs[c] < 32);
+				for (int phe = 0; phe <= Nphe_; ++phe) {
+					peak pk;
+					pk.t = (is_noise ? (is_gaus_noise ? rand->Gaus(signal_time[e][c], 30) : t_from + rand->Uniform()*(t_to - t_from))
+						: rand->Gaus(signal_time[e][c], signal_time_sigma[c]));
+					if (pk.t > t_to || pk.t < t_from)
+						continue;
+					double dt = rand->Gaus(dts[c], dts_sigma[c]);
+					pk.left = std::max(pk.t - 0.5*dt, t_from);
+					pk.right = std::min(pk.t + 0.5*dt, t_to);
+					dt = pk.right - pk.left;
+					if (dt > dts_mm[c].second || dt < dts_mm[c].first)
+						continue;
+					double SoA_ = rand->Gaus(SoA[c], (dt - dts_mm[c].first) *SoA_sigma[c] / (dts_mm[c].second - dts_mm[c].first)); //signal shape factor.
+					pk.A = gamma_generators[c](rand2);
+					//pk.A = rand2.Gamma(2.3, 2.3 / S1phe[c]);
+					pk.S = pk.A*SoA_*dt;
+					int Nphe_in_peak = std::max(1 + rand->Poisson(Nphe[c]), 4);
+					pk.A *= Nphe_in_peak;
+					pk.S *= Nphe_in_peak;
+					if (is_pmt)
+						data.back().pmt_peaks[pmt_index][event].push_back(pk);
+					else
+						data.back().mppc_peaks[mppc_index][event].push_back(pk);
+				}
+				double t_zoom_from = 25, t_zoom_to = 45;
+				double Ssum = 0, dt_avr = 0; //average distance between peaks inside zoom;
+				unsigned int Npks = 0;
+				std::deque<peak> peaks = (is_pmt ? data.back().pmt_peaks[pmt_index][event] : data.back().mppc_peaks[mppc_index][event]);
+				std::vector<double> ts;
+				for (auto p = peaks.begin(), p_end_ = peaks.end(); p != p_end_; ++p) {
+					if (p->t<t_zoom_to && p->t>t_zoom_from) {
+						++Npks;
+						Ssum += p->S;
+						ts.push_back(p->t);
+					}
+				}
+				std::sort(ts.begin(), ts.end());
+				for (std::size_t t = 0, t_end_ = ts.size(); t != t_end_; ++t) {
+					if (t != 0)
+						dt_avr += ts[t] - ts[t - 1];
+				}
+				dt_avr = (Npks <= 1 ? 0 : dt_avr / (Npks - 1));
+				double F = 20 / 15.0 / dt_avr;
+				F = F * 1 / (1 + std::exp((F - 0.8) / 0.02));
+				F = F * 1 / (1 + std::exp(-1 * (F - 0.1) / 0.02));
+				//F is between ~0.1 and ~0.8. dt large - dt small
+				if (is_pmt) {
+					data.back().pmt_S2_integral[pmt_index][event] = Ssum* (1.1 - std::pow(F, 0.8));
+				} else {
+					data.back().mppc_Double_Is[mppc_index][event] = Ssum* (1.1 - std::pow(F, 0.4)) *
+						(ts.size() > 1 ? (ts.back() - ts.front()) : 0);
+					data.back().mppc_S2_S[mppc_index][event] = Ssum* (1.1 - std::pow(F, 0.4));
+					data.back().mppc_S2_start_time[mppc_index][event] = (ts.size() > 0 ? ts.front() : t_zoom_from);
+					data.back().mppc_S2_finish_time[mppc_index][event] = (ts.size() > 0 ? ts.back() : t_zoom_to);
+				}
+				if (is_pmt)
+					++pmt_index;
+				else
+					++mppc_index;
+			}
+		}
+	}
+	//write events as in Data_processing 
+	for (std::size_t e = 0, e_end_ = exp0.size(); e != e_end_; ++e) {
+		data.back()._exp.experiments.push_back(exp0[e]);
+		data.back().SaveTo(prefix);
+	}
 }
 
 void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> ys,/* ParameterPile::*/DrawEngine de)

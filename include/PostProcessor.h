@@ -1,8 +1,6 @@
 #ifndef POST_PROCESSOR_H
 #define POST_PROCESSOR_H
 
-#include "TROOT.h"
-
 #include "SignalOperations.h"
 #include "AnalysisStates.h"
 #include "AllExperimentsResults.h"

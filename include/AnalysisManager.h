@@ -1,8 +1,6 @@
 #ifndef ANALYSIS_MANAGER_H
 #define ANALYSIS_MANAGER_H
 
-#include "TH1D.h"
-#include "TH1I.h"
 #include "GlobalParameters.h"
 #include "SingleRunData.h"
 #include "AllRunsResults.h"

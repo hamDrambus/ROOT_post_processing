@@ -26,7 +26,7 @@
 #pragma link C++ defined_in "PolynomialFit.h";
 #pragma link C++ defined_in "Polynom2Order.h";
 #pragma link C++ defined_in "AllRunsResults.h";
-#pragma link C++ defined_in "AllExperimentResults.h";
+#pragma link C++ defined_in "AllExperimentsResults.h";
 #pragma link C++ defined_in "CalibrationInfo.h";
 #pragma link C++ defined_in "HistogramSetups.h";
 #pragma link C++ defined_in "PostProcessor.h";

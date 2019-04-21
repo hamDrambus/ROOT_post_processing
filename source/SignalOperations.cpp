@@ -176,7 +176,7 @@ namespace SignalOperations {
 		double *f_ys = new double[ys.size()];
 		for (int h = 0; h != ys.size(); ++h)
 			f_ys[h] = ys[h];
-		spec->Background(f_ys, ys.size(), 60, TSpectrum::kBackDecreasingWindow, TSpectrum::kBackOrder2, kTRUE, TSpectrum::kBackSmoothing3, kFALSE);
+		find_background_v_0(f_ys, ys.size(), 60, TSpectrum::kBackDecreasingWindow, TSpectrum::kBackOrder2, kTRUE, TSpectrum::kBackSmoothing3, kFALSE);
 		for (int h = 0; h != ys.size(); ++h)
 			ys_out[h]=f_ys[h];
 		delete[] f_ys;
