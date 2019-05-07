@@ -38,6 +38,12 @@ class PostProcessor : public CanvasSetups {
 public:
 	enum UpdateState {Histogram=0x1,FitFunction=0x2,Fit=0x4,Results = 0x8, All = Histogram|FitFunction|Fit|Results, AllFit = FitFunction|Fit,
 		Canvas = 0x10, NewCanvas = Canvas|Histogram|AllFit};
+	struct Operation {
+		FunctionWrapper * operation;
+		bool apply_run_cuts;
+		bool apply_hist_cuts;
+		bool apply_phys_cuts;
+	};
 protected:
 	AllExperimentsResults* data;
 
@@ -64,7 +70,7 @@ protected:
 	void print_hist(int ch, int exp_ind, Type type, std::string path);
 
 public:
-	void LoopThroughData(FunctionWrapper* operation, int channel, Type type, bool apply_phys_cuts, bool apply_run_cuts, bool apply_hist_cuts = true);
+	void LoopThroughData(std::vector<Operation> &operations, int channel, Type type);
 
 	void update(UpdateState to_update = All); //mandates:	1)update current picture. (only displayed histogram but not a png, as well as TF1)
 	//								2)update physical parameters obtained from the current hist

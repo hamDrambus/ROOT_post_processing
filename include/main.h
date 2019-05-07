@@ -26,6 +26,7 @@
 //DONE: new interface:
 //+//
 void Initialize(bool pars_in_script = true);
+void GenTest(std::string prefix);
 void ch(int ch); //Go to channel. Does not save previous hist in file but does save parameters such as cuts
 void ty(AnalysisStates::Type to_type);
 void nex(void);		//next experiment

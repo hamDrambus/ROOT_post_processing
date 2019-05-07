@@ -11,6 +11,14 @@ void Initialize(bool pars_in_script)
 	gr_manager = new GraphicOutputManager();
 
 }
+
+void GenTest(std::string prefix)
+{
+	std::cout<<"Generating tests..."<<std::endl;
+	TestSignalGenerator gen(prefix);
+	std::cout<<"Tests are generated."<<std::endl;
+}
+
 //Go to channel. Does not save previous hist in file but does save parameters such as cuts
 void ch(int ch)
 {

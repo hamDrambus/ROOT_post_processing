@@ -1,7 +1,6 @@
 #ifndef GLOBAL_DEFINITIONS_H
 #define GLOBAL_DEFINITIONS_H
 
-#ifndef __ROOTCLING__
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -13,9 +12,8 @@
 #include <algorithm>
 //#include <functional>
 
-#include <sehmap.h>
-
 #if defined (__WIN32__)
+#include <sehmap.h>
 #include <direct.h>
 #include <Windows4Root.h>
 #else
@@ -27,8 +25,10 @@
 #undef max
 #undef min
 
+#ifndef __ROOTCLING__
 #include <boost/random/gamma_distribution.hpp>
 #include <boost/random/inversive_congruential.hpp>
+#endif //__CINT__
 
 #include <TROOT.h>
 #include <TThread.h>
@@ -53,7 +53,6 @@
 #include "TStyle.h"
 //#include "Math/Unuran.h"
 
-#endif //__CINT__
 #define _TEMP_CODE
 
 //#define _COMPLIE_MAIN_

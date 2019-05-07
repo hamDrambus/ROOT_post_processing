@@ -105,6 +105,8 @@ TF1* CanvasSetups::create_fit_function(HistogramSetups* setups, std::pair<double
 {
 	TF1 *fit_func;
 	std::string func_name;
+	if (!setups->use_fit)
+		return NULL;
 	for (int ng = 0; ng < setups->N_gauss; ++ng){
 		func_name += "gaus(" + std::to_string(ng * 3) + ")";
 		if (ng != setups->N_gauss - 1)
@@ -297,6 +299,7 @@ void CanvasSetups::next_canvas(void)
 	canvases_states[canvas_ind].exp_index = current_exp_index;
 	stateS ind_new_state = canvases_states[canvas_ind], ind_prev_state = canvases_states[canvas_ind];
 	if ((canvas_ind+1)==canvases.size()) {
+		++canvas_ind;
 		TCanvas* new_c = new TCanvas((std::string("inter_canvas_") + std::to_string(canvas_ind)).c_str(), (std::string("inter_canvas_") + std::to_string(canvas_ind)).c_str());
 		canvases.push_back(new_c);
 		stateS ind_state;
@@ -305,7 +308,6 @@ void CanvasSetups::next_canvas(void)
 		ind_state.type = current_type;
 		canvases_states.push_back(ind_state);
 		new_c->cd();
-		++canvas_ind;
 		fit_functions.push_back(NULL);
 		hists_1D.push_back(NULL);
 		hists_2D.push_back(NULL);
@@ -318,7 +320,7 @@ void CanvasSetups::next_canvas(void)
 				manual_setups[canvas_ind][h].push_back(std::deque<HistogramSetups*>());
 				loop_channels_reset();
 				for (int ch=0, ch_ind=0; loop_channels ((AnalysisStates::Type)h, ch, ch_ind); ) {
-					HistogramSetups* setup_to_copy = manual_setups[canvas_ind][h][exp][ch_ind];
+					HistogramSetups* setup_to_copy = manual_setups[prev_can][h][exp][ch_ind];
 					setup_to_copy = (NULL==setup_to_copy ? NULL : new HistogramSetups(*setup_to_copy));
 					manual_setups[canvas_ind][h][exp].push_back(setup_to_copy);
 				}

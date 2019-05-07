@@ -172,6 +172,7 @@ TestSignalGenerator::TestSignalGenerator(std::string prefix)
 			SoA[c] = std::fabs(rand->Gaus(1.0, 0.1));
 			SoA_sigma[c] = 0.1;
 			S1phe[c] = 5;
+			gamma_generators.push_back(boost::random::gamma_distribution<double>(2.3, S1phe[c]/2.3)); //(k, theta) E[x] = k*th == S1phe[c]
 			signal_time_sigma[c] = 14;
 			Nphe[c] = 0.10;
 			continue;
@@ -182,6 +183,7 @@ TestSignalGenerator::TestSignalGenerator(std::string prefix)
 		SoA[c] = (1 + rand->Poisson(5.0)) / 6;
 		SoA_sigma[c] = (1 + rand->Poisson(5.0)) / 200;
 		S1phe[c] = 6;
+		gamma_generators.push_back(boost::random::gamma_distribution<double>(2.3, S1phe[c]/2.3)); //(k, theta) E[x] = k*th == S1phe[c]
 		signal_time_sigma[c] = 10;
 		Nphe[c] = 0.35;
 	}
@@ -278,8 +280,8 @@ TestSignalGenerator::TestSignalGenerator(std::string prefix)
 	}
 	//write events as in Data_processing 
 	for (std::size_t e = 0, e_end_ = exp0.size(); e != e_end_; ++e) {
-		data.back()._exp.experiments.push_back(exp0[e]);
-		data.back().SaveTo(prefix);
+		data[e]._exp.experiments.push_back(exp0[e]);
+		data[e].SaveTo(prefix);
 	}
 }
 

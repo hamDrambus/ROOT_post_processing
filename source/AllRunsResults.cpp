@@ -148,21 +148,21 @@ void AllRunsResults::vector_to_file(std::deque<std::deque<std::deque<peak> > > &
 	std::ofstream str;
 	open_output_file(fname, str, std::ios_base::trunc | std::ios_base::binary);
 	std::size_t real_size = 0;
-	for (std::size_t run = 0, run_end_ = pks.size(); run != run_end_; ++run)
+	for (std::size_t run = 0, run_end_ = pks[ch_ind].size(); run != run_end_; ++run)
 		if (_valid[run])
 			++real_size;
 	str.write((char*)&real_size, sizeof(std::size_t));
-	for (std::size_t run = 0, run_end_ = pks.size(); run != run_end_; ++run) {
+	for (std::size_t run = 0, run_end_ = pks[ch_ind].size(); run != run_end_; ++run) {
 		if (!_valid[run])
 			continue;
-		std::size_t pk_end_ = pks[run][ch_ind].size();
+		std::size_t pk_end_ = pks[ch_ind][run].size();
 		str.write((char*)&pk_end_, sizeof(std::size_t));
 		for (std::size_t p = 0; p != pk_end_; ++p) {
-			str.write((char*)&pks[run][ch_ind][p].left, sizeof(double));
-			str.write((char*)&pks[run][ch_ind][p].right, sizeof(double));
-			str.write((char*)&pks[run][ch_ind][p].S, sizeof(double));
-			str.write((char*)&pks[run][ch_ind][p].A, sizeof(double));
-			str.write((char*)&pks[run][ch_ind][p].t, sizeof(double));
+			str.write((char*)&pks[ch_ind][run][p].left, sizeof(double));
+			str.write((char*)&pks[ch_ind][run][p].right, sizeof(double));
+			str.write((char*)&pks[ch_ind][run][p].S, sizeof(double));
+			str.write((char*)&pks[ch_ind][run][p].A, sizeof(double));
+			str.write((char*)&pks[ch_ind][run][p].t, sizeof(double));
 		}
 	}
 	str.close();
@@ -173,13 +173,13 @@ void AllRunsResults::vector_to_file(std::deque<std::vector<double> > &what, int 
 	std::ofstream str;
 	open_output_file(fname, str, std::ios_base::trunc | std::ios_base::binary);
 	std::size_t real_size = 0;
-	for (std::size_t run = 0, run_end_ = what.size(); run != run_end_; ++run)
+	for (std::size_t run = 0, run_end_ = what[ch_ind].size(); run != run_end_; ++run)
 		if (_valid[run])
 			++real_size;
 	str.write((char*)&real_size, sizeof(std::size_t));
-	for (std::size_t run = 0, run_end_ = what.size(); run != run_end_; ++run)
+	for (std::size_t run = 0, run_end_ = what[ch_ind].size(); run != run_end_; ++run)
 		if (_valid[run])
-			str.write((char*)&what[run][ch_ind], sizeof(double));
+			str.write((char*)&what[ch_ind][run], sizeof(double));
 	str.close();
 }
 
@@ -194,6 +194,7 @@ void AllRunsResults::vector_to_file(std::vector<double> &xs, std::vector<double>
 	str.close();
 }
 
+//prefix must end in '/'
 bool AllRunsResults::SaveTo(std::string prefix)
 {
 	if (_exp.experiments.empty()) {
@@ -204,12 +205,12 @@ bool AllRunsResults::SaveTo(std::string prefix)
 	for (std::size_t ch = 0; ch < pmt_channels.size(); ++ch) {
 		std::stringstream ch_str;
 		ch_str << pmt_channels[ch];
-		std::string output_prefix = prefix + DATA_PMT_VERSION + "/PMT_" + exp_str + "/PMT_" + std::to_string(ch) + "/PMT_" + std::to_string(ch) + "_";
+		std::string output_prefix = prefix + DATA_PMT_VERSION + "/PMT_" + exp_str + "/PMT_" + std::to_string(pmt_channels[ch]) + "/PMT_" + std::to_string(pmt_channels[ch]) + "_";
 		vector_to_file(pmt_peaks, ch, output_prefix + "peaks.dat");
 		vector_to_file(pmt_S2_integral, ch, output_prefix + "S2_int.dat");
 	}
 	for (int ch = 0; ch < mppc_channels.size(); ++ch) {
-		std::string output_prefix = prefix + "/" + DATA_MPPC_VERSION + "/MPPCs_" + exp_str + "/MPPC_" + std::to_string(ch) + "/MPPC_" + std::to_string(ch) + "_";
+		std::string output_prefix = prefix + "/" + DATA_MPPC_VERSION + "/MPPCs_" + exp_str + "/MPPC_" + std::to_string(mppc_channels[ch]) + "/MPPC_" + std::to_string(mppc_channels[ch]) + "_";
 		vector_to_file(mppc_S2_S, ch, output_prefix + "S2_S.dat", "MPPC_S2");
 		vector_to_file(mppc_S2_start_time, ch, output_prefix + "S2_start_t.dat", "MPPC_st");
 		vector_to_file(mppc_S2_finish_time, ch, output_prefix + "S2_finish_t.dat", "MPPC_fin");

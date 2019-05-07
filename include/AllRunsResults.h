@@ -18,15 +18,15 @@ protected:
 	/*ParameterPile::*/experiment_area _exp;
 	std::vector<bool> _valid; //per run
 	std::deque<std::vector<double> > mppc_S2_S; //size == mppc channels (depends on experiment area)
-	std::deque<std::vector<double> > mppc_S2_start_time; //size == mppc channels (depends on experiment area)
-	std::deque<std::vector<double> > mppc_S2_finish_time; //size == mppc channels (depends on experiment area)
-	//std::deque<std::vector<double>> mppc_all_peaks_Ss; //size == mppc channels (depends on experiment area)
-	std::deque<std::vector<double> > mppc_Double_Is; //size == mppc channels (depends on experiment area)
+	std::deque<std::vector<double> > mppc_S2_start_time; //[channel][run#]
+	std::deque<std::vector<double> > mppc_S2_finish_time; //[channel][run#]
+	//std::deque<std::vector<double>> mppc_all_peaks_Ss; //[channel][run#]
+	std::deque<std::vector<double> > mppc_Double_Is; //[channel][run#]
 	std::deque<int> mppc_channels;
 	std::deque<int> pmt_channels;
 	std::deque<std::deque<std::deque<peak> > > mppc_peaks;	//[channel][run#][peaks]
 	std::deque<std::deque<std::deque<peak> > > pmt_peaks;	//[channel][run#][peaks]
-	std::deque<std::vector<double> > pmt_S2_integral;
+	std::deque<std::vector<double> > pmt_S2_integral; //[channel][run#]
 
 	/*TH1D* createMPPCHist(std::vector<double> &what, std::string name, double left_cutoff, double right_cutoff_from_RMS, int N_bins = 0);
 	void vector_to_file(std::vector<double> &what, std::string fname);
