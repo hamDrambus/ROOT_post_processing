@@ -17,8 +17,9 @@ public:
 	~FunctionWrapper();
 	Bool_t operator () (std::vector<double> &pars, int run_n);
 	Bool_t Draw (TCanvas* can);
-	void SetFunction(CUTTER f);
+	CUTTER SetFunction(CUTTER f);
 	void SetDrawFunction(CUTTER_DRAW f);
+	bool isValid(void) const;
 };
 
 #endif

@@ -19,7 +19,23 @@ public:
 	std::deque<double> par_left_limits;
 	std::deque<double> par_right_limits;
 	Bool_t use_fit;
+	//Following values represent status, not input parameters
 	Bool_t fitted;
+	Bool_t is_valid_fit_function;
+	//1st tier parameters of distribution: (stored in order to minimize calls of LoopThroughData to recalculate them)
+	boost::optional<std::size_t> num_of_runs;
+	boost::optional<std::size_t> num_of_fills;
+	boost::optional<std::size_t> num_of_drawn_fills;
+	boost::optional<std::pair<double, double>> x_lims, y_lims;
+	boost::optional<std::pair<double, double>> x_drawn_lims, y_drawn_lims;
+	boost::optional<double> x_mean, y_mean;
+	boost::optional<double> x_drawn_mean, y_drawn_mean;
+	//2nd tier parameters (require 2 calls to LoopThroughData)
+	bool filled_hist; //1st call is to determine default N bins, x-y range, etc.
+	boost::optional<double> x_max, y_max; //Bin with maximum value y. Require filled histogram
+	boost::optional<double> x_drawn_max, y_drawn_max; //TODO: Implement. These require separate hidden histogram
+	boost::optional<double> x_variance, x_drawn_variance;
+	boost::optional<double> y_variance, y_drawn_variance;
 };
 
 class CanvasSetups : public AnalysisStates //just helper class, has no fancy functionality in itself
@@ -30,6 +46,10 @@ public:
 		int channel;
 		Type type;
 	};
+	enum InvalidateLabel : unsigned int {
+		invAll = 0xFFFFFFFF, invHistogram = 0x1, invCuts = 0x2, invDisplaedCuts = 0x4, invData = 0x8, invFit = 0x10, invFitFunction = 0x20
+	};
+
 protected:
 	std::deque<stateS> canvases_states; //for each canvas
 	std::size_t canvas_ind;
@@ -67,6 +87,7 @@ protected:
 	Bool_t StateChange(int to_ch, int to_exp, Type to_type, int from_ch, int from_exp, Type from_type);
 	virtual Bool_t StateChange(int to_ch, int to_exp, Type to_type, std::size_t to_canvas, int from_ch, int from_exp, Type from_type, std::size_t from_canvas);
 
+	virtual bool Invalidate(unsigned int label);
 public:
 	virtual ~CanvasSetups();
 	CanvasSetups(std::deque<int> &mppc_channsels_, std::deque<int> &pmt_channsels_, std::deque<std::string>& experiments_);

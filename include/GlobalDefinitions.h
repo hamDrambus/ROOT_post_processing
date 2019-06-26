@@ -28,6 +28,7 @@
 #ifndef __ROOTCLING__
 #include <boost/random/gamma_distribution.hpp>
 #include <boost/random/inversive_congruential.hpp>
+#include <boost/optional.hpp>
 #endif //__CINT__
 
 #include <TROOT.h>

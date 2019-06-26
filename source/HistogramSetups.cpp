@@ -180,6 +180,54 @@ Bool_t CanvasSetups::StateChange(int to_ch, int to_exp, Type to_type, std::size_
 	return ((from_canvas!=to_canvas)||AnalysisStates::StateChange(to_ch, to_exp, to_type, from_ch, from_exp, from_type));
 }
 
+bool CanvasSetups::Invalidate(unsigned int label)
+{
+	HistogramSetups* setups = get_hist_setups();
+	if (NULL == setups) {
+		std::cerr<<"CanvasSetups::Invalidate: Error: NULL histogram setups"<<std::endl;
+		return false;
+	}
+	if (label & invHistogram) {
+		setups->filled_hist = false;
+		setups->fitted = false;
+		setups->x_max = boost::none;
+		setups->y_max = boost::none;
+		setups->x_drawn_max = boost::none;
+		setups->y_drawn_max = boost::none;
+	}
+	if ((label & invCuts) || (label & invData)) {
+		setups->fitted = false;
+		setups->filled_hist = false;
+		setups->x_max = boost::none;
+		setups->y_max = boost::none;
+		setups->x_drawn_max = boost::none;
+		setups->y_drawn_max = boost::none;
+		setups->num_of_runs = boost::none;
+		setups->num_of_fills = boost::none;
+		setups->num_of_drawn_fills = boost::none;
+		setups->x_lims = boost::none;
+		setups->y_lims = boost::none;
+		setups->x_drawn_lims = boost::none;
+		setups->y_drawn_lims = boost::none;
+		setups->x_mean = boost::none;
+		setups->y_mean = boost::none;
+		setups->x_drawn_mean = boost::none;
+		setups->y_drawn_mean = boost::none;
+		setups->x_variance = boost::none;
+		setups->x_drawn_variance = boost::none;
+		setups->y_variance = boost::none;
+		setups->y_drawn_variance = boost::none;
+	}
+	if (label & invFit) {
+		setups->fitted = false;
+	}
+	if (label & invFitFunction) {
+		setups->fitted = false;
+		setups->is_valid_fit_function = false;
+	}
+	return true;
+}
+
 CanvasSetups::~CanvasSetups()
 {
 	for (std::size_t c =0, c_end_ = manual_setups.size(); c!=c_end_; ++c) {
@@ -273,6 +321,7 @@ bool CanvasSetups::set_zoom(std::pair<double, double> x_z, std::pair<double, dou
 	curr_hist->is_zoomed.second = (y_z.first!=-DBL_MAX)||(y_z.second!=DBL_MAX);
 	curr_hist->x_zoom = x_z;
 	curr_hist->y_zoom = y_z;
+	Invalidate(invHistogram);
 	return true;
 }
 bool CanvasSetups::unset_zoom(void)
@@ -282,6 +331,7 @@ bool CanvasSetups::unset_zoom(void)
 		return false;
 	curr_hist->is_zoomed.first = false;
 	curr_hist->is_zoomed.second = false;
+	Invalidate(invHistogram);
 	return true;
 }
 

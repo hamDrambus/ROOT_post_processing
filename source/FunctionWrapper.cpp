@@ -16,9 +16,9 @@ Bool_t FunctionWrapper::Draw (TCanvas* can)
 	return ((NULL==draw_method) ? kFALSE : draw_method(can, static_data));
 }
 
-void FunctionWrapper::SetFunction(CUTTER f)
+CUTTER FunctionWrapper::SetFunction(CUTTER f)
 {
-	func = f;//no deletions as it may be the pointer to both static and lambda function
+	return func = f;//no deletions as it may be the pointer to both static and lambda function
 	//to remove memory leak lambda functions must be deleted elsewhere
 	//TODO: add destructor as pointer as well (always lambda hence destructed in ~FunctionWrapper()
 }
@@ -28,4 +28,9 @@ void FunctionWrapper::SetDrawFunction(CUTTER_DRAW f)
 	draw_method = f;//no deletions as it may be the pointer to both static and lambda function
 	//to remove memory leak lambda functions must be deleted elsewhere
 	//TODO: add destructor as pointer as well (always lambda hence destructed in ~FunctionWrapper()
+}
+
+bool FunctionWrapper::isValid(void) const
+{
+	return (NULL!=static_data) && (NULL!= func);
 }

@@ -38,11 +38,15 @@ class PostProcessor : public CanvasSetups {
 public:
 	enum UpdateState {Histogram=0x1,FitFunction=0x2,Fit=0x4,Results = 0x8, All = Histogram|FitFunction|Fit|Results, AllFit = FitFunction|Fit,
 		Canvas = 0x10, NewCanvas = Canvas|Histogram|AllFit};
-	struct Operation {
+	class Operation {
+	public:
 		FunctionWrapper * operation;
 		bool apply_run_cuts;
 		bool apply_hist_cuts;
 		bool apply_phys_cuts;
+		Operation(FunctionWrapper *op, bool apply_run_cut, bool apply_hist_cut, bool apply_phys_cut) :
+			operation(op), apply_run_cuts(apply_run_cut), apply_hist_cuts(apply_hist_cut), apply_phys_cuts(apply_phys_cut)
+		{}
 	};
 protected:
 	AllExperimentsResults* data;
@@ -54,12 +58,12 @@ protected:
 
 	virtual Bool_t StateChange(int to_ch, int to_exp, Type to_type, std::size_t to_canvas, int from_ch, int from_exp, Type from_type, std::size_t from_canvas);
 	
-	void FillHist(void* p_hist);//considers cuts and histogram type (void*)==either TH1D* or TH2D*
-	//see function LoopThroughData for std::vector<double> &vals usage in cuts' picker
-	int numOfFills(int channel, Type type);
-	int numOfRuns (void);
+	virtual bool Invalidate(unsigned int label);
+
+	std::size_t numOfFills(bool consider_displayed_cuts = false);
+	std::size_t numOfRuns (void);
 	std::pair<double, double> hist_x_limits(bool consider_displayed_cuts = false); //considering cuts
-	std::pair<double, double> hist_y_limits(void); //valid only for 2d plots
+	std::pair<double, double> hist_y_limits(bool consider_displayed_cuts = false); //valid only for 2d plots
 	void default_hist_setups(HistogramSetups*);
 
 	void update_physical(void); //2nd and 3rd mandates of ::update(void)
@@ -67,12 +71,12 @@ protected:
 
 	std::string hist_name();
 	void print_hist(std::string path); //use "" for default path
-	void print_hist(int ch, int exp_ind, Type type, std::string path);
 
 public:
 	void LoopThroughData(std::vector<Operation> &operations, int channel, Type type);
 
-	void update(UpdateState to_update = All); //mandates:	1)update current picture. (only displayed histogram but not a png, as well as TF1)
+	bool update(void); //mandates:	0)Calculate and store all relevant parameters for current state (x/y limits, number of entries to histogram, etc.)
+	//								1)update current picture. (only displayed histogram but not a png, as well as TF1)
 	//								2)update physical parameters obtained from the current hist
 	//								3)in case it is calibration hist (Ss), update calibration
 	//								4)recalibrate Npe.
