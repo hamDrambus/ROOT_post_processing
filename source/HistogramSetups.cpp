@@ -1,5 +1,17 @@
 #include "HistogramSetups.h"
 
+HistogramSetups::HistogramSetups() :
+	filled_hist(false), fitted(false), x_max(boost::none), y_max(boost::none),
+	x_drawn_max(boost::none), y_drawn_max(boost::none), num_of_runs(boost::none),
+	num_of_fills(boost::none), num_of_drawn_fills(boost::none), stat_weight(boost::none),
+	stat_drawn_weight(boost::none), x_lims(boost::none),
+	y_lims(boost::none), x_drawn_lims(boost::none), y_drawn_lims(boost::none),
+	x_mean(boost::none), y_mean(boost::none), x_drawn_mean(boost::none),
+	y_drawn_mean(boost::none), x_variance(boost::none), x_drawn_variance(boost::none),
+	y_variance(boost::none), y_drawn_variance(boost::none), is_valid_fit_function(false),
+	N_bins(0), N_gauss(0), use_fit(false)
+{}
+
 std::deque<EventCut>* CanvasSetups::get_run_cuts (int exp_ind)
 {
 	if (RunCuts.size()!=manual_setups.size()) {
@@ -184,10 +196,9 @@ bool CanvasSetups::Invalidate(unsigned int label)
 {
 	HistogramSetups* setups = get_hist_setups();
 	if (NULL == setups) {
-		std::cerr<<"CanvasSetups::Invalidate: Error: NULL histogram setups"<<std::endl;
-		return false;
+		return true; //the case when switched to new channel/type and default histogram setups are not created yet
 	}
-	if (label & invHistogram) {
+	if (label & invHistogram) { //need to redraw histogram when switching to old analysis state or when number on bins has changed
 		setups->filled_hist = false;
 		setups->fitted = false;
 		setups->x_max = boost::none;
@@ -205,6 +216,8 @@ bool CanvasSetups::Invalidate(unsigned int label)
 		setups->num_of_runs = boost::none;
 		setups->num_of_fills = boost::none;
 		setups->num_of_drawn_fills = boost::none;
+		setups->stat_weight = boost::none;
+		setups->stat_drawn_weight = boost::none;
 		setups->x_lims = boost::none;
 		setups->y_lims = boost::none;
 		setups->x_drawn_lims = boost::none;
@@ -216,6 +229,19 @@ bool CanvasSetups::Invalidate(unsigned int label)
 		setups->x_variance = boost::none;
 		setups->x_drawn_variance = boost::none;
 		setups->y_variance = boost::none;
+		setups->y_drawn_variance = boost::none;
+	}
+	if (label & invDisplayedCuts) {
+		setups->fitted = false;
+		setups->x_drawn_max = boost::none;
+		setups->y_drawn_max = boost::none;
+		setups->num_of_drawn_fills = boost::none;
+		setups->stat_drawn_weight = boost::none;
+		setups->x_drawn_lims = boost::none;
+		setups->y_drawn_lims = boost::none;
+		setups->x_drawn_mean = boost::none;
+		setups->y_drawn_mean = boost::none;
+		setups->x_drawn_variance = boost::none;
 		setups->y_drawn_variance = boost::none;
 	}
 	if (label & invFit) {

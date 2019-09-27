@@ -1,7 +1,7 @@
 #include "CalibrationInfo.h"
 
 CalibrationInfo::CalibrationInfo(const AnalysisStates* data, std::string fname):
-state_info(data)
+state_info(data), s1pe_table_()
 {
 	for (auto i = state_info->experiments.begin(); i != state_info->experiments.end(); ++i) {
 		s1pe_exp_.push_back(S1pe_exp());
@@ -21,19 +21,19 @@ state_info(data)
 		}
 	}
 	for (auto ff = state_info->PMT_channels.begin(); ff != state_info->PMT_channels.end(); ++ff) {
-		s1pe_.push_back(S1pe());
+		s1pe_table_.push(*ff);
 		N_used_in_calibration.push_back(/*ParameterPile::*/calibaration_points);
 	}
 	for (auto ff = state_info->MPPC_channels.begin(); ff != state_info->MPPC_channels.end(); ++ff) {
-		s1pe_.push_back(S1pe());
+		s1pe_table_.push(*ff);
 		N_used_in_calibration.push_back(/*ParameterPile::*/calibaration_points);
 	}
 	Load(fname);
 }
 
-void CalibrationInfo::S1pe_exp::set_S1pe_exp(int ch, double val, int weight)
+void CalibrationInfo::S1pe_exp::set_S1pe_exp(std::size_t ch, double val, int weight)
 {
-	if (ch<0 || ch>=avr_S1pe.size()) {
+	if (ch>=avr_S1pe.size()) {
 		std::cerr<<"CalibrationInfo::S1pe_exp::set_S1pe_exp: Error: ch_index "<<ch<<"is out of range"<<std::endl;
 		return;
 	}
@@ -41,27 +41,27 @@ void CalibrationInfo::S1pe_exp::set_S1pe_exp(int ch, double val, int weight)
 	avr_S1pe_w[ch] = weight;
 }
 
-double CalibrationInfo::S1pe_exp::get_S1pe_exp(int ch) const
+double CalibrationInfo::S1pe_exp::get_S1pe_exp(std::size_t ch) const
 {
-	if (ch<0 || ch>=avr_S1pe.size()) {
+	if (ch>=avr_S1pe.size()) {
 		std::cerr<<"CalibrationInfo::S1pe_exp::get_S1pe_exp: Error: ch_index "<<ch<<"is out of range"<<std::endl;
 		return -1;
 	}
 	return avr_S1pe[ch];
 }
 
-int CalibrationInfo::S1pe_exp::get_S1pe_w_exp(int ch) const
+int CalibrationInfo::S1pe_exp::get_S1pe_w_exp(std::size_t ch) const
 {
-	if (ch<0 || ch >= avr_S1pe.size()) {
+	if (ch >= avr_S1pe.size()) {
 		std::cerr << "CalibrationInfo::S1pe_exp::get_S1pe_w_exp: Error: ch_index " << ch << "is out of range" << std::endl;
 		return -1;
 	}
 	return avr_S1pe_w[ch];
 }
 
-void CalibrationInfo::S1pe_exp::set_S2pe_exp(int ch, double val, int weight)
+void CalibrationInfo::S1pe_exp::set_S2pe_exp(std::size_t ch, double val, int weight)
 {
-	if (ch<0 || ch>=avr_S1pe.size()) {
+	if (ch>=avr_S1pe.size()) {
 		std::cerr<<"CalibrationInfo::S1pe_exp::set_S2pe_exp: Error: ch_index "<<ch<<"is out of range"<<std::endl;
 		return;
 	}
@@ -69,40 +69,202 @@ void CalibrationInfo::S1pe_exp::set_S2pe_exp(int ch, double val, int weight)
 	avr_S2pe_w[ch] = weight;
 }
 
-double CalibrationInfo::S1pe_exp::get_S2pe_exp(int ch) const
+double CalibrationInfo::S1pe_exp::get_S2pe_exp(std::size_t ch) const
 {
-	if (ch<0 || ch>=avr_S1pe.size()) {
+	if (ch>=avr_S1pe.size()) {
 		std::cerr<<"CalibrationInfo::S1pe_exp::get_S2pe_exp: Error: ch_index "<<ch<<"is out of range"<<std::endl;
 		return -1;
 	}
 	return avr_S2pe[ch];
 }
 
-int CalibrationInfo::S1pe_exp::get_S2pe_w_exp(int ch) const
+int CalibrationInfo::S1pe_exp::get_S2pe_w_exp(std::size_t ch) const
 {
-	if (ch<0 || ch >= avr_S1pe.size()) {
+	if (ch >= avr_S1pe.size()) {
 		std::cerr << "CalibrationInfo::S1pe_exp::get_S2pe_w_exp: Error: ch_index " << ch << "is out of range" << std::endl;
 		return -1;
 	}
 	return avr_S2pe_w[ch];
 }
 
-CalibrationInfo::S1pe_method CalibrationInfo::S1pe_exp::get_method(int ch) const
+CalibrationInfo::S1pe_method CalibrationInfo::S1pe_exp::get_method(std::size_t ch) const
 {
-	if (ch<0 || ch>=avr_S1pe.size()) {
+	if (ch>=avr_S1pe.size()) {
 		std::cerr<<"CalibrationInfo::S1pe_exp::get_method: Error: ch_index "<<ch<<"is out of range"<<std::endl;
 		return CalibrationInfo::S1pe_method::Ignore;
 	}
 	return method[ch];
 }
 
-void CalibrationInfo::S1pe_exp::set_method(int ch, S1pe_method meth)
+void CalibrationInfo::S1pe_exp::set_method(std::size_t ch, S1pe_method meth)
 {
-	if (ch<0 || ch>=avr_S1pe.size()) {
+	if (ch>=avr_S1pe.size()) {
 		std::cerr<<"CalibrationInfo::S1pe_exp::set_method: Error: ch_index "<<ch<<"is out of range"<<std::endl;
 		return;
 	}
 	method[ch] = meth;
+}
+
+CalibrationInfo::S1pe_table::S1pe_table()
+{}
+
+int CalibrationInfo::S1pe_table::ch_to_index(int ch) const
+{
+	return getIndex(channels_, ch);
+}
+
+int CalibrationInfo::S1pe_table::ch_index_to_ch(int ch_index) const
+{
+	if (ch_index < 0 || ch_index >= channels_.size()) {
+		std::cerr<<"CalibrationInfo::S1pe_table::ch_index_to_ch: Error: channel index"<<ch_index<<" is out of range of S1pe table"<<std::endl;
+		return INT_MIN;
+	}
+	return channels_[ch_index];
+}
+
+std::pair<std::size_t, std::size_t> CalibrationInfo::S1pe_table::ch_bound_indices(int ch, bool &failed) const
+{
+	std::pair<std::size_t, std::size_t> out;
+	failed = true;
+	std::size_t sz = channels_.size();
+	if (0 == sz)
+		return out;
+	failed = false;
+	if (ch <= channels_.front()) {
+		out = std::pair<std::size_t, std::size_t>(0, 0);
+		return out;
+	}
+	if (ch >= channels_.back()) {
+		out = std::pair<std::size_t, std::size_t>(sz - 1, sz - 1);
+		return out;
+	}
+	//find first x which is not less that X_point. That is index bounding X_point: xs[first] <= X_point < xs[first + 1]
+	//See std::lower_bound and std::upper_bound
+	std::size_t count = sz;
+	std::size_t first = 0;
+	//std::lower_bound(xys.begin(), xys.end(), [](const std::pair<double, double> &a, const std::pair<double, double> &b)->bool{
+	//	return a.first<b.first;
+	//});
+	while (count > 0) {
+		std::size_t step = count / 2;
+		std::size_t ind = first + step;
+		if (!(ch < channels_[ind])) {
+			first = ++ind;
+			count -= step + 1;
+		} else
+			count = step;
+	}
+	//first is such, that x>=xs[first-1] and x<xs[first]
+	//first always != 0 here
+	--first;
+	if (ch == channels_[first]) {
+		out = std::pair<std::size_t, std::size_t>(first, first);
+		return out;
+	}
+	out = std::pair<std::size_t, std::size_t>(first, first + 1);
+	return out;
+}
+
+bool CalibrationInfo::S1pe_table::push(int ch) //does not erase already existing ch. returns true if channel is created. Preserves sorting by channel
+{
+	std::size_t sz = channels_.size();
+	if (0 == sz) {
+		channels_.push_back(ch);
+		s1pe_.push_back(S1pe());
+		return true;
+	}
+	if (ch < channels_.front()) {
+		channels_.insert(channels_.begin(), ch);
+		s1pe_.insert(s1pe_.begin(), S1pe());
+		return true;
+	}
+	if (ch > channels_.back()) {
+		channels_.push_back(ch);
+		s1pe_.push_back(S1pe());
+		return true;
+	}
+	bool failed = false;
+	std::pair<std::size_t, std::size_t> inds = ch_bound_indices(ch, failed); //can't return failed == true here
+	if (inds.first == inds.second) {
+		std::cout<<"CalibrationInfo::S1pe_table::push(int ch): Warning: channel "<<ch<<" already exists"<<std::endl;
+		return false;
+	} else {
+		channels_.insert(channels_.begin() + inds.second, ch);
+		s1pe_.insert(s1pe_.begin() + inds.second, S1pe());
+	}
+	return true;
+}
+
+bool CalibrationInfo::S1pe_table::push(int ch, double V, double s1pe_val, bool forced, bool forced_by_default) //creates or updates entry
+{
+	bool ret = false;
+	int ind = ch_to_index(ch);
+	if (ind<0) {
+		ret = true;
+		push(ch);
+		ind = ch_to_index(ch);
+	}
+	if (ind < 0) //TODO: throw?
+		return ret;
+	auto entry = s1pe_[ind].find(V);
+	if (entry != s1pe_[ind].end()) {//modify if value not forced
+		if (!forced && entry->second.first) {
+			//std::cout << "CalibrationInfo::S1pe_table::push: Warning: forced value of s1pe for ch " << ch << "V=" << V << " (="<<s1pe_val<<") is not updated" << std::endl;
+		} else {
+			if (forced)
+				entry->second.first = true;
+			entry->second.second = s1pe_val;
+		}
+	} else {
+		ret = true;
+		s1pe_[ind][V] = std::pair<bool, double>(forced||forced_by_default, s1pe_val);
+	}
+	return ret;
+}
+
+void CalibrationInfo::S1pe_table::remove(int ch)
+{
+	int ind = ch_to_index(ch);
+	if (ind < 0)
+		return;
+	channels_.erase(channels_.begin()+ind);
+	s1pe_.erase(s1pe_.begin()+ind);
+}
+
+bool CalibrationInfo::S1pe_table::unforce_S1pe(int ch, double V)  //returns true if recalculation is required
+{
+	int ch_index = ch_to_index(ch);
+	if (ch_index >= 0) {
+		auto entry = s1pe_[ch_index].find(V);
+		if (s1pe_[ch_index].end() != entry && entry->second.first) {
+			entry->second.first = false;
+			return true;
+		}
+	}
+	return false;
+}
+
+bool CalibrationInfo::S1pe_table::isforced_S1pe(int ch, double V)
+{
+	int ch_index = ch_to_index(ch);
+	if (ch_index >= 0) {
+		auto entry = s1pe_[ch_index].find(V);
+		if (s1pe_[ch_index].end() != entry && entry->second.first) {
+			return true;
+		}
+	}
+	return false;
+}
+
+double CalibrationInfo::S1pe_table::get_S1pe(int ch, double V) const
+{
+	int ch_index = ch_to_index(ch);
+	if (ch_index >= 0) {
+		auto entry = s1pe_[ch_index].find(V);
+		if (s1pe_[ch_index].end() != entry)
+			return entry->second.second;
+	}
+	return -1;
 }
 
 int CalibrationInfo::ch_to_index(int ch) const
@@ -171,7 +333,7 @@ double CalibrationInfo::translate_exp_to_V (int ch, int exp_index) const
 	return -1;
 }
 
-bool CalibrationInfo::read_file(std::ifstream &str, std::deque<S1pe> & to_table) const
+bool CalibrationInfo::read_file(std::ifstream &str, S1pe_table &to_table) const //does not overwrite forced values set during analysis
 {
 	bool loaded = false;
 	int ch = 0;
@@ -188,9 +350,6 @@ bool CalibrationInfo::read_file(std::ifstream &str, std::deque<S1pe> & to_table)
 		} catch (...) {
 			continue;
 		}
-		int ch_index = ch_to_index(ch);
-		if (ch_index < 0) //irrelevant channel
-			continue;
 		std::map<double, double> V_s1pe_to_add;
 		while (!line.empty()) {
 			double V, s1pe;
@@ -211,41 +370,18 @@ bool CalibrationInfo::read_file(std::ifstream &str, std::deque<S1pe> & to_table)
 			}
 		}
 		for (auto vv = V_s1pe_to_add.begin(), vv_end_ = V_s1pe_to_add.end(); vv != vv_end_; ++vv)
-			add_calibration_info(to_table, ch, vv->first, vv->second);
+			to_table.push(ch, vv->first, vv->second, false, true);
 	}
 	return loaded;
 }
 
-void CalibrationInfo::add_calibration_info (std::deque<S1pe> & to_table, int ch, double V, double S1pe) const //preserves sorting, updates if necessary
-{
-	int ch_index = ch_to_index(ch);
-	if (ch_index < 0) //irrelevant channel
-		return;
-
-	if (to_table.size() <= ch_index) {
-		std::cerr << "CalibrationInfo::add_calibration_info: Error: index issue: table does not coutain channel " << ch << std::endl;
-		return;
-	}
-
-	auto entry = to_table[ch_index].find(V);
-	if (entry != to_table[ch_index].end()) {//modify if value not forced
-		if (entry->second.first) {
-			std::cout << "CalibrationInfo::add_calibration_info: Warning: forced value of s1pe for ch " << ch << "V=" << V << " is not updated" << std::endl;
-		} else
-			entry->second.second = S1pe;
-	} else
-		to_table[ch_index][V] = std::pair<bool, double>(false, S1pe);
-}
-
-bool CalibrationInfo::write_to_file(std::ofstream &str, std::deque<S1pe>& table) const
+bool CalibrationInfo::write_to_file(std::ofstream &str, S1pe_table& table) const
 {
 	if (str.is_open()) {
-		for (std::size_t chi = 0, chi_end_ = table.size(); chi != chi_end_; ++chi) {
-			int ch = ch_index_to_ch(chi);
-			if (INT_MIN == ch)
-				continue;
+		for (std::size_t chi = 0, chi_end_ = table.channels_.size(); chi != chi_end_; ++chi) {
+			int ch = table.channels_[chi];
 			str << ch << "\t";
-			for (auto i = table[chi].begin(), i_end_ = table[chi].end(); i != i_end_; ++i) {
+			for (auto i = table.s1pe_[chi].begin(), i_end_ = table.s1pe_[chi].end(); i != i_end_; ++i) {
 				str << i->first<< "\t" << i->second.second << "\t";
 			}
 			str << std::endl;
@@ -257,82 +393,46 @@ bool CalibrationInfo::write_to_file(std::ofstream &str, std::deque<S1pe>& table)
 
 double CalibrationInfo::get_S1pe(int ch, double V) const
 {
-	int ch_index = ch_to_index(ch);
-	if (ch_index >= 0 && ch_index <s1pe_.size()) {
-		auto entry = s1pe_[ch_index].find(V);
-		if (s1pe_[ch_index].end() != entry)
-			return entry->second.second;
-	}
-	return -1;
-}
-
-double CalibrationInfo::set_S1pe(int ch, double V, double val)
-{
-	int ch_index = ch_to_index(ch);
-	if (ch_index >= 0 && ch_index <s1pe_.size()) {
-		auto entry = s1pe_[ch_index].find(V);
-		if (s1pe_[ch_index].end() != entry) {
-			if (!entry->second.first)
-				entry->second.second = val;
-		} else
-			s1pe_[ch_index][V] = std::pair<bool, double>(false, val);
-	}
-	return -1;
+	return s1pe_table_.get_S1pe(ch, V);
 }
 
 void CalibrationInfo::force_S1pe(int ch, double V, double val) //forces specific value which is not erased by calculateS1pe
 {
-	int ch_index = ch_to_index(ch);
-	if (ch_index >= 0 && ch_index <s1pe_.size()) {
-		auto entry = s1pe_[ch_index].find(V);
-		if (s1pe_[ch_index].end() != entry) {
-			entry->second.second = val;
-			entry->second.first = true;
-		} else
-			s1pe_[ch_index][V] = std::pair<bool, double>(true, val);
-	}
-	return;
+	s1pe_table_.push(ch, V, val, true, true);
 }
 
-void CalibrationInfo::unforce_S1pe(int ch, double V)//does not erase/loads from file forced value, which cannot be calculated from experiment.
+void CalibrationInfo::unforce_S1pe(int ch, double V) //does not erase/loads forced value from file, which cannot be calculated from experiment.
 {
-	int ch_index = ch_to_index(ch);
-	if (ch_index >= 0 && ch_index <s1pe_.size()) {
-		auto entry = s1pe_[ch_index].find(V);
-		if (s1pe_[ch_index].end() != entry) {
-			entry->second.first = false;
-			calculateS1pe(ch, V);
-		}
-	}
-	return;
+	if (s1pe_table_.unforce_S1pe(ch, V))
+		calculateS1pe(ch, V);
 }
 
-CalibrationInfo::S1pe_method CalibrationInfo::get_method(int ch, int exp_ch) const//called from PostProcessor
+CalibrationInfo::S1pe_method CalibrationInfo::get_method(int ch, int exp_ind) const//called from PostProcessor
 {
 	int ch_index = ch_to_index(ch);
-	if (ch_index >= 0 && ch_index <s1pe_.size() && exp_ch < s1pe_exp_.size() && exp_ch>=0)
-		return s1pe_exp_[exp_ch].get_method(ch_index);
+	if (ch_index >= 0 && exp_ind < s1pe_exp_.size() && exp_ind>=0)
+		return s1pe_exp_[exp_ind].get_method(ch_index);
 	return Ignore;
 }
 
-void CalibrationInfo::set_method(int ch, int exp_ch, S1pe_method method)
+void CalibrationInfo::set_method(int ch, int exp_ind, S1pe_method method)
 {
 	int ch_index = ch_to_index(ch);
-	if (ch_index >= 0 && ch_index <s1pe_.size() && exp_ch < s1pe_exp_.size() && exp_ch >= 0)
-		s1pe_exp_[exp_ch].set_method(ch_index, method);
+	if (ch_index >= 0 && exp_ind < s1pe_exp_.size() && exp_ind >= 0)
+		s1pe_exp_[exp_ind].set_method(ch_index, method);
 }
 
 void CalibrationInfo::set_S1pe_exp(int ch, int exp_index, double val, int weight)
 {
 	int ch_index = ch_to_index(ch);
-	if (ch_index >= 0 && ch_index <s1pe_.size() && exp_index < s1pe_exp_.size() && exp_index >= 0)
+	if (ch_index >= 0 && exp_index < s1pe_exp_.size() && exp_index >= 0)
 		s1pe_exp_[exp_index].set_S1pe_exp(ch_index, val, weight);
 }
 
 double CalibrationInfo::get_S1pe_exp(int ch, int exp_index) const
 {
 	int ch_index = ch_to_index(ch);
-	if (ch_index >= 0 && ch_index <s1pe_.size() && exp_index < s1pe_exp_.size() && exp_index >= 0)
+	if (ch_index >= 0 && exp_index < s1pe_exp_.size() && exp_index >= 0)
 		return s1pe_exp_[exp_index].get_S1pe_exp(ch_index);
 	return -1;
 }
@@ -340,7 +440,7 @@ double CalibrationInfo::get_S1pe_exp(int ch, int exp_index) const
 int CalibrationInfo::get_S1pe_weight_exp(int ch, int exp_index) const
 {
 	int ch_index = ch_to_index(ch);
-	if (ch_index >= 0 && ch_index <s1pe_.size() && exp_index < s1pe_exp_.size() && exp_index >= 0)
+	if (ch_index >= 0 && exp_index < s1pe_exp_.size() && exp_index >= 0)
 		return s1pe_exp_[exp_index].get_S1pe_w_exp(ch_index);
 	return 0;
 }
@@ -348,14 +448,14 @@ int CalibrationInfo::get_S1pe_weight_exp(int ch, int exp_index) const
 void CalibrationInfo::set_S2pe_exp(int ch, int exp_index, double val, int weight)
 {
 	int ch_index = ch_to_index(ch);
-	if (ch_index >= 0 && ch_index <s1pe_.size() && exp_index < s1pe_exp_.size() && exp_index >= 0)
+	if (ch_index >= 0 && exp_index < s1pe_exp_.size() && exp_index >= 0)
 		s1pe_exp_[exp_index].set_S2pe_exp(ch_index, val, weight);
 }
 
 double CalibrationInfo::get_S2pe_exp(int ch, int exp_index) const
 {
 	int ch_index = ch_to_index(ch);
-	if (ch_index >= 0 && ch_index <s1pe_.size() && exp_index < s1pe_exp_.size() && exp_index >= 0)
+	if (ch_index >= 0 && exp_index < s1pe_exp_.size() && exp_index >= 0)
 		return s1pe_exp_[exp_index].get_S2pe_exp(ch_index);
 	return -1;
 }
@@ -363,20 +463,15 @@ double CalibrationInfo::get_S2pe_exp(int ch, int exp_index) const
 int CalibrationInfo::get_S2pe_weight_exp(int ch, int exp_index) const
 {
 	int ch_index = ch_to_index(ch);
-	if (ch_index >= 0 && ch_index <s1pe_.size() && exp_index < s1pe_exp_.size() && exp_index >= 0)
+	if (ch_index >= 0 && exp_index < s1pe_exp_.size() && exp_index >= 0)
 		return s1pe_exp_[exp_index].get_S2pe_w_exp(ch_index);
 	return 0;
 }
 
 double CalibrationInfo::calculateS1pe(int ch, double V) //from experimental avr_S1pe
 {
-	int ch_index = ch_to_index(ch);
-	if (ch_index < 0 || ch_index >= s1pe_.size())
-		return -1;
-	auto entry = s1pe_[ch_index].find(V);
-	if (s1pe_[ch_index].end() != entry) //if entry is empty but if there exists valid calculated S1pe it'll be written
-		if (entry->second.first) //forced, no point in calculations, since it won't be written
-			return entry->second.second;
+	if (s1pe_table_.isforced_S1pe(ch, V))
+		return s1pe_table_.get_S1pe(ch, V);
 	std::vector<int> exps = translate_V_to_exp(ch, V);
 	double val = 0;
 	int n_used = 0;
@@ -401,12 +496,9 @@ double CalibrationInfo::calculateS1pe(int ch, double V) //from experimental avr_
 	}
 	if (n_used) {
 		val = val / n_used;
-		set_S1pe(ch, V, val);
+		s1pe_table_.push(ch, V, val, false, false);
 	} //do not update otherwise (or calibrations from file will always be overwritten)
-	entry = s1pe_[ch_index].find(V);
-	if (s1pe_[ch_index].end() != entry) //if entry is empty but if there exists valid calculated S1pe it'll be written
-		return entry->second.second;
-	return -1;
+	return s1pe_table_.get_S1pe(ch, V);
 }
 
 void CalibrationInfo::calculateS1pe(int ch) //for all V present.
@@ -430,14 +522,14 @@ void CalibrationInfo::calculateS1pe(void) //for all channels and V.
 
 void CalibrationInfo::Save(std::string fname) const //Adds info to the file, not overrides it entirely
 {
-	std::deque<S1pe> file_table;
+	S1pe_table file_table;
 	std::ifstream istr;
 	istr.open(fname);
 	read_file(istr, file_table);
 	istr.close();
-	for (std::size_t chi = 0, chi_end_ = s1pe_.size(); chi != chi_end_; ++chi)
-		for (auto vv = s1pe_[chi].begin(), vv_end_ = s1pe_[chi].end(); vv != vv_end_; ++vv)
-			add_calibration_info(file_table, ch_index_to_ch(chi), vv->first, vv->second.second);
+	for (std::size_t chi = 0, chi_end_ = s1pe_table_.channels_.size(); chi != chi_end_; ++chi)
+		for (auto vv = s1pe_table_.s1pe_[chi].begin(), vv_end_ = s1pe_table_.s1pe_[chi].end(); vv != vv_end_; ++vv)
+			file_table.push(s1pe_table_.channels_[chi], vv->first, vv->second.second, true, true);
 	std::ofstream str;
 	open_output_file(fname, str, std::ios_base::trunc);
 	if (write_to_file(str, file_table))
@@ -451,7 +543,7 @@ bool CalibrationInfo::Load(std::string fname)
 {
 	std::ifstream str;
 	str.open(fname);
-	bool ret = read_file(str, s1pe_);
+	bool ret = read_file(str, s1pe_table_);
 	if (ret)
 		std::cout << "Loaded calibration from \"" << fname << "\"" << std::endl;
 	else

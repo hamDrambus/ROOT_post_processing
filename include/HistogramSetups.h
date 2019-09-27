@@ -5,10 +5,11 @@
 #include "EventCut.h"
 
 class HistogramSetups //just helper class, has no functionality in itself
-//defaults are set in PostProcessor!
+//part of defaults are set in PostProcessor. Default invalidate is in the constructor
 {
 public:
 	//TODO: figure out displaying of arbitrary cuts. And whether arbitrary cuts are required.
+	HistogramSetups();
 	std::deque<EventCut> hist_cuts;
 	int N_bins;
 	std::pair<double, double> x_zoom, y_zoom;
@@ -22,20 +23,24 @@ public:
 	//Following values represent status, not input parameters
 	Bool_t fitted;
 	Bool_t is_valid_fit_function;
+#ifndef __ROOTCLING__
 	//1st tier parameters of distribution: (stored in order to minimize calls of LoopThroughData to recalculate them)
 	boost::optional<std::size_t> num_of_runs;
 	boost::optional<std::size_t> num_of_fills;
 	boost::optional<std::size_t> num_of_drawn_fills;
+	boost::optional<long double> stat_weight;
+	boost::optional<long double> stat_drawn_weight;
 	boost::optional<std::pair<double, double>> x_lims, y_lims;
 	boost::optional<std::pair<double, double>> x_drawn_lims, y_drawn_lims;
 	boost::optional<double> x_mean, y_mean;
 	boost::optional<double> x_drawn_mean, y_drawn_mean;
 	//2nd tier parameters (require 2 calls to LoopThroughData)
-	bool filled_hist; //1st call is to determine default N bins, x-y range, etc.
 	boost::optional<double> x_max, y_max; //Bin with maximum value y. Require filled histogram
 	boost::optional<double> x_drawn_max, y_drawn_max; //TODO: Implement. These require separate hidden histogram
 	boost::optional<double> x_variance, x_drawn_variance;
 	boost::optional<double> y_variance, y_drawn_variance;
+#endif
+	bool filled_hist; //1st call is to determine default N bins, x-y range, etc.
 };
 
 class CanvasSetups : public AnalysisStates //just helper class, has no fancy functionality in itself
@@ -47,7 +52,7 @@ public:
 		Type type;
 	};
 	enum InvalidateLabel : unsigned int {
-		invAll = 0xFFFFFFFF, invHistogram = 0x1, invCuts = 0x2, invDisplaedCuts = 0x4, invData = 0x8, invFit = 0x10, invFitFunction = 0x20
+		invAll = 0xFFFFFFFF, invHistogram = 0x1, invCuts = 0x2, invDisplayedCuts = 0x4, invData = 0x8, invFit = 0x10, invFitFunction = 0x20
 	};
 
 protected:

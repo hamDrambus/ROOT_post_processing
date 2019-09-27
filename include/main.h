@@ -72,6 +72,7 @@ void clear(void);	//clear cuts for current histogram. Run cuts derived from it a
 void clearAll(void); //clear everything, return to initial state (leaves all existing histograms empty)
 
 //Calibration methods:
+//TODO: add erasing calibration. (When want to update calibration in existing file with, for example, changed cuts)
 void calib_status(Bool_t uncalibrated_only = false);
 void draw_Npe(void);
 void add_1peS(void);
@@ -109,6 +110,7 @@ void cut_S(double S_min, double S_max, bool drawn, int channel = -1, std::string
 void remcut_S(int channel = -1, std::string name = "");
 void cut_t(double t_min, double t_max, bool drawn, int channel = -1, std::string name = "");
 void remcut_t(int channel = -1, std::string name = "");
+void remcut(int channel, std::string name);
 
 //(turn_)off/on
 void off_ch (int ch); //for multichannel types (e.g. signal form of all SiPMs (MPPCs)). TODO: single channel case may be implemented with multichannel one - decrease the number of types
@@ -118,6 +120,10 @@ void on_ch (int ch);
 //ch(7); add_S_t_fast_PMT(region, true); //- will display cuts with red lines
 void cut_A_S_fast_PMT(std::vector<double> region, bool drawn, int channel = -1, std::string _name = "");
 void remcut_A_S_fast_PMT(int channel = -1, std::string _name = "");
+
+void cut_A_S_upper(double A_min, double S_min, double A_max, double S_max, bool drawn, int channel = -1, std::string _name = "");
+void cut_A_S_upper(std::vector<double> region, bool drawn, int channel = -1, std::string _name = "");
+void remcut_A_S_upper(int channel = -1, std::string _name = "");
 
 #ifdef _COMPLIE_MAIN_
 int main(int argc, char* argv[]) {

@@ -11,8 +11,8 @@ In the same manner conduct calibrations of slow PMTs. In their case, there is no
 required to remove noize in PMT_Ss histogram. Fast PMTs (chs 8-11) can't be calibrated by Ss.
 Ideally every experiment and channel (both SiPM) should have Ss and A-S cuts. It's too much in practice, moreover
 they have minor effect of Npe distributions. Ss do affect signal forms however.
-In this analysis Ss cuts are chosen basen on 20kV only and used for every field.
-A-S cut is used only for ch15 and ch16. So calibration:
+In this analysis Ss cuts are chosen based on 20kV only and used for every field.
+A-S cut is used only for ch15 and ch16. So calibration looks like:
 
 	ty(AnalysisStates::MPPC_Ss)
 	ch(32)
@@ -51,7 +51,7 @@ A-S cut is used only for ch15 and ch16. So calibration:
 
 This is rough selection. Ideally Ss and A-S cuts should be done for each experiment.
 
-1. N photoelectrons, signal forms.: //note 190404: ch43 has poor contact.
+2. N photoelectrons, signal forms.: //note 190404: ch43 has poor contact.
 	a) PMT ch 16 (independent, only S2_S (by area)	
 	b) estimate S2 signal time window and write it into 190404/cut_S2_times.cpp
 	c) slow PMT chs 12-15 Npe by S/S1phe

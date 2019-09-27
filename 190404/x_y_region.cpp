@@ -4,10 +4,17 @@
 	//script as in case of "cut_Ss.cpp" or "cut_S2_times.cpp"
 
 	//Cd_20kV_850V_46V_0, 18kV, 16kV, 14kV, 12kV, 10kV, 8kV
-	x_y_regions = {-1, 0.04, 0, 0.8, 0.105, 1e3};//large A ch15 Cd_20kV_850V_46V Not really important for S2 Npe
-	cut_A_S_fast_PMT(x_y_regions, false, 15, "large_A_noize");
-	x_y_regions = {-1, 0.020, 0.017, 0.1, 0.0, 1e3};//small S ch15 Cd_20kV_850V_46V
-	cut_A_S_fast_PMT(x_y_regions, false, 15, "small_S_noize");	
+	//x_y_regions = {-1, 0.04, 0, 0.8, 0.105, 1e3};//large A ch15 Cd_20kV_850V_46V Not really important for S2 Npe
+	//cut_A_S_fast_PMT(x_y_regions, false, 15, "large_A_noise");
+	//x_y_regions = {-1, 0.020, 0.017, 0.1, 0.0, 1e3};//small S ch15 Cd_20kV_850V_46V
+	//cut_A_S_fast_PMT(x_y_regions, false, 15, "small_S_noise");
+	x_y_regions = {-1, 0.003, 0.000008, 0.4, 0.0069, 1e3};//large A ch15 Cd_20kV_850V_46V Not really important for S2 Npe
+	cut_A_S_fast_PMT(x_y_regions, 1, 8, "large_A_noise");
+	//cut_A_S_upper(0.005, 0.00018, 0.025, 0.00077, true);
+	cut_A_S_upper(0.003, 0.00012, 0.6, 0.021, true);
+	//x_y_regions = {-1, 0, 0.02, 0.054, 0.0, 1e3};//small S ch15 Cd_20kV_850V_46V. Best to determine using 0-23 us peaks
+	//x_y_regions = {-1, 0, 0.012, 0.038, 0.0, 1e3};	
+	//cut_A_S_fast_PMT(x_y_regions, 0, 12, "small_S_noise");
 
 	//Cd_20kV_850V_46V
 	//x_y_regions = {29, 39, 0, 1e5}; //ch16 t-S 

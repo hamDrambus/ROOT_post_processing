@@ -233,7 +233,7 @@ Bool_t AnalysisStates::PrevExp(void)
 
 Bool_t AnalysisStates::is_PMT_type(Type type)
 {
-	return (type == PMT_S2_S || type == PMT_Ss || type == PMT_t_S || type == PMT_times|| PMT_S2_int==type || PMT_A_S == type || PMT_times_N == type || PMT_sum_N == type || PMT_Npe_sum==type);
+	return (type == PMT_S2_S || PMT_Npe_sum==type || PMT_S2_int==type || type == PMT_Ss || type == PMT_t_S || PMT_A_S == type || type == PMT_tbS || PMT_tbN == type || PMT_sum_N == type);
 }
 
 Bool_t AnalysisStates::isPerRun(Type type)
@@ -244,7 +244,7 @@ Bool_t AnalysisStates::isPerRun(Type type)
 
 Bool_t AnalysisStates::isMultichannel(Type type)
 {
-	return (type == MPPC_sum_ts)||(type==MPPC_coord)||(type==MPPC_coord_x)||(type==MPPC_coord_y)||(type==MPPC_Npe_sum)||(type==Correlation)||(type==CorrelationAll)||(type==PMT_sum_N)||(type==PMT_Npe_sum);
+	return (type == MPPC_tbS_sum) || type == MPPC_tbN_sum || type==MPPC_coord || type==MPPC_coord_x || type==MPPC_coord_y || type==MPPC_Npe_sum || type==Correlation || type==CorrelationAll || type==PMT_sum_N || type==PMT_Npe_sum;
 }
 
 Bool_t AnalysisStates::is_TH1D_hist(Type type)
@@ -429,8 +429,12 @@ std::string AnalysisStates::type_name(Type type)
 		name += "_A_S";
 		break;
 	}
-	case Type::MPPC_sum_ts:{
-		name += "_sum_ts";
+	case Type::MPPC_tbS_sum:{
+		name += "_form_by_S";
+		break;
+	}
+	case Type::MPPC_tbN_sum:{
+		name += "_form_by_Npe";
 		break;
 	}
 	case Type::MPPC_coord: {
@@ -487,20 +491,20 @@ std::string AnalysisStates::type_name(Type type)
 		name += "_A_S";
 		break;
 	}
-	case Type::MPPC_times: {
-		name+="_signal_form";
+	case Type::MPPC_tbS: {
+		name+="_signal_form_by_S";
 		break;
 	}
-	case Type::MPPC_times_N: {
-		name+="_signal_form_by_N_peaks";
+	case Type::MPPC_tbN: {
+		name+="_signal_form_by_Npe";
 		break;
 	}
-	case Type::PMT_times: {
-		name+="_signal_form";
+	case Type::PMT_tbS: {
+		name+="_signal_form_by_S";
 		break;
 	}
-	case Type::PMT_times_N: {
-		name+="_signal_form_by_N_peaks";
+	case Type::PMT_tbN: {
+		name+="_signal_form_by_Npe";
 		break;
 	}
 	case Type::PMT_sum_N: {

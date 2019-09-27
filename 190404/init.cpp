@@ -1,7 +1,7 @@
 {
   //From global parameters:
   data_prefix_path = "../Data/190404/results/";
-  calibration_file = "PMT_SiPM_190404.dat";
+  calibration_file = "190404/results/190404_calibration.dat";
   data_output_path = "../Data/190404/results/";
   DATA_MPPC_VERSION = "MPPCs_v1";
   DATA_PMT_VERSION = "PMT_v1";
@@ -11,9 +11,9 @@
   OUTPUT_MPPCS = "MPPC_";
 
   exp_area.experiments.clear();
-  //exp_area.experiments.push_back("190404_Cd_20kV_850V_46V_th250mV");
+  exp_area.experiments.push_back("190404_Cd_20kV_850V_46V_th250mV");
   //exp_area.experiments.push_back("190404_Cd_20kV_850V_46V_th250mV_0");
-  //exp_area.experiments.push_back("190404_Cd_18kV_850V_46V_th230mV");
+  exp_area.experiments.push_back("190404_Cd_18kV_850V_46V_th230mV");
   exp_area.experiments.push_back("190404_Cd_16kV_850V_46V_th210mV");
   exp_area.experiments.push_back("190404_Cd_14kV_850V_46V_th200mV");
   exp_area.experiments.push_back("190404_Cd_12kV_850V_46V_th160mV");
@@ -65,4 +65,9 @@
   exp_area.runs.push_pair(0, 0);
   exp_area.sub_runs.push_pair(0, 0);
   //end of global parameters
+  Initialize();
+  //Following variables are required for analysis_history.cpp
+  int channel; //TODO: channel list
+  int aggressive_PMT_cuts; //0 - no cuts at all, only PMT15 (original analysis of 08.2019). 1 - moderate cuts, very low A-S exclusion, also exclude high A low S. 2 - most aggressive cuts on low A and S. Calibration as well as Npe and signal forms must be plotted from scratch for every agrressiveness level.
+  std::vector<int> calib_channels = {15, 14, 13, 12, 11, 10, 9, 8};
 }

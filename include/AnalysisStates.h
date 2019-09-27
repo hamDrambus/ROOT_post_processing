@@ -11,8 +11,10 @@
 class AnalysisStates {
 public:
 	enum Type /*: std::size_t*/ {
-		MPPC_Ss, MPPC_t_S, MPPC_A_S, MPPC_Double_I, MPPC_S2_S, MPPC_times, MPPC_times_N, MPPC_sum_ts, MPPC_coord, MPPC_coord_x, MPPC_coord_y, MPPC_Npe_sum, MPPC_S2, MPPC_tfinal, MPPC_tstart, MPPC_tboth,
-		Correlation /*uses x,y Type's cuts*/,CorrelationAll, PMT_S2_S, PMT_Npe_sum, PMT_S2_int, PMT_Ss, PMT_t_S, PMT_A_S, PMT_times, PMT_times_N, PMT_sum_N};
+		MPPC_Ss, MPPC_t_S, MPPC_A_S, MPPC_Double_I, MPPC_S2_S, /*(old) MPPC_times*/ MPPC_tbS /*time by N*/, /*(old) MPPC_times_N*/ MPPC_tbN /*time by N*/,
+		/*(old) MPPC_sum_ts*/ MPPC_tbS_sum /*time distribution with weights as peak area S*/,
+		MPPC_tbN_sum /*time distribution with weights as peak Npe*/, MPPC_coord, MPPC_coord_x, MPPC_coord_y, MPPC_Npe_sum, MPPC_S2, MPPC_tfinal, MPPC_tstart, MPPC_tboth,
+		Correlation /*uses x,y Type's cuts*/,CorrelationAll, PMT_S2_S, PMT_Npe_sum, PMT_S2_int, PMT_Ss, PMT_t_S, PMT_A_S, PMT_tbS, PMT_tbN, PMT_sum_N};
 protected:
 	const Type _first_state;
 	const Type _last_state;
@@ -25,8 +27,8 @@ protected:
 	Type MPPC_last_type;
 	Type PMT_last_type;
 	virtual Bool_t StateChange(int to_ch, int to_exp, Type to_type, int from_ch, int from_exp, Type from_type);
-	int channel_to_index(int ch); //TODO: changed!
-	int channel_to_index(int ch, Type type); //TODO: changed!
+	int channel_to_index(int ch);
+	int channel_to_index(int ch, Type type);
 
 	void loop_channels_reset(void);
 	bool loop_channels (Type type, int &ch, int &ch_ind);

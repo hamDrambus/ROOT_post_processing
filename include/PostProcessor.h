@@ -19,14 +19,11 @@
 
 //8) void PostProcessor::LoopThroughData(FunctionWrapper*);
 //9) void PostProcessor::print_hist(int ch, int exp_ind, Type type);
-//10) void PostProcessor::FillHist(void* p_hist)
-//11) int PostProcessor::numOfFills(int channel, Type type);
-//12) std::pair<double, double> PostProcessor::hist_x_limits(void);
-//13) std::pair<double, double> PostProcessor::hist_y_limits(void);
-//14) void PostProcessor::default_hist_setups(void);
+//10) bool PostProcessor::update(void);
+//11) void PostProcessor::update_physical(void)
+//12) void PostProcessor::default_hist_setups(HistogramSetups*);
 
-//15) void PostProcessor::update_physical(void);
-//16) 2nd tier methods in main:
+//13) 2nd tier methods in main:
 //	FunctionWrapper* create_vertical_lines_cut(double left, double right)
 //	FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region)
 //	FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region)
@@ -44,6 +41,9 @@ public:
 		bool apply_run_cuts;
 		bool apply_hist_cuts;
 		bool apply_phys_cuts;
+		Operation() :
+			operation(NULL), apply_run_cuts(false), apply_hist_cuts(false), apply_phys_cuts(false)
+		{}
 		Operation(FunctionWrapper *op, bool apply_run_cut, bool apply_hist_cut, bool apply_phys_cut) :
 			operation(op), apply_run_cuts(apply_run_cut), apply_hist_cuts(apply_hist_cut), apply_phys_cuts(apply_phys_cut)
 		{}
