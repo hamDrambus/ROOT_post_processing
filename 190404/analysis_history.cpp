@@ -403,14 +403,16 @@ ch(8);
     saveas("190404/results/Cd_46V_20kV_850V/calibration/8_A_S_aggr=1_zoom1");
 }
 }//for (channels)
-if (aggressive_PMT_cuts == 0) { //no A-S cuts
-    calib_save("190404/results/190404_calibration.dat");
-}
-if (aggressive_PMT_cuts == 1) { //see above or pictures.
-    calib_save("190404/results/190404_calibration_aggr=1.dat");
-}
-if (aggressive_PMT_cuts == 2) { //the only difference of 2 from 1 is 14th channel - more strict cuts
-    calib_save("190404/results/190404_calibration_aggr=2.dat");
+if (calibrate) {
+	if (aggressive_PMT_cuts == 0) { //no A-S cuts
+		calib_save("190404/results/190404_calibration.dat");
+	}
+	if (aggressive_PMT_cuts == 1) { //see above or pictures.
+		calib_save("190404/results/190404_calibration_aggr=1.dat");
+	}
+	if (aggressive_PMT_cuts == 2) { //the only difference of 2 from 1 is 14th channel - more strict cuts
+		calib_save("190404/results/190404_calibration_aggr=2.dat");
+	}
 }
 //SiPMs were calibrated before the creation of this file so they are omitted. They will be present in analysis_history.cpp for other experimental days.
 //END OF CALIBRATION
@@ -721,6 +723,186 @@ if (exp == "190404_Cd_20kV_850V_46V_th250mV" && aggressive_PMT_cuts == 0 && form
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_S");
 	ch(12);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_S");
+////////////////////////////////////20kV///////21-62pe///As 18 kV////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(21, 62);
+	npe_cut = "_x_21-62pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+	
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+////////////////////////////////////20kV///////18-48pe///As 16 kV////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(18, 48);
+	npe_cut = "_x_18-48pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+	
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+////////////////////////////////////20kV///////13-40pe///As 14 kV////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(13, 40);
+	npe_cut = "_x_13-40pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+	
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+////////////////////////////////////20kV///////10-32pe///As 12 kV////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(10, 32);
+	npe_cut = "_x_10-32pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+	
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+////////////////////////////////////20kV///////8-23pe///As 10 kV////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(8, 23);
+	npe_cut = "_x_8-23pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+	
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+////////////////////////////////////20kV///////5-20pe///As 8 kV////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(5, 20);
+	npe_cut = "_x_5-20pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+	
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
 }
 if (exp == "190404_Cd_20kV_850V_46V_th250mV" && aggressive_PMT_cuts == 1 && forms) { 	
 	std::string folder = "Cd_46V_20kV_850V";
@@ -1019,6 +1201,2665 @@ if (exp == "190404_Cd_20kV_850V_46V_th250mV" && aggressive_PMT_cuts == 1 && form
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_S");
 	ch(12);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_S");
+}
+//18//18//18//18//18//18//18//18//18//18//18//18//18//18//18//18//18//18//18//18//18//18//18//18
+if (exp == "190404_Cd_18kV_850V_46V_th230mV" && aggressive_PMT_cuts == 0 && forms) { 	
+	std::string folder = "Cd_46V_18kV_850V";
+	double S2_t_start = S2_times.find(exp)->second.first, S2_t_finish = S2_times.find(exp)->second.second;
+	ty(AnalysisStates::PMT_Npe_sum);
+	set_zoom(0, 140);
+	set_bins(140);
+	off_ch(8); off_ch(9); off_ch(10); off_ch(11); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 15);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 14);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 13);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 12);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	draw_limits(0, 160);
+	std::string npe_cut = "_0-160pe";
+	set_as_run_cut(npe_cut);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/slowPMTs_Npe");
+	ty(AnalysisStates::PMT_sum_N);
+	set_zoom(0, 80);
+	set_bins(80);
+	off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 8);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 9);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 10);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 11);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/fastPMTs_Npeaks");
+	ty(AnalysisStates::MPPC_Npe_sum);
+	set_zoom(0, 80);
+	set_bins(80);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+		cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, chan);
+	}
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/SiPMs_Npe");
+	
+	ty(AnalysisStates::MPPC_tbN_sum);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+	}
+	set_zoom(20, 70);
+	set_bins(800);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/15_form_by_Npe");
+	ch(14);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/14_form_by_Npe");
+	ch(13);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/13_form_by_Npe");
+	ch(12);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/12_form_by_Npe");
+
+	ch(11);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/11_form_by_Npeaks");
+	ch(10);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/10_form_by_Npeaks");
+	ch(9);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/9_form_by_Npeaks");
+	ch(8);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/8_form_by_Npeaks");
+
+////////////////////////////////////18kV///////0-21pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(0, 21);
+	npe_cut = "_0-21pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(400);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////18kV///////21-40pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(21, 40);
+	npe_cut = "_21-40pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////18kV///////21-62pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(21, 62);
+	npe_cut = "_21-62pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////18kV///////70-160pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(70, 160);
+	npe_cut = "_70-160pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+}
+if (exp == "190404_Cd_18kV_850V_46V_th230mV" && aggressive_PMT_cuts == 1 && forms) { 	
+	std::string folder = "Cd_46V_18kV_850V";
+	double S2_t_start = S2_times.find(exp)->second.first, S2_t_finish = S2_times.find(exp)->second.second;
+	ty(AnalysisStates::PMT_Npe_sum);
+	set_zoom(0, 140);
+	set_bins(140);
+	off_ch(8); off_ch(9); off_ch(10); off_ch(11); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 15);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 14);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 13);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 12);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	draw_limits(0, 160);
+	std::string npe_cut = "_0-160pe";
+	set_as_run_cut(npe_cut);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/slowPMTs_Npe");
+	
+	ty(AnalysisStates::PMT_sum_N);
+	set_zoom(0, 80);
+	set_bins(80);
+	off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 8);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 9);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 10);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 11);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/fastPMTs_Npeaks");
+	ty(AnalysisStates::MPPC_Npe_sum);
+	set_zoom(0, 80);
+	set_bins(80);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+		cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, chan);
+	}
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/SiPMs_Npe");
+	
+	ty(AnalysisStates::MPPC_tbN_sum);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+	}
+	set_zoom(20, 70);
+	set_bins(800);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/15_form_by_Npe");
+	ch(14);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/14_form_by_Npe");
+	ch(13);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/13_form_by_Npe");
+	ch(12);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/12_form_by_Npe");
+
+	ch(11);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/11_form_by_Npeaks");
+	ch(10);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/10_form_by_Npeaks");
+	ch(9);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/9_form_by_Npeaks");
+	ch(8);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/8_form_by_Npeaks");
+
+////////////////////////////////////18kV///////0-18pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(0, 18);
+	npe_cut = "_0-18pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(400);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////18kV///////18-32pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(18, 32);
+	npe_cut = "_18-32pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////18kV///////18-50pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(18, 50);
+	npe_cut = "_18-50pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////18kV///////60-160pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(60, 160);
+	npe_cut = "_60-160pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+}
+if (exp == "190404_Cd_16kV_850V_46V_th210mV" && aggressive_PMT_cuts == 0 && forms) { 	
+	std::string folder = "Cd_46V_16kV_850V";
+	double S2_t_start = S2_times.find(exp)->second.first, S2_t_finish = S2_times.find(exp)->second.second;
+	ty(AnalysisStates::PMT_Npe_sum);
+	set_zoom(0, 100);
+	set_bins(100);
+	off_ch(8); off_ch(9); off_ch(10); off_ch(11); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 15);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 14);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 13);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 12);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	draw_limits(0, 140);
+	std::string npe_cut = "_0-140pe";
+	set_as_run_cut(npe_cut);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/slowPMTs_Npe");
+	ty(AnalysisStates::PMT_sum_N);
+	set_zoom(0, 80);
+	set_bins(80);
+	off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 8);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 9);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 10);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 11);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/fastPMTs_Npeaks");
+	ty(AnalysisStates::MPPC_Npe_sum);
+	set_zoom(0, 80);
+	set_bins(80);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+		cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, chan);
+	}
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/SiPMs_Npe");
+	
+	ty(AnalysisStates::MPPC_tbN_sum);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+	}
+	set_zoom(20, 70);
+	set_bins(800);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/15_form_by_Npe");
+	ch(14);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/14_form_by_Npe");
+	ch(13);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/13_form_by_Npe");
+	ch(12);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/12_form_by_Npe");
+
+	ch(11);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/11_form_by_Npeaks");
+	ch(10);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/10_form_by_Npeaks");
+	ch(9);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/9_form_by_Npeaks");
+	ch(8);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/8_form_by_Npeaks");
+
+////////////////////////////////////16kV///////0-18pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(0, 18);
+	npe_cut = "_0-18pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(400);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////16kV///////18-32pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(18, 32);
+	npe_cut = "_18-32pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////16kV///////18-48pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(18, 48);
+	npe_cut = "_18-48pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////16kV///////60-140pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(60, 140);
+	npe_cut = "_60-140pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+}
+if (exp == "190404_Cd_16kV_850V_46V_th210mV" && aggressive_PMT_cuts == 1 && forms) { 	
+	std::string folder = "Cd_46V_16kV_850V";
+	double S2_t_start = S2_times.find(exp)->second.first, S2_t_finish = S2_times.find(exp)->second.second;
+	ty(AnalysisStates::PMT_Npe_sum);
+	set_zoom(0, 100);
+	set_bins(100);
+	off_ch(8); off_ch(9); off_ch(10); off_ch(11); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 15);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 14);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 13);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 12);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	draw_limits(0, 140);
+	std::string npe_cut = "_0-140pe";
+	set_as_run_cut(npe_cut);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/slowPMTs_Npe");
+	
+	ty(AnalysisStates::PMT_sum_N);
+	set_zoom(0, 80);
+	set_bins(80);
+	off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 8);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 9);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 10);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 11);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/fastPMTs_Npeaks");
+	ty(AnalysisStates::MPPC_Npe_sum);
+	set_zoom(0, 80);
+	set_bins(80);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+		cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, chan);
+	}
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/SiPMs_Npe");
+	
+	ty(AnalysisStates::MPPC_tbN_sum);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+	}
+	set_zoom(20, 70);
+	set_bins(800);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/15_form_by_Npe");
+	ch(14);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/14_form_by_Npe");
+	ch(13);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/13_form_by_Npe");
+	ch(12);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/12_form_by_Npe");
+
+	ch(11);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/11_form_by_Npeaks");
+	ch(10);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/10_form_by_Npeaks");
+	ch(9);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/9_form_by_Npeaks");
+	ch(8);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/8_form_by_Npeaks");
+
+////////////////////////////////////16kV///////0-14pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(0, 14);
+	npe_cut = "_0-14pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(400);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////16kV///////14-26pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(14, 26);
+	npe_cut = "_14-26pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////16kV///////14-39pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(14, 39);
+	npe_cut = "_14-39pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////16kV///////48-140pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(48, 140);
+	npe_cut = "_48-140pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+}
+if (exp == "190404_Cd_14kV_850V_46V_th200mV" && aggressive_PMT_cuts == 0 && forms) { 	
+	std::string folder = "Cd_46V_14kV_850V";
+	double S2_t_start = S2_times.find(exp)->second.first, S2_t_finish = S2_times.find(exp)->second.second;
+	ty(AnalysisStates::PMT_Npe_sum);
+	set_zoom(0, 80);
+	set_bins(80);
+	off_ch(8); off_ch(9); off_ch(10); off_ch(11); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 15);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 14);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 13);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 12);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	draw_limits(0, 120);
+	std::string npe_cut = "_0-120pe";
+	set_as_run_cut(npe_cut);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	ty(AnalysisStates::PMT_sum_N);
+	set_zoom(0, 60);
+	set_bins(60);
+	off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 8);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 9);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 10);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 11);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/fastPMTs_Npeaks");
+	ty(AnalysisStates::MPPC_Npe_sum);
+	set_zoom(0, 60);
+	set_bins(60);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+		cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, chan);
+	}
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_Npe");
+	
+	ty(AnalysisStates::MPPC_tbN_sum);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+	}
+	set_zoom(20, 70);
+	set_bins(800);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////14kV///////0-13pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(0, 13);
+	npe_cut = "_0-13pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(400);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////14kV///////13-25pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(13, 25);
+	npe_cut = "_13-25pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////14kV///////13-40pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(13, 40);
+	npe_cut = "_13-40pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////14kV///////48-120pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(48, 120);
+	npe_cut = "_48-120pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+}
+if (exp == "190404_Cd_14kV_850V_46V_th200mV" && aggressive_PMT_cuts == 1 && forms) { 	
+	std::string folder = "Cd_46V_14kV_850V";
+	double S2_t_start = S2_times.find(exp)->second.first, S2_t_finish = S2_times.find(exp)->second.second;
+	ty(AnalysisStates::PMT_Npe_sum);
+	set_zoom(0, 70);
+	set_bins(70);
+	off_ch(8); off_ch(9); off_ch(10); off_ch(11); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 15);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 14);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 13);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 12);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	draw_limits(0, 120);
+	std::string npe_cut = "_0-120pe";
+	set_as_run_cut(npe_cut);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	
+	ty(AnalysisStates::PMT_sum_N);
+	set_zoom(0, 60);
+	set_bins(60);
+	off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 8);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 9);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 10);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 11);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/fastPMTs_Npeaks");
+	ty(AnalysisStates::MPPC_Npe_sum);
+	set_zoom(0, 60);
+	set_bins(60);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+		cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, chan);
+	}
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_Npe");
+	
+	ty(AnalysisStates::MPPC_tbN_sum);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+	}
+	set_zoom(20, 70);
+	set_bins(800);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////14kV///////0-10pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(0, 10);
+	npe_cut = "_0-10pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(400);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////14kV///////10-20pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(10, 20);
+	npe_cut = "_10-20pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////14kV///////10-34pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(10, 34);
+	npe_cut = "_10-34pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////14kV///////40-120pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(40, 120);
+	npe_cut = "_40-120pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+}
+if (exp == "190404_Cd_12kV_850V_46V_th160mV" && aggressive_PMT_cuts == 0 && forms) { 	
+	std::string folder = "Cd_46V_12kV_850V";
+	double S2_t_start = S2_times.find(exp)->second.first, S2_t_finish = S2_times.find(exp)->second.second;
+	ty(AnalysisStates::PMT_Npe_sum);
+	set_zoom(0, 80);
+	set_bins(80);
+	off_ch(8); off_ch(9); off_ch(10); off_ch(11); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 15);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 14);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 13);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 12);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	draw_limits(0, 100);
+	std::string npe_cut = "_0-100pe";
+	set_as_run_cut(npe_cut);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	ty(AnalysisStates::PMT_sum_N);
+	set_zoom(0, 60);
+	set_bins(60);
+	off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 8);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 9);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 10);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 11);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/fastPMTs_Npeaks");
+	ty(AnalysisStates::MPPC_Npe_sum);
+	set_zoom(0, 60);
+	set_bins(60);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+		cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, chan);
+	}
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_Npe");
+	
+	ty(AnalysisStates::MPPC_tbN_sum);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+	}
+	set_zoom(20, 70);
+	set_bins(800);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////12kV///////0-10pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(0, 10);
+	npe_cut = "_0-10pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(400);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////12kV///////10-19pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(10, 19);
+	npe_cut = "_10-19pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////12kV///////10-32pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(10, 32);
+	npe_cut = "_10-32pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////12kV///////40-100pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(40, 100);
+	npe_cut = "_40-100pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+}
+if (exp == "190404_Cd_12kV_850V_46V_th160mV" && aggressive_PMT_cuts == 1 && forms) { 	
+	std::string folder = "Cd_46V_12kV_850V";
+	double S2_t_start = S2_times.find(exp)->second.first, S2_t_finish = S2_times.find(exp)->second.second;
+	ty(AnalysisStates::PMT_Npe_sum);
+	set_zoom(0, 70);
+	set_bins(70);
+	off_ch(8); off_ch(9); off_ch(10); off_ch(11); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 15);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 14);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 13);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 12);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	draw_limits(0, 100);
+	std::string npe_cut = "_0-100pe";
+	set_as_run_cut(npe_cut);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	
+	ty(AnalysisStates::PMT_sum_N);
+	set_zoom(0, 60);
+	set_bins(60);
+	off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 8);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 9);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 10);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 11);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/fastPMTs_Npeaks");
+	ty(AnalysisStates::MPPC_Npe_sum);
+	set_zoom(0, 60);
+	set_bins(60);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+		cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, chan);
+	}
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_Npe");
+	
+	ty(AnalysisStates::MPPC_tbN_sum);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+	}
+	set_zoom(20, 70);
+	set_bins(800);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////12kV///////0-8pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(0, 8);
+	npe_cut = "_0-8pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(400);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////12kV///////8-15pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(8, 15);
+	npe_cut = "_8-15pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////12kV///////8-24pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(8, 24);
+	npe_cut = "_8-24pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////12kV///////30-100pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(30, 100);
+	npe_cut = "_30-100pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+}
+if (exp == "190404_Cd_10kV_850V_46V_th150mV" && aggressive_PMT_cuts == 0 && forms) { 	
+	std::string folder = "Cd_46V_10kV_850V";
+	double S2_t_start = S2_times.find(exp)->second.first, S2_t_finish = S2_times.find(exp)->second.second;
+	ty(AnalysisStates::PMT_Npe_sum);
+	set_zoom(0, 70);
+	set_bins(70);
+	off_ch(8); off_ch(9); off_ch(10); off_ch(11); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 15);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 14);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 13);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 12);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	draw_limits(0, 70);
+	std::string npe_cut = "_0-70pe";
+	set_as_run_cut(npe_cut);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	ty(AnalysisStates::PMT_sum_N);
+	set_zoom(0, 50);
+	set_bins(50);
+	off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 8);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 9);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 10);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 11);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/fastPMTs_Npeaks");
+	ty(AnalysisStates::MPPC_Npe_sum);
+	set_zoom(0, 50);
+	set_bins(50);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+		cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, chan);
+	}
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_Npe");
+	
+	ty(AnalysisStates::MPPC_tbN_sum);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+	}
+	set_zoom(20, 70);
+	set_bins(800);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////10kV///////0-8pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(0, 8);
+	npe_cut = "_0-8pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(400);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////10kV///////8-13pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(8, 13);
+	npe_cut = "_8-13pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////10kV///////8-23pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(8, 23);
+	npe_cut = "_8-23pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////10kV///////30-70pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(30, 70);
+	npe_cut = "_30-70pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+}
+if (exp == "190404_Cd_10kV_850V_46V_th150mV" && aggressive_PMT_cuts == 1 && forms) { 	
+	std::string folder = "Cd_46V_10kV_850V";
+	double S2_t_start = S2_times.find(exp)->second.first, S2_t_finish = S2_times.find(exp)->second.second;
+	ty(AnalysisStates::PMT_Npe_sum);
+	set_zoom(0, 70);
+	set_bins(70);
+	off_ch(8); off_ch(9); off_ch(10); off_ch(11); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 15);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 14);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 13);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 12);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	draw_limits(0, 70);
+	std::string npe_cut = "_0-70pe";
+	set_as_run_cut(npe_cut);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	
+	ty(AnalysisStates::PMT_sum_N);
+	set_zoom(0, 50);
+	set_bins(50);
+	off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 8);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 9);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 10);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 11);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/fastPMTs_Npeaks");
+	ty(AnalysisStates::MPPC_Npe_sum);
+	set_zoom(0, 50);
+	set_bins(50);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+		cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, chan);
+	}
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_Npe");
+	
+	ty(AnalysisStates::MPPC_tbN_sum);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+	}
+	set_zoom(20, 70);
+	set_bins(800);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////10kV///////0-6pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(0, 6);
+	npe_cut = "_0-6pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(400);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////10kV///////6-10pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(6, 10);
+	npe_cut = "_6-10pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////10kV///////6-18pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(6, 18);
+	npe_cut = "_6-18pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////10kV///////24-70pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(24, 70);
+	npe_cut = "_24-70pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+}
+if (exp == "190404_Cd_8kV_850V_46V_th140mV" && aggressive_PMT_cuts == 0 && forms) { 	
+	std::string folder = "Cd_8V_10kV_850V";
+	double S2_t_start = S2_times.find(exp)->second.first, S2_t_finish = S2_times.find(exp)->second.second;
+	ty(AnalysisStates::PMT_Npe_sum);
+	set_zoom(0, 70);
+	set_bins(70);
+	off_ch(8); off_ch(9); off_ch(10); off_ch(11); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 15);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 14);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 13);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 12);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	draw_limits(0, 70);
+	std::string npe_cut = "_0-70pe";
+	set_as_run_cut(npe_cut);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	ty(AnalysisStates::PMT_sum_N);
+	set_zoom(0, 50);
+	set_bins(50);
+	off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 8);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 9);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 10);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 11);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/fastPMTs_Npeaks");
+	ty(AnalysisStates::MPPC_Npe_sum);
+	set_zoom(0, 50);
+	set_bins(50);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+		cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, chan);
+	}
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_Npe");
+	
+	ty(AnalysisStates::MPPC_tbN_sum);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+	}
+	set_zoom(20, 70);
+	set_bins(800);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////8kV///////0-5pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(0, 5);
+	npe_cut = "_0-5pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(400);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////8kV///////5-10pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(5, 10);
+	npe_cut = "_5-10pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////8kV///////5-20pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(5, 20);
+	npe_cut = "_5-20pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////8kV///////25-70pe/////////aggr==0/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(25, 70);
+	npe_cut = "_25-70pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+}
+if (exp == "190404_Cd_8kV_850V_46V_th140mV" && aggressive_PMT_cuts == 1 && forms) { 	
+	std::string folder = "Cd_46V_8kV_850V";
+	double S2_t_start = S2_times.find(exp)->second.first, S2_t_finish = S2_times.find(exp)->second.second;
+	ty(AnalysisStates::PMT_Npe_sum);
+	set_zoom(0, 70);
+	set_bins(70);
+	off_ch(8); off_ch(9); off_ch(10); off_ch(11); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 15);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 14);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 13);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 12);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	draw_limits(0, 70);
+	std::string npe_cut = "_0-70pe";
+	set_as_run_cut(npe_cut);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	
+	ty(AnalysisStates::PMT_sum_N);
+	set_zoom(0, 50);
+	set_bins(50);
+	off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 8);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 9);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 10);
+	cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, 11);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/fastPMTs_Npeaks");
+	ty(AnalysisStates::MPPC_Npe_sum);
+	set_zoom(0, 50);
+	set_bins(50);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+		cut_S_t_rect_select(S2_t_start, S2_t_finish, 0, 1e5, false, chan);
+	}
+	update();
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_Npe");
+	
+	ty(AnalysisStates::MPPC_tbN_sum);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, aggressive_PMT_cuts, false);
+	}
+	set_zoom(20, 70);
+	set_bins(800);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	noise_cut(15, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	noise_cut(14, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	noise_cut(13, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	noise_cut(12, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	noise_cut(11, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	noise_cut(10, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	noise_cut(9, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	noise_cut(8, aggressive_PMT_cuts, false);
+	set_zoom(20, 70);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////8kV///////0-4pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(0, 4);
+	npe_cut = "_0-4pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(400);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////8kV///////4-7pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(4, 7);
+	npe_cut = "_4-7pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////8kV///////4-16pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(4, 16);
+	npe_cut = "_4-16pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
+
+////////////////////////////////////8kV///////20-70pe/////////aggr==1/////////////////////////////////////
+	ty(AnalysisStates::PMT_Npe_sum);
+	unset_as_run_cut(npe_cut);
+	draw_limits(20, 70);
+	npe_cut = "_20-70pe";
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
+	set_as_run_cut(npe_cut);
+
+	ty(AnalysisStates::MPPC_tbN_sum);
+	set_bins(600);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
+
+	ty(AnalysisStates::PMT_tbN);
+	ch(15);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/15_form_by_Npe");
+	ch(14);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/14_form_by_Npe");
+	ch(13);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/13_form_by_Npe");
+	ch(12);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/12_form_by_Npe");
+
+	ch(11);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/11_form_by_Npeaks");
+	ch(10);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/10_form_by_Npeaks");
+	ch(9);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/9_form_by_Npeaks");
+	ch(8);
+	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/8_form_by_Npeaks");
 }
 //END OF FORMS
 } 
