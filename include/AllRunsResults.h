@@ -31,6 +31,7 @@ protected:
 	/*TH1D* createMPPCHist(std::vector<double> &what, std::string name, double left_cutoff, double right_cutoff_from_RMS, int N_bins = 0);
 	void vector_to_file(std::vector<double> &what, std::string fname);
 	TF1* createMPPCFitFunc(TH1D* hist, std::string name);*/
+	bool test_file(std::string fname);
 	void vector_from_file(std::vector<double> &what, std::string fname);
 	void vector_from_file(std::deque<std::deque<peak> > &pks, std::string fname);
 	void vector_to_file(std::deque<std::deque<std::deque<peak> > > &pks, int ch_ind, std::string fname, std::string title = "MPPC_peaks");

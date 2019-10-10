@@ -8,13 +8,14 @@ AllRunsResults::AllRunsResults(/*ParameterPile::*/experiment_area experiment)
 	for (auto ex = _exp.experiments.begin(); ex != _exp.experiments.end(); ++ex) {
 		int mppc_ch = 0;
 		for (int ch = _exp.channels.get_next_index(); ch != -1; ch = _exp.channels.get_next_index()){
-			if (ch<32) {
-				std::string prefix = data_prefix_path + DATA_PMT_VERSION + "/PMT_" + *ex + "/PMT_"+std::to_string(ch)+"/PMT_"+std::to_string(ch)+"_";
+			std::string prefix_pmt = data_prefix_path + DATA_PMT_VERSION + "/PMT_" + *ex + "/PMT_"+std::to_string(ch)+"/PMT_"+std::to_string(ch)+"_";
+			std::string prefix_mppc = data_prefix_path+"/"+DATA_MPPC_VERSION + "/MPPCs_" + *ex + "/MPPC_" + std::to_string(ch) + "/MPPC_" + std::to_string(ch) + "_";
+			if (test_file(prefix_pmt + "peaks.dat")) {
 				pmt_channels.push_back(ch);
 				pmt_peaks.push_back(std::deque<std::deque<peak>>());
 				pmt_S2_integral.push_back(std::vector<double>());
-				vector_from_file(pmt_peaks.back(), prefix + "peaks.dat");
-				vector_from_file(pmt_S2_integral.back(), prefix + "S2_int.dat"); //pmt_S2_integral is not necessary for all channels
+				vector_from_file(pmt_peaks.back(), prefix_pmt + "peaks.dat");
+				vector_from_file(pmt_S2_integral.back(), prefix_pmt + "S2_int.dat"); //pmt_S2_integral is not necessary for all channels
 				if (pmt_peaks.back().empty()) {
 					pmt_channels.pop_back();
 					pmt_peaks.pop_back();
@@ -24,36 +25,36 @@ AllRunsResults::AllRunsResults(/*ParameterPile::*/experiment_area experiment)
 						pmt_S2_integral.back().resize(pmt_peaks.back().size(), -1);
 					}
 					std::cout << "Loaded channel " << ch << std::endl;
+					continue;
 				}
-				continue;
 			}
-			std::string prefix = data_prefix_path+"/"+DATA_MPPC_VERSION + "/MPPCs_" + *ex + "/MPPC_" + std::to_string(ch) + "/MPPC_" + std::to_string(ch) + "_";
-			
-			mppc_peaks.push_back(std::deque<std::deque<peak>>());
-			mppc_S2_S.push_back(std::vector<double>());
-			mppc_S2_start_time.push_back(std::vector<double>());
-			mppc_S2_finish_time.push_back(std::vector<double>());
-			mppc_Double_Is.push_back(std::vector<double>());
-			mppc_channels.push_back(ch);
+			if (test_file(prefix_mppc + "peaks.dat")) {
+				mppc_peaks.push_back(std::deque<std::deque<peak>>());
+				mppc_S2_S.push_back(std::vector<double>());
+				mppc_S2_start_time.push_back(std::vector<double>());
+				mppc_S2_finish_time.push_back(std::vector<double>());
+				mppc_Double_Is.push_back(std::vector<double>());
+				mppc_channels.push_back(ch);
 
-			vector_from_file(mppc_peaks.back(), prefix + "peaks.dat");
-			vector_from_file(mppc_S2_S.back(), prefix + "S2_S.dat");
-			vector_from_file(mppc_Double_Is.back(), prefix + "double_I.dat");
-			vector_from_file(mppc_S2_start_time.back(), prefix + "S2_start_t.dat");
-			vector_from_file(mppc_S2_finish_time.back(), prefix + "S2_finish_t.dat");
+				vector_from_file(mppc_peaks.back(), prefix_mppc + "peaks.dat");
+				vector_from_file(mppc_S2_S.back(), prefix_mppc + "S2_S.dat");
+				vector_from_file(mppc_Double_Is.back(), prefix_mppc + "double_I.dat");
+				vector_from_file(mppc_S2_start_time.back(), prefix_mppc + "S2_start_t.dat");
+				vector_from_file(mppc_S2_finish_time.back(), prefix_mppc + "S2_finish_t.dat");
 
-			if (mppc_peaks.back().empty()|| mppc_S2_S.back().empty() || mppc_Double_Is.back().empty()
-				||mppc_S2_finish_time.back().empty()||mppc_S2_start_time.back().empty()){ //empty files
-				mppc_peaks.pop_back();
-				mppc_Double_Is.pop_back();
-				mppc_S2_S.pop_back();
-				mppc_channels.pop_back();
-				mppc_S2_start_time.pop_back();
-				mppc_S2_finish_time.pop_back();
-			} else {
-				++mppc_ch;
-				std::cout << "Loaded channel " << ch << std::endl;
-				N_of_runs = std::max(N_of_runs, (int)std::max(mppc_Double_Is.back().size(), mppc_S2_S.back().size()));
+				if (mppc_peaks.back().empty()|| mppc_S2_S.back().empty() || mppc_Double_Is.back().empty()
+					||mppc_S2_finish_time.back().empty()||mppc_S2_start_time.back().empty()) { //empty files
+					mppc_peaks.pop_back();
+					mppc_Double_Is.pop_back();
+					mppc_S2_S.pop_back();
+					mppc_channels.pop_back();
+					mppc_S2_start_time.pop_back();
+					mppc_S2_finish_time.pop_back();
+				} else {
+					++mppc_ch;
+					std::cout << "Loaded channel " << ch << std::endl;
+					N_of_runs = std::max(N_of_runs, (int)std::max(mppc_Double_Is.back().size(), mppc_S2_S.back().size()));
+				}
 			}
 		}
 	}
@@ -92,6 +93,14 @@ void AllRunsResults::vector_from_file(std::vector<double> &what, std::string fna
 		break;
 	}
 	str.close();
+}
+
+bool AllRunsResults::test_file(std::string fname) {
+	std::ifstream str;
+	str.open(fname, std::ios_base::binary);
+	if (!str.is_open())
+		return false;
+	return true;
 }
 
 void AllRunsResults::vector_from_file(std::deque<std::deque<peak>> &pks, std::string fname)
