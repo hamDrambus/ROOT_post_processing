@@ -370,7 +370,7 @@ bool CalibrationInfo::read_file(std::ifstream &str, S1pe_table &to_table) const 
 			}
 		}
 		for (auto vv = V_s1pe_to_add.begin(), vv_end_ = V_s1pe_to_add.end(); vv != vv_end_; ++vv)
-			to_table.push(ch, vv->first, vv->second, false, true);
+			to_table.push(ch, vv->first, vv->second, true, true);
 	}
 	return loaded;
 }

@@ -92,6 +92,7 @@ void Exit(Bool_t save = kTRUE); //It's better do not call it and save all releva
 void draw_limits(double left, double right);	//2 tier method
 void set_limits(double left, double right);		//2 tier method
 void unset_limits(void);						//2 tier method
+void unset_draw_limits(void);					//2 tier method
 
 void cut_S_t_rect_exclude(double t_min, double t_max, double S_min, double S_max, bool drawn, int channel = -1, std::string name = "");
 void cut_S_t_rect_exclude(std::vector<double> region, bool drawn, int channel = -1, std::string name = ""); //region is {t_min0, t_max0, S_min0, S_max0, t_min1, t_max1 ...}

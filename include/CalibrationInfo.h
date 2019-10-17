@@ -83,7 +83,7 @@ public:
 	int get_S2pe_weight_exp(int ch, int exp_index) const;
 
 	void Save(std::string fname) const; //Adds info to the file, not overrides it entirely
-	bool Load(std::string fname); //Does not override already calculated or set manually values.
+	bool Load(std::string fname); //Overrides already calculated or set manually (forced) values.
 	bool isFull(bool dispaly_bad) const;
 	void status(bool dispaly_all) const;
 

@@ -66,33 +66,67 @@ std::string strtoken(std::string &in, std::string break_symbs)
 
 void open_output_file(std::string name, std::ofstream &str, std::ios_base::openmode _mode)
 {
-	std::string folder = name;
+	ensure_file(name);
+	str.open(name.c_str(), _mode);
+	if (!str.is_open()){
+		std::cout << "Failed to open \"" << name << "\"" << std::endl;
+	}
+}
+
+void ensure_file(std::string fname)
+{
+	std::string folder = fname;
 	while ((folder.back() != '\\') &&(folder.back()!='/') &&!folder.empty())
 		folder.pop_back();
 	if (!folder.empty())
 		folder.pop_back();
+	ensure_folder(folder);
+}
+
+void ensure_folder(std::string folder)
+{
 #if defined(__WIN32__)
-	if (!folder.empty()){
+	if (!folder.empty()) {
 		DWORD ftyp = GetFileAttributesA(folder.c_str());
-		if (!(ftyp & FILE_ATTRIBUTE_DIRECTORY) || ftyp == INVALID_FILE_ATTRIBUTES){
-				int code = system(("mkdir \"" + folder + "\"").c_str());
-				if (code)
-					std::cout << "mkdir error: " << GetLastError() << std::endl;
-			}
+		if (!(ftyp & FILE_ATTRIBUTE_DIRECTORY) || ftyp == INVALID_FILE_ATTRIBUTES) {
+			int code = system(("mkdir \"" + folder + "\"").c_str());
+			if (code)
+				std::cout << "mkdir error: " << GetLastError() << std::endl;
+		}
 	}
 #else
 	struct stat st;
-	stat(folder.c_str(),&st);
-	if(!S_ISDIR(st.st_mode)){
-		int code = system(("mkdir -p \"" + folder + "\"").c_str());
+	if (-1==stat(folder.c_str(), &st)) {
+		int err = errno;
+		switch (err) {
+		case (EACCES): {
+			std::cout<<"Access error"<<std::endl;
+			break;
+		}
+		case (ENAMETOOLONG): {
+			std::cout<<"Path is too long"<<std::endl;
+			break;
+		}
+		case (ENOENT) :
+		case (ENOTDIR): {
+			int code = system(("mkdir -p \"" + folder + "\"").c_str());
 			if (code)
 				std::cout << "mkdir -p error: " << code << std::endl;
+			break;
+		}
+		default:{
+			std::cout<<"stat(\""<<folder<<"\") returned -1; errno == "<<err<<std::endl;
+			break;
+		}
+		}
+	} else {
+		if (!S_ISDIR(st.st_mode)) {
+			int code = system(("mkdir -p \"" + folder + "\"").c_str());
+			if (code)
+				std::cout << "mkdir -p error: " << code << std::endl;
+		}
 	}
-#endif //__WIN32__
-	str.open(name.c_str(), std::ios_base::trunc);
-	if (!str.is_open()){
-		std::cout << "Failed to open \"" << name << "\"" << std::endl;
-	}
+#endif //_WIN32__
 }
 
 bool confirm_action (std::string action)

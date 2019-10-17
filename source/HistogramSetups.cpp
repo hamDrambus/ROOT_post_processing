@@ -343,11 +343,15 @@ bool CanvasSetups::set_zoom(std::pair<double, double> x_z, std::pair<double, dou
 	HistogramSetups* curr_hist = get_hist_setups();
 	if (NULL==curr_hist)
 		return false;
+	bool invalidate = false;
 	curr_hist->is_zoomed.first = (x_z.first!=-DBL_MAX)||(x_z.second!=DBL_MAX);
 	curr_hist->is_zoomed.second = (y_z.first!=-DBL_MAX)||(y_z.second!=DBL_MAX);
+	if (curr_hist->x_zoom != x_z || curr_hist->y_zoom != y_z)
+		invalidate = true;
 	curr_hist->x_zoom = x_z;
 	curr_hist->y_zoom = y_z;
-	Invalidate(invHistogram);
+	if (invalidate)
+		Invalidate(invHistogram);
 	return true;
 }
 bool CanvasSetups::unset_zoom(void)
@@ -355,9 +359,13 @@ bool CanvasSetups::unset_zoom(void)
 	HistogramSetups* curr_hist = get_hist_setups();
 	if (NULL==curr_hist)
 		return false;
+	bool invalidate = false;
+	if (!curr_hist->is_zoomed.first && !curr_hist->is_zoomed.second)
+		invalidate = true;
 	curr_hist->is_zoomed.first = false;
 	curr_hist->is_zoomed.second = false;
-	Invalidate(invHistogram);
+	if (invalidate)
+		Invalidate(invHistogram);
 	return true;
 }
 

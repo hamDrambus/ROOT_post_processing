@@ -77,6 +77,8 @@ typedef bool(*CUTTER)(std::vector<double>& pars, int run_n, void* stat_data);
 typedef bool(*CUTTER_DRAW)(TCanvas* can, void* stat_data);
 
 void open_output_file(std::string name, std::ofstream &str, std::ios_base::openmode _mode = std::ios_base::trunc);
+void ensure_folder(std::string folder);
+void ensure_file(std::string fname);
 bool confirm_action (std::string action);
 int getIndex(const std::vector<int>& channels, int ch); //TODO: template
 int getIndex(const std::deque<int>& channels, int ch);

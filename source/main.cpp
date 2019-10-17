@@ -695,6 +695,17 @@ void unset_limits(void) //2 tier method
 	update();
 }
 
+void unset_draw_limits(void) //2 tier method
+{
+	if (NULL == g_data) {
+		state(kFALSE);
+		return;
+	}
+	std::string name = "_histogram_drawn_limits_";
+	post_processor->remove_hist_cut(name);
+	update();
+}
+
 //region is {t_min0, t_max0, S_min0, S_max0, t_min1, t_max1 ...}
 FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do not call from the CINT
 {	

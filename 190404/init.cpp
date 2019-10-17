@@ -1,8 +1,12 @@
 {
   //From global parameters:
   data_prefix_path = "../Data/190404/results/";
-  calibration_file = "190404/results/190404_calibration.dat";
-  data_output_path = "../Data/190404/results/";
+  int aggressive_PMT_cuts = 0; //0 - no cuts at all, only PMT15 (original analysis of 08.2019). 1 - very low A-S exclusion, also exclude high A low S. Calibration as well as Npe and signal forms must be plotted from scratch for every agrressiveness level.
+  if (aggressive_PMT_cuts==1)
+    calibration_file = "190404/results/190404_calibration_aggr=1.dat";
+  else
+    calibration_file = "190404/results/190404_calibration.dat";
+  data_output_path = "190404/results/";
   DATA_MPPC_VERSION = "MPPCs_v1";
   DATA_PMT_VERSION = "PMT_v1";
 
@@ -67,7 +71,5 @@
   //end of global parameters
   Initialize();
   //Following variables are required for analysis_history.cpp
-  int channel; //TODO: channel list
-  int aggressive_PMT_cuts; //0 - no cuts at all, only PMT15 (original analysis of 08.2019). 1 - moderate cuts, very low A-S exclusion, also exclude high A low S. 2 - most aggressive cuts on low A and S. Calibration as well as Npe and signal forms must be plotted from scratch for every agrressiveness level.
   std::vector<int> calib_channels = {15, 14, 13, 12, 11, 10, 9, 8};
 }

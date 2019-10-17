@@ -8,10 +8,10 @@
 	//cut_A_S_fast_PMT(x_y_regions, false, 15, "large_A_noise");
 	//x_y_regions = {-1, 0.020, 0.017, 0.1, 0.0, 1e3};//small S ch15 Cd_20kV_850V_46V
 	//cut_A_S_fast_PMT(x_y_regions, false, 15, "small_S_noise");
-	x_y_regions = {-1, 0.003, 0.000008, 0.4, 0.0069, 1e3};//large A ch15 Cd_20kV_850V_46V Not really important for S2 Npe
-	cut_A_S_fast_PMT(x_y_regions, 1, 8, "large_A_noise");
+	//x_y_regions = {-1, 0.003, 0.000008, 0.4, 0.0069, 1e3};//large A ch15 Cd_20kV_850V_46V Not really important for S2 Npe
+	//cut_A_S_fast_PMT(x_y_regions, 1, 8, "large_A_noise");
 	//cut_A_S_upper(0.005, 0.00018, 0.025, 0.00077, true);
-	cut_A_S_upper(0.003, 0.00012, 0.6, 0.021, true);
+	cut_A_S_upper(0.0, 0.4, 1.0, 0.55, true, 12, "rem_large_S");
 	//x_y_regions = {-1, 0, 0.02, 0.054, 0.0, 1e3};//small S ch15 Cd_20kV_850V_46V. Best to determine using 0-23 us peaks
 	//x_y_regions = {-1, 0, 0.012, 0.038, 0.0, 1e3};	
 	//cut_A_S_fast_PMT(x_y_regions, 0, 12, "small_S_noise");

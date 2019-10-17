@@ -1,12 +1,12 @@
 //call gInterpreter->AddIncludePath("C:\\Users\\Elisa\\Desktop\\Top\\Data_processing\\post_processing\\include")  before
-//this loads the project in the same order VisualStudio compiles it (.x loader.cpp)
+//this loads the project in the same order VisualStudio compiles it (.x init.cpp)
 {
 	gSystem->SetIncludePath("-I$ROOTSYS/include -I/home/frolov/Documents/Post_processing/include -I/home/frolov/Documents/Post_processing/source -I/home/frolov/Documents/Post_processing/Debug");
 	gSystem->AddDynamicPath("/home/frolov/Documents/Post_processing/Debug");
 	gSystem->AddDynamicPath("/home/frolov/Documents/Post_processing/source");
 	
 	gSystem->Load("libpost_processing.so");
-	gROOT->ProcessLine(".L cutters.cpp");
+	std::vector<double> x_y_regions;
 	/*gROOT->ProcessLine(".L source/ExperimentArea.cpp+");
 	gROOT->ProcessLine(".L source/GlobalParameters.cpp+");
 	gROOT->ProcessLine(".L source/SingleRunData.cpp+");

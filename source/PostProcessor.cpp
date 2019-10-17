@@ -2800,8 +2800,10 @@ void PostProcessor::set_N_bins(int N)
 	if (NULL==setups) {
 		std::cout<<"PostProcessor::set_N_bins: Error: NULL setups"<<std::endl;
 	}
-	setups->N_bins = std::max(N, 1);
-	Invalidate(invHistogram);
+	if (setups->N_bins!=std::max(N, 1)) {
+		setups->N_bins = std::max(N, 1);
+		Invalidate(invHistogram);
+	}
 	update();
 }
 

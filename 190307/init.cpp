@@ -13,9 +13,9 @@
   exp_area.experiments.clear();
   exp_area.experiments.push_back("190307_Cd_20kV_850V_46V_coll6mm_th430mV");
   exp_area.experiments.push_back("190307_Cd_18kV_850V_46V_coll6mm_th430mV");
-  //exp_area.experiments.push_back("190307_Cd_16kV_850V_46V_coll6mm_th400mV");
-  //exp_area.experiments.push_back("190307_Cd_14kV_850V_46V_coll6mm_th350mV");
-  //exp_area.experiments.push_back("190307_Bkg_20kV_850V_46V_coll6mm_th430mV");
+  exp_area.experiments.push_back("190307_Cd_16kV_850V_46V_coll6mm_th400mV");
+  exp_area.experiments.push_back("190307_Cd_14kV_850V_46V_coll6mm_th350mV");
+  exp_area.experiments.push_back("190307_Bkg_20kV_850V_46V_coll6mm_th430mV");
   
   PMT_V.clear();
   MPPC_V.clear();
