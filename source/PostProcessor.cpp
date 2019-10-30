@@ -135,15 +135,19 @@ void PostProcessor::print_hist(std::string path)
 	case MPPC_S2:
 	case MPPC_Ss:
 	case MPPC_Double_I:
-	case MPPC_S2_S:
-	case MPPC_tfinal:
-	case MPPC_tstart:
-	case MPPC_tboth:
 	case PMT_S2_int:
 	case PMT_Ss:
 	{
 		writer_to_file->SetFunction([](std::vector<double>& pars, int run, void* data) {
 			((temp_data*)data)->str->write((char*)&pars[0], sizeof(double));
+			return true;
+		});
+		break;
+	}
+	case MPPC_As:
+	{
+		writer_to_file->SetFunction([](std::vector<double>& pars, int run, void* data) {
+			((temp_data*)data)->str->write((char*)&pars[1], sizeof(double));
 			return true;
 		});
 		break;
@@ -296,47 +300,12 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 		}
 		break;
 	}
-	case Type::MPPC_S2_S:
-	{
-		int run_size = data->S2_S[current_exp_index][ch_ind].size();
-		std::vector<double> cut_data(1);
-		for (auto run = 0; run != run_size; ++run) {
-			bool failed_run_cut = false;
-			bool failed_hist_cut = false; //normal cuts
-			bool failed_phys_cut = false; //drawn (displayed) cuts only
-			for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); (cut != c_end_); ++cut)
-				if (kFALSE == cut->GetAccept(run)) {
-					failed_run_cut = true;
-					break;
-				}
-			cut_data[0] = data->S2_S[current_exp_index][ch_ind][run];
-			for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
-				if (cut->GetAffectingHistogram() && !failed_hist_cut)
-					if (kFALSE == (*cut)(cut_data, run)) //more expensive than GetAffectingHistogram
-						failed_hist_cut = true;
-				if (!cut->GetAffectingHistogram() && !failed_phys_cut)
-					if (kFALSE == (*cut)(cut_data, run))
-						failed_phys_cut = true;
-				if (failed_hist_cut && failed_phys_cut)
-					break;
-			}
-			for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
-				if (operations[o].apply_run_cuts && failed_run_cut)
-					continue;
-				if (operations[o].apply_hist_cuts && failed_hist_cut)
-					continue;
-				if (operations[o].apply_phys_cuts && failed_phys_cut)
-					continue;
-				(*operations[o].operation)(cut_data, run);
-			}
-		}
-		break;
-	}
 	case Type::MPPC_t_S:
 	case Type::MPPC_A_S:
 	case Type::MPPC_tbS:
 	case Type::MPPC_tbN:
 	case Type::MPPC_Ss:
+	case Type::MPPC_As:
 	case Type::PMT_t_S:
 	case Type::PMT_A_S:
 	case Type::PMT_Ss:
@@ -397,81 +366,6 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 						continue;
 					(*operations[o].operation)(cut_data, run);
 				}
-			}
-		}
-		break;
-	}
-	case Type::MPPC_tstart:
-	case Type::MPPC_tboth:
-	{
-		int run_size = data->S2_start_t[current_exp_index][ch_ind].size();
-		std::vector<double> cut_data(1);
-		for (auto run = 0; run != run_size; ++run) {
-			bool failed_run_cut = false;
-			bool failed_hist_cut = false; //normal cuts
-			bool failed_phys_cut = false; //drawn (displayed) cuts only
-			for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); (cut != c_end_); ++cut)
-				if (kFALSE == cut->GetAccept(run)) {
-					failed_run_cut = true;
-					break;
-				}
-			cut_data[0] = data->S2_start_t[current_exp_index][ch_ind][run];
-			for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
-				if (cut->GetAffectingHistogram() && !failed_hist_cut)
-					if (kFALSE == (*cut)(cut_data, run)) //more expensive than GetAffectingHistogram
-						failed_hist_cut = true;
-				if (!cut->GetAffectingHistogram() && !failed_phys_cut)
-					if (kFALSE == (*cut)(cut_data, run))
-						failed_phys_cut = true;
-				if (failed_hist_cut && failed_phys_cut)
-					break;
-			}
-			for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
-				if (operations[o].apply_run_cuts && failed_run_cut)
-					continue;
-				if (operations[o].apply_hist_cuts && failed_hist_cut)
-					continue;
-				if (operations[o].apply_phys_cuts && failed_phys_cut)
-					continue;
-				(*operations[o].operation)(cut_data, run);
-			}
-		}
-		if (type == Type::MPPC_tstart)
-			break;
-	}
-	// no break
-	case Type::MPPC_tfinal:
-	{
-		int run_size = data->S2_finish_t[current_exp_index][ch_ind].size();
-		std::vector<double> cut_data(1);
-		for (auto run = 0; run != run_size; ++run) {
-			bool failed_run_cut = false;
-			bool failed_hist_cut = false; //normal cuts
-			bool failed_phys_cut = false; //drawn (displayed) cuts only
-			for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); (cut != c_end_); ++cut)
-				if (kFALSE == cut->GetAccept(run)) {
-					failed_run_cut = true;
-					break;
-				}
-			cut_data[0] = data->S2_finish_t[current_exp_index][ch_ind][run];
-			for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
-				if (cut->GetAffectingHistogram() && !failed_hist_cut)
-					if (kFALSE == (*cut)(cut_data, run)) //more expensive than GetAffectingHistogram
-						failed_hist_cut = true;
-				if (!cut->GetAffectingHistogram() && !failed_phys_cut)
-					if (kFALSE == (*cut)(cut_data, run))
-						failed_phys_cut = true;
-				if (failed_hist_cut && failed_phys_cut)
-					break;
-			}
-			for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
-				if (operations[o].apply_run_cuts && failed_run_cut)
-					continue;
-				if (operations[o].apply_hist_cuts && failed_hist_cut)
-					continue;
-				if (operations[o].apply_phys_cuts && failed_phys_cut)
-					continue;
-				(*operations[o].operation)(cut_data, run);
 			}
 		}
 		break;
@@ -1428,11 +1322,7 @@ bool PostProcessor::update(void)
 	switch (current_type)
 	{
 	case Type::MPPC_Double_I:
-	case Type::MPPC_S2_S:
 	case Type::MPPC_Ss:
-	case Type::MPPC_tstart:
-	case Type::MPPC_tboth:
-	case Type::MPPC_tfinal:
 	case Type::MPPC_S2:
 	case Type::PMT_S2_S:
 	case Type::PMT_S2_int:
@@ -1458,6 +1348,32 @@ bool PostProcessor::update(void)
 		}));
 		histogram_filler.SetFunction([](std::vector<double>& pars, int run, void* data) {
 			((TH1D*)((hist_fill_data_*)data)->phist)->Fill(pars[0]);
+			return true;
+		});
+		break;
+	}
+	case Type::MPPC_As:
+	{
+		drawn_mean_taker.SetFunction(
+		mean_taker.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			(((mean_variance_data_*)data)->mean_x) += pars[1];
+			return true;
+		}));
+		drawn_variance_taker.SetFunction(
+		variance_taker.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			double meanX = ((mean_variance_data_*)data)->mean_x;
+			(((mean_variance_data_*)data)->variance_x) += (pars[1] - meanX) * (pars[1] - meanX);
+			return true;
+		}));
+		drawn_limits_finder.SetFunction(
+		limits_finder.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			std::pair<double,double>* p = &((limits_data_*)data)->x_mm;
+			p->first = std::min(p->first, pars[1]);
+			p->second = std::max(p->second, pars[1]);
+			return true;
+		}));
+		histogram_filler.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			((TH1D*)((hist_fill_data_*)data)->phist)->Fill(pars[1]);
 			return true;
 		});
 		break;
@@ -2063,38 +1979,6 @@ void PostProcessor::default_hist_setups(HistogramSetups* setups)//does not affec
 	setups->filled_hist = false;
 	switch (current_type)
 	{
-	case Type::MPPC_tboth:
-	{
-		setups->N_gauss = 2;
-		setups->par_val.resize(6, 0);
-		setups->par_left_limits.resize(6, 0);
-		setups->par_right_limits.resize(6, 0);
-
-		setups->par_left_limits[0] = 0;
-		setups->par_right_limits[0] = std::max(1, 2 * (int)std::sqrt(_N_));
-		setups->par_val[0] = (int)std::sqrt(_N_);
-
-		setups->par_left_limits[1] = x_lims.first;
-		setups->par_right_limits[1] = x_lims.second;
-		setups->par_val[1] = 0.2*(setups->par_right_limits[1] + setups->par_left_limits[1]);
-
-		setups->par_left_limits[2] = (x_lims.second - x_lims.first) / setups->N_bins;
-		setups->par_right_limits[2] = (x_lims.second - x_lims.first);
-		setups->par_val[2] = 0.2*(setups->par_left_limits[2] + setups->par_right_limits[2]);
-
-		setups->par_left_limits[3] = 0;
-		setups->par_right_limits[3] = std::max(1, (int)(2*std::sqrt(_N_)));
-		setups->par_val[3] = (int)std::sqrt(_N_);
-
-		setups->par_left_limits[4] = x_lims.first;
-		setups->par_right_limits[4] = x_lims.second;
-		setups->par_val[4] = 0.8*(setups->par_right_limits[4] + setups->par_left_limits[4]);
-
-		setups->par_left_limits[5] = (x_lims.second - x_lims.first) / setups->N_bins;
-		setups->par_right_limits[5] = (x_lims.second - x_lims.first);
-		setups->par_val[5] = 0.2*(setups->par_left_limits[5] + setups->par_right_limits[5]);
-		break;
-	}
 	default:
 	{
 		setups->N_gauss = 0;
@@ -2296,23 +2180,6 @@ void PostProcessor::update_physical(void)
 					std::cout << "Warning! No mean S2 value for " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
 				else {
 					std::cout<<"Mean = "<<*setups->x_drawn_mean<<std::endl;
-					avr_S2_S[current_exp_index][mppc_channel_to_index(current_channel)] = *setups->x_drawn_mean;
-				}
-			} else
-				std::cout << "Warning! No S2 area for " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
-		}
-		break;
-	}
-	case Type::MPPC_S2_S:
-	{
-		if (setups->N_gauss>0 && setups->fitted)
-			avr_S2_S[current_exp_index][mppc_channel_to_index(current_channel)] = setups->par_val[1];
-		else {
-			if (0==setups->N_gauss) { //Use mean then
-				if (setups->x_drawn_mean == boost::none || (setups->stat_drawn_weight == boost::none && setups->num_of_drawn_fills == boost::none))
-					std::cout << "Warning! No mean S2 value for " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
-				else {
-					std::cout << "Mean = "<<*setups->x_drawn_mean << std::endl;
 					avr_S2_S[current_exp_index][mppc_channel_to_index(current_channel)] = *setups->x_drawn_mean;
 				}
 			} else
@@ -2768,6 +2635,28 @@ void PostProcessor::unset_as_run_cut(std::string name)
 	}
 }
 
+void PostProcessor::print_accepted_events (std::string file, int run_offset, int sub_runs) //TODO: compress the output to intervals
+{
+	std::ofstream str;
+	open_output_file(file, str, std::ios_base::trunc);
+	std::size_t run_n = 0;
+	int ch_ind = channel_to_index(current_channel, current_type);
+	std::deque<EventCut> empty;
+	std::deque<EventCut> *run_cuts = (NULL== get_run_cuts(current_exp_index) ? &empty : get_run_cuts(current_exp_index));
+	std::size_t run_size = is_PMT_type(current_type) ? data->pmt_peaks[current_exp_index][ch_ind].size() : data->mppc_peaks[current_exp_index][ch_ind].size();
+	str<<"//run\tsubrun"<<std::endl;
+	for (std::size_t run = 0; run != run_size; ++run) {
+		int true_run = run_offset + (int)run_n/sub_runs;
+		int sub_run = (run_n)%(sub_runs);
+		for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); (cut != c_end_); ++cut)
+			if (kFALSE == cut->GetAccept(run))//not calculating it here!
+				goto _cutted;
+		str<< true_run <<"\t"<<sub_run<<std::endl;
+	_cutted:;
+		++run_n;
+	}
+}
+
 void PostProcessor::do_fit(bool do_fit)
 {
 	if (!isValid()){
@@ -2804,6 +2693,27 @@ void PostProcessor::set_N_bins(int N)
 		setups->N_bins = std::max(N, 1);
 		Invalidate(invHistogram);
 	}
+	update();
+}
+
+void PostProcessor::set_N_bins(int from, int to)
+{
+	if (!isValid()){
+		std::cout << "Wrong input data: no channels or experiments from AnalysisManager" << std::endl;
+		return;
+	}
+	HistogramSetups *setups = get_hist_setups();
+	if (NULL==setups) {
+		std::cout<<"PostProcessor::set_N_bins: Error: NULL setups"<<std::endl;
+	}
+	if (setups->N_bins!=std::max(std::abs(to-from), 1)) {
+		setups->N_bins = std::max(std::abs(to-from), 1);
+		Invalidate(invHistogram);
+	}
+	std::pair<double, double> x_zoom, y_zoom = std::pair<double, double>(-DBL_MAX, DBL_MAX);
+	x_zoom.first = std::min(from, to);
+	x_zoom.second = std::max(from, to);
+	CanvasSetups::set_zoom(x_zoom, y_zoom);
 	update();
 }
 

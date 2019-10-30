@@ -238,8 +238,8 @@ Bool_t AnalysisStates::is_PMT_type(Type type)
 
 Bool_t AnalysisStates::isPerRun(Type type)
 {
-	return type==MPPC_Double_I || type==MPPC_S2_S|| type==MPPC_coord|| type==MPPC_coord_x|| type==MPPC_coord_y|| type==MPPC_Npe_sum||
-			type==MPPC_S2|| type==MPPC_tfinal|| type==MPPC_tstart|| type==Correlation|| type==CorrelationAll|| type== PMT_S2_S|| type== PMT_S2_int ||type==PMT_Npe_sum;
+	return type==MPPC_Double_I || type==MPPC_coord|| type==MPPC_coord_x|| type==MPPC_coord_y|| type==MPPC_Npe_sum||
+			type==MPPC_S2|| type==Correlation|| type==CorrelationAll|| type== PMT_S2_S|| type== PMT_S2_int ||type==PMT_Npe_sum;
 }
 
 Bool_t AnalysisStates::isMultichannel(Type type)
@@ -401,24 +401,12 @@ std::string AnalysisStates::type_name(Type type)
 		name += "_Ss";
 		break;
 	}
-	case Type::MPPC_S2_S:{
-		name += "_S2_auto";
+	case Type::MPPC_As:{
+		name += "_As";
 		break;
 	}
 	case Type::MPPC_Double_I:{
 		name += "_Double_I";
-		break;
-	}
-	case Type::MPPC_tboth:{
-		name += "_t_both";
-		break;
-	}
-	case Type::MPPC_tfinal:{
-		name += "_t_final";
-		break;
-	}
-	case Type::MPPC_tstart:{
-		name += "_t_start";
 		break;
 	}
 	case Type::MPPC_t_S:{

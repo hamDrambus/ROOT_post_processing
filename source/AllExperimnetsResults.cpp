@@ -56,9 +56,6 @@ void AllExperimentsResults::processAllExperiments(std::deque<AllRunsResults> &al
 		mppc_peaks.push_back(i->mppc_peaks);
 		pmt_peaks.push_back(i->pmt_peaks);
 		PMT_S2_int.push_back(i->pmt_S2_integral);
-		S2_S.push_back(i->mppc_S2_S);
-		S2_start_t.push_back(i->mppc_S2_start_time);
-		S2_finish_t.push_back(i->mppc_S2_finish_time);
 		Double_I.push_back(i->mppc_Double_Is);
 		auto j = /*ParameterPile::*/experiment_fields.find(i->_exp.experiments.back());
 		if (/*ParameterPile::*/experiment_fields.end() != j)
@@ -80,10 +77,7 @@ void AllExperimentsResults::processAllExperiments(std::deque<AllRunsResults> &al
 		int run_size = mppc_channels.empty() ? (pmt_channels.empty() ? 0 : pmt_peaks[exp][0].size()): mppc_peaks[exp][0].size();
 		bool not_ok = false;
 		for (int ch = 0, _end_ = mppc_channels.size(); ch != _end_; ++ch)
-			not_ok = not_ok||(run_size != S2_S[exp][ch].size())
-						|| (run_size != S2_start_t[exp][ch].size())
-						|| (run_size != S2_finish_t[exp][ch].size())
-						|| (run_size != mppc_peaks[exp][ch].size());
+			not_ok = not_ok	|| (run_size != mppc_peaks[exp][ch].size());
 		for (int ch = 0, _end_ = pmt_channels.size(); ch != _end_; ++ch)
 			not_ok = not_ok||(run_size!=pmt_peaks[exp][ch].size()||(run_size!=PMT_S2_int[exp][ch].size()));
 		if (not_ok){

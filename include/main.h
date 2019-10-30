@@ -43,6 +43,7 @@ void set_parameter_limits(int index, double left, double right);
 void do_fit(bool is_on);	//always updates visuals
 
 void set_bins(int n);
+void set_bins(int from, int to); //simultaneous set_bins and set_zoom for discrete distributions
 void set_zoom (double xl, double xr);
 void set_zoom_y (double yl, double yr);
 void set_zoom (double xl, double xr, double yl, double yr);
@@ -68,6 +69,7 @@ void set_as_run_cut(std::string name = "");
 //^In general such cuts are useless so the implementation of this case in not important.
 int list_run_cuts (void); //returns number of cuts
 void unset_as_run_cut(std::string name = "");
+void print_accepted_events (std::string file, int run_offset, int sub_runs = 1000);
 void clear(void);	//clear cuts for current histogram. Run cuts derived from it are not touched
 void clearAll(void); //clear everything, return to initial state (leaves all existing histograms empty)
 

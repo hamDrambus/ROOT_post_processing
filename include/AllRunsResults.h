@@ -17,10 +17,6 @@ protected:
 	int Iteration_N;
 	/*ParameterPile::*/experiment_area _exp;
 	std::vector<bool> _valid; //per run
-	std::deque<std::vector<double> > mppc_S2_S; //size == mppc channels (depends on experiment area)
-	std::deque<std::vector<double> > mppc_S2_start_time; //[channel][run#]
-	std::deque<std::vector<double> > mppc_S2_finish_time; //[channel][run#]
-	//std::deque<std::vector<double>> mppc_all_peaks_Ss; //[channel][run#]
 	std::deque<std::vector<double> > mppc_Double_Is; //[channel][run#]
 	std::deque<int> mppc_channels;
 	std::deque<int> pmt_channels;

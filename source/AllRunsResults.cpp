@@ -30,30 +30,20 @@ AllRunsResults::AllRunsResults(/*ParameterPile::*/experiment_area experiment)
 			}
 			if (test_file(prefix_mppc + "peaks.dat")) {
 				mppc_peaks.push_back(std::deque<std::deque<peak>>());
-				mppc_S2_S.push_back(std::vector<double>());
-				mppc_S2_start_time.push_back(std::vector<double>());
-				mppc_S2_finish_time.push_back(std::vector<double>());
 				mppc_Double_Is.push_back(std::vector<double>());
 				mppc_channels.push_back(ch);
 
 				vector_from_file(mppc_peaks.back(), prefix_mppc + "peaks.dat");
-				vector_from_file(mppc_S2_S.back(), prefix_mppc + "S2_S.dat");
 				vector_from_file(mppc_Double_Is.back(), prefix_mppc + "double_I.dat");
-				vector_from_file(mppc_S2_start_time.back(), prefix_mppc + "S2_start_t.dat");
-				vector_from_file(mppc_S2_finish_time.back(), prefix_mppc + "S2_finish_t.dat");
 
-				if (mppc_peaks.back().empty()|| mppc_S2_S.back().empty() || mppc_Double_Is.back().empty()
-					||mppc_S2_finish_time.back().empty()||mppc_S2_start_time.back().empty()) { //empty files
+				if (mppc_peaks.back().empty()|| mppc_Double_Is.back().empty()) { //empty files
 					mppc_peaks.pop_back();
 					mppc_Double_Is.pop_back();
-					mppc_S2_S.pop_back();
 					mppc_channels.pop_back();
-					mppc_S2_start_time.pop_back();
-					mppc_S2_finish_time.pop_back();
 				} else {
 					++mppc_ch;
 					std::cout << "Loaded channel " << ch << std::endl;
-					N_of_runs = std::max(N_of_runs, (int)std::max(mppc_Double_Is.back().size(), mppc_S2_S.back().size()));
+					N_of_runs = std::max(N_of_runs, (int)std::max(mppc_Double_Is.back().size(), mppc_peaks.back().size()));
 				}
 			}
 		}
@@ -220,9 +210,6 @@ bool AllRunsResults::SaveTo(std::string prefix)
 	}
 	for (int ch = 0; ch < mppc_channels.size(); ++ch) {
 		std::string output_prefix = prefix + "/" + DATA_MPPC_VERSION + "/MPPCs_" + exp_str + "/MPPC_" + std::to_string(mppc_channels[ch]) + "/MPPC_" + std::to_string(mppc_channels[ch]) + "_";
-		vector_to_file(mppc_S2_S, ch, output_prefix + "S2_S.dat", "MPPC_S2");
-		vector_to_file(mppc_S2_start_time, ch, output_prefix + "S2_start_t.dat", "MPPC_st");
-		vector_to_file(mppc_S2_finish_time, ch, output_prefix + "S2_finish_t.dat", "MPPC_fin");
 		vector_to_file(mppc_Double_Is, ch, output_prefix + "double_I.dat", "MPPC_II");
 		vector_to_file(mppc_peaks, ch, output_prefix + "peaks.dat", "MPPC_peaks");
 	}
@@ -234,7 +221,6 @@ int AllRunsResults::Iteration(void) const
 
 void AllRunsResults::Clear(void)
 {
-	std::deque<std::vector<double>>().swap(mppc_S2_S);
 	std::deque<std::deque<std::deque<peak>>>().swap(mppc_peaks);
 	std::deque<std::deque<std::deque<peak>>>().swap(pmt_peaks);
 	std::deque<std::vector<double>>().swap(mppc_Double_Is);

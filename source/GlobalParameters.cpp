@@ -237,9 +237,6 @@ TestSignalGenerator::TestSignalGenerator(std::string prefix)
 				data.back().mppc_channels.push_back(chs[c]);
 				data.back().mppc_peaks.push_back(std::deque<std::deque<peak> >(event_end_));
 				data.back().mppc_Double_Is.push_back(std::vector<double>(event_end_));
-				data.back().mppc_S2_S.push_back(std::vector<double>(event_end_));
-				data.back().mppc_S2_finish_time.push_back(std::vector<double>(event_end_));
-				data.back().mppc_S2_start_time.push_back(std::vector<double>(event_end_));
 			}
 		}
 		for (std::size_t event = 0; event != event_end_; ++event) {
@@ -301,9 +298,6 @@ TestSignalGenerator::TestSignalGenerator(std::string prefix)
 				} else {
 					data.back().mppc_Double_Is[mppc_index][event] = Ssum* (1.1 - std::pow(F, 0.4)) *
 						(ts.size() > 1 ? (ts.back() - ts.front()) : 0);
-					data.back().mppc_S2_S[mppc_index][event] = Ssum* (1.1 - std::pow(F, 0.4));
-					data.back().mppc_S2_start_time[mppc_index][event] = (ts.size() > 0 ? ts.front() : t_zoom_from);
-					data.back().mppc_S2_finish_time[mppc_index][event] = (ts.size() > 0 ? ts.back() : t_zoom_to);
 				}
 				if (is_pmt)
 					++pmt_index;

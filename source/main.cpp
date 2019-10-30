@@ -190,6 +190,15 @@ void set_bins(int n)
 	post_processor->set_N_bins(n);
 }
 
+void set_bins(int from, int to)
+{
+	if (NULL == g_data) {
+		state(kFALSE);
+		return;
+	}
+	post_processor->set_N_bins(from, to);
+}
+
 void set_zoom (double xl, double xr)
 {
 	if (NULL == g_data) {
@@ -342,6 +351,15 @@ void unset_as_run_cut(std::string name)
 		return;
 	}
 	post_processor->unset_as_run_cut(name);
+}
+
+void print_accepted_events (std::string file, int run_offset, int sub_runs)
+{
+	if (NULL == g_data) {
+		state(kFALSE);
+		return;
+	}
+	post_processor->print_accepted_events(file, run_offset, sub_runs);
 }
 
 void clear(void)	//clear cuts for current histogram. Run cuts derived from it are not touched
@@ -590,14 +608,17 @@ FunctionWrapper* create_vertical_lines_cut(double left, double right) //do not c
 		});
 		break;
 	}
+	case AnalysisStates::MPPC_As:
+	{
+		picker->SetFunction( [](std::vector<double> &vals, int run, void* data) {
+			return ((vals[1] <=((temp_data*)data)->mm.second) && (vals[1] >= ((temp_data*)data)->mm.first));
+		});
+		break;
+	}
 	case AnalysisStates::PMT_S2_S:
 	case AnalysisStates::MPPC_S2:
 	case AnalysisStates::MPPC_Ss:
 	case AnalysisStates::MPPC_Double_I:
-	case AnalysisStates::MPPC_S2_S:
-	case AnalysisStates::MPPC_tfinal:
-	case AnalysisStates::MPPC_tstart:
-	case AnalysisStates::MPPC_tboth:
 	case AnalysisStates::PMT_S2_int:
 	case AnalysisStates::PMT_Ss:
 	case AnalysisStates::Correlation:
@@ -733,6 +754,7 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 	case AnalysisStates::MPPC_A_S:
 	case AnalysisStates::MPPC_S2:
 	case AnalysisStates::MPPC_Ss:
+	case AnalysisStates::MPPC_As:
 	case AnalysisStates::MPPC_tbS_sum:
 	case AnalysisStates::MPPC_tbN_sum:
 	case AnalysisStates::MPPC_tbS:
@@ -751,11 +773,7 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 		break;
 	}
 	case AnalysisStates::PMT_S2_int:
-	case AnalysisStates::MPPC_S2_S:
 	case AnalysisStates::MPPC_Double_I:
-	case AnalysisStates::MPPC_tfinal:
-	case AnalysisStates::MPPC_tstart:
-	case AnalysisStates::MPPC_tboth:
 	case AnalysisStates::Correlation:
 	case AnalysisStates::CorrelationAll:
 	{
@@ -871,6 +889,7 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 	case AnalysisStates::MPPC_A_S:
 	case AnalysisStates::MPPC_S2:
 	case AnalysisStates::MPPC_Ss:
+	case AnalysisStates::MPPC_As:
 	case AnalysisStates::MPPC_tbS_sum:
 	case AnalysisStates::MPPC_tbN_sum:
 	case AnalysisStates::MPPC_tbS:
@@ -889,11 +908,7 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 		break;
 	}
 	case AnalysisStates::PMT_S2_int:
-	case AnalysisStates::MPPC_S2_S:
 	case AnalysisStates::MPPC_Double_I:
-	case AnalysisStates::MPPC_tfinal:
-	case AnalysisStates::MPPC_tstart:
-	case AnalysisStates::MPPC_tboth:
 	case AnalysisStates::Correlation:
 	case AnalysisStates::CorrelationAll:
 	{
@@ -1008,6 +1023,7 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 	case AnalysisStates::MPPC_A_S:
 	case AnalysisStates::MPPC_S2:
 	case AnalysisStates::MPPC_Ss:
+	case AnalysisStates::MPPC_As:
 	case AnalysisStates::MPPC_tbS_sum:
 	case AnalysisStates::MPPC_tbN_sum:
 	case AnalysisStates::MPPC_tbS:
@@ -1026,11 +1042,7 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 		break;
 	}
 	case AnalysisStates::PMT_S2_int:
-	case AnalysisStates::MPPC_S2_S:
 	case AnalysisStates::MPPC_Double_I:
-	case AnalysisStates::MPPC_tfinal:
-	case AnalysisStates::MPPC_tstart:
-	case AnalysisStates::MPPC_tboth:
 	case AnalysisStates::Correlation:
 	case AnalysisStates::CorrelationAll:
 	{
@@ -1186,6 +1198,7 @@ FunctionWrapper* create_off_ch_cut(int channel) //do not call from the CINT
 	case AnalysisStates::MPPC_A_S:
 	case AnalysisStates::MPPC_S2:
 	case AnalysisStates::MPPC_Ss:
+	case AnalysisStates::MPPC_As:
 	case AnalysisStates::MPPC_tbS_sum:
 	case AnalysisStates::MPPC_tbN_sum:
 	case AnalysisStates::MPPC_tbS:
@@ -1199,11 +1212,7 @@ FunctionWrapper* create_off_ch_cut(int channel) //do not call from the CINT
 		break;
 	}
 	case AnalysisStates::PMT_S2_int:
-	case AnalysisStates::MPPC_S2_S:
 	case AnalysisStates::MPPC_Double_I:
-	case AnalysisStates::MPPC_tfinal:
-	case AnalysisStates::MPPC_tstart:
-	case AnalysisStates::MPPC_tboth:
 	case AnalysisStates::Correlation:
 	case AnalysisStates::CorrelationAll:
 	{
@@ -1276,6 +1285,7 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 	case AnalysisStates::MPPC_A_S:
 	case AnalysisStates::MPPC_S2:
 	case AnalysisStates::MPPC_Ss:
+	case AnalysisStates::MPPC_As:
 	case AnalysisStates::MPPC_tbS_sum:
 	case AnalysisStates::MPPC_tbN_sum:
 	case AnalysisStates::MPPC_tbS:
@@ -1303,11 +1313,7 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 		break;
 	}
 	case AnalysisStates::PMT_S2_int:
-	case AnalysisStates::MPPC_S2_S:
 	case AnalysisStates::MPPC_Double_I:
-	case AnalysisStates::MPPC_tfinal:
-	case AnalysisStates::MPPC_tstart:
-	case AnalysisStates::MPPC_tboth:
 	case AnalysisStates::Correlation:
 	case AnalysisStates::CorrelationAll:
 	{
@@ -1376,6 +1382,7 @@ FunctionWrapper* create_A_S_upper_cut(std::vector<double> region) //do not call 
 	case AnalysisStates::MPPC_A_S:
 	case AnalysisStates::MPPC_S2:
 	case AnalysisStates::MPPC_Ss:
+	case AnalysisStates::MPPC_As:
 	case AnalysisStates::MPPC_tbS_sum:
 	case AnalysisStates::MPPC_tbN_sum:
 	case AnalysisStates::MPPC_tbS:
@@ -1401,11 +1408,7 @@ FunctionWrapper* create_A_S_upper_cut(std::vector<double> region) //do not call 
 		break;
 	}
 	case AnalysisStates::PMT_S2_int:
-	case AnalysisStates::MPPC_S2_S:
 	case AnalysisStates::MPPC_Double_I:
-	case AnalysisStates::MPPC_tfinal:
-	case AnalysisStates::MPPC_tstart:
-	case AnalysisStates::MPPC_tboth:
 	case AnalysisStates::Correlation:
 	case AnalysisStates::CorrelationAll:
 	{
