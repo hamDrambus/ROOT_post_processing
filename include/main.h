@@ -28,7 +28,7 @@
 void Initialize(bool pars_in_script = true);
 void GenTest(std::string prefix);
 void ch(int ch); //Go to channel. Does not save previous hist in file but does save parameters such as cuts
-void ty(AnalysisStates::Type to_type);
+void ty(AStates::Type to_type);
 void nex(void);		//next experiment
 void pex(void); 	//previous experiment
 void nch(void);
@@ -51,7 +51,7 @@ void unset_zoom(void);
 void next_canvas(void); //creates new canvas or goes to the next existing. The current one will stay unchanged.
 //Have independent cuts but the new one inherits the previous ones
 void prev_canvas(void);
-void set_corr (AnalysisStates::Type x_t, AnalysisStates::Type y_t, int chx, int chy);
+void set_corr (AStates::Type x_t, AStates::Type y_t, int chx, int chy);
 void add_hist_cut(FunctionWrapper *picker, std::string name, int ch, bool draw = false);
 //^If draw==false it shows cut via DrawCut method of FunctionWrapper
 //^and does not change histogram itself.

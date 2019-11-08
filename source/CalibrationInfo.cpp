@@ -1,6 +1,6 @@
 #include "CalibrationInfo.h"
 
-CalibrationInfo::CalibrationInfo(const AnalysisStates* data, std::string fname):
+CalibrationInfo::CalibrationInfo(const AStates* data, std::string fname):
 state_info(data), s1pe_table_()
 {
 	for (auto i = state_info->experiments.begin(); i != state_info->experiments.end(); ++i) {

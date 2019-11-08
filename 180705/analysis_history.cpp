@@ -357,12 +357,12 @@ std::string ch_str = ss.str();
 //parameters set by Cd_20kV_800V_48V.
 if (channel>=32) {
 ch(channel);
-    ty(AnalysisStates::MPPC_A_S);
+    ty(AStates::MPPC_A_S);
     set_zoom(0, 0.08, 0, 0.012);
     set_bins(500);
     noise_cut(channel, 1, true);
     saveas(data_output_path + folder + "/calibration/"+ch_str+"_A_S_zoom");
-    ty(AnalysisStates::MPPC_Ss);
+    ty(AStates::MPPC_Ss);
     set_zoom(0, 0.025);
     set_bins(800);
     saveas(data_output_path + folder +"/calibration/"+ch_str+"_Ss");    
@@ -376,7 +376,7 @@ ch(channel);
 
 if (channel==8) {
 ch(channel);
-	ty(AnalysisStates::PMT_A_S);
+	ty(AStates::PMT_A_S);
     noise_cut(channel, 0, true);
 	set_bins(1000);
     saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");    
@@ -386,7 +386,7 @@ ch(channel);
 }
 if (channel==9) {
 ch(channel);
-	ty(AnalysisStates::PMT_A_S);
+	ty(AStates::PMT_A_S);
     noise_cut(channel, 0, true);
 	set_bins(2000);
     saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");    
@@ -396,7 +396,7 @@ ch(channel);
 }
 if (channel==10) {
 ch(channel);
-	ty(AnalysisStates::PMT_A_S);
+	ty(AStates::PMT_A_S);
     noise_cut(channel, 0, true);
 	set_bins(1500);
     saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");    
@@ -406,7 +406,7 @@ ch(channel);
 }
 if (channel==11) {
 ch(channel);
-	ty(AnalysisStates::PMT_A_S);
+	ty(AStates::PMT_A_S);
     noise_cut(channel, 0, true);
 	set_bins(2000);
     saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");    
@@ -416,7 +416,7 @@ ch(channel);
 }
 if (channel==12) {
 ch(channel);
-	ty(AnalysisStates::PMT_A_S);
+	ty(AStates::PMT_A_S);
     noise_cut(channel, 0, true);
 	set_bins(3000);
     saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");    
@@ -462,7 +462,7 @@ if (S2_times_entry != S2_times.end()) {
     return;
 }
 if (exp == "180705_Cd_20kV_800V_12bB_48V" && method == 0) { 	
-	ty(AnalysisStates::PMT_sum_N);
+	ty(AStates::PMT_sum_N);
 	int large_Npes = 650; //Npes for full zoom (25-160us)
 	int small_Npes = 300; //Npes for small zoom (25-~40us)
 	int ch12_Npes = 100; //Npes for fast PMT sum channel small zoom (25-~40us)
@@ -509,7 +509,7 @@ if (exp == "180705_Cd_20kV_800V_12bB_48V" && method == 0) {
 	set_bins(0, small_Npes);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_Npeaks");
 	
-	ty(AnalysisStates::MPPC_Npe_sum);
+	ty(AStates::MPPC_Npe_sum);
 	set_bins(0, 600);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
@@ -519,7 +519,7 @@ if (exp == "180705_Cd_20kV_800V_12bB_48V" && method == 0) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 	
-	ty(AnalysisStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbN_sum);
 	central_SiPMs(true);	
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
@@ -532,7 +532,7 @@ if (exp == "180705_Cd_20kV_800V_12bB_48V" && method == 0) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_edge_form_by_Npe");
 
-	ty(AnalysisStates::PMT_tbN);
+	ty(AStates::PMT_tbN);
 	ch(8);
 	noise_cut(8, 1, false);
 	set_zoom(20, 90);
@@ -559,7 +559,7 @@ if (exp == "180705_Cd_20kV_800V_12bB_48V" && method == 0) {
 	set_bins(800);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_Npeaks");
 
-	ty(AnalysisStates::PMT_tbS);
+	ty(AStates::PMT_tbS);
 	ch(8);
 	noise_cut(8, 1, false);
 	set_zoom(20, 90);
@@ -586,7 +586,7 @@ if (exp == "180705_Cd_20kV_800V_12bB_48V" && method == 0) {
 	set_bins(800);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_S");
 
-	ty(AnalysisStates::PMT_tbS);
+	ty(AStates::PMT_tbS);
 	ch(1);
 	noise_cut(1, 1, false);
 	set_zoom(20, 90);
@@ -596,7 +596,7 @@ if (exp == "180705_Cd_20kV_800V_12bB_48V" && method == 0) {
 	for (int i = 0; i<4; ++i) {
 		std::pair<double, double> Npe_tail_lims;
 		int tail_bins;	
-		ty(AnalysisStates::PMT_sum_N);
+		ty(AStates::PMT_sum_N);
 		ch(8); on_ch(9); on_ch(10); on_ch(11);
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 8);
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 9);
@@ -653,10 +653,10 @@ if (exp == "180705_Cd_20kV_800V_12bB_48V" && method == 0) {
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 12);
 		set_bins(0, small_Npes);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_Npeaks_w"+S2_start+"-"+S2_finish+"us");
-		ty(AnalysisStates::MPPC_Npe_sum);
+		ty(AStates::MPPC_Npe_sum);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 		
-		ty(AnalysisStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbN_sum);
 		central_SiPMs(true);
 		set_bins(800);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_form_by_Npe");
@@ -664,7 +664,7 @@ if (exp == "180705_Cd_20kV_800V_12bB_48V" && method == 0) {
 		update();
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_edge_form_by_Npe");
 
-		ty(AnalysisStates::PMT_tbN);
+		ty(AStates::PMT_tbN);
 		ch(8);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT8_form_by_Npeaks");
 		ch(9);
@@ -676,7 +676,7 @@ if (exp == "180705_Cd_20kV_800V_12bB_48V" && method == 0) {
 		ch(12);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_Npeaks");
 
-		ty(AnalysisStates::PMT_tbS);
+		ty(AStates::PMT_tbS);
 		ch(8);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT8_form_by_S");
 		ch(9);
@@ -688,13 +688,13 @@ if (exp == "180705_Cd_20kV_800V_12bB_48V" && method == 0) {
 		ch(12);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_S");
 		
-		ty(AnalysisStates::PMT_tbS);
+		ty(AStates::PMT_tbS);
 		ch(1);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/slowPMT1_form_by_S");
 	}
 }
 if (exp == "180705_Cd_18kV_800V_12bB_48V" && method == 0) { 	
-	ty(AnalysisStates::PMT_sum_N);
+	ty(AStates::PMT_sum_N);
 	int large_Npes = 500; //Npes for full zoom (25-160us)
 	int small_Npes = 280; //Npes for small zoom (25-~40us)
 	std::string str_small_Npes = "280";
@@ -741,7 +741,7 @@ if (exp == "180705_Cd_18kV_800V_12bB_48V" && method == 0) {
 	set_bins(0, small_Npes);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_Npeaks");
 	
-	ty(AnalysisStates::MPPC_Npe_sum);
+	ty(AStates::MPPC_Npe_sum);
 	central_SiPMs(true);
 	set_bins(0, 300);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
@@ -755,7 +755,7 @@ if (exp == "180705_Cd_18kV_800V_12bB_48V" && method == 0) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_edge_form_by_Npe");
 	
-	ty(AnalysisStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbN_sum);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, 0, false);
@@ -764,7 +764,7 @@ if (exp == "180705_Cd_18kV_800V_12bB_48V" && method == 0) {
 	set_bins(1000);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_form_by_Npe");
 
-	ty(AnalysisStates::PMT_tbN);
+	ty(AStates::PMT_tbN);
 	ch(8);
 	noise_cut(8, 1, false);
 	set_zoom(20, 90);
@@ -791,7 +791,7 @@ if (exp == "180705_Cd_18kV_800V_12bB_48V" && method == 0) {
 	set_bins(800);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_Npeaks");
 
-	ty(AnalysisStates::PMT_tbS);
+	ty(AStates::PMT_tbS);
 	ch(8);
 	noise_cut(8, 1, false);
 	set_zoom(20, 90);
@@ -818,7 +818,7 @@ if (exp == "180705_Cd_18kV_800V_12bB_48V" && method == 0) {
 	set_bins(800);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_S");
 
-	ty(AnalysisStates::PMT_tbS);
+	ty(AStates::PMT_tbS);
 	ch(1);
 	noise_cut(1, 1, false);
 	set_zoom(20, 90);
@@ -828,7 +828,7 @@ if (exp == "180705_Cd_18kV_800V_12bB_48V" && method == 0) {
 	for (int i = 0; i<4; ++i) {
 		std::pair<double, double> Npe_tail_lims;
 		int tail_bins;	
-		ty(AnalysisStates::PMT_sum_N);
+		ty(AStates::PMT_sum_N);
 		ch(8); on_ch(9); on_ch(10); on_ch(11);
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 8);
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 9);
@@ -885,10 +885,10 @@ if (exp == "180705_Cd_18kV_800V_12bB_48V" && method == 0) {
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 12);
 		set_bins(0, small_Npes);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_Npeaks_w"+S2_start+"-"+S2_finish+"us");
-		ty(AnalysisStates::MPPC_Npe_sum);
+		ty(AStates::MPPC_Npe_sum);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 		
-		ty(AnalysisStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbN_sum);
 		central_SiPMs(true);
 		set_bins(800);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_form_by_Npe");
@@ -896,7 +896,7 @@ if (exp == "180705_Cd_18kV_800V_12bB_48V" && method == 0) {
 		update();
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_edge_form_by_Npe");
 
-		ty(AnalysisStates::PMT_tbN);
+		ty(AStates::PMT_tbN);
 		ch(8);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT8_form_by_Npeaks");
 		ch(9);
@@ -908,7 +908,7 @@ if (exp == "180705_Cd_18kV_800V_12bB_48V" && method == 0) {
 		ch(12);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_Npeaks");
 
-		ty(AnalysisStates::PMT_tbS);
+		ty(AStates::PMT_tbS);
 		ch(8);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT8_form_by_S");
 		ch(9);
@@ -920,13 +920,13 @@ if (exp == "180705_Cd_18kV_800V_12bB_48V" && method == 0) {
 		ch(12);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_S");
 		
-		ty(AnalysisStates::PMT_tbS);
+		ty(AStates::PMT_tbS);
 		ch(1);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/slowPMT1_form_by_S");
 	}
 }
 if (exp == "180705_Cd_16kV_800V_12bB_48V" && method == 0) { 	
-	ty(AnalysisStates::PMT_sum_N);
+	ty(AStates::PMT_sum_N);
 	int large_Npes = 500; //Npes for full zoom (25-160us)
 	int small_Npes = 220; //Npes for small zoom (25-~40us)
 	int ch12_Npes = 80; //Npes for fast PMT sum channel small zoom (25-~40us)
@@ -973,7 +973,7 @@ if (exp == "180705_Cd_16kV_800V_12bB_48V" && method == 0) {
 	set_bins(0, small_Npes);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_Npeaks");
 	
-	ty(AnalysisStates::MPPC_Npe_sum);
+	ty(AStates::MPPC_Npe_sum);
 	set_bins(0, 280);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
@@ -983,7 +983,7 @@ if (exp == "180705_Cd_16kV_800V_12bB_48V" && method == 0) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 	
-	ty(AnalysisStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbN_sum);
 	central_SiPMs(true);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
@@ -996,7 +996,7 @@ if (exp == "180705_Cd_16kV_800V_12bB_48V" && method == 0) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_edge_form_by_Npe");
 
-	ty(AnalysisStates::PMT_tbN);
+	ty(AStates::PMT_tbN);
 	ch(8);
 	noise_cut(8, 1, false);
 	set_zoom(20, 90);
@@ -1023,7 +1023,7 @@ if (exp == "180705_Cd_16kV_800V_12bB_48V" && method == 0) {
 	set_bins(800);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_Npeaks");
 
-	ty(AnalysisStates::PMT_tbS);
+	ty(AStates::PMT_tbS);
 	ch(8);
 	noise_cut(8, 1, false);
 	set_zoom(20, 90);
@@ -1050,7 +1050,7 @@ if (exp == "180705_Cd_16kV_800V_12bB_48V" && method == 0) {
 	set_bins(800);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_S");
 
-	ty(AnalysisStates::PMT_tbS);
+	ty(AStates::PMT_tbS);
 	ch(1);
 	noise_cut(1, 1, false);
 	set_zoom(20, 90);
@@ -1060,7 +1060,7 @@ if (exp == "180705_Cd_16kV_800V_12bB_48V" && method == 0) {
 	for (int i = 0; i<4; ++i) {
 		std::pair<double, double> Npe_tail_lims;
 		int tail_bins;	
-		ty(AnalysisStates::PMT_sum_N);
+		ty(AStates::PMT_sum_N);
 		ch(8); on_ch(9); on_ch(10); on_ch(11);
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 8);
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 9);
@@ -1117,10 +1117,10 @@ if (exp == "180705_Cd_16kV_800V_12bB_48V" && method == 0) {
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 12);
 		set_bins(0, small_Npes);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_Npeaks_w"+S2_start+"-"+S2_finish+"us");
-		ty(AnalysisStates::MPPC_Npe_sum);
+		ty(AStates::MPPC_Npe_sum);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 		
-		ty(AnalysisStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbN_sum);
 		central_SiPMs(true);
 		set_bins(800);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_form_by_Npe");
@@ -1128,7 +1128,7 @@ if (exp == "180705_Cd_16kV_800V_12bB_48V" && method == 0) {
 		update();
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_edge_form_by_Npe");
 
-		ty(AnalysisStates::PMT_tbN);
+		ty(AStates::PMT_tbN);
 		ch(8);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT8_form_by_Npeaks");
 		ch(9);
@@ -1140,7 +1140,7 @@ if (exp == "180705_Cd_16kV_800V_12bB_48V" && method == 0) {
 		ch(12);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_Npeaks");
 
-		ty(AnalysisStates::PMT_tbS);
+		ty(AStates::PMT_tbS);
 		ch(8);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT8_form_by_S");
 		ch(9);
@@ -1152,13 +1152,13 @@ if (exp == "180705_Cd_16kV_800V_12bB_48V" && method == 0) {
 		ch(12);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_S");
 		
-		ty(AnalysisStates::PMT_tbS);
+		ty(AStates::PMT_tbS);
 		ch(1);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/slowPMT1_form_by_S");
 	}
 }
 if (exp == "180705_Cd_14kV_800V_12bB_48V" && method == 0) { 	
-	ty(AnalysisStates::PMT_sum_N);
+	ty(AStates::PMT_sum_N);
 	int large_Npes = 400; //Npes for full zoom (25-160us)
 	int small_Npes = 220; //Npes for small zoom (25-~40us)
 	std::string str_small_Npes = "220";
@@ -1205,7 +1205,7 @@ if (exp == "180705_Cd_14kV_800V_12bB_48V" && method == 0) {
 	set_bins(0, small_Npes);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_Npeaks");
 	
-	ty(AnalysisStates::MPPC_Npe_sum);
+	ty(AStates::MPPC_Npe_sum);
 	set_bins(0, 280);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
@@ -1215,7 +1215,7 @@ if (exp == "180705_Cd_14kV_800V_12bB_48V" && method == 0) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 	
-	ty(AnalysisStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbN_sum);
 	central_SiPMs(true);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
@@ -1228,7 +1228,7 @@ if (exp == "180705_Cd_14kV_800V_12bB_48V" && method == 0) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_edge_form_by_Npe");
 
-	ty(AnalysisStates::PMT_tbN);
+	ty(AStates::PMT_tbN);
 	ch(8);
 	noise_cut(8, 1, false);
 	set_zoom(20, 90);
@@ -1255,7 +1255,7 @@ if (exp == "180705_Cd_14kV_800V_12bB_48V" && method == 0) {
 	set_bins(800);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_Npeaks");
 
-	ty(AnalysisStates::PMT_tbS);
+	ty(AStates::PMT_tbS);
 	ch(8);
 	noise_cut(8, 1, false);
 	set_zoom(20, 90);
@@ -1282,7 +1282,7 @@ if (exp == "180705_Cd_14kV_800V_12bB_48V" && method == 0) {
 	set_bins(800);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_S");
 
-	ty(AnalysisStates::PMT_tbS);
+	ty(AStates::PMT_tbS);
 	ch(1);
 	noise_cut(1, 1, false);
 	set_zoom(20, 90);
@@ -1292,7 +1292,7 @@ if (exp == "180705_Cd_14kV_800V_12bB_48V" && method == 0) {
 	for (int i = 0; i<3; ++i) {
 		std::pair<double, double> Npe_tail_lims;
 		int tail_bins;	
-		ty(AnalysisStates::PMT_sum_N);
+		ty(AStates::PMT_sum_N);
 		ch(8); on_ch(9); on_ch(10); on_ch(11);
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 8);
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 9);
@@ -1342,10 +1342,10 @@ if (exp == "180705_Cd_14kV_800V_12bB_48V" && method == 0) {
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 12);
 		set_bins(0, small_Npes);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_Npeaks_w"+S2_start+"-"+S2_finish+"us");
-		ty(AnalysisStates::MPPC_Npe_sum);
+		ty(AStates::MPPC_Npe_sum);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 		
-		ty(AnalysisStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbN_sum);
 		central_SiPMs(true);
 		set_bins(800);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_form_by_Npe");
@@ -1353,7 +1353,7 @@ if (exp == "180705_Cd_14kV_800V_12bB_48V" && method == 0) {
 		update();
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_edge_form_by_Npe");
 
-		ty(AnalysisStates::PMT_tbN);
+		ty(AStates::PMT_tbN);
 		ch(8);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT8_form_by_Npeaks");
 		ch(9);
@@ -1365,7 +1365,7 @@ if (exp == "180705_Cd_14kV_800V_12bB_48V" && method == 0) {
 		ch(12);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_Npeaks");
 
-		ty(AnalysisStates::PMT_tbS);
+		ty(AStates::PMT_tbS);
 		ch(8);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT8_form_by_S");
 		ch(9);
@@ -1377,13 +1377,13 @@ if (exp == "180705_Cd_14kV_800V_12bB_48V" && method == 0) {
 		ch(12);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_S");
 		
-		ty(AnalysisStates::PMT_tbS);
+		ty(AStates::PMT_tbS);
 		ch(1);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/slowPMT1_form_by_S");
 	}
 }
 if (exp == "180705_Cd_13kV_800V_12bB_48V" && method == 0) { 	
-	ty(AnalysisStates::PMT_sum_N);
+	ty(AStates::PMT_sum_N);
 	int large_Npes = 500; //Npes for full zoom (25-160us)
 	int small_Npes = 220; //Npes for small zoom (25-~40us)
 	std::string str_small_Npes = "220";
@@ -1430,7 +1430,7 @@ if (exp == "180705_Cd_13kV_800V_12bB_48V" && method == 0) {
 	set_bins(0, small_Npes);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_Npeaks");
 	
-	ty(AnalysisStates::MPPC_Npe_sum);
+	ty(AStates::MPPC_Npe_sum);
 	set_bins(0, 280);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
@@ -1440,7 +1440,7 @@ if (exp == "180705_Cd_13kV_800V_12bB_48V" && method == 0) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 	
-	ty(AnalysisStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbN_sum);
 	central_SiPMs(true);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
@@ -1453,7 +1453,7 @@ if (exp == "180705_Cd_13kV_800V_12bB_48V" && method == 0) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_edge_form_by_Npe");
 
-	ty(AnalysisStates::PMT_tbN);
+	ty(AStates::PMT_tbN);
 	ch(8);
 	noise_cut(8, 1, false);
 	set_zoom(20, 90);
@@ -1480,7 +1480,7 @@ if (exp == "180705_Cd_13kV_800V_12bB_48V" && method == 0) {
 	set_bins(800);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_Npeaks");
 
-	ty(AnalysisStates::PMT_tbS);
+	ty(AStates::PMT_tbS);
 	ch(8);
 	noise_cut(8, 1, false);
 	set_zoom(20, 90);
@@ -1507,7 +1507,7 @@ if (exp == "180705_Cd_13kV_800V_12bB_48V" && method == 0) {
 	set_bins(800);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_S");
 
-	ty(AnalysisStates::PMT_tbS);
+	ty(AStates::PMT_tbS);
 	ch(1);
 	noise_cut(1, 1, false);
 	set_zoom(20, 90);
@@ -1517,7 +1517,7 @@ if (exp == "180705_Cd_13kV_800V_12bB_48V" && method == 0) {
 	for (int i = 0; i<3; ++i) {
 		std::pair<double, double> Npe_tail_lims;
 		int tail_bins;	
-		ty(AnalysisStates::PMT_sum_N);
+		ty(AStates::PMT_sum_N);
 		ch(8); on_ch(9); on_ch(10); on_ch(11);
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 8);
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 9);
@@ -1574,10 +1574,10 @@ if (exp == "180705_Cd_13kV_800V_12bB_48V" && method == 0) {
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 12);
 		set_bins(0, small_Npes);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_Npeaks_w"+S2_start+"-"+S2_finish+"us");
-		ty(AnalysisStates::MPPC_Npe_sum);
+		ty(AStates::MPPC_Npe_sum);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 		
-		ty(AnalysisStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbN_sum);
 		central_SiPMs(true);
 		set_bins(800);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_form_by_Npe");
@@ -1585,7 +1585,7 @@ if (exp == "180705_Cd_13kV_800V_12bB_48V" && method == 0) {
 		update();
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_edge_form_by_Npe");
 
-		ty(AnalysisStates::PMT_tbN);
+		ty(AStates::PMT_tbN);
 		ch(8);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT8_form_by_Npeaks");
 		ch(9);
@@ -1597,7 +1597,7 @@ if (exp == "180705_Cd_13kV_800V_12bB_48V" && method == 0) {
 		ch(12);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_Npeaks");
 
-		ty(AnalysisStates::PMT_tbS);
+		ty(AStates::PMT_tbS);
 		ch(8);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT8_form_by_S");
 		ch(9);
@@ -1609,13 +1609,13 @@ if (exp == "180705_Cd_13kV_800V_12bB_48V" && method == 0) {
 		ch(12);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_S");
 		
-		ty(AnalysisStates::PMT_tbS);
+		ty(AStates::PMT_tbS);
 		ch(1);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/slowPMT1_form_by_S");
 	}
 }
 if (exp == "180705_Cd_12kV_800V_6bB_48V" && method == 0) { 	
-	ty(AnalysisStates::PMT_sum_N);
+	ty(AStates::PMT_sum_N);
 	int large_Npes = 400; //Npes for full zoom (25-160us)
 	int small_Npes = 240; //Npes for small zoom (25-~40us)
 	std::string str_small_Npes = "240";
@@ -1662,7 +1662,7 @@ if (exp == "180705_Cd_12kV_800V_6bB_48V" && method == 0) {
 	set_bins(0, small_Npes);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_Npeaks");
 	
-	ty(AnalysisStates::MPPC_Npe_sum);
+	ty(AStates::MPPC_Npe_sum);
 	set_bins(0, 200);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
@@ -1672,7 +1672,7 @@ if (exp == "180705_Cd_12kV_800V_6bB_48V" && method == 0) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 	
-	ty(AnalysisStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbN_sum);
 	central_SiPMs(true);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
@@ -1685,7 +1685,7 @@ if (exp == "180705_Cd_12kV_800V_6bB_48V" && method == 0) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_edge_form_by_Npe");
 
-	ty(AnalysisStates::PMT_tbN);
+	ty(AStates::PMT_tbN);
 	ch(8);
 	noise_cut(8, 1, false);
 	set_zoom(20, 90);
@@ -1712,7 +1712,7 @@ if (exp == "180705_Cd_12kV_800V_6bB_48V" && method == 0) {
 	set_bins(800);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_Npeaks");
 
-	ty(AnalysisStates::PMT_tbS);
+	ty(AStates::PMT_tbS);
 	ch(8);
 	noise_cut(8, 1, false);
 	set_zoom(20, 90);
@@ -1739,7 +1739,7 @@ if (exp == "180705_Cd_12kV_800V_6bB_48V" && method == 0) {
 	set_bins(800);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_S");
 
-	ty(AnalysisStates::PMT_tbS);
+	ty(AStates::PMT_tbS);
 	ch(1);
 	noise_cut(1, 1, false);
 	set_zoom(20, 90);
@@ -1749,7 +1749,7 @@ if (exp == "180705_Cd_12kV_800V_6bB_48V" && method == 0) {
 	for (int i = 0; i<4; ++i) {
 		std::pair<double, double> Npe_tail_lims;
 		int tail_bins;	
-		ty(AnalysisStates::PMT_sum_N);
+		ty(AStates::PMT_sum_N);
 		ch(8); on_ch(9); on_ch(10); on_ch(11);
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 8);
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 9);
@@ -1806,10 +1806,10 @@ if (exp == "180705_Cd_12kV_800V_6bB_48V" && method == 0) {
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 12);
 		set_bins(0, small_Npes);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_Npeaks_w"+S2_start+"-"+S2_finish+"us");
-		ty(AnalysisStates::MPPC_Npe_sum);
+		ty(AStates::MPPC_Npe_sum);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 		
-		ty(AnalysisStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbN_sum);
 		central_SiPMs(true);
 		set_bins(800);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_form_by_Npe");
@@ -1817,7 +1817,7 @@ if (exp == "180705_Cd_12kV_800V_6bB_48V" && method == 0) {
 		update();
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_edge_form_by_Npe");
 
-		ty(AnalysisStates::PMT_tbN);
+		ty(AStates::PMT_tbN);
 		ch(8);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT8_form_by_Npeaks");
 		ch(9);
@@ -1829,7 +1829,7 @@ if (exp == "180705_Cd_12kV_800V_6bB_48V" && method == 0) {
 		ch(12);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_Npeaks");
 
-		ty(AnalysisStates::PMT_tbS);
+		ty(AStates::PMT_tbS);
 		ch(8);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT8_form_by_S");
 		ch(9);
@@ -1841,13 +1841,13 @@ if (exp == "180705_Cd_12kV_800V_6bB_48V" && method == 0) {
 		ch(12);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_S");
 		
-		ty(AnalysisStates::PMT_tbS);
+		ty(AStates::PMT_tbS);
 		ch(1);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/slowPMT1_form_by_S");
 	}
 }
 if (exp == "180705_Cd_11kV_800V_6bB_48V" && method == 0) { 	
-	ty(AnalysisStates::PMT_sum_N);
+	ty(AStates::PMT_sum_N);
 	int large_Npes = 300; //Npes for full zoom (25-160us)
 	int small_Npes = 220; //Npes for small zoom (25-~40us)
 	std::string str_small_Npes = "220";
@@ -1894,7 +1894,7 @@ if (exp == "180705_Cd_11kV_800V_6bB_48V" && method == 0) {
 	set_bins(0, small_Npes);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_Npeaks");
 	
-	ty(AnalysisStates::MPPC_Npe_sum);
+	ty(AStates::MPPC_Npe_sum);
 	set_bins(0, 200);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
@@ -1904,7 +1904,7 @@ if (exp == "180705_Cd_11kV_800V_6bB_48V" && method == 0) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 	
-	ty(AnalysisStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbN_sum);
 	central_SiPMs(true);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
@@ -1917,7 +1917,7 @@ if (exp == "180705_Cd_11kV_800V_6bB_48V" && method == 0) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_edge_form_by_Npe");
 
-	ty(AnalysisStates::PMT_tbN);
+	ty(AStates::PMT_tbN);
 	ch(8);
 	noise_cut(8, 1, false);
 	set_zoom(20, 90);
@@ -1944,7 +1944,7 @@ if (exp == "180705_Cd_11kV_800V_6bB_48V" && method == 0) {
 	set_bins(800);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_Npeaks");
 
-	ty(AnalysisStates::PMT_tbS);
+	ty(AStates::PMT_tbS);
 	ch(8);
 	noise_cut(8, 1, false);
 	set_zoom(20, 90);
@@ -1971,7 +1971,7 @@ if (exp == "180705_Cd_11kV_800V_6bB_48V" && method == 0) {
 	set_bins(800);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_S");
 
-	ty(AnalysisStates::PMT_tbS);
+	ty(AStates::PMT_tbS);
 	ch(1);
 	noise_cut(1, 1, false);
 	set_zoom(20, 90);
@@ -1981,7 +1981,7 @@ if (exp == "180705_Cd_11kV_800V_6bB_48V" && method == 0) {
 	for (int i = 0; i<4; ++i) {
 		std::pair<double, double> Npe_tail_lims;
 		int tail_bins;	
-		ty(AnalysisStates::PMT_sum_N);
+		ty(AStates::PMT_sum_N);
 		ch(8); on_ch(9); on_ch(10); on_ch(11);
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 8);
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 9);
@@ -2038,10 +2038,10 @@ if (exp == "180705_Cd_11kV_800V_6bB_48V" && method == 0) {
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 12);
 		set_bins(0, small_Npes);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_Npeaks_w"+S2_start+"-"+S2_finish+"us");
-		ty(AnalysisStates::MPPC_Npe_sum);
+		ty(AStates::MPPC_Npe_sum);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 		
-		ty(AnalysisStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbN_sum);
 		central_SiPMs(true);
 		set_bins(800);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_form_by_Npe");
@@ -2049,7 +2049,7 @@ if (exp == "180705_Cd_11kV_800V_6bB_48V" && method == 0) {
 		update();
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_edge_form_by_Npe");
 
-		ty(AnalysisStates::PMT_tbN);
+		ty(AStates::PMT_tbN);
 		ch(8);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT8_form_by_Npeaks");
 		ch(9);
@@ -2061,7 +2061,7 @@ if (exp == "180705_Cd_11kV_800V_6bB_48V" && method == 0) {
 		ch(12);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_Npeaks");
 
-		ty(AnalysisStates::PMT_tbS);
+		ty(AStates::PMT_tbS);
 		ch(8);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT8_form_by_S");
 		ch(9);
@@ -2073,13 +2073,13 @@ if (exp == "180705_Cd_11kV_800V_6bB_48V" && method == 0) {
 		ch(12);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_S");
 		
-		ty(AnalysisStates::PMT_tbS);
+		ty(AStates::PMT_tbS);
 		ch(1);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/slowPMT1_form_by_S");
 	}
 }
 if (exp == "180705_Cd_10kV_800V_6bB_48V" && method == 0) { 	
-	ty(AnalysisStates::PMT_sum_N);
+	ty(AStates::PMT_sum_N);
 	int large_Npes = 210; //Npes for full zoom (25-160us)
 	int small_Npes = 210; //Npes for small zoom (25-~40us)
 	std::string str_small_Npes = "210";
@@ -2126,7 +2126,7 @@ if (exp == "180705_Cd_10kV_800V_6bB_48V" && method == 0) {
 	set_bins(0, small_Npes);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_Npeaks");
 	
-	ty(AnalysisStates::MPPC_Npe_sum);
+	ty(AStates::MPPC_Npe_sum);
 	set_bins(0, 180);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
@@ -2136,7 +2136,7 @@ if (exp == "180705_Cd_10kV_800V_6bB_48V" && method == 0) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 	
-	ty(AnalysisStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbN_sum);
 	central_SiPMs(true);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
@@ -2149,7 +2149,7 @@ if (exp == "180705_Cd_10kV_800V_6bB_48V" && method == 0) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_edge_form_by_Npe");
 
-	ty(AnalysisStates::PMT_tbN);
+	ty(AStates::PMT_tbN);
 	ch(8);
 	noise_cut(8, 1, false);
 	set_zoom(20, 90);
@@ -2176,7 +2176,7 @@ if (exp == "180705_Cd_10kV_800V_6bB_48V" && method == 0) {
 	set_bins(800);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_Npeaks");
 
-	ty(AnalysisStates::PMT_tbS);
+	ty(AStates::PMT_tbS);
 	ch(8);
 	noise_cut(8, 1, false);
 	set_zoom(20, 90);
@@ -2203,7 +2203,7 @@ if (exp == "180705_Cd_10kV_800V_6bB_48V" && method == 0) {
 	set_bins(800);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_S");
 
-	ty(AnalysisStates::PMT_tbS);
+	ty(AStates::PMT_tbS);
 	ch(1);
 	noise_cut(1, 1, false);
 	set_zoom(20, 90);
@@ -2213,7 +2213,7 @@ if (exp == "180705_Cd_10kV_800V_6bB_48V" && method == 0) {
 	for (int i = 0; i<4; ++i) {
 		std::pair<double, double> Npe_tail_lims;
 		int tail_bins;	
-		ty(AnalysisStates::PMT_sum_N);
+		ty(AStates::PMT_sum_N);
 		ch(8); on_ch(9); on_ch(10); on_ch(11);
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 8);
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 9);
@@ -2270,10 +2270,10 @@ if (exp == "180705_Cd_10kV_800V_6bB_48V" && method == 0) {
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 12);
 		set_bins(0, small_Npes);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_Npeaks_w"+S2_start+"-"+S2_finish+"us");
-		ty(AnalysisStates::MPPC_Npe_sum);
+		ty(AStates::MPPC_Npe_sum);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 		
-		ty(AnalysisStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbN_sum);
 		central_SiPMs(true);
 		set_bins(800);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_form_by_Npe");
@@ -2281,7 +2281,7 @@ if (exp == "180705_Cd_10kV_800V_6bB_48V" && method == 0) {
 		update();
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_edge_form_by_Npe");
 
-		ty(AnalysisStates::PMT_tbN);
+		ty(AStates::PMT_tbN);
 		ch(8);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT8_form_by_Npeaks");
 		ch(9);
@@ -2293,7 +2293,7 @@ if (exp == "180705_Cd_10kV_800V_6bB_48V" && method == 0) {
 		ch(12);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_Npeaks");
 
-		ty(AnalysisStates::PMT_tbS);
+		ty(AStates::PMT_tbS);
 		ch(8);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT8_form_by_S");
 		ch(9);
@@ -2305,13 +2305,13 @@ if (exp == "180705_Cd_10kV_800V_6bB_48V" && method == 0) {
 		ch(12);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_S");
 		
-		ty(AnalysisStates::PMT_tbS);
+		ty(AStates::PMT_tbS);
 		ch(1);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/slowPMT1_form_by_S");
 	}
 }
 if (exp == "180705_Cd_9kV_800V_0bB_48V" && method == 0) { 	
-	ty(AnalysisStates::PMT_sum_N);
+	ty(AStates::PMT_sum_N);
 	int large_Npes = 120; //Npes for full zoom (25-160us)
 	int small_Npes = 80; //Npes for small zoom (25-~40us)
 	std::string str_small_Npes = "80";
@@ -2358,7 +2358,7 @@ if (exp == "180705_Cd_9kV_800V_0bB_48V" && method == 0) {
 	set_bins(0, small_Npes);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_Npeaks");
 	
-	ty(AnalysisStates::MPPC_Npe_sum);
+	ty(AStates::MPPC_Npe_sum);
 	set_bins(0, 100);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
@@ -2368,7 +2368,7 @@ if (exp == "180705_Cd_9kV_800V_0bB_48V" && method == 0) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 	
-	ty(AnalysisStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbN_sum);
 	central_SiPMs(true);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
@@ -2381,7 +2381,7 @@ if (exp == "180705_Cd_9kV_800V_0bB_48V" && method == 0) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_edge_form_by_Npe");
 
-	ty(AnalysisStates::PMT_tbN);
+	ty(AStates::PMT_tbN);
 	ch(8);
 	noise_cut(8, 1, false);
 	set_zoom(20, 90);
@@ -2408,7 +2408,7 @@ if (exp == "180705_Cd_9kV_800V_0bB_48V" && method == 0) {
 	set_bins(800);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_Npeaks");
 
-	ty(AnalysisStates::PMT_tbS);
+	ty(AStates::PMT_tbS);
 	ch(8);
 	noise_cut(8, 1, false);
 	set_zoom(20, 90);
@@ -2435,7 +2435,7 @@ if (exp == "180705_Cd_9kV_800V_0bB_48V" && method == 0) {
 	set_bins(800);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_S");
 
-	ty(AnalysisStates::PMT_tbS);
+	ty(AStates::PMT_tbS);
 	ch(1);
 	noise_cut(1, 1, false);
 	set_zoom(20, 90);
@@ -2445,7 +2445,7 @@ if (exp == "180705_Cd_9kV_800V_0bB_48V" && method == 0) {
 	for (int i = 0; i<4; ++i) {
 		std::pair<double, double> Npe_tail_lims;
 		int tail_bins;	
-		ty(AnalysisStates::PMT_sum_N);
+		ty(AStates::PMT_sum_N);
 		ch(8); on_ch(9); on_ch(10); on_ch(11);
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 8);
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 9);
@@ -2502,10 +2502,10 @@ if (exp == "180705_Cd_9kV_800V_0bB_48V" && method == 0) {
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 12);
 		set_bins(0, small_Npes);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_Npeaks_w"+S2_start+"-"+S2_finish+"us");
-		ty(AnalysisStates::MPPC_Npe_sum);
+		ty(AStates::MPPC_Npe_sum);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 		
-		ty(AnalysisStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbN_sum);
 		central_SiPMs(true);
 		set_bins(800);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_form_by_Npe");
@@ -2513,7 +2513,7 @@ if (exp == "180705_Cd_9kV_800V_0bB_48V" && method == 0) {
 		update();
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_edge_form_by_Npe");
 
-		ty(AnalysisStates::PMT_tbN);
+		ty(AStates::PMT_tbN);
 		ch(8);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT8_form_by_Npeaks");
 		ch(9);
@@ -2525,7 +2525,7 @@ if (exp == "180705_Cd_9kV_800V_0bB_48V" && method == 0) {
 		ch(12);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_Npeaks");
 
-		ty(AnalysisStates::PMT_tbS);
+		ty(AStates::PMT_tbS);
 		ch(8);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT8_form_by_S");
 		ch(9);
@@ -2537,13 +2537,13 @@ if (exp == "180705_Cd_9kV_800V_0bB_48V" && method == 0) {
 		ch(12);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_S");
 		
-		ty(AnalysisStates::PMT_tbS);
+		ty(AStates::PMT_tbS);
 		ch(1);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/slowPMT1_form_by_S");
 	}
 }
 if (exp == "180705_Cd_8kV_800V_0bB_48V" && method == 0) { 	
-	ty(AnalysisStates::PMT_sum_N);
+	ty(AStates::PMT_sum_N);
 	int large_Npes = 100; //Npes for full zoom (25-160us)
 	int small_Npes = 70; //Npes for small zoom (25-~40us)
 	std::string str_small_Npes = "70";
@@ -2590,7 +2590,7 @@ if (exp == "180705_Cd_8kV_800V_0bB_48V" && method == 0) {
 	set_bins(0, small_Npes);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_Npeaks");
 	
-	ty(AnalysisStates::MPPC_Npe_sum);
+	ty(AStates::MPPC_Npe_sum);
 	set_bins(0, 80);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
@@ -2600,7 +2600,7 @@ if (exp == "180705_Cd_8kV_800V_0bB_48V" && method == 0) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 	
-	ty(AnalysisStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbN_sum);
 	central_SiPMs(true);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
@@ -2613,7 +2613,7 @@ if (exp == "180705_Cd_8kV_800V_0bB_48V" && method == 0) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_edge_form_by_Npe");
 
-	ty(AnalysisStates::PMT_tbN);
+	ty(AStates::PMT_tbN);
 	ch(8);
 	noise_cut(8, 1, false);
 	set_zoom(20, 90);
@@ -2640,7 +2640,7 @@ if (exp == "180705_Cd_8kV_800V_0bB_48V" && method == 0) {
 	set_bins(800);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_Npeaks");
 
-	ty(AnalysisStates::PMT_tbS);
+	ty(AStates::PMT_tbS);
 	ch(8);
 	noise_cut(8, 1, false);
 	set_zoom(20, 90);
@@ -2667,7 +2667,7 @@ if (exp == "180705_Cd_8kV_800V_0bB_48V" && method == 0) {
 	set_bins(800);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_S");
 
-	ty(AnalysisStates::PMT_tbS);
+	ty(AStates::PMT_tbS);
 	ch(1);
 	noise_cut(1, 1, false);
 	set_zoom(20, 90);
@@ -2677,7 +2677,7 @@ if (exp == "180705_Cd_8kV_800V_0bB_48V" && method == 0) {
 	for (int i = 0; i<4; ++i) {
 		std::pair<double, double> Npe_tail_lims;
 		int tail_bins;	
-		ty(AnalysisStates::PMT_sum_N);
+		ty(AStates::PMT_sum_N);
 		ch(8); on_ch(9); on_ch(10); on_ch(11);
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 8);
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 9);
@@ -2734,10 +2734,10 @@ if (exp == "180705_Cd_8kV_800V_0bB_48V" && method == 0) {
 		cut_S_t_rect_select(d_S2_start, d_S2_finish, 0, 1e5, false, 12);
 		set_bins(0, small_Npes);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_Npeaks_w"+S2_start+"-"+S2_finish+"us");
-		ty(AnalysisStates::MPPC_Npe_sum);
+		ty(AStates::MPPC_Npe_sum);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 		
-		ty(AnalysisStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbN_sum);
 		central_SiPMs(true);
 		set_bins(800);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_form_by_Npe");
@@ -2745,7 +2745,7 @@ if (exp == "180705_Cd_8kV_800V_0bB_48V" && method == 0) {
 		update();
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_edge_form_by_Npe");
 
-		ty(AnalysisStates::PMT_tbN);
+		ty(AStates::PMT_tbN);
 		ch(8);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT8_form_by_Npeaks");
 		ch(9);
@@ -2757,7 +2757,7 @@ if (exp == "180705_Cd_8kV_800V_0bB_48V" && method == 0) {
 		ch(12);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_Npeaks");
 
-		ty(AnalysisStates::PMT_tbS);
+		ty(AStates::PMT_tbS);
 		ch(8);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT8_form_by_S");
 		ch(9);
@@ -2769,7 +2769,7 @@ if (exp == "180705_Cd_8kV_800V_0bB_48V" && method == 0) {
 		ch(12);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMT12_form_by_S");
 		
-		ty(AnalysisStates::PMT_tbS);
+		ty(AStates::PMT_tbS);
 		ch(1);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/slowPMT1_form_by_S");
 	}

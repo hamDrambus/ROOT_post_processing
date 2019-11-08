@@ -51,7 +51,7 @@ void ch(int ch)
 	post_processor->GotoCh(ch);
 }
 
-void ty(AnalysisStates::Type to_type)
+void ty(AStates::Type to_type)
 {
 	if (NULL == g_data) {
 		state(kFALSE);
@@ -254,7 +254,7 @@ void prev_canvas(void)
 	post_processor->previous_canvas();
 }
 
-void set_corr (AnalysisStates::Type x_t, AnalysisStates::Type y_t, int chx, int chy)
+void set_corr (AStates::Type x_t, AStates::Type y_t, int chx, int chy)
 {
 	if (NULL == g_data) {
 		state(kFALSE);
@@ -568,62 +568,62 @@ FunctionWrapper* create_vertical_lines_cut(double left, double right) //do not c
 	FunctionWrapper *picker = new FunctionWrapper (st_data);
 	switch (post_processor->current_type)
 	{
-	case AnalysisStates::MPPC_coord:
-	case AnalysisStates::MPPC_coord_x:
-	case AnalysisStates::MPPC_Npe_sum:
-	case AnalysisStates::PMT_sum_N:
-	case AnalysisStates::PMT_Npe_sum:
+	case AStates::MPPC_coord:
+	case AStates::MPPC_coord_x:
+	case AStates::MPPC_Npe_sum:
+	case AStates::PMT_sum_N:
+	case AStates::PMT_Npe_sum:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			return ((vals[((temp_data*)data)->ch_size] <= ((temp_data*)data)->mm.second) && (vals[((temp_data*)data)->ch_size] >= ((temp_data*)data)->mm.first));
 		});
 		break;
 	}
-	case AnalysisStates::MPPC_coord_y:
+	case AStates::MPPC_coord_y:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			return ((vals[((temp_data*)data)->ch_size+1] <= ((temp_data*)data)->mm.second) && (vals[((temp_data*)data)->ch_size+1] >= ((temp_data*)data)->mm.first));
 		});
 		break;
 	}
-	case AnalysisStates::MPPC_tbS:
-	case AnalysisStates::MPPC_tbN:
-	case AnalysisStates::PMT_tbS:
-	case AnalysisStates::PMT_tbN:
-	case AnalysisStates::MPPC_tbS_sum:
-	case AnalysisStates::MPPC_tbN_sum:
-	case AnalysisStates::MPPC_t_S:
-	case AnalysisStates::PMT_t_S:
+	case AStates::MPPC_tbS:
+	case AStates::MPPC_tbN:
+	case AStates::PMT_tbS:
+	case AStates::PMT_tbN:
+	case AStates::MPPC_tbS_sum:
+	case AStates::MPPC_tbN_sum:
+	case AStates::MPPC_t_S:
+	case AStates::PMT_t_S:
 	{
 		picker->SetFunction( [](std::vector<double> &vals, int run, void* data) {
 			return ((vals[4] <= ((temp_data*)data)->mm.second) && (vals[4] >= ((temp_data*)data)->mm.first));
 		});
 		break;
 	}
-	case AnalysisStates::MPPC_A_S:
-	case AnalysisStates::PMT_A_S:
+	case AStates::MPPC_A_S:
+	case AStates::PMT_A_S:
 	{
 		picker->SetFunction( [](std::vector<double> &vals, int run, void* data) {
 			return ((vals[1] <= ((temp_data*)data)->mm.second) && (vals[1] >= ((temp_data*)data)->mm.first));
 		});
 		break;
 	}
-	case AnalysisStates::MPPC_As:
-	case AnalysisStates::PMT_As:
+	case AStates::MPPC_As:
+	case AStates::PMT_As:
 	{
 		picker->SetFunction( [](std::vector<double> &vals, int run, void* data) {
 			return ((vals[1] <=((temp_data*)data)->mm.second) && (vals[1] >= ((temp_data*)data)->mm.first));
 		});
 		break;
 	}
-	case AnalysisStates::PMT_S2_S:
-	case AnalysisStates::MPPC_S2:
-	case AnalysisStates::MPPC_Ss:
-	case AnalysisStates::MPPC_Double_I:
-	case AnalysisStates::PMT_S2_int:
-	case AnalysisStates::PMT_Ss:
-	case AnalysisStates::Correlation:
-	case AnalysisStates::CorrelationAll:
+	case AStates::PMT_S2_S:
+	case AStates::MPPC_S2:
+	case AStates::MPPC_Ss:
+	case AStates::MPPC_Double_I:
+	case AStates::PMT_S2_int:
+	case AStates::PMT_Ss:
+	case AStates::Correlation:
+	case AStates::CorrelationAll:
 	{
 		picker->SetFunction( [](std::vector<double> &vals, int run, void* data) {
 			return ((vals[0] <=((temp_data*)data)->mm.second) && (vals[0] >= ((temp_data*)data)->mm.first));
@@ -741,28 +741,28 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 	FunctionWrapper *picker = new FunctionWrapper (st_data);
 	switch (post_processor->current_type)
 	{
-	case AnalysisStates::MPPC_coord:
-	case AnalysisStates::MPPC_coord_x:
-	case AnalysisStates::MPPC_coord_y:
-	case AnalysisStates::PMT_t_S:
-	case AnalysisStates::PMT_Ss:
-	case AnalysisStates::PMT_As:
-	case AnalysisStates::PMT_A_S:
-	case AnalysisStates::PMT_S2_S:
-	case AnalysisStates::PMT_sum_N:
-	case AnalysisStates::PMT_tbS:
-	case AnalysisStates::PMT_tbN:
-	case AnalysisStates::MPPC_t_S:
-	case AnalysisStates::MPPC_A_S:
-	case AnalysisStates::MPPC_S2:
-	case AnalysisStates::MPPC_Ss:
-	case AnalysisStates::MPPC_As:
-	case AnalysisStates::MPPC_tbS_sum:
-	case AnalysisStates::MPPC_tbN_sum:
-	case AnalysisStates::MPPC_tbS:
-	case AnalysisStates::MPPC_tbN:
-	case AnalysisStates::MPPC_Npe_sum:
-	case AnalysisStates::PMT_Npe_sum:
+	case AStates::MPPC_coord:
+	case AStates::MPPC_coord_x:
+	case AStates::MPPC_coord_y:
+	case AStates::PMT_t_S:
+	case AStates::PMT_Ss:
+	case AStates::PMT_As:
+	case AStates::PMT_A_S:
+	case AStates::PMT_S2_S:
+	case AStates::PMT_sum_N:
+	case AStates::PMT_tbS:
+	case AStates::PMT_tbN:
+	case AStates::MPPC_t_S:
+	case AStates::MPPC_A_S:
+	case AStates::MPPC_S2:
+	case AStates::MPPC_Ss:
+	case AStates::MPPC_As:
+	case AStates::MPPC_tbS_sum:
+	case AStates::MPPC_tbN_sum:
+	case AStates::MPPC_tbS:
+	case AStates::MPPC_tbN:
+	case AStates::MPPC_Npe_sum:
+	case AStates::PMT_Npe_sum:
 	{
 		picker->SetFunction( [](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -774,10 +774,10 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 		});
 		break;
 	}
-	case AnalysisStates::PMT_S2_int:
-	case AnalysisStates::MPPC_Double_I:
-	case AnalysisStates::Correlation:
-	case AnalysisStates::CorrelationAll:
+	case AStates::PMT_S2_int:
+	case AStates::MPPC_Double_I:
+	case AStates::Correlation:
+	case AStates::CorrelationAll:
 	{
 		delete picker;
 		return NULL;
@@ -877,28 +877,28 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 	FunctionWrapper *picker = new FunctionWrapper(st_data);
 	switch (post_processor->current_type)
 	{
-	case AnalysisStates::MPPC_coord:
-	case AnalysisStates::MPPC_coord_x:
-	case AnalysisStates::MPPC_coord_y:
-	case AnalysisStates::PMT_t_S:
-	case AnalysisStates::PMT_Ss:
-	case AnalysisStates::PMT_As:
-	case AnalysisStates::PMT_A_S:
-	case AnalysisStates::PMT_S2_S:
-	case AnalysisStates::PMT_sum_N:
-	case AnalysisStates::PMT_tbS:
-	case AnalysisStates::PMT_tbN:
-	case AnalysisStates::MPPC_t_S:
-	case AnalysisStates::MPPC_A_S:
-	case AnalysisStates::MPPC_S2:
-	case AnalysisStates::MPPC_Ss:
-	case AnalysisStates::MPPC_As:
-	case AnalysisStates::MPPC_tbS_sum:
-	case AnalysisStates::MPPC_tbN_sum:
-	case AnalysisStates::MPPC_tbS:
-	case AnalysisStates::MPPC_tbN:
-	case AnalysisStates::MPPC_Npe_sum:
-	case AnalysisStates::PMT_Npe_sum:
+	case AStates::MPPC_coord:
+	case AStates::MPPC_coord_x:
+	case AStates::MPPC_coord_y:
+	case AStates::PMT_t_S:
+	case AStates::PMT_Ss:
+	case AStates::PMT_As:
+	case AStates::PMT_A_S:
+	case AStates::PMT_S2_S:
+	case AStates::PMT_sum_N:
+	case AStates::PMT_tbS:
+	case AStates::PMT_tbN:
+	case AStates::MPPC_t_S:
+	case AStates::MPPC_A_S:
+	case AStates::MPPC_S2:
+	case AStates::MPPC_Ss:
+	case AStates::MPPC_As:
+	case AStates::MPPC_tbS_sum:
+	case AStates::MPPC_tbN_sum:
+	case AStates::MPPC_tbS:
+	case AStates::MPPC_tbN:
+	case AStates::MPPC_Npe_sum:
+	case AStates::PMT_Npe_sum:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -910,10 +910,10 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 		});
 		break;
 	}
-	case AnalysisStates::PMT_S2_int:
-	case AnalysisStates::MPPC_Double_I:
-	case AnalysisStates::Correlation:
-	case AnalysisStates::CorrelationAll:
+	case AStates::PMT_S2_int:
+	case AStates::MPPC_Double_I:
+	case AStates::Correlation:
+	case AStates::CorrelationAll:
 	{
 		delete picker;
 		return NULL;
@@ -1012,28 +1012,28 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 	FunctionWrapper *picker = new FunctionWrapper(st_data);
 	switch (post_processor->current_type)
 	{
-	case AnalysisStates::MPPC_coord:
-	case AnalysisStates::MPPC_coord_x:
-	case AnalysisStates::MPPC_coord_y:
-	case AnalysisStates::PMT_t_S:
-	case AnalysisStates::PMT_Ss:
-	case AnalysisStates::PMT_As:
-	case AnalysisStates::PMT_A_S:
-	case AnalysisStates::PMT_S2_S:
-	case AnalysisStates::PMT_sum_N:
-	case AnalysisStates::PMT_tbS:
-	case AnalysisStates::PMT_tbN:
-	case AnalysisStates::MPPC_t_S:
-	case AnalysisStates::MPPC_A_S:
-	case AnalysisStates::MPPC_S2:
-	case AnalysisStates::MPPC_Ss:
-	case AnalysisStates::MPPC_As:
-	case AnalysisStates::MPPC_tbS_sum:
-	case AnalysisStates::MPPC_tbN_sum:
-	case AnalysisStates::MPPC_tbS:
-	case AnalysisStates::MPPC_tbN:
-	case AnalysisStates::MPPC_Npe_sum:
-	case AnalysisStates::PMT_Npe_sum:
+	case AStates::MPPC_coord:
+	case AStates::MPPC_coord_x:
+	case AStates::MPPC_coord_y:
+	case AStates::PMT_t_S:
+	case AStates::PMT_Ss:
+	case AStates::PMT_As:
+	case AStates::PMT_A_S:
+	case AStates::PMT_S2_S:
+	case AStates::PMT_sum_N:
+	case AStates::PMT_tbS:
+	case AStates::PMT_tbN:
+	case AStates::MPPC_t_S:
+	case AStates::MPPC_A_S:
+	case AStates::MPPC_S2:
+	case AStates::MPPC_Ss:
+	case AStates::MPPC_As:
+	case AStates::MPPC_tbS_sum:
+	case AStates::MPPC_tbN_sum:
+	case AStates::MPPC_tbS:
+	case AStates::MPPC_tbN:
+	case AStates::MPPC_Npe_sum:
+	case AStates::PMT_Npe_sum:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -1045,10 +1045,10 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 		});
 		break;
 	}
-	case AnalysisStates::PMT_S2_int:
-	case AnalysisStates::MPPC_Double_I:
-	case AnalysisStates::Correlation:
-	case AnalysisStates::CorrelationAll:
+	case AStates::PMT_S2_int:
+	case AStates::MPPC_Double_I:
+	case AStates::Correlation:
+	case AStates::CorrelationAll:
 	{
 		delete picker;
 		return NULL;
@@ -1188,38 +1188,38 @@ FunctionWrapper* create_off_ch_cut(int channel) //do not call from the CINT
 	FunctionWrapper *picker = new FunctionWrapper(st_data);
 	switch (post_processor->current_type)
 	{
-	case AnalysisStates::MPPC_coord:
-	case AnalysisStates::MPPC_coord_x:
-	case AnalysisStates::MPPC_coord_y:
-	case AnalysisStates::PMT_t_S:
-	case AnalysisStates::PMT_Ss:
-	case AnalysisStates::PMT_As:
-	case AnalysisStates::PMT_A_S:
-	case AnalysisStates::PMT_S2_S:
-	case AnalysisStates::PMT_sum_N:
-	case AnalysisStates::PMT_tbS:
-	case AnalysisStates::PMT_tbN:
-	case AnalysisStates::MPPC_t_S:
-	case AnalysisStates::MPPC_A_S:
-	case AnalysisStates::MPPC_S2:
-	case AnalysisStates::MPPC_Ss:
-	case AnalysisStates::MPPC_As:
-	case AnalysisStates::MPPC_tbS_sum:
-	case AnalysisStates::MPPC_tbN_sum:
-	case AnalysisStates::MPPC_tbS:
-	case AnalysisStates::MPPC_tbN:
-	case AnalysisStates::MPPC_Npe_sum:
-	case AnalysisStates::PMT_Npe_sum:
+	case AStates::MPPC_coord:
+	case AStates::MPPC_coord_x:
+	case AStates::MPPC_coord_y:
+	case AStates::PMT_t_S:
+	case AStates::PMT_Ss:
+	case AStates::PMT_As:
+	case AStates::PMT_A_S:
+	case AStates::PMT_S2_S:
+	case AStates::PMT_sum_N:
+	case AStates::PMT_tbS:
+	case AStates::PMT_tbN:
+	case AStates::MPPC_t_S:
+	case AStates::MPPC_A_S:
+	case AStates::MPPC_S2:
+	case AStates::MPPC_Ss:
+	case AStates::MPPC_As:
+	case AStates::MPPC_tbS_sum:
+	case AStates::MPPC_tbN_sum:
+	case AStates::MPPC_tbS:
+	case AStates::MPPC_tbN:
+	case AStates::MPPC_Npe_sum:
+	case AStates::PMT_Npe_sum:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			return false;
 		});
 		break;
 	}
-	case AnalysisStates::PMT_S2_int:
-	case AnalysisStates::MPPC_Double_I:
-	case AnalysisStates::Correlation:
-	case AnalysisStates::CorrelationAll:
+	case AStates::PMT_S2_int:
+	case AStates::MPPC_Double_I:
+	case AStates::Correlation:
+	case AStates::CorrelationAll:
 	{
 		delete picker;
 		return NULL;
@@ -1276,28 +1276,28 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 	FunctionWrapper *picker = new FunctionWrapper(st_data);
 	switch (post_processor->current_type)
 	{
-	case AnalysisStates::MPPC_coord:
-	case AnalysisStates::MPPC_coord_x:
-	case AnalysisStates::MPPC_coord_y:
-	case AnalysisStates::PMT_t_S:
-	case AnalysisStates::PMT_Ss:
-	case AnalysisStates::PMT_As:
-	case AnalysisStates::PMT_A_S:
-	case AnalysisStates::PMT_S2_S:
-	case AnalysisStates::PMT_sum_N:
-	case AnalysisStates::PMT_tbS:
-	case AnalysisStates::PMT_tbN:
-	case AnalysisStates::MPPC_t_S:
-	case AnalysisStates::MPPC_A_S:
-	case AnalysisStates::MPPC_S2:
-	case AnalysisStates::MPPC_Ss:
-	case AnalysisStates::MPPC_As:
-	case AnalysisStates::MPPC_tbS_sum:
-	case AnalysisStates::MPPC_tbN_sum:
-	case AnalysisStates::MPPC_tbS:
-	case AnalysisStates::MPPC_tbN:
-	case AnalysisStates::MPPC_Npe_sum:
-	case AnalysisStates::PMT_Npe_sum:
+	case AStates::MPPC_coord:
+	case AStates::MPPC_coord_x:
+	case AStates::MPPC_coord_y:
+	case AStates::PMT_t_S:
+	case AStates::PMT_Ss:
+	case AStates::PMT_As:
+	case AStates::PMT_A_S:
+	case AStates::PMT_S2_S:
+	case AStates::PMT_sum_N:
+	case AStates::PMT_tbS:
+	case AStates::PMT_tbN:
+	case AStates::MPPC_t_S:
+	case AStates::MPPC_A_S:
+	case AStates::MPPC_S2:
+	case AStates::MPPC_Ss:
+	case AStates::MPPC_As:
+	case AStates::MPPC_tbS_sum:
+	case AStates::MPPC_tbN_sum:
+	case AStates::MPPC_tbS:
+	case AStates::MPPC_tbN:
+	case AStates::MPPC_Npe_sum:
+	case AStates::PMT_Npe_sum:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			//{A_min, A0, S0, A1, S1, A_max}
@@ -1318,10 +1318,10 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 		});
 		break;
 	}
-	case AnalysisStates::PMT_S2_int:
-	case AnalysisStates::MPPC_Double_I:
-	case AnalysisStates::Correlation:
-	case AnalysisStates::CorrelationAll:
+	case AStates::PMT_S2_int:
+	case AStates::MPPC_Double_I:
+	case AStates::Correlation:
+	case AStates::CorrelationAll:
 	{
 		delete picker;
 		return NULL;
@@ -1374,28 +1374,28 @@ FunctionWrapper* create_A_S_upper_cut(std::vector<double> region) //do not call 
 	FunctionWrapper *picker = new FunctionWrapper(st_data);
 	switch (post_processor->current_type)
 	{
-	case AnalysisStates::MPPC_coord:
-	case AnalysisStates::MPPC_coord_x:
-	case AnalysisStates::MPPC_coord_y:
-	case AnalysisStates::PMT_t_S:
-	case AnalysisStates::PMT_Ss:
-	case AnalysisStates::PMT_As:
-	case AnalysisStates::PMT_A_S:
-	case AnalysisStates::PMT_S2_S:
-	case AnalysisStates::PMT_sum_N:
-	case AnalysisStates::PMT_tbS:
-	case AnalysisStates::PMT_tbN:
-	case AnalysisStates::MPPC_t_S:
-	case AnalysisStates::MPPC_A_S:
-	case AnalysisStates::MPPC_S2:
-	case AnalysisStates::MPPC_Ss:
-	case AnalysisStates::MPPC_As:
-	case AnalysisStates::MPPC_tbS_sum:
-	case AnalysisStates::MPPC_tbN_sum:
-	case AnalysisStates::MPPC_tbS:
-	case AnalysisStates::MPPC_tbN:
-	case AnalysisStates::MPPC_Npe_sum:
-	case AnalysisStates::PMT_Npe_sum:
+	case AStates::MPPC_coord:
+	case AStates::MPPC_coord_x:
+	case AStates::MPPC_coord_y:
+	case AStates::PMT_t_S:
+	case AStates::PMT_Ss:
+	case AStates::PMT_As:
+	case AStates::PMT_A_S:
+	case AStates::PMT_S2_S:
+	case AStates::PMT_sum_N:
+	case AStates::PMT_tbS:
+	case AStates::PMT_tbN:
+	case AStates::MPPC_t_S:
+	case AStates::MPPC_A_S:
+	case AStates::MPPC_S2:
+	case AStates::MPPC_Ss:
+	case AStates::MPPC_As:
+	case AStates::MPPC_tbS_sum:
+	case AStates::MPPC_tbN_sum:
+	case AStates::MPPC_tbS:
+	case AStates::MPPC_tbN:
+	case AStates::MPPC_Npe_sum:
+	case AStates::PMT_Npe_sum:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			//{A0, S0, A1, S1}
@@ -1414,10 +1414,10 @@ FunctionWrapper* create_A_S_upper_cut(std::vector<double> region) //do not call 
 		});
 		break;
 	}
-	case AnalysisStates::PMT_S2_int:
-	case AnalysisStates::MPPC_Double_I:
-	case AnalysisStates::Correlation:
-	case AnalysisStates::CorrelationAll:
+	case AStates::PMT_S2_int:
+	case AStates::MPPC_Double_I:
+	case AStates::Correlation:
+	case AStates::CorrelationAll:
 	{
 		delete picker;
 		return NULL;

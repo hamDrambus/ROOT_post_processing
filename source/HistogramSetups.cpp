@@ -189,7 +189,7 @@ Bool_t CanvasSetups::StateChange(int to_ch, int to_exp, Type to_type, int from_c
 
 Bool_t CanvasSetups::StateChange(int to_ch, int to_exp, Type to_type, std::size_t to_canvas, int from_ch, int from_exp, Type from_type, std::size_t from_canvas)
 {
-	return ((from_canvas!=to_canvas)||AnalysisStates::StateChange(to_ch, to_exp, to_type, from_ch, from_exp, from_type));
+	return ((from_canvas!=to_canvas)||AStates::StateChange(to_ch, to_exp, to_type, from_ch, from_exp, from_type));
 }
 
 bool CanvasSetups::Invalidate(unsigned int label)
@@ -285,7 +285,7 @@ CanvasSetups::~CanvasSetups()
 }
 
 CanvasSetups::CanvasSetups(std::deque<int> &mppc_channels_, std::deque<int> &pmt_channels_, std::deque<std::string>& experiments_):
-		AnalysisStates(mppc_channels_, pmt_channels_, experiments_)
+		AStates(mppc_channels_, pmt_channels_, experiments_)
 {
 	canvas_ind=0;
 	TCanvas* new_c = new TCanvas((std::string("inter_canvas_") + std::to_string(canvas_ind)).c_str(), (std::string("inter_canvas_") + std::to_string(canvas_ind)).c_str());
@@ -305,7 +305,7 @@ CanvasSetups::CanvasSetups(std::deque<int> &mppc_channels_, std::deque<int> &pmt
 		for (auto exp = experiments_.begin(); exp != experiments_.end(); ++exp) {
 			manual_setups[canvas_ind].back().push_back(std::deque<HistogramSetups*>());
 			loop_channels_reset();
-			for (int ch=0, ch_ind=0; loop_channels ((AnalysisStates::Type)h, ch, ch_ind); ) {
+			for (int ch=0, ch_ind=0; loop_channels ((AStates::Type)h, ch, ch_ind); ) {
 				manual_setups[canvas_ind].back().back().push_back(NULL);
 			}
 		}
@@ -403,7 +403,7 @@ void CanvasSetups::next_canvas(void)
 			for (std::size_t exp = 0, exp_end_= manual_setups[prev_can][h].size(); exp != exp_end_; ++exp) {
 				manual_setups[canvas_ind][h].push_back(std::deque<HistogramSetups*>());
 				loop_channels_reset();
-				for (int ch=0, ch_ind=0; loop_channels ((AnalysisStates::Type)h, ch, ch_ind); ) {
+				for (int ch=0, ch_ind=0; loop_channels ((AStates::Type)h, ch, ch_ind); ) {
 					HistogramSetups* setup_to_copy = manual_setups[prev_can][h][exp][ch_ind];
 					setup_to_copy = (NULL==setup_to_copy ? NULL : new HistogramSetups(*setup_to_copy));
 					manual_setups[canvas_ind][h][exp].push_back(setup_to_copy);

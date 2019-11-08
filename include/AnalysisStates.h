@@ -8,7 +8,7 @@
 //TODO: PMT_times now is valid for both ch{0,1} and ch{8,12} whereas it should be only for the latter.
 //similar goes for PMT_S2_S, PMT_Ss. PMT_t_S is good for both.
 //TODO: CorrelationAll is not only multichannel but also multiexperiment.
-class AnalysisStates {
+class AStates { //short for AnalysisStates - faster to type (autocomplete) in root console.
 public:
 	enum Type /*: std::size_t*/ {
 		MPPC_Ss, MPPC_As, MPPC_t_S, MPPC_A_S, MPPC_Double_I, /*(old) MPPC_times*/ MPPC_tbS /*time by N*/, /*(old) MPPC_times_N*/ MPPC_tbN /*time by N*/,
@@ -45,8 +45,8 @@ public:
 	int current_channel;
 	int current_exp_index;
 	std::string type_name(Type type);
-	AnalysisStates(std::deque<int> &mppc_channels_, std::deque<int> &pmt_channels_, std::deque<std::string>& experiments_);
-	virtual ~AnalysisStates();
+	AStates(std::deque<int> &mppc_channels_, std::deque<int> &pmt_channels_, std::deque<std::string>& experiments_);
+	virtual ~AStates();
 	Bool_t NextType(void);
 	Bool_t PrevType(void);
 	bool GotoT(Type to_type);

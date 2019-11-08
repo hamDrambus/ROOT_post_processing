@@ -5,7 +5,7 @@
 #include "PolynomialFit.h"
 #include "AnalysisStates.h"
 
-class AnalysisStates;
+class AStates;
 
 //TODO: some cleanup and light restructure is required - too much of repeating the code
 class CalibrationInfo {//recalculation of MPPC and PMT areas to photoelectrons as well as Npe from double integral
@@ -52,7 +52,7 @@ protected:
 	S1pe_table s1pe_table_;
 	std::deque<S1pe_exp> s1pe_exp_; //for each experiment. Same amount of channels as in state_info
 protected:
-	const AnalysisStates* state_info; //for channels only
+	const AStates* state_info; //for channels only
 	int ch_to_index(int ch) const;
 	int ch_index_to_ch(int ch_index) const;
 
@@ -63,7 +63,7 @@ protected:
 	std::vector<int> translate_V_to_exp (int ch, double V) const;
 	double translate_exp_to_V (int ch, int exp_index) const;
 public:
-	CalibrationInfo(const AnalysisStates* data, std::string fname);
+	CalibrationInfo(const AStates* data, std::string fname);
 	double get_S1pe(int ch, double V) const; //~~TODO~~ ROOT's CINT can't handle boost: rewrite with boost::optional
 	void force_S1pe(int ch, double V, double val); //forces specific value which is not erased by calculateS1pe
 	void unforce_S1pe(int ch, double V); //forces specific value which is not erased by calculateS1pe

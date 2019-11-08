@@ -43,7 +43,7 @@ public:
 	bool filled_hist; //1st call is to determine default N bins, x-y range, etc.
 };
 
-class CanvasSetups : public AnalysisStates //just helper class, has no fancy functionality in itself
+class CanvasSetups : public AStates //just helper class, has no fancy functionality in itself
 {
 public:
 	struct stateS {

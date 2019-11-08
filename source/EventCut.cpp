@@ -1,7 +1,7 @@
 #include "EventCut.h"
 
 EventCut::EventCut(int N_of_runs, CutType _type, std::string name) :
-cut_type(_type), cut_name(name), exp_ind(-1), channel(-1), type(AnalysisStates::Type::PMT_S2_S), value_picker(NULL), affects_histogram(kTRUE)
+cut_type(_type), cut_name(name), exp_ind(-1), channel(-1), type(AStates::Type::PMT_S2_S), value_picker(NULL), affects_histogram(kTRUE)
 {
 	if (cut_name == "")
 		cut_name = (cut_type == RunCut ? "Run cut" : "Histogram cut");
@@ -32,8 +32,8 @@ void EventCut::SetExperiment(int exp_i)		{ exp_ind = exp_i; }
 int EventCut::GetExperiment(void) const		{ return exp_ind; }
 void EventCut::SetChannel(int ch)			{ channel = ch; }
 int EventCut::GetChannel(void) const		{ return channel; }
-void EventCut::SetType(AnalysisStates::Type t)		{ type = t; }
-AnalysisStates::Type EventCut::GetType(void) const	{ return type; }
+void EventCut::SetType(AStates::Type t)		{ type = t; }
+AStates::Type EventCut::GetType(void) const	{ return type; }
 void EventCut::SetAffectingHistogram(Bool_t affect_hist)	{ affects_histogram = affect_hist; }
 Bool_t EventCut::GetAffectingHistogram(void) const			{ return affects_histogram;}
 

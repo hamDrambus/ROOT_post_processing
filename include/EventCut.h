@@ -23,7 +23,7 @@ protected:
 	FunctionWrapper *value_picker; //for input pars meanings see "PostProcessor.h" (depends on AnalysisState::Type)
 	int exp_ind; //for which experiment it is applied
 	int channel; //for which channel (e.g. 0 is the Sum of pmt)
-	AnalysisStates::Type type; //for which type. Defines the number of parameters
+	AStates::Type type; //for which type. Defines the number of parameters
 	Bool_t affects_histogram; //if false, only display cut and use it for determination of analysis output parameters.
 public:
 	EventCut(int N_of_runs, CutType type, std::string name = "");
@@ -41,8 +41,8 @@ public:
 	int GetExperiment(void) const;
 	void SetChannel(int ch);
 	int GetChannel(void) const;
-	void SetType(AnalysisStates::Type t);
-	AnalysisStates::Type GetType(void) const;
+	void SetType(AStates::Type t);
+	AStates::Type GetType(void) const;
 	void SetAffectingHistogram(Bool_t affect_hist);
 	Bool_t GetAffectingHistogram(void) const;
 

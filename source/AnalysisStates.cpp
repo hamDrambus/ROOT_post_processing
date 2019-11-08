@@ -1,6 +1,6 @@
 #include "AnalysisStates.h"
 
-AnalysisStates::AnalysisStates(std::deque<int> &mppc_channels_, std::deque<int> &pmt_channels_, std::deque<std::string>& experiments_):
+AStates::AStates(std::deque<int> &mppc_channels_, std::deque<int> &pmt_channels_, std::deque<std::string>& experiments_):
 _first_state(MPPC_Ss), _last_state(PMT_sum_N),_x_corr(MPPC_Npe_sum),_y_corr(PMT_S2_S), ch_ind_loop(0), type_loop(_first_state)
 {
 	MPPC_channels = mppc_channels_;
@@ -25,10 +25,10 @@ _first_state(MPPC_Ss), _last_state(PMT_sum_N),_x_corr(MPPC_Npe_sum),_y_corr(PMT_
 	_y_corr_ch = is_PMT_type(_y_corr) ? PMT_last_ch : MPPC_last_ch;
 }
 
-AnalysisStates:: ~AnalysisStates()
+AStates::~AStates()
 {}
 
-Bool_t AnalysisStates::StateChange(int to_ch, int to_exp, Type to_type, int from_ch, int from_exp, Type from_type)
+Bool_t AStates::StateChange(int to_ch, int to_exp, Type to_type, int from_ch, int from_exp, Type from_type)
 {
 	if (!isMultichannel(to_type)) {
 		if (is_PMT_type(to_type))
@@ -43,7 +43,7 @@ Bool_t AnalysisStates::StateChange(int to_ch, int to_exp, Type to_type, int from
 	return !((to_ch == from_ch)&&(to_exp==from_exp)&&(to_type==from_type));
 }
 
-Bool_t AnalysisStates::NextType(void)
+Bool_t AStates::NextType(void)
 {
 	if (!isValid())
 		return kFALSE;
@@ -65,7 +65,7 @@ Bool_t AnalysisStates::NextType(void)
 	return StateChange(current_channel,current_exp_index,current_type,prev_ch,prev_exp,prev_type);
 }
 
-bool AnalysisStates::GotoT(Type to_type)
+bool AStates::GotoT(Type to_type)
 {
 	if (!isValid())
 		return kFALSE;
@@ -89,7 +89,7 @@ bool AnalysisStates::GotoT(Type to_type)
 	return StateChange(current_channel,current_exp_index,current_type,prev_ch,prev_exp,prev_type);
 }
 
-Bool_t AnalysisStates::PrevType(void)
+Bool_t AStates::PrevType(void)
 {
 	if (!isValid())
 		return kFALSE;
@@ -111,7 +111,7 @@ Bool_t AnalysisStates::PrevType(void)
 	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type);
 }
 
-Bool_t AnalysisStates::NextCh(void)
+Bool_t AStates::NextCh(void)
 {
 	if (!isValid())
 		return kFALSE;
@@ -140,7 +140,7 @@ Bool_t AnalysisStates::NextCh(void)
 	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type);
 }
 
-Bool_t AnalysisStates::PrevCh(void)
+Bool_t AStates::PrevCh(void)
 {
 	if (!isValid())
 		return kFALSE;
@@ -169,7 +169,7 @@ Bool_t AnalysisStates::PrevCh(void)
 	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type);
 }
 
-Bool_t AnalysisStates::GotoCh(int channel) //ignores types
+Bool_t AStates::GotoCh(int channel) //ignores types
 {
 	if (!isValid())
 		return kFALSE;
@@ -209,7 +209,7 @@ Bool_t AnalysisStates::GotoCh(int channel) //ignores types
 	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type);
 }
 
-Bool_t AnalysisStates::NextExp(void)
+Bool_t AStates::NextExp(void)
 {
 	if (!isValid())
 		return kFALSE;
@@ -220,7 +220,7 @@ Bool_t AnalysisStates::NextExp(void)
 	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type);
 }
 
-Bool_t AnalysisStates::PrevExp(void)
+Bool_t AStates::PrevExp(void)
 {
 	if (!isValid())
 		return kFALSE;
@@ -231,33 +231,33 @@ Bool_t AnalysisStates::PrevExp(void)
 	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type);
 }
 
-Bool_t AnalysisStates::is_PMT_type(Type type)
+Bool_t AStates::is_PMT_type(Type type)
 {
 	return (type == PMT_S2_S || PMT_Npe_sum==type || PMT_S2_int==type || type == PMT_Ss || type == PMT_As || type == PMT_t_S || PMT_A_S == type || type == PMT_tbS || PMT_tbN == type || PMT_sum_N == type);
 }
 
-Bool_t AnalysisStates::isPerRun(Type type)
+Bool_t AStates::isPerRun(Type type)
 {
 	return type==MPPC_Double_I || type==MPPC_coord|| type==MPPC_coord_x|| type==MPPC_coord_y|| type==MPPC_Npe_sum||
 			type==MPPC_S2|| type==Correlation|| type==CorrelationAll|| type== PMT_S2_S|| type== PMT_S2_int ||type==PMT_Npe_sum;
 }
 
-Bool_t AnalysisStates::isMultichannel(Type type)
+Bool_t AStates::isMultichannel(Type type)
 {
 	return (type == MPPC_tbS_sum) || type == MPPC_tbN_sum || type==MPPC_coord || type==MPPC_coord_x || type==MPPC_coord_y || type==MPPC_Npe_sum || type==Correlation || type==CorrelationAll || type==PMT_sum_N || type==PMT_Npe_sum;
 }
 
-Bool_t AnalysisStates::is_TH1D_hist(Type type)
+Bool_t AStates::is_TH1D_hist(Type type)
 {
 	return !((type == Type::PMT_t_S)||(type == Type::PMT_A_S) || (type == Type::MPPC_t_S)|| (type == Type::MPPC_A_S)||(type== Type::MPPC_coord)||(type==Correlation)||(type==CorrelationAll));
 }
 
-bool AnalysisStates::isComposite (Type type)
+bool AStates::isComposite (Type type)
 {
 	return ((type == MPPC_coord) || (type == MPPC_coord_x)||(type== MPPC_coord_y)||(type==Correlation)||(type==CorrelationAll)||(type==MPPC_Npe_sum)||(type==MPPC_S2)||(type==PMT_S2_S)||(type==PMT_sum_N)||(type==PMT_Npe_sum));
 }
 
-Bool_t AnalysisStates::isValid()
+Bool_t AStates::isValid()
 {
 	if (MPPC_channels.empty() && PMT_channels.empty())
 		return kFALSE;
@@ -288,7 +288,7 @@ Bool_t AnalysisStates::isValid()
 	return kTRUE;
 }
 
-bool AnalysisStates::SetCorrelation(Type x, Type y, int chx, int chy)
+bool AStates::SetCorrelation(Type x, Type y, int chx, int chy)
 {
 	if (isPerRun(x)&&is_TH1D_hist(x)&&is_TH1D_hist(y)&&isPerRun(y)){
 		bool ok = true;
@@ -313,12 +313,12 @@ bool AnalysisStates::SetCorrelation(Type x, Type y, int chx, int chy)
 	return false;
 }
 
-int AnalysisStates::channel_to_index(int ch)
+int AStates::channel_to_index(int ch)
 {
 	return channel_to_index(ch, current_type);
 }
 
-int AnalysisStates::channel_to_index(int ch, Type type)
+int AStates::channel_to_index(int ch, Type type)
 {
 	if (isMultichannel(type)) {
 		return (-1==ch ? 0 : -1);
@@ -330,12 +330,12 @@ int AnalysisStates::channel_to_index(int ch, Type type)
 	return -1;
 }
 
-void AnalysisStates::loop_channels_reset(void)
+void AStates::loop_channels_reset(void)
 {
 	ch_ind_loop=0;
 }
 
-bool AnalysisStates::loop_channels (Type type, int &ch, int &ch_ind)
+bool AStates::loop_channels (Type type, int &ch, int &ch_ind)
 {
 	if(type!=type_loop)
 		loop_channels_reset();
@@ -378,14 +378,14 @@ bool AnalysisStates::loop_channels (Type type, int &ch, int &ch_ind)
 }
 
 
-int AnalysisStates::mppc_channel_to_index(int ch)
+int AStates::mppc_channel_to_index(int ch)
 {
 	for (auto i = MPPC_channels.begin(), _end_ = MPPC_channels.end(); i != _end_; ++i)
 		if (ch == *i)
 			return (i - MPPC_channels.begin());
 	return -1;
 }
-int AnalysisStates::pmt_channel_to_index(int ch)
+int AStates::pmt_channel_to_index(int ch)
 {
 	for (auto i = PMT_channels.begin(), _end_ = PMT_channels.end(); i != _end_; ++i)
 		if (ch == *i)
@@ -393,7 +393,7 @@ int AnalysisStates::pmt_channel_to_index(int ch)
 	return -1;
 }
 
-std::string AnalysisStates::type_name(Type type)
+std::string AStates::type_name(Type type)
 {
 	std::string name;
 	switch (type){
