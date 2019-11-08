@@ -360,7 +360,7 @@ bool CanvasSetups::unset_zoom(void)
 	if (NULL==curr_hist)
 		return false;
 	bool invalidate = false;
-	if (!curr_hist->is_zoomed.first && !curr_hist->is_zoomed.second)
+	if (curr_hist->is_zoomed.first || curr_hist->is_zoomed.second)
 		invalidate = true;
 	curr_hist->is_zoomed.first = false;
 	curr_hist->is_zoomed.second = false;

@@ -3,7 +3,7 @@
 //selected at that stage at 20kV; during Npe plots (for Cd peak selection, which is required during signal forms) and during 
 //plotting PMT signal forms themselves. Without this function changing cut parameters would have to take place in several places
 //which is very error-prone. Besides, it is easier to re-use this file for other analyzes.
-void noise_cut(int channel, int aggressiveness, bool display) { //Same as
+void noise_cut(int channel, int aggressiveness, bool display) {
 std::vector<double> x_y_regions;
 if (channel==0) {
     x_y_regions = {0.035, 0.035, 0.0012, 0.2, 0.005, 0.5};

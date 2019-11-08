@@ -609,6 +609,7 @@ FunctionWrapper* create_vertical_lines_cut(double left, double right) //do not c
 		break;
 	}
 	case AnalysisStates::MPPC_As:
+	case AnalysisStates::PMT_As:
 	{
 		picker->SetFunction( [](std::vector<double> &vals, int run, void* data) {
 			return ((vals[1] <=((temp_data*)data)->mm.second) && (vals[1] >= ((temp_data*)data)->mm.first));
@@ -745,6 +746,7 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 	case AnalysisStates::MPPC_coord_y:
 	case AnalysisStates::PMT_t_S:
 	case AnalysisStates::PMT_Ss:
+	case AnalysisStates::PMT_As:
 	case AnalysisStates::PMT_A_S:
 	case AnalysisStates::PMT_S2_S:
 	case AnalysisStates::PMT_sum_N:
@@ -880,6 +882,7 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 	case AnalysisStates::MPPC_coord_y:
 	case AnalysisStates::PMT_t_S:
 	case AnalysisStates::PMT_Ss:
+	case AnalysisStates::PMT_As:
 	case AnalysisStates::PMT_A_S:
 	case AnalysisStates::PMT_S2_S:
 	case AnalysisStates::PMT_sum_N:
@@ -1014,6 +1017,7 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 	case AnalysisStates::MPPC_coord_y:
 	case AnalysisStates::PMT_t_S:
 	case AnalysisStates::PMT_Ss:
+	case AnalysisStates::PMT_As:
 	case AnalysisStates::PMT_A_S:
 	case AnalysisStates::PMT_S2_S:
 	case AnalysisStates::PMT_sum_N:
@@ -1189,6 +1193,7 @@ FunctionWrapper* create_off_ch_cut(int channel) //do not call from the CINT
 	case AnalysisStates::MPPC_coord_y:
 	case AnalysisStates::PMT_t_S:
 	case AnalysisStates::PMT_Ss:
+	case AnalysisStates::PMT_As:
 	case AnalysisStates::PMT_A_S:
 	case AnalysisStates::PMT_S2_S:
 	case AnalysisStates::PMT_sum_N:
@@ -1276,6 +1281,7 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 	case AnalysisStates::MPPC_coord_y:
 	case AnalysisStates::PMT_t_S:
 	case AnalysisStates::PMT_Ss:
+	case AnalysisStates::PMT_As:
 	case AnalysisStates::PMT_A_S:
 	case AnalysisStates::PMT_S2_S:
 	case AnalysisStates::PMT_sum_N:
@@ -1373,6 +1379,7 @@ FunctionWrapper* create_A_S_upper_cut(std::vector<double> region) //do not call 
 	case AnalysisStates::MPPC_coord_y:
 	case AnalysisStates::PMT_t_S:
 	case AnalysisStates::PMT_Ss:
+	case AnalysisStates::PMT_As:
 	case AnalysisStates::PMT_A_S:
 	case AnalysisStates::PMT_S2_S:
 	case AnalysisStates::PMT_sum_N:

@@ -14,7 +14,7 @@ public:
 		MPPC_Ss, MPPC_As, MPPC_t_S, MPPC_A_S, MPPC_Double_I, /*(old) MPPC_times*/ MPPC_tbS /*time by N*/, /*(old) MPPC_times_N*/ MPPC_tbN /*time by N*/,
 		/*(old) MPPC_sum_ts*/ MPPC_tbS_sum /*time distribution with weights as peak area S*/,
 		MPPC_tbN_sum /*time distribution with weights as peak Npe*/, MPPC_coord, MPPC_coord_x, MPPC_coord_y, MPPC_Npe_sum, MPPC_S2,
-		Correlation /*uses x,y Type's cuts*/,CorrelationAll, PMT_S2_S, PMT_Npe_sum, PMT_S2_int, PMT_Ss, PMT_t_S, PMT_A_S, PMT_tbS, PMT_tbN, PMT_sum_N};
+		Correlation /*uses x,y Type's cuts*/,CorrelationAll, PMT_S2_S, PMT_Npe_sum, PMT_S2_int, PMT_Ss, PMT_As, PMT_t_S, PMT_A_S, PMT_tbS, PMT_tbN, PMT_sum_N};
 protected:
 	const Type _first_state;
 	const Type _last_state;

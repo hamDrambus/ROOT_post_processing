@@ -12,15 +12,15 @@
 
   exp_area.experiments.clear();
   exp_area.experiments.push_back("180705_Cd_20kV_800V_12bB_48V");
-  //exp_area.experiments.push_back("180705_Cd_18kV_800V_12bB_48V");
-  //exp_area.experiments.push_back("180705_Cd_16kV_800V_12bB_48V");
-  //exp_area.experiments.push_back("180705_Cd_14kV_800V_12bB_48V");
-  //exp_area.experiments.push_back("180705_Cd_13kV_800V_12bB_48V");
-  //exp_area.experiments.push_back("180705_Cd_12kV_800V_6bB_48V");
-  //exp_area.experiments.push_back("180705_Cd_11kV_800V_6bB_48V");
-  //exp_area.experiments.push_back("180705_Cd_10kV_800V_6bB_48V");
-  //exp_area.experiments.push_back("180705_Cd_9kV_800V_0bB_48V");
-  //exp_area.experiments.push_back("180705_Cd_8kV_800V_0bB_48V");
+  exp_area.experiments.push_back("180705_Cd_18kV_800V_12bB_48V");
+  exp_area.experiments.push_back("180705_Cd_16kV_800V_12bB_48V");
+  exp_area.experiments.push_back("180705_Cd_14kV_800V_12bB_48V");
+  exp_area.experiments.push_back("180705_Cd_13kV_800V_12bB_48V");
+  exp_area.experiments.push_back("180705_Cd_12kV_800V_6bB_48V");
+  exp_area.experiments.push_back("180705_Cd_11kV_800V_6bB_48V");
+  exp_area.experiments.push_back("180705_Cd_10kV_800V_6bB_48V");
+  exp_area.experiments.push_back("180705_Cd_9kV_800V_0bB_48V");
+  exp_area.experiments.push_back("180705_Cd_8kV_800V_0bB_48V");
   
   PMT_V.clear();
   MPPC_V.clear();

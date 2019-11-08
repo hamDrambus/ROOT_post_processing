@@ -233,7 +233,7 @@ Bool_t AnalysisStates::PrevExp(void)
 
 Bool_t AnalysisStates::is_PMT_type(Type type)
 {
-	return (type == PMT_S2_S || PMT_Npe_sum==type || PMT_S2_int==type || type == PMT_Ss || type == PMT_t_S || PMT_A_S == type || type == PMT_tbS || PMT_tbN == type || PMT_sum_N == type);
+	return (type == PMT_S2_S || PMT_Npe_sum==type || PMT_S2_int==type || type == PMT_Ss || type == PMT_As || type == PMT_t_S || PMT_A_S == type || type == PMT_tbS || PMT_tbN == type || PMT_sum_N == type);
 }
 
 Bool_t AnalysisStates::isPerRun(Type type)
@@ -469,6 +469,10 @@ std::string AnalysisStates::type_name(Type type)
 	}
 	case Type::PMT_Ss:{
 		name += "_Ss";
+		break;
+	}
+	case Type::PMT_As:{
+		name += "_As";
 		break;
 	}
 	case Type::PMT_t_S:{
