@@ -364,6 +364,8 @@ bool CanvasSetups::unset_zoom(void)
 		invalidate = true;
 	curr_hist->is_zoomed.first = false;
 	curr_hist->is_zoomed.second = false;
+	curr_hist->x_zoom = std::pair<double, double>(-DBL_MAX, DBL_MAX);
+	curr_hist->y_zoom = std::pair<double, double>(-DBL_MAX, DBL_MAX);
 	if (invalidate)
 		Invalidate(invHistogram);
 	return true;
