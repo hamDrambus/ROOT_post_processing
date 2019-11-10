@@ -10,6 +10,7 @@
 #include <sstream>
 #include <climits>
 #include <algorithm>
+#include <stdexcept>
 //#include <functional>
 
 #if defined (__WIN32__)
@@ -82,6 +83,34 @@ void ensure_file(std::string fname);
 bool confirm_action (std::string action);
 int getIndex(const std::vector<int>& channels, int ch); //TODO: template
 int getIndex(const std::deque<int>& channels, int ch);
+
+template <class T>
+class channel_info {
+protected:
+	std::deque<std::pair<int, T> > _data;
+public:
+	channel_info();
+	~channel_info();
+
+	template <class U>
+	bool isSameChannels(const channel_info<U>& b) const;
+	bool isSameChannels(const std::deque<int>& channels) const;
+	void push(const int& channel, const T& data); //preserves channel sorting
+	void push_back(const int& channel, const T& data); //ignores channel sorting
+	T* info(const int& channel);
+	T& operator [] (const std::size_t& ch_ind);
+	void erase(const int& channel);
+	void erase_at(const std::size_t& ch_ind);
+	void clear(void);
+	std::size_t size(void) const;
+	bool empty(void) const;
+	bool contains(const int& channel) const;
+	std::size_t get_index(const int& channel) const;
+	int channel(const std::size_t& ch_ind) const;
+	std::pair<std::size_t, std::size_t> get_bounds(const int& channel) const;
+	void sort(void);
+	bool is_sorted(void) const;
+};
 
 class TestSignalGenerator {
 public:

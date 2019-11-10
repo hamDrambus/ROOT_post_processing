@@ -5,14 +5,12 @@
 
 //TODO: add class StateGroup(?), which is stored in AnalysisStates. So this class will have
 //several state groups like: MPPCs with their types, PMT slow (ch0-1), PMT fast (ch8,12) and possibly more.
-//TODO: PMT_times now is valid for both ch{0,1} and ch{8,12} whereas it should be only for the latter.
-//similar goes for PMT_S2_S, PMT_Ss. PMT_t_S is good for both.
 //TODO: CorrelationAll is not only multichannel but also multiexperiment.
 class AStates { //short for AnalysisStates - faster to type (autocomplete) in root console.
 public:
-	enum Type /*: std::size_t*/ {
-		MPPC_Ss, MPPC_As, MPPC_t_S, MPPC_A_S, MPPC_Double_I, /*(old) MPPC_times*/ MPPC_tbS /*time by N*/, /*(old) MPPC_times_N*/ MPPC_tbN /*time by N*/,
-		/*(old) MPPC_sum_ts*/ MPPC_tbS_sum /*time distribution with weights as peak area S*/,
+	enum Type {
+		MPPC_Ss, MPPC_As, MPPC_t_S, MPPC_A_S, MPPC_Double_I, MPPC_tbS /*time by peak area*/, MPPC_tbN /*time by N*/,
+		MPPC_tbS_sum /*time distribution with weights as peak area S*/,
 		MPPC_tbN_sum /*time distribution with weights as peak Npe*/, MPPC_coord, MPPC_coord_x, MPPC_coord_y, MPPC_Npe_sum, MPPC_S2,
 		Correlation /*uses x,y Type's cuts*/,CorrelationAll, PMT_S2_S, PMT_Npe_sum, PMT_S2_int, PMT_Ss, PMT_As, PMT_t_S, PMT_A_S, PMT_tbS, PMT_tbN, PMT_sum_N};
 protected:
@@ -34,6 +32,7 @@ protected:
 	bool loop_channels (Type type, int &ch, int &ch_ind);
 	int ch_ind_loop;
 	Type type_loop;
+	std::deque<int> channel_list(void) const; //uses current type
 public:
 	bool SetCorrelation(Type x, Type y, int chx, int chy);
 	int mppc_channel_to_index(int ch);
@@ -55,12 +54,12 @@ public:
 	Bool_t GotoCh(int channels);
 	Bool_t NextExp(void);
 	Bool_t PrevExp(void);
-	Bool_t isValid();
-	Bool_t isPerRun(Type type);
-	Bool_t isMultichannel(Type type);
-	Bool_t is_TH1D_hist(Type type);
-	bool isComposite (Type type);
-	Bool_t is_PMT_type(Type type);
+	Bool_t isValid() const;
+	Bool_t isPerRun(Type type) const;
+	Bool_t isMultichannel(Type type) const;
+	Bool_t is_TH1D_hist(Type type) const;
+	bool isComposite (Type type) const;
+	Bool_t is_PMT_type(Type type) const;
 };
 
 #endif

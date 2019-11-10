@@ -1176,64 +1176,6 @@ void remcut_t(int channel, std::string _name)
 	remcut_S_t_rect_select(channel, name);
 }
 
-FunctionWrapper* create_off_ch_cut(int channel) //do not call from the CINT
-{
-	struct temp_data {
-		int channel;
-		int ch_size;
-	};
-	temp_data * st_data = new temp_data;
-	st_data->channel = channel;
-	st_data->ch_size = post_processor->is_PMT_type(post_processor->current_type) ? post_processor->PMT_channels.size() : post_processor->MPPC_channels.size();
-	FunctionWrapper *picker = new FunctionWrapper(st_data);
-	switch (post_processor->current_type)
-	{
-	case AStates::MPPC_coord:
-	case AStates::MPPC_coord_x:
-	case AStates::MPPC_coord_y:
-	case AStates::PMT_t_S:
-	case AStates::PMT_Ss:
-	case AStates::PMT_As:
-	case AStates::PMT_A_S:
-	case AStates::PMT_S2_S:
-	case AStates::PMT_sum_N:
-	case AStates::PMT_tbS:
-	case AStates::PMT_tbN:
-	case AStates::MPPC_t_S:
-	case AStates::MPPC_A_S:
-	case AStates::MPPC_S2:
-	case AStates::MPPC_Ss:
-	case AStates::MPPC_As:
-	case AStates::MPPC_tbS_sum:
-	case AStates::MPPC_tbN_sum:
-	case AStates::MPPC_tbS:
-	case AStates::MPPC_tbN:
-	case AStates::MPPC_Npe_sum:
-	case AStates::PMT_Npe_sum:
-	{
-		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
-			return false;
-		});
-		break;
-	}
-	case AStates::PMT_S2_int:
-	case AStates::MPPC_Double_I:
-	case AStates::Correlation:
-	case AStates::CorrelationAll:
-	{
-		delete picker;
-		return NULL;
-	}
-	default:
-	{
-		std::cout << "Error: unknown type - you forgot to implement it in \"create_S_t_rect_select_cut\"" << std::endl;
-		delete picker;
-		return NULL;
-	}
-	}
-	return picker;
-}
-
 //for multichannel types (e.g. signal form of all SiPMs (MPPCs)). TODO: single channel case may be implemented with multichannel one - decrease the number of types
 void off_ch(int ch)
 {
@@ -1245,13 +1187,7 @@ void off_ch(int ch)
 		std::cout << "Error: can't use this functoin for single channel type" << std::endl;
 		return;
 	}
-	FunctionWrapper* picker = create_off_ch_cut(ch);
-	if (NULL == picker) {
-		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
-		return;
-	}
-	add_hist_cut(picker, "ch_off", ch, false);
-	//update(); it is required oftentimes to remove many channels.
+	post_processor->off_ch(ch);
 }
 
 void on_ch(int ch)
@@ -1260,7 +1196,7 @@ void on_ch(int ch)
 		state(kFALSE);
 		return;
 	}
-	remove_hist_cut("ch_off", ch);
+	post_processor->on_ch(ch);
 }
 
 //region is {A_min, A0, S0, A1, S1, A_max}

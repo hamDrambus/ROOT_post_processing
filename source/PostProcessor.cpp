@@ -227,12 +227,13 @@ MPPC_S2_S		S2_S		------		------		------		------		------
 MPPC_Ss			peak.S		peak.A		peak.left	peak.right	peak.t		Npe
 MPPC_t_S		peak.S		peak.A		peak.left	peak.right	peak.t 		Npe		=== MPPC_Ss
 MPPC_A_S		peak.S		peak.A		peak.left	peak.right	peak.t 		Npe		=== MPPC_Ss
-MPPC_times		peak.S		peak.A		peak.left	peak.right	peak.t		Npe		=== MPPC_Ss
-MPPC_times_N	peak.S		peak.A		peak.left	peak.right	peak.t		Npe		=== MPPC_Ss
+MPPC_tbS		peak.S		peak.A		peak.left	peak.right	peak.t		Npe		=== MPPC_Ss
+MPPC_tbN		peak.S		peak.A		peak.left	peak.right	peak.t		Npe		=== MPPC_Ss
 MPPC_t_start	time		------		------		------		------		------
 MPPC_t_both		time		------		------		------		------		------
 MPPC_t_final	time		------		------		------		------		------
-MPPC_sum_ts		peak.S		peak.A		peak.left	peak.right	peak.t		Npe
+MPPC_tbS_sum	peak.S		peak.A		peak.left	peak.right	peak.t		Npe
+MPPC_tbN_sum	peak.S		peak.A		peak.left	peak.right	peak.t		Npe
 MPPC_S2																					//composite: cuts for peaks and then derived parameter. Data is derived within loop.
 	1st level:	peak.S		peak.A		peak.left	peak.right	peak.t		Npe			//cuts with corresponding channel, no need to check ==-2
 	2nd level:	SUM(peak.S)	-2			-2			-2			-2						//cuts with channel -1 called.
@@ -247,8 +248,8 @@ PMT_S2_S																				//composite: cuts for peaks and then derived paramet
 	2nd level:	SUM(peak.S)	-2			-2			-2			-2						//cuts with channel -1 called.
 PMT_S2_int		S2_int		------		------		------		------		------
 PMT_Ss			peak.S		peak.A		peak.left	peak.right	peak.t		Npe
-PMT_t_S			peak.S		peak.A		peak.left	peak.right	peak.t		Npe		=== PMT_Ss
-PMT_times		peak.S		peak.A		peak.left	peak.right	peak.t		Npe		===	PMT_Ss
+PMT_tbS			peak.S		peak.A		peak.left	peak.right	peak.t		Npe		=== PMT_Ss
+PMT_tbN			peak.S		peak.A		peak.left	peak.right	peak.t		Npe		===	PMT_Ss
 PMT_sum_N
 	1st level:	peak.S		peak.A		peak.left	peak.right	peak.t		Npe					//per channel, cuts with corresponding channel called.
 	2nd level:	Npeaks[0]	Np[1]	...	Np[PMT_channels.size()-1]		NpSum					//cuts with channel -1 called.
@@ -385,6 +386,13 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 					break;
 				}
 			for (int chan_ind=0,_ch_ind_end_= MPPC_channels.size(); chan_ind!=_ch_ind_end_;++chan_ind) {
+				if (NULL != setups) {
+					bool *active = setups->active_channels.info(MPPC_channels[chan_ind]);
+					if (NULL == active)
+						continue;
+					if (!(*active))
+						continue;
+				}
 				auto entry = MPPC_V.find(exp_str);
 				double V = (entry == MPPC_V.end() ? 0 : entry->second);
 				double s1pe = calibr_info.get_S1pe(MPPC_channels[chan_ind], V);
@@ -683,6 +691,13 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 				}
 
 			for (int chan_ind=0,_ch_ind_end_= MPPC_channels.size(); chan_ind<_ch_ind_end_; ++chan_ind) {
+				if (NULL != setups) {
+					bool *active = setups->active_channels.info(MPPC_channels[chan_ind]);
+					if (NULL == active)
+						continue;
+					if (!(*active))
+						continue;
+				}
 				auto entry = MPPC_V.find(exp_str);
 				double V = (entry == MPPC_V.end() ? 0 : entry->second);
 				double s1pe = calibr_info.get_S1pe(MPPC_channels[chan_ind], V);
@@ -804,6 +819,13 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 				}
 
 			for (int chan_ind=0,_ch_ind_end_= channels->size(); chan_ind<_ch_ind_end_;++chan_ind) {
+				if (NULL != setups) {
+					bool *active = setups->active_channels.info((*channels)[chan_ind]);
+					if (NULL == active)
+						continue;
+					if (!(*active))
+						continue;
+				}
 				double s1pe = calibr_info.get_S1pe((*channels)[chan_ind], V);
 				std::vector<double> S2(4, 0);
 				for (int pk = 0, pk_end = (*peaks)[chan_ind][run].size(); pk != pk_end; ++pk) {
@@ -1179,6 +1201,13 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 				}
 
 			for (int chan_ind=0, _ch_ind_end_= channels->size(); chan_ind<_ch_ind_end_; ++chan_ind) {
+				if (NULL != setups) {
+					bool *active = setups->active_channels.info((*channels)[chan_ind]);
+					if (NULL == active)
+						continue;
+					if (!(*active))
+						continue;
+				}
 				std::vector<std::size_t> N(4, 0);
 				for (int pk = 0, pk_end = (*peaks)[chan_ind][run].size(); pk != pk_end; ++pk) {
 					bool failed_hist_cut = false; //normal cuts
@@ -1261,7 +1290,7 @@ bool PostProcessor::update(void)
 	bool set_default_setups = false;
 	if (NULL == setups) {
 		set_default_setups = true;
-		setups = new HistogramSetups;
+		setups = new HistogramSetups(channel_list());
 		setups->filled_hist = false;
 		setups->fitted = false;
 		//default_hist_setups(setups);
@@ -1677,7 +1706,7 @@ bool PostProcessor::update(void)
 		setups->x_drawn_lims = drawn_limits.x_mm;
 		setups->y_drawn_lims = drawn_limits.y_mm;
 	}
-	const long unsigned int zero = 0;
+	const std::size_t zero = 0;
 	if (op_mean_taker.operation->isValid() && (!setups->x_mean || !setups->y_mean)) {
 		setups->stat_weight = mvar_data.stat_weight == 0 ? boost::none : (boost::optional<long double>) mvar_data.stat_weight;
 		setups->x_mean = (setups->stat_weight == boost::none ? ((setups->num_of_fills <= zero || setups->num_of_fills == boost::none) ?
@@ -1789,7 +1818,7 @@ bool PostProcessor::update(void)
 	LoopThroughData(vec, current_channel, current_type);
 	vec.clear();
 
-	const long unsigned int one = 1;
+	const std::size_t one = 1;
 	if (op_hist_fill.operation->isValid() && !setups->filled_hist)
 		setups->filled_hist = true;
 	if (op_variance_taker.operation->isValid() && (!setups->x_variance|| !setups->y_variance)) {
@@ -2059,7 +2088,7 @@ void PostProcessor::saveAs(std::string path)
 
 void PostProcessor::clear(void)	//clear cuts for current histogram. Run cuts derived from it are not touched
 {
-	HistogramSetups def_setups;
+	HistogramSetups def_setups(channel_list());
 	default_hist_setups(&def_setups);
 	set_hist_setups(&def_setups, current_exp_index, current_channel, current_type); //Creates copy!
 	update();
@@ -2437,6 +2466,52 @@ void PostProcessor::add_hist_cut(FunctionWrapper* picker, std::string name, int 
 		Invalidate(invDisplayedCuts);
 }
 
+void PostProcessor::off_ch(int channel)
+{
+	HistogramSetups *setups = get_hist_setups();
+	if (NULL == setups) {
+		std::cout << "PostProcessor::off_ch: Error: NULL setups" << std::endl;
+	}
+	if (!isValid()) {
+		std::cout << "Wrong input data: no channels or experiments from AnalysisManager" << std::endl;
+		return;
+	}
+	bool *active = setups->active_channels.info(channel);
+	if (active == NULL) {
+		std::cout << "PostProcessor::off_ch: Error: no such channel ("<<channel<<") for current type" << std::endl;
+		return;
+	}
+	if (*active == true) {
+		*active = false;
+		Invalidate(invCuts);
+	}
+	if (!isMultichannel(current_type))
+		update();
+}
+
+void PostProcessor::on_ch(int channel)
+{
+	HistogramSetups *setups = get_hist_setups();
+	if (NULL == setups) {
+		std::cout << "PostProcessor::on_ch: Error: NULL setups" << std::endl;
+	}
+	if (!isValid()) {
+		std::cout << "Wrong input data: no channels or experiments from AnalysisManager" << std::endl;
+		return;
+	}
+	bool *active = setups->active_channels.info(channel);
+	if (active == NULL) {
+		std::cout << "PostProcessor::on_ch: Error: no such channel (" << channel << ") for current type" << std::endl;
+		return;
+	}
+	if (*active == false) {
+		*active = true;
+		Invalidate(invCuts);
+	}
+	if (!isMultichannel(current_type))
+		update();
+}
+
 void PostProcessor::remove_hist_cut(int index)
 {
 	HistogramSetups *setups = get_hist_setups();
@@ -2493,6 +2568,10 @@ int PostProcessor::list_hist_cuts(void)
 		std::cout << "PostProcessor::list_hist_cuts: Error: NULL setups" << std::endl;
 		return 0;
 	}
+	std::cout << "\tActive channels ["<< setups->active_channels.size() << "]: " << std::endl;
+	for (std::size_t ind =0, ind_end_ = setups->active_channels.size(); ind != ind_end_; ++ind)
+		std::cout << setups->active_channels.channel(ind) << " " << (setups->active_channels[ind] ? "on  " : "off") << (((ind == (ind_end_ - 1)) ? "" : " | "));
+	std::cout << std::endl;
 	std::cout << "\tHistogram cuts [" << setups->hist_cuts.size() << "]: \"name\":channel# | "<<std::endl;
 	for (auto i = setups->hist_cuts.begin(), _end_ = setups->hist_cuts.end(); i != _end_; ++i)
 		std::cout <<"\""<< i->GetName()<<"\"" << (i->GetAffectingHistogram() ? ":" : "(Only shown):")<<i->GetChannel() << (((i == (_end_ - 1)) ? "" : " | "));
@@ -2502,11 +2581,6 @@ int PostProcessor::list_hist_cuts(void)
 
 int PostProcessor::list_run_cuts(void)
 {
-	HistogramSetups *setups = get_hist_setups();
-	if (NULL == setups) {
-		std::cout << "PostProcessor::list_run_cuts: Error: NULL setups" << std::endl;
-		return 0;
-	}
 	std::deque<EventCut> *RunCuts = get_run_cuts(current_exp_index);
 	if (NULL == RunCuts) {
 		std::cout << "PostProcessor::list_run_cuts: Error: NULL RunCuts" << std::endl;

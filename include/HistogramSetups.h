@@ -8,9 +8,9 @@ class HistogramSetups //just helper class, has no functionality in itself
 //part of defaults are set in PostProcessor. Default invalidate is in the constructor
 {
 public:
-	//TODO: figure out displaying of arbitrary cuts. And whether arbitrary cuts are required.
-	HistogramSetups();
+	HistogramSetups(const std::deque<int>& channels);
 	std::deque<EventCut> hist_cuts;
+	channel_info<bool> active_channels;
 	int N_bins;
 	std::pair<double, double> x_zoom, y_zoom;
 	std::pair<bool, bool> is_zoomed; //bool for each x and y

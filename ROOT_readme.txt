@@ -7,13 +7,13 @@
 2) In order to compile c++ code with root as library in visual studio, some settings are required:
 //"root compile as library visual studio" in google-> http://www.pp.rhul.ac.uk/~connelly/tutorial/
 It is not checked that all of the following steps are required. 'root' is the path to ROOT installation
-	1) Add 'root\include' to Project Preferences->Configuration Properties->Include Directories,
+	1) Add 'root\include', '...\boost_version' to Project Preferences->Configuration Properties->Include Directories,
 	'root\lib' and 'root\bin' to Configuration Properties->Library Directories,
 	source directory for user code (if is in not default vs folder) to Configuration Properties->Source Directories
 
-	2) Add 'root\include' to c/c++->General->Additional Include Directories
+	2) Add 'root\include' and '...\boost_version' to c/c++->General->Additional Include Directories
 	
-	3) Add _CRT_SECURE_NO_WARNINGS to c/c++->Preprocessor->Preprocessor Definitions
+	3) Add _CRT_SECURE_NO_WARNINGS and __WIN32__ to c/c++->Preprocessor->Preprocessor Definitions
 
 	4) Add 'root\include\w32pragma.h' to c/c++->Advanced->Forced Include Files
 

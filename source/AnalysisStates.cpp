@@ -231,33 +231,33 @@ Bool_t AStates::PrevExp(void)
 	return StateChange(current_channel, current_exp_index, current_type, prev_ch, prev_exp, prev_type);
 }
 
-Bool_t AStates::is_PMT_type(Type type)
+Bool_t AStates::is_PMT_type(Type type) const
 {
 	return (type == PMT_S2_S || PMT_Npe_sum==type || PMT_S2_int==type || type == PMT_Ss || type == PMT_As || type == PMT_t_S || PMT_A_S == type || type == PMT_tbS || PMT_tbN == type || PMT_sum_N == type);
 }
 
-Bool_t AStates::isPerRun(Type type)
+Bool_t AStates::isPerRun(Type type) const
 {
 	return type==MPPC_Double_I || type==MPPC_coord|| type==MPPC_coord_x|| type==MPPC_coord_y|| type==MPPC_Npe_sum||
 			type==MPPC_S2|| type==Correlation|| type==CorrelationAll|| type== PMT_S2_S|| type== PMT_S2_int ||type==PMT_Npe_sum;
 }
 
-Bool_t AStates::isMultichannel(Type type)
+Bool_t AStates::isMultichannel(Type type) const
 {
 	return (type == MPPC_tbS_sum) || type == MPPC_tbN_sum || type==MPPC_coord || type==MPPC_coord_x || type==MPPC_coord_y || type==MPPC_Npe_sum || type==Correlation || type==CorrelationAll || type==PMT_sum_N || type==PMT_Npe_sum;
 }
 
-Bool_t AStates::is_TH1D_hist(Type type)
+Bool_t AStates::is_TH1D_hist(Type type) const
 {
 	return !((type == Type::PMT_t_S)||(type == Type::PMT_A_S) || (type == Type::MPPC_t_S)|| (type == Type::MPPC_A_S)||(type== Type::MPPC_coord)||(type==Correlation)||(type==CorrelationAll));
 }
 
-bool AStates::isComposite (Type type)
+bool AStates::isComposite (Type type) const
 {
 	return ((type == MPPC_coord) || (type == MPPC_coord_x)||(type== MPPC_coord_y)||(type==Correlation)||(type==CorrelationAll)||(type==MPPC_Npe_sum)||(type==MPPC_S2)||(type==PMT_S2_S)||(type==PMT_sum_N)||(type==PMT_Npe_sum));
 }
 
-Bool_t AStates::isValid()
+Bool_t AStates::isValid() const
 {
 	if (MPPC_channels.empty() && PMT_channels.empty())
 		return kFALSE;
@@ -377,6 +377,16 @@ bool AStates::loop_channels (Type type, int &ch, int &ch_ind)
 	}
 }
 
+std::deque<int> AStates::channel_list() const
+{
+	if (isMultichannel(current_type)) {
+		if (is_PMT_type(current_type))
+			return PMT_channels;
+		else
+			return MPPC_channels;
+	}
+	return std::deque<int>(1, current_channel);
+ }
 
 int AStates::mppc_channel_to_index(int ch)
 {

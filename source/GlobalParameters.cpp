@@ -141,6 +141,205 @@ bool confirm_action (std::string action)
 	return false;
 }
 
+template <class T>
+channel_info<T>::channel_info()
+{}
+template <class T>
+channel_info<T>::~channel_info()
+{}
+template <class T>
+template <class U>
+bool channel_info<T>::isSameChannels(const channel_info<U>& b) const
+{
+	if (_data.size() != b._data.size())
+		return false;
+	else {
+		for (std::size_t ind = 0, ind_end_ = _data.size(); ind < ind_end_; ++ind)
+			if (_data[ind].first != b._data[ind].second)
+				return false;
+	}
+	return true;
+}
+template <class T>
+bool channel_info<T>::isSameChannels(const std::deque<int>& channels) const
+{
+	if (_data.size() != channels.size())
+		return false;
+	else {
+		for (std::size_t ind = 0, ind_end_ = _data.size(); ind < ind_end_; ++ind)
+			if (_data[ind].first != channels[ind])
+				return false;
+	}
+	return true;
+}
+template <class T>
+void channel_info<T>::push(const int& channel, const T& data) //preserves channel sorting
+{
+	std::size_t sz = _data.size();
+	if (0 == sz) {
+		_data.push_back(std::pair<int, T>(channel, data));
+		return;
+	}
+	if (channel < _data.front().first) {
+		_data.insert(_data.begin(), std::pair<int, T>(channel, data));
+		return;
+	}
+	if (channel > _data.back().first) {
+		_data.push_back(std::pair<int, T>(channel, data));
+		return;
+	}
+	std::pair<std::size_t, std::size_t> inds = get_bounds(channel);
+	if (inds.first == inds.second) //do not insert points with equal channel, replace only
+		_data[inds.first].second = data;
+	else
+		_data.insert(_data.begin() + inds.second, std::pair<int, T>(channel, data));
+}
+template <class T>
+void channel_info<T>::push_back(const int& channel, const T& data) //ignores channel sorting
+{
+	_data.push_back(std::pair<int, T>(channel, data));
+}
+template <class T>
+T* channel_info<T>::info(const int& channel)
+{
+	std::size_t ch_ind = get_index(channel);
+	if (std::numeric_limits<std::size_t>::max() == ch_ind) {
+		return NULL;
+	}
+	return &(_data[ch_ind].second);
+}
+template <class T>
+T& channel_info<T>::operator [] (const std::size_t& ch_ind)
+{
+	std::size_t sz = _data.size();
+	if (!(ch_ind < sz))
+		throw std::out_of_range("channel_info<T>::operator[] index is out of range");
+	return _data[ch_ind].second;
+}
+template <class T>
+void channel_info<T>::erase(const int& channel)
+{
+	std::size_t ch_ind = get_index(channel);
+	if (std::numeric_limits<std::size_t>::max()==ch_ind){
+		std::cout << "channel_info<T>::erase: Warning! Does not contain channel " << channel << std::endl;
+		return;
+	}
+	erase_at(ch_ind);
+}
+template <class T>
+void channel_info<T>::erase_at(const std::size_t& ch_ind)
+{
+	std::size_t sz = _data.size();
+	if (!(ch_ind < sz))
+		throw std::out_of_range("channel_info<T>::erase_at index is out of range");
+	_data.erase(data.begin() + ch_ind);
+}
+template <class T>
+void channel_info<T>::clear(void)
+{
+	_data.clear();
+}
+template <class T>
+std::size_t channel_info<T>::size(void) const
+{
+	return _data.size();
+}
+template <class T>
+bool channel_info<T>::empty(void) const 
+{
+	return _data.empty();
+}
+template <class T>
+bool channel_info<T>::contains(const int& channel) const
+{
+	if (std::numeric_limits<std::size_t>::max() != get_index(channel))
+		return true;
+	return false;
+}
+template <class T>
+std::size_t channel_info<T>::get_index(const int& channel) const
+{
+	std::size_t sz = _data.size();
+	if (0 == sz) {
+		return std::numeric_limits<std::size_t>::max();
+	}
+	if (channel < _data.front().first) {
+		return std::numeric_limits<std::size_t>::max();
+	}
+	if (channel > _data.back().first) {
+		return std::numeric_limits<std::size_t>::max();
+	}
+	std::pair<std::size_t, std::size_t> inds = get_bounds(channel);
+	if (inds.first == inds.second)
+		return inds.first;
+	else
+		return std::numeric_limits<std::size_t>::max();
+}
+template <class T>
+int channel_info<T>::channel(const std::size_t& ch_ind) const
+{
+	std::size_t sz = _data.size();
+	if (!(ch_ind < sz))
+		throw std::out_of_range("channel_info<T>::channel index is out of range");
+	return _data[ch_ind].first;
+}
+template <class T>
+std::pair<std::size_t, std::size_t> channel_info<T>::get_bounds(const int& channel) const
+{
+	std::pair<std::size_t, std::size_t> out(std::numeric_limits<std::size_t>::max(), std::numeric_limits<std::size_t>::max());
+	std::size_t sz = _data.size();
+	if (0 == sz)
+		return out;
+	if (channel <= _data.front().first) {
+		out = std::pair<std::size_t, std::size_t>(0, 0);
+		return out;
+	}
+	if (channel >= _data.back().first) {
+		out = std::pair<std::size_t, std::size_t>(sz - 1, sz - 1);
+		return out;
+	}
+	//find first ch which is not less that channel. That is index bounding X_point: chs[first] <= channel < chs[first + 1]
+	//See std::lower_bound and std::upper_bound:
+	//std::lower_bound(xys.begin(), xys.end(), [](const std::pair<double, double> &a, const std::pair<double, double> &b)->bool{
+	//	return a.first<b.first;
+	//});
+	std::size_t count = sz;
+	std::size_t first = 0;
+	while (count > 0) {
+		std::size_t step = count / 2;
+		std::size_t ind = first + step;
+		if (!(channel < _data[ind].first)) {
+			first = ++ind;
+			count -= step + 1;
+		} else
+			count = step;
+	}
+	//first is such, that channel>=chs[first-1] and channel<chs[first]
+	//first always != 0 here
+	--first;
+	if (channel == _data[first].first) {
+		out = std::pair<std::size_t, std::size_t>(first, first);
+		return out;
+	}
+	out = std::pair<std::size_t, std::size_t>(first, first + 1);
+	return out;
+}
+template <class T>
+void channel_info<T>::sort(void)
+{
+	std::sort(_data.begin(), _data.end(), [](const std::pair<int, T>& a, const std::pair<int, T>& b)->bool {
+		return a.first < b.first;
+	});
+}
+template <class T>
+bool channel_info<T>::is_sorted(void) const
+{
+	for (std::size_t ind = 0, ind_end_ = _data.size(); (ind + 1) != ind_end_; ++ind)
+		if (_data[ind].first >= _data[ind+1].first)
+			return false;
+	return true;
+}
+
 TestSignalGenerator::TestSignalGenerator(std::string prefix)
 {
 	double t_from = 0, t_to = 110;

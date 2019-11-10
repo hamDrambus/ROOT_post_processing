@@ -1,6 +1,6 @@
 #include "HistogramSetups.h"
 
-HistogramSetups::HistogramSetups() :
+HistogramSetups::HistogramSetups(const std::deque<int>& channels) :
 	filled_hist(false), fitted(false), x_max(boost::none), y_max(boost::none),
 	x_drawn_max(boost::none), y_drawn_max(boost::none), num_of_runs(boost::none),
 	num_of_fills(boost::none), num_of_drawn_fills(boost::none), stat_weight(boost::none),
@@ -10,7 +10,10 @@ HistogramSetups::HistogramSetups() :
 	y_drawn_mean(boost::none), x_variance(boost::none), x_drawn_variance(boost::none),
 	y_variance(boost::none), y_drawn_variance(boost::none), is_valid_fit_function(false),
 	N_bins(0), N_gauss(0), use_fit(false)
-{}
+{
+	for (std::size_t ind = 0, ind_end_ = channels.size(); ind != ind_end_; ++ind)
+		active_channels.push(channels[ind], true);
+}
 
 std::deque<EventCut>* CanvasSetups::get_run_cuts (int exp_ind)
 {

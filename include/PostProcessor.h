@@ -98,6 +98,8 @@ public:
 	//adding/removing cuts does not update histogram. This is done because adding of several cuts in succession is often necessary
 	void add_hist_cut(FunctionWrapper *picker, std::string name, bool affect_hist);
 	void add_hist_cut(FunctionWrapper *picker, std::string name, int channel, bool affect_hist);
+	void off_ch(int channel);
+	void on_ch(int channel);
 	int list_hist_cuts (void);
 	void remove_hist_cut(int index);
 	void remove_hist_cut(std::string name);
@@ -121,12 +123,6 @@ public:
 	void set_parameter_limits(int index, double left, double right);
 
 	void status(Bool_t full);
-
-	//done via general methods in the main
-	//void set_limits(double left, double right);
-	//void set_drawn_limits(double left, double right);
-	//void unset_limits(void);
-	//void unset_drawn_limits(void);
 };
 
 #endif
