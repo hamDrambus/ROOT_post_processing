@@ -1514,7 +1514,7 @@ if (exp == "180705_Cd_13kV_800V_12bB_48V" && method == 0) {
 	set_bins(800);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/slowPMT1_form_by_S");
 ////////////////////////////////////13kV///////////////////////////////////////////////////////////////////
-	for (int i = 0; i<3; ++i) {
+	for (int i = 0; i<4; ++i) {
 		std::pair<double, double> Npe_tail_lims;
 		int tail_bins;	
 		ty(AStates::PMT_sum_N);
@@ -1616,7 +1616,7 @@ if (exp == "180705_Cd_13kV_800V_12bB_48V" && method == 0) {
 }
 if (exp == "180705_Cd_12kV_800V_6bB_48V" && method == 0) { 	
 	ty(AStates::PMT_sum_N);
-	int large_Npes = 400; //Npes for full zoom (25-160us)
+	int large_Npes = 450; //Npes for full zoom (25-160us)
 	int small_Npes = 240; //Npes for small zoom (25-~40us)
 	std::string str_small_Npes = "240";
 	int ch12_Npes = 70; //Npes for fast PMT sum channel small zoom (25-~40us)
@@ -1760,30 +1760,30 @@ if (exp == "180705_Cd_12kV_800V_6bB_48V" && method == 0) {
 		set_bins(0, small_Npes);
 		switch (i) {
 		case 0: {
-			draw_limits(10, 85);
-			npe_cut = "_10-85pe";
-			Npe_tail_lims = std::pair<double, double> (0, 100);
+			draw_limits(10, 45);
+			npe_cut = "_10-45pe";
+			Npe_tail_lims = std::pair<double, double> (0, 60);
 			tail_bins = 200;
 			break;			
 		}
 		case 1: {
-			draw_limits(86, 108);
-			npe_cut = "_86-108pe";
-			Npe_tail_lims = std::pair<double, double> (0, 130);
+			draw_limits(46, 70);
+			npe_cut = "_46-70pe";
+			Npe_tail_lims = std::pair<double, double> (0, 90);
 			tail_bins = 240;
 			break;			
 		}
 		case 2: {
-			draw_limits(86, 140);
-			npe_cut = "_86-140pe";
-			Npe_tail_lims = std::pair<double, double> (0, 162);
-			tail_bins = 300;
+			draw_limits(46, 95);
+			npe_cut = "_46-95pe";
+			Npe_tail_lims = std::pair<double, double> (0, 117);
+			tail_bins = 240;
 			break;			
 		}
 		case 3: {
-			draw_limits(148, 190);
-			npe_cut = "_148-190pe";
-			Npe_tail_lims = std::pair<double, double> (0, 250);
+			draw_limits(140, 180);
+			npe_cut = "_140-180pe";
+			Npe_tail_lims = std::pair<double, double> (0, 310);
 			tail_bins = large_Npes;
 			break;
 		}

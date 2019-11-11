@@ -1,6 +1,5 @@
-
 {
-	if (true) {
+	/*if (true) {
 	int channel = 59;
 	bool display = true;
 	int aggressiveness = 2;	
@@ -13,5 +12,21 @@
 		cut_A_S_upper(0.026, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
 		cut_A_S_upper(0.011, 0.0015, 0.026, 0.0038, display, channel, "2pe_merged");
+	}*/
+	if (true) {
+		analysis_history(false, 2); //20
+		nex();
+		analysis_history(false, 2); //18
+		nex();
+		analysis_history(false, 2); //16
+		nex();
+		analysis_history(false, 2); //14
+		nex();
+		analysis_history(false, 2); //12
+		nex();
+		analysis_history(false, 2);	//10
+		nex();
+		analysis_history(false, 2);	//8
+		nex();
 	}
 } 
