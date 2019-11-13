@@ -23,6 +23,7 @@ public:
 	//Following values represent status, not input parameters
 	Bool_t fitted;
 	Bool_t is_valid_fit_function;
+	Bool_t use_default_setups;
 #ifndef __ROOTCLING__
 	//1st tier parameters of distribution: (stored in order to minimize calls of LoopThroughData to recalculate them)
 	boost::optional<std::size_t> num_of_runs;
@@ -52,7 +53,7 @@ public:
 		Type type;
 	};
 	enum InvalidateLabel : unsigned int {
-		invAll = 0xFFFFFFFF, invHistogram = 0x1, invCuts = 0x2, invDisplayedCuts = 0x4, invData = 0x8, invFit = 0x10, invFitFunction = 0x20
+		invAll = 0xFFFFFFFF-0x40, invHistogram = 0x1, invCuts = 0x2, invDisplayedCuts = 0x4, invData = 0x8, invFit = 0x10, invFitFunction = 0x20, invDefault = 0x40
 	};
 
 protected:
@@ -91,6 +92,8 @@ protected:
 
 	Bool_t StateChange(int to_ch, int to_exp, Type to_type, int from_ch, int from_exp, Type from_type);
 	virtual Bool_t StateChange(int to_ch, int to_exp, Type to_type, std::size_t to_canvas, int from_ch, int from_exp, Type from_type, std::size_t from_canvas);
+	virtual Bool_t CorrelationXChange(int exp_index, int to_ch, Type to_type, int from_ch, Type from_type);
+	virtual Bool_t CorrelationYChange(int exp_index, int to_ch, Type to_type, int from_ch, Type from_type);
 
 	virtual bool Invalidate(unsigned int label);
 public:

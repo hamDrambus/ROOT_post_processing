@@ -10,25 +10,26 @@
 
 //for adding new types of analysis - dependence on AnalysisStates::Type
 //1) AnalysisStates::AnalysisStates (first/last state)
-//2) AnalysisStates::isMultichannel();
-//3) AnalysisStates::isPerRun(Type type);
-//4) AnalysisStates::is_PMT_type
-//5) AnalysisStates::isComposite
-//6) std::string AnalysisStates::type_name(Type type);
-//7) AnalysisStates::is_TH1D_hist
+//2) AnalysisStates::isMultichannel(Type type) const;
+//3) AnalysisStates::isPerRun(Type type) const;
+//4) AnalysisStates::isPMTtype(Type::type) const;
+//5) AnalysisStates::isComposite(Type::type) const;
+//6) std::string AnalysisStates::type_name(Type type) const;
+//7) AnalysisStates::isTH1Dhist(Type::type) const;
+//8) AnalysisStates::isVirtual(Type::type) const;
 
-//8) void PostProcessor::LoopThroughData(FunctionWrapper*);
-//9) void PostProcessor::print_hist(int ch, int exp_ind, Type type);
-//10) bool PostProcessor::update(void);
-//11) void PostProcessor::update_physical(void)
-//12) void PostProcessor::default_hist_setups(HistogramSetups*);
+//9) void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int channel, Type type);
+//10) bool PostProcessor::set_correlation_filler(FunctionWrapper* operation, Type type);
+//11) void PostProcessor::print_hist(std::string path);
+//12) bool PostProcessor::update(void);
+//13) void PostProcessor::update_physical(void)
+//14) void PostProcessor::default_hist_setups(HistogramSetups*);
 
-//13) 2nd tier methods in main:
+//15) 2nd tier methods in main:
 //	FunctionWrapper* create_vertical_lines_cut(double left, double right)
 //	FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region)
 //	FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region)
 //	FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region)
-//	FunctionWrapper* create_off_ch_cut(int channel)
 //	FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region)
 //	FunctionWrapper* create_A_S_upper_cut(std::vector<double> region)
 
@@ -50,6 +51,14 @@ public:
 		{}
 	};
 protected:
+#ifndef __ROOTCLING__
+	struct correlation_data {
+		std::vector<boost::optional<double>> *vals;
+		int ch_size;
+	};
+#endif
+	bool set_correlation_filler(FunctionWrapper* operation, Type type);
+
 	AllExperimentsResults* data;
 
 	std::deque <std::deque<double> > avr_S2_S;	//TODO: reorganize? //initial (automatic) values are set in processAllExperiments
@@ -58,6 +67,8 @@ protected:
 	std::deque <double> PMT1_avr_S2_S;
 
 	virtual Bool_t StateChange(int to_ch, int to_exp, Type to_type, std::size_t to_canvas, int from_ch, int from_exp, Type from_type, std::size_t from_canvas);
+	virtual Bool_t CorrelationXChange(int exp_index, int to_ch, Type to_type, int from_ch, Type from_type);
+	virtual Bool_t CorrelationYChange(int exp_index, int to_ch, Type to_type, int from_ch, Type from_type);
 	
 	virtual bool Invalidate(unsigned int label);
 
@@ -72,7 +83,6 @@ protected:
 
 	std::string hist_name();
 	void print_hist(std::string path); //use "" for default path
-
 public:
 	void LoopThroughData(std::vector<Operation> &operations, int channel, Type type);
 

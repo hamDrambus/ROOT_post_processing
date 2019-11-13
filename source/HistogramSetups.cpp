@@ -9,7 +9,7 @@ HistogramSetups::HistogramSetups(const std::deque<int>& channels) :
 	x_mean(boost::none), y_mean(boost::none), x_drawn_mean(boost::none),
 	y_drawn_mean(boost::none), x_variance(boost::none), x_drawn_variance(boost::none),
 	y_variance(boost::none), y_drawn_variance(boost::none), is_valid_fit_function(false),
-	N_bins(0), N_gauss(0), use_fit(false)
+	use_default_setups(true), N_bins(0), N_gauss(0), use_fit(false)
 {
 	for (std::size_t ind = 0, ind_end_ = channels.size(); ind != ind_end_; ++ind)
 		active_channels.push(channels[ind], true);
@@ -192,7 +192,46 @@ Bool_t CanvasSetups::StateChange(int to_ch, int to_exp, Type to_type, int from_c
 
 Bool_t CanvasSetups::StateChange(int to_ch, int to_exp, Type to_type, std::size_t to_canvas, int from_ch, int from_exp, Type from_type, std::size_t from_canvas)
 {
+	HistogramSetups *setups = get_hist_setups();
+	if (NULL == setups) {
+		Invalidate(invDefault);
+		setups = new HistogramSetups(channel_list());
+		set_hist_setups(setups, to_exp, to_ch, to_type);
+		delete setups;
+	}
 	return ((from_canvas!=to_canvas)||AStates::StateChange(to_ch, to_exp, to_type, from_ch, from_exp, from_type));
+}
+
+Bool_t CanvasSetups::CorrelationXChange(int exp_index, int to_ch, Type to_type, int from_ch, Type from_type)
+{
+	if (!AStates::CorrelationXChange(exp_index, to_ch, to_type, from_ch, from_type)) {
+		return kFALSE;
+	}
+	if (to_type != from_type) {
+		for (std::size_t exp = 0, exp_end = manual_setups[canvas_ind][Correlation_x].size(); exp != exp_end; ++exp) {
+			manual_setups[canvas_ind][Correlation_x][exp].clear();
+			loop_channels_reset();
+			for (int ch = 0, ch_ind = 0; loop_channels((AStates::Type)Correlation_x, ch, ch_ind); ) {
+				manual_setups[canvas_ind][Correlation_x][exp].push_back(NULL);
+			}
+		}
+	}
+	return kTRUE;
+}
+
+Bool_t CanvasSetups::CorrelationYChange(int exp_index, int to_ch, Type to_type, int from_ch, Type from_type)
+{
+	if (!AStates::CorrelationYChange(exp_index, to_ch, to_type, from_ch, from_type)) {
+		return kFALSE;
+	}
+	if (to_type != from_type) {
+		manual_setups[canvas_ind][Correlation_y][exp_index].clear();
+		loop_channels_reset();
+		for (int ch = 0, ch_ind = 0; loop_channels((AStates::Type)Correlation_y, ch, ch_ind); ) {
+			manual_setups[canvas_ind].back().back().push_back(NULL);
+		}
+	}
+	return kTRUE;
 }
 
 bool CanvasSetups::Invalidate(unsigned int label)
@@ -253,6 +292,9 @@ bool CanvasSetups::Invalidate(unsigned int label)
 	if (label & invFitFunction) {
 		setups->fitted = false;
 		setups->is_valid_fit_function = false;
+	}
+	if (label & invDefault) {
+		setups->use_default_setups = true;
 	}
 	return true;
 }

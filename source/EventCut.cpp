@@ -21,7 +21,7 @@ EventCut::EventCut(const EventCut & v)
 	this->do_accept = v.do_accept;
 	this->exp_ind = v.exp_ind;
 	this->type = v.type;
-	this->value_picker = v.value_picker; //TODO: value picker may store some info which is tricky to delete
+	this->value_picker = v.value_picker; //TODO: value picker may store some info which is tricky to delete. ATM there is memory leak!
 }
 
 void EventCut::SetName(std::string nm) 		{ cut_name = nm;}
