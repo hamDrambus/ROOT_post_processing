@@ -316,18 +316,8 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 	case Type::PMT_tbN:
 	{
 		std::deque<std::deque<std::deque<peak> > > *peaks = NULL;
-		double V = 0;
-		if (is_PMT_type(type)) {
-			peaks = &(data->pmt_peaks[current_exp_index]);
-			auto entry = PMT_V.find(exp_str);
-			V = (entry == PMT_V.end() ? 0 : entry->second);
-		} else {
-			peaks = &(data->mppc_peaks[current_exp_index]);
-			auto entry = MPPC_V.find(exp_str);
-			V = (entry == MPPC_V.end() ? 0 : entry->second);
-		}
 		int run_size = (*peaks)[ch_ind].size();
-		double s1pe = calibr_info.get_S1pe(channel, V);
+		double s1pe = calibr_info.get_S1pe(channel, current_exp_index);
 		std::vector<double> cut_data(6);
 		for (auto run = 0; run != run_size; ++run) {
 			bool failed_run_cut = false;
@@ -393,9 +383,7 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 					if (!(*active))
 						continue;
 				}
-				auto entry = MPPC_V.find(exp_str);
-				double V = (entry == MPPC_V.end() ? 0 : entry->second);
-				double s1pe = calibr_info.get_S1pe(MPPC_channels[chan_ind], V);
+				double s1pe = calibr_info.get_S1pe(MPPC_channels[chan_ind], current_exp_index);
 				for (int pk = 0, pk_end = data->mppc_peaks[current_exp_index][chan_ind][run].size(); pk != pk_end; ++pk) {
 					bool failed_hist_cut = false; //normal cuts
 					bool failed_phys_cut = false; //drawn (displayed) cuts only
@@ -437,15 +425,7 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 	case Type::MPPC_S2: //cuts for this one are tricky: they are 2-stage: first peaks selection for S2 and then cuts for S2 themselves
 	{
 		int run_size = data->mppc_peaks[current_exp_index][ch_ind].size();
-		double V = 0;
-		if (is_PMT_type(type)) {
-			auto entry = PMT_V.find(exp_str);
-			V = (entry == PMT_V.end() ? 0 : entry->second);
-		} else {
-			auto entry = MPPC_V.find(exp_str);
-			V = (entry == MPPC_V.end() ? 0 : entry->second);
-		}
-		double s1pe = calibr_info.get_S1pe(channel, V);
+		double s1pe = calibr_info.get_S1pe(channel, current_exp_index);
 		std::vector<double> cut_data(6);
 		for (auto run = 0; run != run_size; ++run) {
 			bool failed_run_cut = false;
@@ -535,15 +515,7 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 	case Type::PMT_S2_S: //cuts for this one are tricky: they are 2-stage: first peaks selection for S2 and then cuts for S2 themselves
 	{
 		int run_size = data->pmt_peaks[current_exp_index][ch_ind].size();
-		double V = 0;
-		if (is_PMT_type(type)) {
-			auto entry = PMT_V.find(exp_str);
-			V = (entry == PMT_V.end() ? 0 : entry->second);
-		} else {
-			auto entry = MPPC_V.find(exp_str);
-			V = (entry == MPPC_V.end() ? 0 : entry->second);
-		}
-		double s1pe = calibr_info.get_S1pe(channel, V);
+		double s1pe = calibr_info.get_S1pe(channel, current_exp_index);
 		std::vector<double> cut_data(6);
 		for (auto run = 0; run != run_size; ++run) {
 			bool failed_run_cut = false;
@@ -637,8 +609,6 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 		int run_size = data->PMT_S2_int[current_exp_index][ch_ind].size();
 		std::vector<double> cut_data(1);
 		double S1pe;
-		auto entry = PMT_V.find(exp_str);
-		double V = (entry == PMT_V.end() ? 0 : entry->second);
 		for (auto run = 0; run != run_size; ++run) {
 			bool failed_run_cut = false;
 			bool failed_hist_cut = false; //normal cuts
@@ -649,7 +619,7 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 					break;
 				}
 			cut_data[0] = data->PMT_S2_int[current_exp_index][ch_ind][run];
-			S1pe = calibr_info.get_S1pe(channel, V);
+			S1pe = calibr_info.get_S1pe(channel, current_exp_index);
 			cut_data[0] = S1pe>0 ? cut_data[0]/S1pe : cut_data[0];
 			for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
 				if (cut->GetAffectingHistogram() && !failed_hist_cut)
@@ -698,9 +668,7 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 					if (!(*active))
 						continue;
 				}
-				auto entry = MPPC_V.find(exp_str);
-				double V = (entry == MPPC_V.end() ? 0 : entry->second);
-				double s1pe = calibr_info.get_S1pe(MPPC_channels[chan_ind], V);
+				double s1pe = calibr_info.get_S1pe(MPPC_channels[chan_ind], current_exp_index);
 				std::vector<double> S2(4, 0);
 				for (int pk = 0, pk_end = data->mppc_peaks[current_exp_index][chan_ind][run].size(); pk != pk_end; ++pk) {
 					bool failed_hist_cut = false; //normal cuts
@@ -794,17 +762,12 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 		//channel->run->peak_itself:
 		std::deque<std::deque<std::deque<peak> > > *peaks = NULL;
 		std::deque<int> *channels = NULL;
-		double V = 0;
 		if (is_PMT_type(type)) {
 			channels = &PMT_channels;
 			peaks = &(data->pmt_peaks[current_exp_index]);
-			auto entry = PMT_V.find(exp_str);
-			V = (entry == PMT_V.end() ? 0 : entry->second);
 		} else {
 			channels = &MPPC_channels;
 			peaks = &(data->mppc_peaks[current_exp_index]);
-			auto entry = MPPC_V.find(exp_str);
-			V = (entry == MPPC_V.end() ? 0 : entry->second);
 		}
 		int run_size = (*peaks)[0].size();
 		std::vector<double> cut_data(6);
@@ -826,7 +789,7 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 					if (!(*active))
 						continue;
 				}
-				double s1pe = calibr_info.get_S1pe((*channels)[chan_ind], V);
+				double s1pe = calibr_info.get_S1pe((*channels)[chan_ind], current_exp_index);
 				std::vector<double> S2(4, 0);
 				for (int pk = 0, pk_end = (*peaks)[chan_ind][run].size(); pk != pk_end; ++pk) {
 					bool failed_hist_cut = false; //normal cuts
@@ -2165,14 +2128,12 @@ void PostProcessor::update_Npe(void)
 			else
 				data->N_pe_result[exp][ch] = data->N_pe_direct[exp][ch];
 		}
-		auto entry = PMT_V.find(experiments[exp]);
-		double V = (entry == PMT_V.end() ? 0 : entry->second);
 		if (!data->N_pe_PMT3.empty())
-			if (calibr_info.get_S1pe(0, V)>0)
-				data->N_pe_PMT3[exp] = PMT3_avr_S2_S[exp] / calibr_info.get_S1pe(0, V);
+			if (calibr_info.get_S1pe(0, exp)>0)
+				data->N_pe_PMT3[exp] = PMT3_avr_S2_S[exp] / calibr_info.get_S1pe(0, exp);
 		if (!data->N_pe_PMT1.empty())
-			if (calibr_info.get_S1pe(1, V)>0)
-				data->N_pe_PMT1[exp] = PMT1_avr_S2_S[exp] / calibr_info.get_S1pe(1, V);
+			if (calibr_info.get_S1pe(1, exp)>0)
+				data->N_pe_PMT1[exp] = PMT1_avr_S2_S[exp] / calibr_info.get_S1pe(1, exp);
 	}
 }
 
@@ -2230,7 +2191,7 @@ void PostProcessor::update_physical(void)
 			std::cout << "Current mean value = "<< *setups->x_drawn_mean << std::endl;
 		if (meth == CalibrationInfo::Ignore) {
 			calibr_info.calculateS1pe(current_channel, V);
-			std::cout << "Resulting calibration S1pe = "<<calibr_info.get_S1pe(current_channel, V) << std::endl;
+			std::cout << "Resulting calibration S1pe = "<<calibr_info.get_S1pe(current_channel, current_exp_index) << std::endl;
 			break;
 		}
 		if (meth == CalibrationInfo::UsingMean) {
@@ -2238,7 +2199,7 @@ void PostProcessor::update_physical(void)
 				calibr_info.set_S1pe_exp(current_channel, current_exp_index, *setups->x_drawn_mean,
 						setups->stat_drawn_weight == boost::none ? *setups->num_of_drawn_fills : *setups->stat_drawn_weight); //TODO!!! implement accepting double
 			calibr_info.calculateS1pe(current_channel, V);
-			std::cout << "Resulting calibration S1pe = "<<calibr_info.get_S1pe(current_channel, V) << std::endl;
+			std::cout << "Resulting calibration S1pe = "<<calibr_info.get_S1pe(current_channel, current_exp_index) << std::endl;
 			break;
 		}
 		if (meth == CalibrationInfo::Using1pe || meth == CalibrationInfo::Using1pe2pe) {
@@ -2256,7 +2217,7 @@ void PostProcessor::update_physical(void)
 			}
 		}
 		calibr_info.calculateS1pe(current_channel, V);
-		std::cout << "Resulting calibration S1pe = "<<calibr_info.get_S1pe(current_channel, V) << std::endl;
+		std::cout << "Resulting calibration S1pe = "<<calibr_info.get_S1pe(current_channel, current_exp_index) << std::endl;
 		break;
 	}
 	case Type::PMT_Ss:
@@ -2270,7 +2231,7 @@ void PostProcessor::update_physical(void)
 			std::cout << "S1pe(mean) = "<< *setups->x_drawn_mean << std::endl;
 		if (meth == CalibrationInfo::Ignore) {
 			calibr_info.calculateS1pe(current_channel, V);
-			std::cout << "Resulting calibration S1pe = " << calibr_info.get_S1pe(current_channel, V) << std::endl;
+			std::cout << "Resulting calibration S1pe = " << calibr_info.get_S1pe(current_channel, current_exp_index) << std::endl;
 			break;
 		}
 		if (meth == CalibrationInfo::UsingMean) {
@@ -2278,7 +2239,7 @@ void PostProcessor::update_physical(void)
 				calibr_info.set_S1pe_exp(current_channel, current_exp_index, *setups->x_drawn_mean,
 						setups->stat_drawn_weight == boost::none ? *setups->num_of_drawn_fills : *setups->stat_drawn_weight); //TODO!!! implement accepting double
 			calibr_info.calculateS1pe(current_channel, V);
-			std::cout << "Resulting calibration S1pe = " << calibr_info.get_S1pe(current_channel, V) << std::endl;
+			std::cout << "Resulting calibration S1pe = " << calibr_info.get_S1pe(current_channel, current_exp_index) << std::endl;
 			break;
 		}
 		if (meth == CalibrationInfo::Using1pe || meth == CalibrationInfo::Using1pe2pe) {
@@ -2296,7 +2257,7 @@ void PostProcessor::update_physical(void)
 			}
 		}
 		calibr_info.calculateS1pe(current_channel, V);
-		std::cout << "Resulting calibration S1pe = " << calibr_info.get_S1pe(current_channel, V) << std::endl;
+		std::cout << "Resulting calibration S1pe = " << calibr_info.get_S1pe(current_channel, current_exp_index) << std::endl;
 		break;
 	}
 	case Type::PMT_S2_S:

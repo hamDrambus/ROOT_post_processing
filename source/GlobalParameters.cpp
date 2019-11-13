@@ -922,7 +922,7 @@ bool viewRegion::OnLine(double x1, double y1, double x2, double y2, double u,
 	std::map < std::string, double > experiment_fields;
 	std::map < std::string, double > PMT_V;
 	std::map < std::string, double > MPPC_V;
-	std::map < std::string, double > PMT_dB;
+	std::map < std::string, channel_info<dB_info> > dBs;
 	std::pair<int, int> calibaration_points;
 	std::map < int, std::pair<double,double> > MPPC_coords;
 
@@ -1007,7 +1007,7 @@ bool viewRegion::OnLine(double x1, double y1, double x2, double y2, double u,
 
 		data_prefix_path = "../Data/180215/results/";
 		calibration_file = "PMT_SiPM_48V_180215.dat";
-		data_output_path = "../Data/180215/results/";
+		data_output_path = "180215/results/";
 
 		DATA_MPPC_VERSION = "MPPCs_v1";
 		DATA_PMT_VERSION = "PMT_v1";
@@ -1024,9 +1024,11 @@ bool viewRegion::OnLine(double x1, double y1, double x2, double y2, double u,
 		PMT_V["X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
 		PMT_V["X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
 
-		PMT_dB.clear();
-		PMT_dB["X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 3.98; //ratio, not actual dB
-		PMT_dB["X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 3.98;
+		channel_info<dB_info> atten0;
+		atten0.push(0, dB_info(12));
+		dBs.clear();
+		dBs["X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = atten0;
+		dBs["X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = atten0;
 
 		double coeff = (600 / 804.0)*(1.54 / (1.54*1.8 + 1.01*0.4));
 		experiment_fields.clear();
