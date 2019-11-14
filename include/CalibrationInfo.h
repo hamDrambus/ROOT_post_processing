@@ -12,7 +12,7 @@ class CalibrationInfo {//recalculation of MPPC and PMT areas to photoelectrons a
 	//this class does not access fit parameters and such, but specifies how avr_s1pe must be calculated for each experiment(x)mppc_channel  
 public:
 	enum S1pe_method {Ignore, Using1pe, Using2pe, Using1pe2pe, UsingMean};
-	class S1pe_exp {
+	class S1pe_exp { //Stores values with attenuation accounted for (Here values are equivalent to 0 dB)
 	public:
 		//per channel
 		std::deque<S1pe_method> method;
@@ -30,7 +30,7 @@ public:
 		S1pe_method get_method(std::size_t ch) const;//called from PostProcessor
 		void set_method(std::size_t ch, S1pe_method method);
 	};
-	class S1pe_table {
+	class S1pe_table { //Stores values with attenuation accounted for (Here values are equivalent to 0 dB)
 	public:
 		typedef std::map<double, std::pair<bool, double> > S1pe; //{V, (is_forced, S1pe[V*us])}
 		//is_forced==false means S1pe calculated during analysis overrides values read from the calibration file.
@@ -51,6 +51,8 @@ public:
 protected:
 	S1pe_table s1pe_table_;
 	std::deque<S1pe_exp> s1pe_exp_; //for each experiment. Same amount of channels as in state_info
+	double attenuate(int ch, int exp_index, double val) const;
+	double deattenuate(int ch, int exp_index, double val) const;
 protected:
 	const AStates* state_info; //for channels only
 	int ch_to_index(int ch) const;
@@ -64,22 +66,23 @@ protected:
 	double translate_exp_to_V (int ch, int exp_index) const;
 public:
 	CalibrationInfo(const AStates* data, std::string fname);
-	double get_S1pe(int ch, double V) const; //~~TODO~~ ROOT's CINT can't handle boost: rewrite with boost::optional
-	void force_S1pe(int ch, double V, double val); //forces specific value which is not erased by calculateS1pe
+	double get_S1pe(int ch, double V) const; //!returns value NOT attenuated according to ::dBs
+	double get_S1pe(int ch, int exp_index) const; //!returns value attenuated according to ::dBs
+	void force_S1pe(int ch, double V, double val); //forces specific value which is not erased by calculateS1pe. Attenuation is considered to be 0 dB here!
 	void unforce_S1pe(int ch, double V); //forces specific value which is not erased by calculateS1pe
 
-	double calculateS1pe(int ch, double V); //from experimental avr_S1pe
+	double calculateS1pe(int ch, double V); //from experimental avr_S1pe. !returns NOT attenuated according to ::dBs value
 	void calculateS1pe(int ch); //for all V present.
 	void calculateS1pe(void); //for all channels and V.
 
 	//setters/getters for avr_S1pe and avr_S2pe which are used for s1pe calculations
 	S1pe_method get_method(int ch, int exp_ch) const;//called from PostProcessor
 	void set_method(int ch, int exp_ch, S1pe_method method);
-	void set_S1pe_exp(int ch, int exp_index, double val, int weight);
-	double get_S1pe_exp(int ch, int exp_index) const;
+	void set_S1pe_exp(int ch, int exp_index, double val, int weight); //!accepts value attenuated according to ::dBs
+	double get_S1pe_exp(int ch, int exp_index) const; //!returns value attenuated according to ::dBs value
 	int get_S1pe_weight_exp(int ch, int exp_index) const;
-	void set_S2pe_exp(int ch, int exp_index, double val, int weight);
-	double get_S2pe_exp(int ch, int exp_index) const;
+	void set_S2pe_exp(int ch, int exp_index, double val, int weight); //!accepts value attenuated according to ::dBs
+	double get_S2pe_exp(int ch, int exp_index) const; //!returns value attenuated according to ::dBs
 	int get_S2pe_weight_exp(int ch, int exp_index) const;
 
 	void Save(std::string fname) const; //Adds info to the file, not overrides it entirely

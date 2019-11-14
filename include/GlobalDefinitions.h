@@ -270,6 +270,36 @@ public:
 	}
 };
 
+class dB_info {
+	double _dB;
+	double _atten; //attenuation. > 1 in case of positive dB
+	double dB_to_atten(double dB) const {
+		return std::pow(10, dB / 20.0);
+	}
+	double atten_to_dB(double atten) const {
+		return 20.0*std::log(atten) / std::log(10.0);
+	}
+public:
+	dB_info(double dB) : _dB(dB), _atten(dB_to_atten(dB))
+	{}
+	~dB_info()
+	{}
+	double get_dB(void) const {
+		return _dB;
+	}
+	double get_atten(void) const {
+		return _atten;
+	}
+	void set_dB(double dB) {
+		_dB = dB;
+		_atten = dB_to_atten(dB);
+	}
+	void set_atten(double atten) {
+		_atten = atten;
+		_dB = atten_to_dB(atten);
+	}
+};
+
 class TestSignalGenerator {
 public:
 	TestSignalGenerator(std::string prefix);

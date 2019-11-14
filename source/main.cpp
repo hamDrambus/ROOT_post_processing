@@ -29,7 +29,7 @@ void ch(int ch)
 	if (post_processor->isMultichannel(post_processor->current_type)) {
 		int pmt_ind = post_processor->pmt_channel_to_index(ch);
 		int mppc_ind = post_processor->mppc_channel_to_index(ch);
-		if (pmt_ind>=0 && post_processor->is_PMT_type(post_processor->current_type)) {
+		if (pmt_ind>=0 && post_processor->isPMTtype(post_processor->current_type)) {
 			for (auto i = post_processor->PMT_channels.begin(), i_end_ = post_processor->PMT_channels.end(); i!=i_end_; ++i)
 				off_ch(*i);
 			on_ch(ch);
@@ -37,7 +37,7 @@ void ch(int ch)
 			update();
 			return;
 		}
-		if (mppc_ind>=0 && ! post_processor->is_PMT_type(post_processor->current_type)) {
+		if (mppc_ind>=0 && ! post_processor->isPMTtype(post_processor->current_type)) {
 			for (auto i = post_processor->MPPC_channels.begin(), i_end_ = post_processor->MPPC_channels.end(); i!=i_end_; ++i)
 				off_ch(*i);
 			on_ch(ch);
@@ -457,7 +457,7 @@ void set_1peS(double val)
 		return;
 	}
 	double V = 0;
-	if (post_processor->is_PMT_type(post_processor->current_type)) {
+	if (post_processor->isPMTtype(post_processor->current_type)) {
 		auto entry = PMT_V.find(post_processor->experiments[post_processor->current_exp_index]);
 		if (entry != PMT_V.end())
 			V = entry->second;
@@ -483,7 +483,7 @@ void unset_1peS(void)
 		return;
 	}
 	double V = 0;
-	if (post_processor->is_PMT_type(post_processor->current_type)) {
+	if (post_processor->isPMTtype(post_processor->current_type)) {
 		auto entry = PMT_V.find(post_processor->experiments[post_processor->current_exp_index]);
 		if (entry != PMT_V.end())
 			V = entry->second;
@@ -562,11 +562,16 @@ FunctionWrapper* create_vertical_lines_cut(double left, double right) //do not c
 		std::pair<double,double> mm;
 		int ch_size;
 	};
-	temp_data * st_data = new temp_data;
+	temp_data *st_data = new temp_data;
 	st_data->mm = std::pair<double, double>(left, right);
-	st_data->ch_size = post_processor->is_PMT_type(post_processor->current_type) ? post_processor->PMT_channels.size() : post_processor->MPPC_channels.size();
+	st_data->ch_size = post_processor->isPMTtype(post_processor->current_type) ? post_processor->PMT_channels.size() : post_processor->MPPC_channels.size();
 	FunctionWrapper *picker = new FunctionWrapper (st_data);
-	switch (post_processor->current_type)
+	AStates::Type type = post_processor->current_type;
+	if (type == AStates::Correlation_x)
+		type = post_processor->_x_corr;
+	if (type == AStates::Correlation_y)
+		type = post_processor->_y_corr;
+	switch (type)
 	{
 	case AStates::MPPC_coord:
 	case AStates::MPPC_coord_x:
@@ -625,7 +630,7 @@ FunctionWrapper* create_vertical_lines_cut(double left, double right) //do not c
 	case AStates::Correlation:
 	case AStates::CorrelationAll:
 	{
-		picker->SetFunction( [](std::vector<double> &vals, int run, void* data) {
+		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			return ((vals[0] <=((temp_data*)data)->mm.second) && (vals[0] >= ((temp_data*)data)->mm.first));
 		});
 		break;
@@ -737,9 +742,14 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 	};
 	temp_data * st_data = new temp_data;
 	st_data->reg = region;
-	st_data->ch_size = post_processor->is_PMT_type(post_processor->current_type) ? post_processor->PMT_channels.size() : post_processor->MPPC_channels.size();
+	st_data->ch_size = post_processor->isPMTtype(post_processor->current_type) ? post_processor->PMT_channels.size() : post_processor->MPPC_channels.size();
 	FunctionWrapper *picker = new FunctionWrapper (st_data);
-	switch (post_processor->current_type)
+	AStates::Type type = post_processor->current_type;
+	if (type == AStates::Correlation_x)
+		type = post_processor->_x_corr;
+	if (type == AStates::Correlation_y)
+		type = post_processor->_y_corr;
+	switch (type)
 	{
 	case AStates::MPPC_coord:
 	case AStates::MPPC_coord_x:
@@ -873,9 +883,14 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 	};
 	temp_data * st_data = new temp_data;
 	st_data->reg = region;
-	st_data->ch_size = post_processor->is_PMT_type(post_processor->current_type) ? post_processor->PMT_channels.size() : post_processor->MPPC_channels.size();
+	st_data->ch_size = post_processor->isPMTtype(post_processor->current_type) ? post_processor->PMT_channels.size() : post_processor->MPPC_channels.size();
 	FunctionWrapper *picker = new FunctionWrapper(st_data);
-	switch (post_processor->current_type)
+	AStates::Type type = post_processor->current_type;
+	if (type == AStates::Correlation_x)
+		type = post_processor->_x_corr;
+	if (type == AStates::Correlation_y)
+		type = post_processor->_y_corr;
+	switch (type)
 	{
 	case AStates::MPPC_coord:
 	case AStates::MPPC_coord_x:
@@ -1008,9 +1023,14 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 	};
 	temp_data * st_data = new temp_data;
 	st_data->reg = region;
-	st_data->ch_size = post_processor->is_PMT_type(post_processor->current_type) ? post_processor->PMT_channels.size() : post_processor->MPPC_channels.size();
+	st_data->ch_size = post_processor->isPMTtype(post_processor->current_type) ? post_processor->PMT_channels.size() : post_processor->MPPC_channels.size();
 	FunctionWrapper *picker = new FunctionWrapper(st_data);
-	switch (post_processor->current_type)
+	AStates::Type type = post_processor->current_type;
+	if (type == AStates::Correlation_x)
+		type = post_processor->_x_corr;
+	if (type == AStates::Correlation_y)
+		type = post_processor->_y_corr;
+	switch (type)
 	{
 	case AStates::MPPC_coord:
 	case AStates::MPPC_coord_x:
@@ -1208,9 +1228,14 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 	};
 	temp_data * st_data = new temp_data;
 	st_data->reg = region;
-	st_data->ch_size = post_processor->is_PMT_type(post_processor->current_type) ? post_processor->PMT_channels.size() : post_processor->MPPC_channels.size();
+	st_data->ch_size = post_processor->isPMTtype(post_processor->current_type) ? post_processor->PMT_channels.size() : post_processor->MPPC_channels.size();
 	FunctionWrapper *picker = new FunctionWrapper(st_data);
-	switch (post_processor->current_type)
+	AStates::Type type = post_processor->current_type;
+	if (type == AStates::Correlation_x)
+		type = post_processor->_x_corr;
+	if (type == AStates::Correlation_y)
+		type = post_processor->_y_corr;
+	switch (type)
 	{
 	case AStates::MPPC_coord:
 	case AStates::MPPC_coord_x:
@@ -1306,9 +1331,14 @@ FunctionWrapper* create_A_S_upper_cut(std::vector<double> region) //do not call 
 	};
 	temp_data * st_data = new temp_data;
 	st_data->reg = region;
-	st_data->ch_size = post_processor->is_PMT_type(post_processor->current_type) ? post_processor->PMT_channels.size() : post_processor->MPPC_channels.size();
+	st_data->ch_size = post_processor->isPMTtype(post_processor->current_type) ? post_processor->PMT_channels.size() : post_processor->MPPC_channels.size();
 	FunctionWrapper *picker = new FunctionWrapper(st_data);
-	switch (post_processor->current_type)
+	AStates::Type type = post_processor->current_type;
+	if (type == AStates::Correlation_x)
+		type = post_processor->_x_corr;
+	if (type == AStates::Correlation_y)
+		type = post_processor->_y_corr;
+	switch (type)
 	{
 	case AStates::MPPC_coord:
 	case AStates::MPPC_coord_x:

@@ -319,6 +319,8 @@ std::vector<int> CalibrationInfo::translate_V_to_exp (int ch, double V) const
 
 double CalibrationInfo::translate_exp_to_V (int ch, int exp_index) const
 {
+	if (exp_index >= s1pe_exp_.size() || exp_index < 0)
+		return -1;
 	std::string exp_str = state_info->experiments[exp_index];
 	if (getIndex(state_info->PMT_channels, ch)>=0) {
 		auto e = PMT_V.find(exp_str);
@@ -391,12 +393,42 @@ bool CalibrationInfo::write_to_file(std::ofstream &str, S1pe_table& table) const
 	return false;
 }
 
+double CalibrationInfo::attenuate(int ch, int exp_index, double val) const
+{
+	std::string exp_str = state_info->experiments[exp_index];
+	auto entry = dBs.find(exp_str);
+	if (dBs.end() == entry)
+		return val;
+	dB_info* dB = entry->second.info(ch);
+	if (NULL == dB)
+		return val;
+	return val / dB->get_atten();
+}
+
+double CalibrationInfo::deattenuate(int ch, int exp_index, double val) const
+{
+	std::string exp_str = state_info->experiments[exp_index];
+	auto entry = dBs.find(exp_str);
+	if (dBs.end() == entry)
+		return val;
+	dB_info* dB = entry->second.info(ch);
+	if (NULL == dB)
+		return val;
+	return val * dB->get_atten();
+}
+
 double CalibrationInfo::get_S1pe(int ch, double V) const
 {
 	return s1pe_table_.get_S1pe(ch, V);
 }
 
-void CalibrationInfo::force_S1pe(int ch, double V, double val) //forces specific value which is not erased by calculateS1pe
+double CalibrationInfo::get_S1pe(int ch, int exp_index) const
+{
+	double V = translate_exp_to_V(ch, exp_index);
+	return attenuate(ch, exp_index, s1pe_table_.get_S1pe(ch, V));
+}
+
+void CalibrationInfo::force_S1pe(int ch, double V, double val) //forces specific value which is not erased by calculateS1pe. Attenuation is considered to be 0 dB here!
 {
 	s1pe_table_.push(ch, V, val, true, true);
 }
@@ -422,18 +454,19 @@ void CalibrationInfo::set_method(int ch, int exp_ind, S1pe_method method)
 		s1pe_exp_[exp_ind].set_method(ch_index, method);
 }
 
-void CalibrationInfo::set_S1pe_exp(int ch, int exp_index, double val, int weight)
+void CalibrationInfo::set_S1pe_exp(int ch, int exp_index, double val, int weight) //!accepts value attenuated according to ::dBs
 {
 	int ch_index = ch_to_index(ch);
+	val = deattenuate(ch, exp_index, val);
 	if (ch_index >= 0 && exp_index < s1pe_exp_.size() && exp_index >= 0)
 		s1pe_exp_[exp_index].set_S1pe_exp(ch_index, val, weight);
 }
 
-double CalibrationInfo::get_S1pe_exp(int ch, int exp_index) const
+double CalibrationInfo::get_S1pe_exp(int ch, int exp_index) const //!returns value attenuated according to ::dBs value
 {
 	int ch_index = ch_to_index(ch);
 	if (ch_index >= 0 && exp_index < s1pe_exp_.size() && exp_index >= 0)
-		return s1pe_exp_[exp_index].get_S1pe_exp(ch_index);
+		return attenuate(ch, exp_index, s1pe_exp_[exp_index].get_S1pe_exp(ch_index));
 	return -1;
 }
 
@@ -445,18 +478,19 @@ int CalibrationInfo::get_S1pe_weight_exp(int ch, int exp_index) const
 	return 0;
 }
 
-void CalibrationInfo::set_S2pe_exp(int ch, int exp_index, double val, int weight)
+void CalibrationInfo::set_S2pe_exp(int ch, int exp_index, double val, int weight) //!accepts value attenuated according to ::dBs
 {
 	int ch_index = ch_to_index(ch);
+	val = deattenuate(ch, exp_index, val);
 	if (ch_index >= 0 && exp_index < s1pe_exp_.size() && exp_index >= 0)
 		s1pe_exp_[exp_index].set_S2pe_exp(ch_index, val, weight);
 }
 
-double CalibrationInfo::get_S2pe_exp(int ch, int exp_index) const
+double CalibrationInfo::get_S2pe_exp(int ch, int exp_index) const //!returns value attenuated according to ::dBs
 {
 	int ch_index = ch_to_index(ch);
 	if (ch_index >= 0 && exp_index < s1pe_exp_.size() && exp_index >= 0)
-		return s1pe_exp_[exp_index].get_S2pe_exp(ch_index);
+		return attenuate(ch, exp_index, s1pe_exp_[exp_index].get_S2pe_exp(ch_index));
 	return -1;
 }
 

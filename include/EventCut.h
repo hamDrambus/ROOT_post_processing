@@ -28,7 +28,7 @@ protected:
 public:
 	EventCut(int N_of_runs, CutType type, std::string name = "");
 	~EventCut();
-	EventCut(const EventCut &);//= delete; //TODO: implement (currently have to decide how to copy value_picker which stores (CUTTER) and (void*))
+	EventCut(const EventCut &);//= delete; //TODO: implement (currently have to decide how to copy value_picker which stores (CUTTER) and (void*)). ATM there is memory leak!
 	void SetName(std::string nm);
 	std::string GetName(void) const;
 	void SetPicker(FunctionWrapper *picker);
