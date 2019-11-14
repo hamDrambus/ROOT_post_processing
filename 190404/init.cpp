@@ -26,11 +26,25 @@
   
   PMT_V.clear();
   MPPC_V.clear();
-  PMT_dB.clear();
   for (auto i = exp_area.experiments.begin(), i_end_ = exp_area.experiments.end(); i != i_end_; ++i) {
 	  PMT_V[*i] = 850;
-	  PMT_dB[*i] = 1.0; //ratio, not actual dB. 6dB = 2.0, 12dB = 3.98
 	  MPPC_V[*i] = 46;
+  }
+  {
+  channel_info<dB_info> atten0;
+  atten0.push(12, dB_info(12)); //decibells, not ratio
+  atten0.push(13, dB_info(12));
+  atten0.push(14, dB_info(12));
+  atten0.push(15, dB_info(12));
+  dBs.clear();
+  dBs["190404_Cd_20kV_850V_46V_th250mV"] = atten0;
+  dBs["190404_Cd_20kV_850V_46V_th250mV_0"] = atten0;
+  dBs["190404_Cd_18kV_850V_46V_th230mV"] = atten0;
+  dBs["190404_Cd_16kV_850V_46V_th210mV"] = atten0;
+  dBs["190404_Cd_14kV_850V_46V_th200mV"] = atten0;
+  dBs["190404_Cd_12kV_850V_46V_th160mV"] = atten0;
+  dBs["190404_Cd_10kV_850V_46V_th150mV"] = atten0;
+  dBs["190404_Cd_8kV_850V_46V_th140mV"] = atten0;
   }
 
   experiment_fields.clear();

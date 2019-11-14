@@ -359,7 +359,6 @@ void analysis_history(bool calibrate, int method = 0) {
 //Created on 23.09.2019
 //TODO 23.09.2019:
 //  1) Move histogram stats function (top-left or top-right corner)
-//  2) Pause after saving histogram. There is an option to wait for click on histogram
 
 //method = 0 - no cuts at all, only PMT15 (original analysis of 08.2019).
 //1 - very low A-S exclusion, also exclude high A low S. Calibration as well as Npe and signal forms must be plotted from scratch for every agrressiveness level.
