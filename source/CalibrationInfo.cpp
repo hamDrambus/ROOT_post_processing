@@ -502,26 +502,27 @@ int CalibrationInfo::get_S2pe_weight_exp(int ch, int exp_index) const
 	return 0;
 }
 
-double CalibrationInfo::calculateS1pe(int ch, double V) //from experimental avr_S1pe
+double CalibrationInfo::calculateS1pe(int ch, double V) //from experimental avr_S1pe. Works with not attenuated values (eqv. to 0dB)
 {
 	if (s1pe_table_.isforced_S1pe(ch, V))
 		return s1pe_table_.get_S1pe(ch, V);
 	std::vector<int> exps = translate_V_to_exp(ch, V);
 	double val = 0;
 	int n_used = 0;
+	int ch_index = ch_to_index(ch);
 	for (auto e = exps.begin(), e_end_ = exps.end(); e != e_end_; ++e) {
 		S1pe_method meth = get_method(ch, *e);
 		if (Using1pe == meth|| Using1pe2pe == meth || UsingMean == meth) {
-			double exp_s1pe = get_S1pe_exp(ch, *e);
-			int exp_s1pe_w = get_S1pe_weight_exp(ch, *e);
+			double exp_s1pe = s1pe_exp_[*e].get_S1pe_exp(ch_index);
+			int exp_s1pe_w = s1pe_exp_[*e].get_S1pe_w_exp(ch_index);
 			if (exp_s1pe_w > 0 && exp_s1pe > 0) {
 				val += exp_s1pe_w * exp_s1pe;
 				n_used += exp_s1pe_w;
 			}
 		}
 		if (Using2pe == meth || Using1pe2pe == meth) {
-			double exp_s2pe = get_S2pe_exp(ch, *e);
-			int exp_s2pe_w = get_S2pe_weight_exp(ch, *e);
+			double exp_s2pe = s1pe_exp_[*e].get_S2pe_exp(ch_index);
+			int exp_s2pe_w = s1pe_exp_[*e].get_S2pe_w_exp(ch_index);
 			if (exp_s2pe_w > 0 && exp_s2pe > 0) {
 				val += 0.5*exp_s2pe_w * exp_s2pe;
 				n_used += exp_s2pe_w;

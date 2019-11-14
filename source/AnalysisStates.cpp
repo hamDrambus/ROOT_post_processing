@@ -298,7 +298,8 @@ Bool_t AStates::isPMTtype(Type type) const
 Bool_t AStates::isPerRun(Type type) const
 {
 	return type==MPPC_Double_I || type==MPPC_coord|| type==MPPC_coord_x|| type==MPPC_coord_y|| type==MPPC_Npe_sum||
-			type==MPPC_S2 || type == Correlation_x|| type == Correlation_y|| type==Correlation|| type==CorrelationAll|| type== PMT_S2_S|| type== PMT_S2_int ||type==PMT_Npe_sum;
+			type==MPPC_S2 || type == Correlation_x|| type == Correlation_y|| type==Correlation|| type==CorrelationAll||
+			type== PMT_S2_S|| type== PMT_S2_int ||type==PMT_Npe_sum ||type==PMT_sum_N;
 }
 
 Bool_t AStates::isMultichannel(Type type) const
@@ -362,7 +363,9 @@ Bool_t AStates::isValid() const
 
 bool AStates::SetCorrelation(Type x, Type y, int chx, int chy)
 {
-	return SetCorrelation_x(x, chx) || SetCorrelation_y(y, chy);
+	bool ok1 = SetCorrelation_x(x, chx);
+	bool ok2 = SetCorrelation_y(y, chy);
+	return ok1 || ok2;
 }
 
 bool AStates::SetCorrelation_x(Type x_type, int x_ch)
@@ -378,7 +381,7 @@ bool AStates::SetCorrelation_x(Type x_type, int x_ch)
 		_x_corr_ch = x_ch;
 		return CorrelationXChange(current_exp_index, _x_corr_ch, _x_corr, old_ch, old_ty);
 	} else
-		std::cout << "AStates::SetCorrelation_x::Error: Can't uses this type ("<< type_name(x_type) <<") for correlation x value" << std::endl;
+		std::cout << "AStates::SetCorrelation_x::Error: Can't use this type ("<< type_name(x_type) <<") for correlation x value" << std::endl;
 	return CorrelationXChange(current_exp_index, _x_corr_ch, _x_corr, _x_corr_ch, _x_corr);
 }
 
@@ -395,7 +398,7 @@ bool AStates::SetCorrelation_y(Type y_type, int y_ch)
 		_y_corr_ch = y_ch;
 		return CorrelationYChange(current_exp_index, _y_corr_ch, _y_corr, old_ch, old_ty);
 	} else
-		std::cout << "AStates::SetCorrelation_y::Error: Can't uses this type (" << type_name(y_type) << ") for correlation y value" << std::endl;
+		std::cout << "AStates::SetCorrelation_y::Error: Can't use this type (" << type_name(y_type) << ") for correlation y value" << std::endl;
 	return CorrelationYChange(current_exp_index, _y_corr_ch, _y_corr, _y_corr_ch, _y_corr);
 }
 
@@ -463,17 +466,17 @@ bool AStates::loop_channels (Type type, int &ch, int &ch_ind)
 	}
 }
 
-std::deque<int> AStates::channel_list() const
+std::deque<int> AStates::channel_list(Type type) const
 {
-	if (isMultichannel(current_type)) {
-		if (isPMTtype(current_type))
+	if (isMultichannel(type)) {
+		if (isPMTtype(type))
 			return PMT_channels;
 		else
 			return MPPC_channels;
 	}
-	if (current_type == Correlation_x)
+	if (type == Correlation_x)
 		return std::deque<int>(1, _x_corr_ch);
-	if (current_type == Correlation_y)
+	if (type == Correlation_y)
 		return std::deque<int>(1, _y_corr_ch);
 	return std::deque<int>(1, current_channel);
  }

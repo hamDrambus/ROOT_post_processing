@@ -24,20 +24,27 @@
   
   PMT_V.clear();
   MPPC_V.clear();
-  PMT_dB.clear();
   for (auto i = exp_area.experiments.begin(), i_end_ = exp_area.experiments.end(); i != i_end_; ++i) {
 	  PMT_V[*i] = 800;
-	  PMT_dB[*i] = 1.0; //ratio, not actual dB. 6dB = 2.0, 12dB = 3.98
 	  MPPC_V[*i] = 48;
   }
-  PMT_dB["180705_Cd_20kV_800V_12bB_48V"] = 3.98; //ratio, not actual dB. 6dB = 2.0, 12dB = 3.98
-  PMT_dB["180705_Cd_18kV_800V_12bB_48V"] = 3.98;
-  PMT_dB["180705_Cd_16kV_800V_12bB_48V"] = 3.98;
-  PMT_dB["180705_Cd_14kV_800V_12bB_48V"] = 3.98;
-  PMT_dB["180705_Cd_12kV_800V_6bB_48V"] = 3.98;
-  PMT_dB["180705_Cd_12kV_800V_6bB_48V"] = 2;
-  PMT_dB["180705_Cd_11kV_800V_6bB_48V"] = 2;
-  PMT_dB["180705_Cd_10kV_800V_6bB_48V"] = 2;
+  {
+  channel_info<dB_info> atten0;
+  atten0.push(0, dB_info(12)); //decibells, not ratio
+  atten0.push(1, dB_info(12));
+  channel_info<dB_info> atten1;
+  atten1.push(0, dB_info(6)); //decibells, not ratio
+  atten1.push(1, dB_info(6));
+  dBs.clear();
+  dBs["180705_Cd_20kV_800V_12bB_48V"] = atten0;
+  dBs["180705_Cd_18kV_800V_12bB_48V"] = atten0;
+  dBs["180705_Cd_16kV_800V_12bB_48V"] = atten0;
+  dBs["180705_Cd_14kV_800V_12bB_48V"] = atten0;
+  dBs["180705_Cd_12kV_800V_6bB_48V"] = atten0;
+  dBs["180705_Cd_12kV_800V_6bB_48V"] = atten1;
+  dBs["180705_Cd_11kV_800V_6bB_48V"] = atten1;
+  dBs["180705_Cd_10kV_800V_6bB_48V"] = atten1;
+  }
 
   experiment_fields.clear();
   experiment_fields["180705_Cd_20kV_800V_12bB_48V"] = 20;

@@ -1,4 +1,10 @@
 {
+if (true) {
+	channel_info<dB_info> atten0;
+	atten0.push(0, dB_info(12)); //decibells, not ratio
+	atten0.push(1, dB_info(12));
+	dBs["180705_Cd_20kV_800V_12bB_48V"] = atten0;
+}
 if (false) {
 	int channel = 0;
 	bool display = true;
@@ -8,7 +14,7 @@ if (false) {
 		cut_A_S_upper(0.0, 0.55, 1.4, 1.1, display, channel, "rem_S>~0.7");
 	}
 }
-	if (true) {
+	if (false) {
 		analysis_history(false, 0); //20
 		nex();
 		analysis_history(false, 0); //18

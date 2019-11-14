@@ -51,7 +51,7 @@ HistogramSetups* CanvasSetups::get_hist_setups(int exp_ind, int channel, Type ty
 		return NULL;
 	}
 	std::size_t ch_sz = manual_setups[canvas_ind][type][exp_ind].size();
-	int ch_ind = channel_to_index(channel);
+	int ch_ind = channel_to_index(channel, type);
 	if (ch_ind<0) {
 		std::cerr<<"CanvasSetups::get_hist_setups: Error: channel ("<<channel<<") is out of range"<<std::endl;
 		return NULL;
@@ -195,7 +195,7 @@ Bool_t CanvasSetups::StateChange(int to_ch, int to_exp, Type to_type, std::size_
 	HistogramSetups *setups = get_hist_setups();
 	if (NULL == setups) {
 		Invalidate(invDefault);
-		setups = new HistogramSetups(channel_list());
+		setups = new HistogramSetups(channel_list(to_type));
 		set_hist_setups(setups, to_exp, to_ch, to_type);
 		delete setups;
 	}
@@ -225,10 +225,12 @@ Bool_t CanvasSetups::CorrelationYChange(int exp_index, int to_ch, Type to_type, 
 		return kFALSE;
 	}
 	if (to_type != from_type) {
-		manual_setups[canvas_ind][Correlation_y][exp_index].clear();
-		loop_channels_reset();
-		for (int ch = 0, ch_ind = 0; loop_channels((AStates::Type)Correlation_y, ch, ch_ind); ) {
-			manual_setups[canvas_ind].back().back().push_back(NULL);
+		for (std::size_t exp = 0, exp_end = manual_setups[canvas_ind][Correlation_x].size(); exp != exp_end; ++exp) {
+			manual_setups[canvas_ind][Correlation_y][exp_index].clear();
+			loop_channels_reset();
+			for (int ch = 0, ch_ind = 0; loop_channels((AStates::Type)Correlation_y, ch, ch_ind); ) {
+				manual_setups[canvas_ind].back().back().push_back(NULL);
+			}
 		}
 	}
 	return kTRUE;

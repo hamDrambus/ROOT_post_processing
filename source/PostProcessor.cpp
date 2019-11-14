@@ -209,8 +209,8 @@ Bool_t PostProcessor::CorrelationXChange(int exp_index, int to_ch, Type to_type,
 		set_hist_setups(setups, exp_index, to_ch, AStates::Correlation_x);
 	} else {
 		Invalidate(invDefault);
-		setups = new HistogramSetups(channel_list());
-		set_hist_setups(setups, exp_index, to_ch, to_type);
+		setups = new HistogramSetups(channel_list(AStates::Correlation_x));
+		set_hist_setups(setups, exp_index, to_ch, AStates::Correlation_x);
 		delete setups;
 	}
 	Invalidate(invAll);
@@ -228,8 +228,8 @@ Bool_t PostProcessor::CorrelationYChange(int exp_index, int to_ch, Type to_type,
 		set_hist_setups(setups, exp_index, to_ch, AStates::Correlation_y);
 	} else {
 		Invalidate(invDefault);
-		setups = new HistogramSetups(channel_list());
-		set_hist_setups(setups, exp_index, to_ch, to_type);
+		setups = new HistogramSetups(channel_list(AStates::Correlation_y));
+		set_hist_setups(setups, exp_index, to_ch, AStates::Correlation_y);
 		delete setups;
 	}
 	Invalidate(invAll);
@@ -361,6 +361,11 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 	case Type::PMT_tbN:
 	{
 		std::deque<std::deque<std::deque<peak> > > *peaks = NULL;
+		if (isPMTtype(type)) {
+			peaks = &(data->pmt_peaks[current_exp_index]);
+		} else {
+			peaks = &(data->mppc_peaks[current_exp_index]);
+		}
 		int run_size = (*peaks)[ch_ind].size();
 		double s1pe = calibr_info.get_S1pe(channel, current_exp_index);
 		std::vector<double> cut_data(6);
@@ -938,10 +943,10 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 		opy.apply_phys_cuts = false;
 		std::vector<Operation> vec;
 		vec.push_back(opx);
-		LoopThroughData(vec, _x_corr_ch, _x_corr);
+		LoopThroughData(vec, _x_corr_ch, Correlation_x);
 		vec.clear();
 		vec.push_back(opy);
-		LoopThroughData(vec, _y_corr_ch, _y_corr);
+		LoopThroughData(vec, _y_corr_ch, Correlation_y);
 
 		std::vector<double> vals(2);
 		for (std::size_t run = 0; run != run_size; ++run) {
@@ -1017,10 +1022,10 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 			opy.apply_phys_cuts = false;
 			std::vector<Operation> vec;
 			vec.push_back(opx);
-			LoopThroughData(vec, _x_corr_ch, _x_corr);
+			LoopThroughData(vec, _x_corr_ch, Correlation_x);
 			vec.clear();
 			vec.push_back(opy);
-			LoopThroughData(vec, _y_corr_ch, _y_corr);
+			LoopThroughData(vec, _y_corr_ch, Correlation_y);
 
 			std::vector<double> vals(2);
 			for (std::size_t run = 0; run != run_size; ++run) {
@@ -2015,7 +2020,7 @@ void PostProcessor::saveAs(std::string path)
 
 void PostProcessor::clear(void)	//clear cuts for current histogram. Run cuts derived from it are not touched
 {
-	HistogramSetups def_setups(channel_list());
+	HistogramSetups def_setups(channel_list(current_type));
 	default_hist_setups(&def_setups);
 	set_hist_setups(&def_setups, current_exp_index, current_channel, current_type); //Creates copy!
 	update();
