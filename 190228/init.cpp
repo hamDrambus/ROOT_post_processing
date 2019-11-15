@@ -19,10 +19,13 @@
   
   PMT_V.clear();
   MPPC_V.clear();
-  PMT_dB.clear();
+  channel_info<dB_info> atten0;
+  atten0.push(0, dB_info(12)); //decibells, not ratio
+  atten0.push(1, dB_info(12));
+  dBs.clear();
   for (auto i = exp_area.experiments.begin(), i_end_ = exp_area.experiments.end(); i != i_end_; ++i) {
 	  PMT_V[*i] = 850;
-	  PMT_dB[*i] = 1.0; //ratio, not actual dB. 6dB = 2.0, 12dB = 3.98
+	  dBs[*i] = atten0;
 	  MPPC_V[*i] = 46;
   }
 

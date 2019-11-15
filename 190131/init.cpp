@@ -1,8 +1,8 @@
 {
   //From global parameters:
-  data_prefix_path = "../Data/190307/results/";
-  calibration_file = "190307/results/190307_calibration.dat";
-  data_output_path = "190307/results/";
+  data_prefix_path = "../Data/190131/results/";
+  calibration_file = "190131/results/190131_calibration.dat";
+  data_output_path = "190131/results/";
   DATA_MPPC_VERSION = "MPPCs_v1";
   DATA_PMT_VERSION = "PMT_v1";
 
@@ -11,18 +11,17 @@
   OUTPUT_MPPCS = "MPPC_";
 
   exp_area.experiments.clear();
-  exp_area.experiments.push_back("190307_Cd_20kV_850V_46V_coll6mm_th430mV");
-  exp_area.experiments.push_back("190307_Cd_18kV_850V_46V_coll6mm_th430mV");
-  exp_area.experiments.push_back("190307_Cd_16kV_850V_46V_coll6mm_th400mV");
-  exp_area.experiments.push_back("190307_Cd_14kV_850V_46V_coll6mm_th350mV");
-  exp_area.experiments.push_back("190307_Bkg_20kV_850V_46V_coll6mm_th430mV");
+  exp_area.experiments.push_back("190131_Cd_20kV_850V_46V_coll_2mm_th1.3V");
+  exp_area.experiments.push_back("190131_Cd_20kV_850V_46V_coll_6mm_th1.3V");
+  exp_area.experiments.push_back("190131_Cd_20kV_850V_46V_coll_2mm_th1.2V"); //!There were issues with PMTs during the experiment! Do not use in calibration
+  exp_area.experiments.push_back("190131_Bkg_20kV_850V_46V_coll_2mm_th1.3V");
   
   PMT_V.clear();
   MPPC_V.clear();
-  dBs.clear();
   channel_info<dB_info> atten0;
   atten0.push(0, dB_info(12)); //decibells, not ratio
   atten0.push(1, dB_info(12));
+  dBs.clear();
   for (auto i = exp_area.experiments.begin(), i_end_ = exp_area.experiments.end(); i != i_end_; ++i) {
 	  PMT_V[*i] = 850;
 	  dBs[*i] = atten0;
@@ -30,11 +29,10 @@
   }
 
   experiment_fields.clear();
-  experiment_fields["190307_Cd_20kV_850V_46V_coll6mm_th430mV"] = 20;
-  experiment_fields["190307_Bkg_20kV_850V_46V_coll6mm_th430mV"] = 20;
-  experiment_fields["190307_Cd_18kV_850V_46V_coll6mm_th430mV"] = 18;
-  experiment_fields["190307_Cd_16kV_850V_46V_coll6mm_th400mV"] = 16;
-  experiment_fields["190307_Cd_14kV_850V_46V_coll6mm_th350mV"] = 14;
+  experiment_fields["190131_Cd_20kV_850V_46V_coll_2mm_th1.3V"] = 20;
+  experiment_fields["190131_Cd_20kV_850V_46V_coll_6mm_th1.3V"] = 20;
+  experiment_fields["190131_Cd_20kV_850V_46V_coll_2mm_th1.2V"] = 20;
+  experiment_fields["190131_Bkg_20kV_850V_46V_coll_2mm_th1.3V"] = 20;
  
   {
     double coeff = (600 / 804.0)*(1.54 / (1.54*1.8 + 1.01*0.4));
@@ -60,5 +58,5 @@
   //end of global parameters
   Initialize();
   //Following variables are required for analysis_history.cpp
-  std::vector<int> calib_channels = {7, 0, 1};
+  std::vector<int> calib_channels = {7, 0, 1, 2, 3, 4, 5};
 }
