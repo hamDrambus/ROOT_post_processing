@@ -128,6 +128,14 @@ void cut_A_S_upper(double A_min, double S_min, double A_max, double S_max, bool 
 void cut_A_S_upper(std::vector<double> region, bool drawn, int channel = -1, std::string _name = "");
 void remcut_A_S_upper(int channel = -1, std::string _name = "");
 
+void cut_x_y_upper(double A_min, double S_min, double A_max, double S_max, bool drawn, std::string _name = "");
+void cut_x_y_upper(std::vector<double> region, bool drawn, std::string _name = "");
+void remcut_x_y_upper(std::string _name = "");
+
+void cut_x_y_lower(double A_min, double S_min, double A_max, double S_max, bool drawn, std::string _name = "");
+void cut_x_y_lower(std::vector<double> region, bool drawn, std::string _name = "");
+void remcut_x_y_lower(std::string _name = "");
+
 #ifdef _COMPLIE_MAIN_
 int main(int argc, char* argv[]) {
 	TestSignalGenerator("test/");

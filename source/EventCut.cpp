@@ -55,6 +55,15 @@ Bool_t EventCut::GetAccept(int run) const
 	return do_accept[run];
 }
 
+std::size_t EventCut::GetRejectedN(void) const
+{
+	std::size_t out = 0;
+	for (std::size_t e = 0, e_end_ = do_accept.size(); e != e_end_; ++e)
+		if (!do_accept[e])
+			++out;
+	return out;
+}
+
 Bool_t EventCut::operator () (std::vector<double> &pars, int run)
 {
 	return ((NULL == value_picker) ? kTRUE : (*value_picker)(pars, run));

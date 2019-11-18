@@ -1,5 +1,14 @@
 {
-	if (false) {
+if (true) {
+	int offset = -2;
+	cut_x_y_lower(25, 0 + offset, 48, 18+ offset, true, "1");
+	cut_x_y_lower(48, 18+ offset, 68, 28+ offset, true, "2");
+	cut_x_y_lower(68, 28+ offset, 103, 54+ offset, true, "3");
+	cut_x_y_lower(103, 54+ offset, 120, 70+ offset, true, "4");
+	cut_x_y_lower(120, 70+ offset, 300, 190+ offset, true, "5");
+	update();
+}
+if (false) {
 	int channel = 59;
 	bool display = true;
 	int aggressiveness = 2;	

@@ -48,6 +48,7 @@ public:
 
 	void SetAccept(int run, Bool_t accept);
 	Bool_t GetAccept(int run) const;
+	std::size_t GetRejectedN(void) const;
 };
 
 #endif

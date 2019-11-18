@@ -918,21 +918,30 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 			std::cout<<"LoopThroughData:Correlation:Error: run size mismatch" << std::endl;
 			break;
 		}
-		std::vector<boost::optional<double> > vals_x(run_size, boost::none), vals_y(run_size, boost::none);
+		//{run_cuts on, run cuts off}->run
+		std::deque<std::vector<boost::optional<double> > > vals_x(2, std::vector<boost::optional<double> >(run_size, boost::none)),
+				vals_y(2, std::vector<boost::optional<double> >(run_size, boost::none));
 
-		correlation_data data_x, data_y;
-		data_x.vals = &vals_x;
+		correlation_data data_x, data_y, data_x_nrc, data_y_nrc; //nrc = no run cuts
+		data_x.vals = &(vals_x[0]);
 		data_x.ch_size = isPMTtype(_x_corr) ? PMT_channels.size() : MPPC_channels.size();
-		data_y.vals = &vals_y;
+		data_y.vals = &(vals_y[0]);
 		data_y.ch_size = isPMTtype(_x_corr) ? PMT_channels.size() : MPPC_channels.size();
+		data_x_nrc.vals = &(vals_x[1]);
+		data_x_nrc.ch_size = isPMTtype(_x_corr) ? PMT_channels.size() : MPPC_channels.size();
+		data_y_nrc.vals = &(vals_y[1]);
+		data_y_nrc.ch_size = isPMTtype(_x_corr) ? PMT_channels.size() : MPPC_channels.size();
 		FunctionWrapper* X_filler = new FunctionWrapper(&data_x);
 		FunctionWrapper* Y_filler = new FunctionWrapper(&data_y);
-		if (!set_correlation_filler(X_filler, _x_corr) || !set_correlation_filler(Y_filler, _y_corr)) {
+		FunctionWrapper* X_filler_nrc = new FunctionWrapper(&data_x_nrc);
+		FunctionWrapper* Y_filler_nrc = new FunctionWrapper(&data_y_nrc);
+		if (!set_correlation_filler(X_filler, _x_corr) || !set_correlation_filler(Y_filler, _y_corr) ||
+				!set_correlation_filler(X_filler_nrc, _x_corr) || !set_correlation_filler(Y_filler_nrc, _y_corr)) {
 			std::cout << "LoopThroughData:Correlation:Error: failed to set fillers" << std::endl;
 			break;
 		}
 		
-		Operation opx, opy;
+		Operation opx, opy, opx_nrc, opy_nrc;
 		opx.operation = X_filler;
 		opx.apply_run_cuts = true;
 		opx.apply_hist_cuts = true;
@@ -941,39 +950,74 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 		opy.apply_run_cuts = true;
 		opy.apply_hist_cuts = true;
 		opy.apply_phys_cuts = false;
+		opx_nrc.operation = X_filler_nrc;
+		opx_nrc.apply_run_cuts = false;
+		opx_nrc.apply_hist_cuts = true;
+		opx_nrc.apply_phys_cuts = false;
+		opy_nrc.operation = Y_filler_nrc;
+		opy_nrc.apply_run_cuts = false;
+		opy_nrc.apply_hist_cuts = true;
+		opy_nrc.apply_phys_cuts = false;
 		std::vector<Operation> vec;
 		vec.push_back(opx);
+		vec.push_back(opx_nrc);
 		LoopThroughData(vec, _x_corr_ch, Correlation_x);
 		vec.clear();
 		vec.push_back(opy);
+		vec.push_back(opy_nrc);
 		LoopThroughData(vec, _y_corr_ch, Correlation_y);
 
-		std::vector<double> vals(2);
+		std::vector<double> vals(2); //{x, y}
+		std::vector<double> vals_nrc(2); //{x, y} for no run cuts
 		for (std::size_t run = 0; run != run_size; ++run) {
-			if (boost::none!= vals_x[run] && boost::none != vals_y[run]) {
-				vals[0] = *(vals_x[run]);
-				vals[1] = *(vals_y[run]);
-				bool failed_run_cut = false;
-				bool failed_hist_cut = false; //normal cuts
-				bool failed_phys_cut = false; //drawn (displayed) cuts only
-				for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
-					if (kFALSE == cut->GetAccept(run)) {
-						failed_run_cut = true;
-						break;
-					}
-				for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
+			bool failed_run_cut = (boost::none == vals_x[0][run] || boost::none == vals_y[0][run]);
+			if (boost::none == vals_x[1][run] || boost::none == vals_y[1][run]) {
+				std::cerr<<"LoopThroughData:Warning! Missing data for run "<<run<<" in Type::Correlation"<<std::endl;
+				continue;
+			}
+			vals_nrc[0] = *(vals_x[1][run]);
+			vals_nrc[1] = *(vals_y[1][run]);
+			if (!failed_run_cut) {
+				vals[0] = *(vals_x[0][run]);
+				vals[1] = *(vals_y[0][run]);
+			}
+			bool failed_hist_cut = false; //normal cuts
+			bool failed_phys_cut = false; //drawn (displayed) cuts only
+			bool failed_hist_cut_nrc = false; //normal cuts
+			bool failed_phys_cut_nrc = false; //drawn (displayed) cuts only
+			for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
+				if (kFALSE == cut->GetAccept(run)) {
+					failed_run_cut = true;
+					break;
+				}
+			for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
+				if (!failed_run_cut) {
 					if (cut->GetAffectingHistogram() && !failed_hist_cut)
 						if (kFALSE == (*cut)(vals, run)) //more expensive than GetAffectingHistogram
 							failed_hist_cut = true;
 					if (!cut->GetAffectingHistogram() && !failed_phys_cut)
 						if (kFALSE == (*cut)(vals, run))
 							failed_phys_cut = true;
-					if (failed_hist_cut && failed_phys_cut)
-						break;
 				}
-				for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
-					if (operations[o].apply_run_cuts && failed_run_cut)
+				if (cut->GetAffectingHistogram() && !failed_hist_cut_nrc)
+					if (kFALSE == (*cut)(vals_nrc, run)) //more expensive than GetAffectingHistogram
+						failed_hist_cut_nrc = true;
+				if (!cut->GetAffectingHistogram() && !failed_phys_cut_nrc)
+					if (kFALSE == (*cut)(vals_nrc, run))
+						failed_phys_cut_nrc = true;
+				if (failed_hist_cut && failed_phys_cut && failed_hist_cut_nrc && failed_phys_cut_nrc)
+					break;
+			}
+			for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
+				if (operations[o].apply_run_cuts && failed_run_cut)
+					continue;
+				if (!operations[o].apply_run_cuts) {
+					if (operations[o].apply_hist_cuts && failed_hist_cut_nrc)
 						continue;
+					if (operations[o].apply_phys_cuts && failed_phys_cut_nrc)
+						continue;
+					(*operations[o].operation)(vals_nrc, run);
+				} else {
 					if (operations[o].apply_hist_cuts && failed_hist_cut)
 						continue;
 					if (operations[o].apply_phys_cuts && failed_phys_cut)
@@ -993,25 +1037,34 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 			int ch_x_ind = channel_to_index(_x_corr_ch, _x_corr);
 			int ch_y_ind = channel_to_index(_y_corr_ch, _y_corr);
 			std::size_t run_size = (isPMTtype(_x_corr) ? data->pmt_peaks[current_exp_index][ch_x_ind].size() : data->mppc_peaks[current_exp_index][ch_x_ind].size());
-			if (run_size != (isPMTtype(_y_corr) ? data->pmt_peaks[current_exp_index][ch_y_ind].size() : data->mppc_peaks[current_exp_index][ch_y_ind].size())) {
-				std::cout << "LoopThroughData:CorrelationAll:Error: run size mismatch" << std::endl;
+			if (run_size !=(isPMTtype(_y_corr) ? data->pmt_peaks[current_exp_index][ch_y_ind].size() : data->mppc_peaks[current_exp_index][ch_y_ind].size())) {
+				std::cout<<"LoopThroughData:Correlation:Error: run size mismatch" << std::endl;
 				break;
 			}
-			std::vector<boost::optional<double> > vals_x(run_size, boost::none), vals_y(run_size, boost::none);
+			//{run_cuts on, run cuts off}->run
+			std::deque<std::vector<boost::optional<double> > > vals_x(2, std::vector<boost::optional<double> >(run_size, boost::none)),
+					vals_y(2, std::vector<boost::optional<double> >(run_size, boost::none));
 
-			correlation_data data_x, data_y;
-			data_x.vals = &vals_x;
+			correlation_data data_x, data_y, data_x_nrc, data_y_nrc; //nrc = no run cuts
+			data_x.vals = &(vals_x[0]);
 			data_x.ch_size = isPMTtype(_x_corr) ? PMT_channels.size() : MPPC_channels.size();
-			data_y.vals = &vals_y;
+			data_y.vals = &(vals_y[0]);
 			data_y.ch_size = isPMTtype(_x_corr) ? PMT_channels.size() : MPPC_channels.size();
+			data_x_nrc.vals = &(vals_x[1]);
+			data_x_nrc.ch_size = isPMTtype(_x_corr) ? PMT_channels.size() : MPPC_channels.size();
+			data_y_nrc.vals = &(vals_y[1]);
+			data_y_nrc.ch_size = isPMTtype(_x_corr) ? PMT_channels.size() : MPPC_channels.size();
 			FunctionWrapper* X_filler = new FunctionWrapper(&data_x);
 			FunctionWrapper* Y_filler = new FunctionWrapper(&data_y);
-			if (!set_correlation_filler(X_filler, _x_corr) || !set_correlation_filler(Y_filler, _y_corr)) {
-				std::cout << "LoopThroughData:CorrelationAll:Error: failed to set fillers" << std::endl;
+			FunctionWrapper* X_filler_nrc = new FunctionWrapper(&data_x_nrc);
+			FunctionWrapper* Y_filler_nrc = new FunctionWrapper(&data_y_nrc);
+			if (!set_correlation_filler(X_filler, _x_corr) || !set_correlation_filler(Y_filler, _y_corr) ||
+					!set_correlation_filler(X_filler_nrc, _x_corr) || !set_correlation_filler(Y_filler_nrc, _y_corr)) {
+				std::cout << "LoopThroughData:Correlation:Error: failed to set fillers" << std::endl;
 				break;
 			}
 
-			Operation opx, opy;
+			Operation opx, opy, opx_nrc, opy_nrc;
 			opx.operation = X_filler;
 			opx.apply_run_cuts = true;
 			opx.apply_hist_cuts = true;
@@ -1020,39 +1073,74 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 			opy.apply_run_cuts = true;
 			opy.apply_hist_cuts = true;
 			opy.apply_phys_cuts = false;
+			opx_nrc.operation = X_filler_nrc;
+			opx_nrc.apply_run_cuts = false;
+			opx_nrc.apply_hist_cuts = true;
+			opx_nrc.apply_phys_cuts = false;
+			opy_nrc.operation = Y_filler_nrc;
+			opy_nrc.apply_run_cuts = false;
+			opy_nrc.apply_hist_cuts = true;
+			opy_nrc.apply_phys_cuts = false;
 			std::vector<Operation> vec;
 			vec.push_back(opx);
+			vec.push_back(opx_nrc);
 			LoopThroughData(vec, _x_corr_ch, Correlation_x);
 			vec.clear();
 			vec.push_back(opy);
+			vec.push_back(opy_nrc);
 			LoopThroughData(vec, _y_corr_ch, Correlation_y);
 
-			std::vector<double> vals(2);
+			std::vector<double> vals(2); //{x, y}
+			std::vector<double> vals_nrc(2); //{x, y} for no run cuts
 			for (std::size_t run = 0; run != run_size; ++run) {
-				if (boost::none != vals_x[run] && boost::none != vals_y[run]) {
-					vals[0] = *(vals_x[run]);
-					vals[1] = *(vals_y[run]);
-					bool failed_run_cut = false;
-					bool failed_hist_cut = false; //normal cuts
-					bool failed_phys_cut = false; //drawn (displayed) cuts only
-					for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
-						if (kFALSE == cut->GetAccept(run)) {
-							failed_run_cut = true;
-							break;
-						}
-					for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
+				bool failed_run_cut = (boost::none == vals_x[0][run] || boost::none == vals_y[0][run]);
+				if (boost::none == vals_x[1][run] || boost::none == vals_y[1][run]) {
+					std::cerr<<"LoopThroughData:Warning! Missing data for run "<<run<<" in Type::Correlation"<<std::endl;
+					continue;
+				}
+				vals_nrc[0] = *(vals_x[1][run]);
+				vals_nrc[1] = *(vals_y[1][run]);
+				if (!failed_run_cut) {
+					vals[0] = *(vals_x[0][run]);
+					vals[1] = *(vals_y[0][run]);
+				}
+				bool failed_hist_cut = false; //normal cuts
+				bool failed_phys_cut = false; //drawn (displayed) cuts only
+				bool failed_hist_cut_nrc = false; //normal cuts
+				bool failed_phys_cut_nrc = false; //drawn (displayed) cuts only
+				for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
+					if (kFALSE == cut->GetAccept(run)) {
+						failed_run_cut = true;
+						break;
+					}
+				for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
+					if (!failed_run_cut) {
 						if (cut->GetAffectingHistogram() && !failed_hist_cut)
 							if (kFALSE == (*cut)(vals, run)) //more expensive than GetAffectingHistogram
 								failed_hist_cut = true;
 						if (!cut->GetAffectingHistogram() && !failed_phys_cut)
 							if (kFALSE == (*cut)(vals, run))
 								failed_phys_cut = true;
-						if (failed_hist_cut && failed_phys_cut)
-							break;
 					}
-					for (std::size_t o = 0, o_end_ = operations.size(); o != o_end_; ++o) {
-						if (operations[o].apply_run_cuts && failed_run_cut)
+					if (cut->GetAffectingHistogram() && !failed_hist_cut_nrc)
+						if (kFALSE == (*cut)(vals_nrc, run)) //more expensive than GetAffectingHistogram
+							failed_hist_cut_nrc = true;
+					if (!cut->GetAffectingHistogram() && !failed_phys_cut_nrc)
+						if (kFALSE == (*cut)(vals_nrc, run))
+							failed_phys_cut_nrc = true;
+					if (failed_hist_cut && failed_phys_cut && failed_hist_cut_nrc && failed_phys_cut_nrc)
+						break;
+				}
+				for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
+					if (operations[o].apply_run_cuts && failed_run_cut)
+						continue;
+					if (!operations[o].apply_run_cuts) {
+						if (operations[o].apply_hist_cuts && failed_hist_cut_nrc)
 							continue;
+						if (operations[o].apply_phys_cuts && failed_phys_cut_nrc)
+							continue;
+						(*operations[o].operation)(vals_nrc, run);
+					} else {
 						if (operations[o].apply_hist_cuts && failed_hist_cut)
 							continue;
 						if (operations[o].apply_phys_cuts && failed_phys_cut)
@@ -2516,9 +2604,9 @@ int PostProcessor::list_run_cuts(void)
 		std::cout << "PostProcessor::list_run_cuts: Error: NULL RunCuts" << std::endl;
 		return 0;
 	}
-	std::cout << "RunCuts [" << RunCuts->size() << "]: ";
+	std::cout << "RunCuts [" << RunCuts->size() << "]: \"name\":number_of_rejected_events |"<<std::endl;
 	for (auto i = RunCuts->begin(), _end_ = RunCuts->end(); i != _end_; ++i)
-		std::cout << (i->GetName()) << ((i == (_end_ - 1)) ? "" : " | ");
+		std::cout << (i->GetName()) <<":"<<i->GetRejectedN() << ((i == (_end_ - 1)) ? "" : " | ");
 	std::cout << std::endl;
 	return RunCuts->size();
 }
@@ -2614,7 +2702,6 @@ void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits 
 	op.apply_hist_cuts = true;
 	op.apply_phys_cuts = true;
 	std::vector<Operation> operations(1, op);
-	std::string exp_str = experiments[current_exp_index];
 	LoopThroughData(operations, current_channel, current_type);
 	Invalidate(invCuts);
 }
@@ -2864,6 +2951,9 @@ void PostProcessor::status(Bool_t full)
 	
 		std::pair<double, double> x_lims = hist_x_limits(), x_drawn_lims = hist_x_limits(true);
 		std::cout << "Current_setups: " << std::hex << setups << std::dec << std::endl;
+		std::cout << "\tEvent number: " << setups->num_of_runs << std::endl;
+		std::cout << "\tNumber of fills: " << setups->num_of_fills << std::endl;
+		std::cout << "\tNumber of drawn fills: " << setups->num_of_drawn_fills << std::endl;
 		std::cout << "\tleft_limit: " << x_lims.first << std::endl;
 		std::cout << "\tright_limit: " << x_lims.second << std::endl;
 		std::cout << "\tleft_drawn_limit: " << x_drawn_lims.first << std::endl;

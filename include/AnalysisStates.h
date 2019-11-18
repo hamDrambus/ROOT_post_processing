@@ -26,11 +26,11 @@ protected:
 	int channel_to_index(int ch, Type type);
 
 	void loop_channels_reset(void);
-	bool loop_channels (Type type, int &ch, int &ch_ind);
 	int ch_ind_loop;
 	Type type_loop;
 	std::deque<int> channel_list(Type type) const;
 public:
+	bool loop_channels (Type type, int &ch, int &ch_ind);
 	Type _x_corr;
 	Type _y_corr;
 	int _x_corr_ch;
