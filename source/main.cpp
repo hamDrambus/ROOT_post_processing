@@ -23,7 +23,7 @@ void GenTest(std::string prefix)
 void ch(int ch)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	if (post_processor->isMultichannel(post_processor->current_type)) {
@@ -54,7 +54,7 @@ void ch(int ch)
 void ty(AStates::Type to_type)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->GotoT(to_type);
@@ -63,7 +63,7 @@ void ty(AStates::Type to_type)
 void nex(void) //next experiment
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->NextExp();
@@ -72,7 +72,7 @@ void nex(void) //next experiment
 void pex(void) //previous experiment
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->PrevExp();
@@ -81,7 +81,7 @@ void pex(void) //previous experiment
 void nch(void)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->NextCh();
@@ -90,7 +90,7 @@ void nch(void)
 void pch(void) //previous channel;
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->PrevCh();
@@ -99,7 +99,7 @@ void pch(void) //previous channel;
 void update(void)
 {
 	if (NULL == post_processor) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->update();
@@ -108,7 +108,7 @@ void update(void)
 void saveas(std::string path) //"" - use default path: "Data/results/{PMT_v1|MPPC_v1}/experiment/{PMT_|MPPC_}ch/{pic&data}
 {
 	if (NULL == post_processor) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->saveAs(path);
@@ -117,18 +117,13 @@ void saveas(std::string path) //"" - use default path: "Data/results/{PMT_v1|MPP
 void calib_status(Bool_t uncalibrated_only)
 {
 	if (NULL == post_processor) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->calibr_info.status(!uncalibrated_only);
 }
 
 void status(Bool_t full) //displays current state
-{
-	state(full);
-}
-
-void state(Bool_t full) //same as status(Bool_t)
 {
 	if (NULL == manager) {
 		std::cout << "run Initialize() first" << std::endl;
@@ -148,7 +143,7 @@ void state(Bool_t full) //same as status(Bool_t)
 void set_fit_gauss(int N)
 {
 	if (NULL == post_processor) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->set_fit_gauss(N);
@@ -157,7 +152,7 @@ void set_fit_gauss(int N)
 void set_parameter_val(int index, double val)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->set_parameter_val(index, val);
@@ -166,7 +161,7 @@ void set_parameter_val(int index, double val)
 void set_parameter_limits(int index, double left, double right)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->set_parameter_limits(index, left, right);
@@ -175,7 +170,7 @@ void set_parameter_limits(int index, double left, double right)
 void do_fit(bool is_on) //always updates visuals
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->do_fit(is_on);
@@ -184,7 +179,7 @@ void do_fit(bool is_on) //always updates visuals
 void set_trigger_shaping(double val) //in microseconds
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->set_time_window(val);
@@ -193,16 +188,34 @@ void set_trigger_shaping(double val) //in microseconds
 double get_trigger_shaping(void) //in microseconds
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return 0;
 	}
 	return post_processor->get_time_window();
 }
 
+bool unset_trigger_offsets(void)
+{
+	if (NULL == g_data) {
+		status(kFALSE);
+		return false;
+	}
+	return post_processor->unset_trigger_offsets();
+}
+
+bool set_trigger_offsets(double extra_offset)  //uses trigger type histogram only. extra_offset is in microseconds
+{
+	if (NULL == g_data) {
+		status(kFALSE);
+		return false;
+	}
+	return post_processor->set_trigger_offsets(extra_offset);
+}
+
 void set_bins(int n)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->set_N_bins(n);
@@ -211,7 +224,7 @@ void set_bins(int n)
 void set_bins(int from, int to)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->set_N_bins(from, to);
@@ -220,7 +233,7 @@ void set_bins(int from, int to)
 void set_zoom (double xl, double xr)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->set_zoom(xl, xr);
@@ -229,7 +242,7 @@ void set_zoom (double xl, double xr)
 void set_zoom_y (double yl, double yr)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->set_zoom_y(yl, yr);
@@ -238,7 +251,7 @@ void set_zoom_y (double yl, double yr)
 void set_zoom (double xl, double xr, double yl, double yr)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->set_zoom(xl, xr, yl, yr);
@@ -247,7 +260,7 @@ void set_zoom (double xl, double xr, double yl, double yr)
 void unset_zoom(void)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->unset_zoom();
@@ -257,7 +270,7 @@ void next_canvas(void) //creates new canvas or goes to the next existing. The cu
 //Have independent cuts but the new one inherits the previous ones
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->next_canvas();
@@ -266,7 +279,7 @@ void next_canvas(void) //creates new canvas or goes to the next existing. The cu
 void prev_canvas(void)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->previous_canvas();
@@ -275,7 +288,7 @@ void prev_canvas(void)
 void set_corr (AStates::Type x_t, AStates::Type y_t, int chx, int chy)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->SetCorrelation(x_t, y_t, chx, chy);
@@ -288,7 +301,7 @@ void add_hist_cut(FunctionWrapper *picker, std::string name, int ch, bool draw)
 //^In case "name" is present in existing cut list the old cut is replaced.
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->add_hist_cut(picker, name, ch, !draw);
@@ -298,7 +311,7 @@ void add_hist_cut(FunctionWrapper *picker, std::string name, bool draw)
 //same as above but ch is set automatically if possible.
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->add_hist_cut(picker, name, !draw);
@@ -307,7 +320,7 @@ void add_hist_cut(FunctionWrapper *picker, std::string name, bool draw)
 int list_hist_cuts (void)//returns number of cuts
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return 0;
 	}
 	return post_processor->list_hist_cuts();
@@ -317,7 +330,7 @@ void remove_hist_cut(int index)
 //if index is larger than number of cuts the last cut is removed (popped)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->remove_hist_cut(index);
@@ -326,7 +339,7 @@ void remove_hist_cut(int index)
 void remove_hist_cut(std::string name, int ch)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->remove_hist_cut(name, ch);
@@ -335,7 +348,7 @@ void remove_hist_cut(std::string name, int ch)
 void remove_hist_cut(std::string name) //same as above but for each channel possible
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->remove_hist_cut(name);
@@ -347,7 +360,7 @@ void set_as_run_cut(std::string name)
 //^In general such cuts are useless so the implementation of this case in not important.
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->set_as_run_cut(name);
@@ -356,7 +369,7 @@ void set_as_run_cut(std::string name)
 int list_run_cuts (void) //returns number of cuts
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return 0;
 	}
 	return post_processor->list_run_cuts();
@@ -365,7 +378,7 @@ int list_run_cuts (void) //returns number of cuts
 void unset_as_run_cut(std::string name)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->unset_as_run_cut(name);
@@ -374,7 +387,7 @@ void unset_as_run_cut(std::string name)
 void print_accepted_events (std::string file, int run_offset, int sub_runs)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->print_accepted_events(file, run_offset, sub_runs);
@@ -383,7 +396,7 @@ void print_accepted_events (std::string file, int run_offset, int sub_runs)
 void clear(void)	//clear cuts for current histogram. Run cuts derived from it are not touched
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->clear();
@@ -392,7 +405,7 @@ void clear(void)	//clear cuts for current histogram. Run cuts derived from it ar
 void clearAll(void) //clear everything, return to initial state (leaves all existing histograms empty)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->clearAll();
@@ -402,7 +415,7 @@ void clearAll(void) //clear everything, return to initial state (leaves all exis
 void draw_Npe(void)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->plot_N_pe(post_processor->current_channel, gr_manager);
@@ -411,7 +424,7 @@ void draw_Npe(void)
 void add_1peS(void)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	CalibrationInfo::S1pe_method prev_method = post_processor->calibr_info.get_method(post_processor->current_channel, post_processor->current_exp_index);
@@ -425,7 +438,7 @@ void add_1peS(void)
 void add_2peS(void)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	CalibrationInfo::S1pe_method prev_method = post_processor->calibr_info.get_method(post_processor->current_channel, post_processor->current_exp_index);
@@ -439,7 +452,7 @@ void add_2peS(void)
 void rem_1peS(void)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	CalibrationInfo::S1pe_method prev_method = post_processor->calibr_info.get_method(post_processor->current_channel, post_processor->current_exp_index);
@@ -453,7 +466,7 @@ void rem_1peS(void)
 void rem_2peS(void)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	CalibrationInfo::S1pe_method prev_method = post_processor->calibr_info.get_method(post_processor->current_channel, post_processor->current_exp_index);
@@ -467,7 +480,7 @@ void rem_2peS(void)
 void set_1peS(double val)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	if (post_processor->isMultichannel(post_processor->current_type)) {
@@ -493,7 +506,7 @@ void set_1peS(double val)
 void unset_1peS(void)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	if (post_processor->isMultichannel(post_processor->current_type)) {
@@ -519,7 +532,7 @@ void unset_1peS(void)
 void set_use_mean(Bool_t do_use) //uses mean value of data instead of gauss' mean. May be usefull for S2_S
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	CalibrationInfo::S1pe_method prev_method = post_processor->calibr_info.get_method(post_processor->current_channel, post_processor->current_exp_index);
@@ -534,7 +547,7 @@ void set_use_mean(Bool_t do_use) //uses mean value of data instead of gauss' mea
 void calib_load(std::string fname) //if fname=="" uses file location from global parameters
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	if (fname == "")
@@ -545,7 +558,7 @@ void calib_load(std::string fname) //if fname=="" uses file location from global
 void calib_save(std::string fname)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	if (fname == "")
@@ -557,7 +570,7 @@ void calib_save(std::string fname)
 void set_calib_N(int from, int to)//in order to set default use invalid values
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->calibr_info.set_N_calib(post_processor->current_channel, from, to);
@@ -567,7 +580,7 @@ void set_calib_N(int from, int to)//in order to set default use invalid values
 void Exit(Bool_t save)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	if (save)
@@ -686,7 +699,7 @@ FunctionWrapper* create_vertical_lines_cut(double left, double right) //do not c
 void set_limits(double left, double right) //2 tier method
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	std::string name = "_histogram_limits_";
@@ -710,7 +723,7 @@ void set_limits(double left, double right) //2 tier method
 void draw_limits(double left, double right) //2 tier method
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	std::string name = "_histogram_drawn_limits_";
@@ -734,7 +747,7 @@ void draw_limits(double left, double right) //2 tier method
 void unset_limits(void) //2 tier method
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	std::string name = "_histogram_limits_";
@@ -745,7 +758,7 @@ void unset_limits(void) //2 tier method
 void unset_draw_limits(void) //2 tier method
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	std::string name = "_histogram_drawn_limits_";
@@ -856,7 +869,7 @@ void cut_S_t_rect_exclude(double t_min, double t_max, double S_min, double S_max
 void cut_S_t_rect_exclude(std::vector<double> region, bool drawn, int channel, std::string _name)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	if (-1 == channel) {
@@ -880,7 +893,7 @@ void cut_S_t_rect_exclude(std::vector<double> region, bool drawn, int channel, s
 void remcut_S_t_rect_exclude(int channel, std::string _name)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	if (-1 == channel) {
@@ -998,7 +1011,7 @@ void cut_S_t_rect_select(double t_min, double t_max, double S_min, double S_max,
 void cut_S_t_rect_select(std::vector<double> region, bool drawn, int channel, std::string _name)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	if (-1 == channel) {
@@ -1022,7 +1035,7 @@ void cut_S_t_rect_select(std::vector<double> region, bool drawn, int channel, st
 void remcut_S_t_rect_select(int channel, std::string _name)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	if (-1 == channel) {
@@ -1140,7 +1153,7 @@ void cut_A_S_rect_exclude(double A_min, double A_max, double S_min, double S_max
 void cut_A_S_rect_exclude(std::vector<double> region, bool drawn, int channel, std::string _name)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	if (-1 == channel) {
@@ -1164,7 +1177,7 @@ void cut_A_S_rect_exclude(std::vector<double> region, bool drawn, int channel, s
 void remcut_A_S_rect_exclude(int channel, std::string _name)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	if (-1 == channel) {
@@ -1183,7 +1196,7 @@ void remcut_A_S_rect_exclude(int channel, std::string _name)
 void remcut(int channel, std::string name)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	if (-1 == channel) {
@@ -1226,7 +1239,7 @@ void remcut_t(int channel, std::string _name)
 void off_ch(int ch)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	if (!post_processor->isMultichannel(post_processor->current_type)) {
@@ -1239,7 +1252,7 @@ void off_ch(int ch)
 void on_ch(int ch)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->on_ch(ch);
@@ -1456,7 +1469,7 @@ FunctionWrapper* create_A_S_upper_cut(std::vector<double> region) //do not call 
 void cut_A_S_fast_PMT(std::vector<double> region, bool drawn, int channel, std::string _name)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	if (-1 == channel) {
@@ -1491,7 +1504,7 @@ void cut_A_S_upper(double A_min, double S_min, double A_max, double S_max, bool 
 void cut_A_S_upper(std::vector<double> region, bool drawn, int channel, std::string _name)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	if (-1 == channel) {
@@ -1645,7 +1658,7 @@ void cut_x_y_upper(double A_min, double S_min, double A_max, double S_max, bool 
 void cut_x_y_upper(std::vector<double> region, bool drawn, std::string _name)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	FunctionWrapper *picker = create_x_y_upper_cut(region);
@@ -1670,7 +1683,7 @@ void cut_x_y_upper(std::vector<double> region, bool drawn, std::string _name)
 void remcut_x_y_upper(std::string _name)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->remove_hist_cut(_name);
@@ -1691,7 +1704,7 @@ void cut_x_y_lower(double A_min, double S_min, double A_max, double S_max, bool 
 void cut_x_y_lower(std::vector<double> region, bool drawn, std::string _name)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	FunctionWrapper *picker = create_x_y_lower_cut(region);
@@ -1716,7 +1729,7 @@ void cut_x_y_lower(std::vector<double> region, bool drawn, std::string _name)
 void remcut_x_y_lower(std::string _name)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	post_processor->remove_hist_cut(_name);
@@ -1727,7 +1740,7 @@ void remcut_x_y_lower(std::string _name)
 void remcut_A_S_fast_PMT(int channel, std::string _name)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	if (-1 == channel) {
@@ -1746,7 +1759,7 @@ void remcut_A_S_fast_PMT(int channel, std::string _name)
 void remcut_A_S_upper(int channel, std::string _name)
 {
 	if (NULL == g_data) {
-		state(kFALSE);
+		status(kFALSE);
 		return;
 	}
 	if (-1 == channel) {

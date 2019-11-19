@@ -383,11 +383,11 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 				bool failed_phys_cut = false; //drawn (displayed) cuts only
 				cut_data[0] = (*peaks)[ch_ind][run][pk].S;
 				cut_data[1] = (*peaks)[ch_ind][run][pk].A;
-				cut_data[2] = (*peaks)[ch_ind][run][pk].left;
-				cut_data[3] = (*peaks)[ch_ind][run][pk].right;
+				cut_data[2] = (*peaks)[ch_ind][run][pk].left + data->trigger_offset[current_exp_index][run];
+				cut_data[3] = (*peaks)[ch_ind][run][pk].right + data->trigger_offset[current_exp_index][run];
 				cut_data[4] =
 #ifdef PEAK_AVR_TIME
-						(*peaks)[ch_ind][run][pk].t;
+						(*peaks)[ch_ind][run][pk].t + data->trigger_offset[current_exp_index][run];
 #else
 							0.5*(cut_data[3]+cut_data[2]);
 #endif
@@ -463,11 +463,11 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 					bool failed_phys_cut = false; //drawn (displayed) cuts only
 					cut_data[0] = (*peaks)[chan_ind][run][pk].S;
 					cut_data[1] = (*peaks)[chan_ind][run][pk].A;
-					cut_data[2] = (*peaks)[chan_ind][run][pk].left;
-					cut_data[3] = (*peaks)[chan_ind][run][pk].right;
+					cut_data[2] = (*peaks)[chan_ind][run][pk].left + data->trigger_offset[current_exp_index][run];
+					cut_data[3] = (*peaks)[chan_ind][run][pk].right + data->trigger_offset[current_exp_index][run];
 					cut_data[4] =
 #ifdef PEAK_AVR_TIME
-							(*peaks)[chan_ind][run][pk].t;
+							(*peaks)[chan_ind][run][pk].t + data->trigger_offset[current_exp_index][run];
 #else
 							0.5*(cut_data[3]+cut_data[2]);
 #endif
@@ -555,11 +555,11 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 					bool failed_phys_cut = false; //drawn (displayed) cuts only
 					cut_data[0] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].S;
 					cut_data[1] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].A;
-					cut_data[2] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].left;
-					cut_data[3] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].right;
+					cut_data[2] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].left + data->trigger_offset[current_exp_index][run];
+					cut_data[3] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].right + data->trigger_offset[current_exp_index][run];
 					cut_data[4] =
 #ifdef PEAK_AVR_TIME
-							data->mppc_peaks[current_exp_index][chan_ind][run][pk].t;
+							data->mppc_peaks[current_exp_index][chan_ind][run][pk].t + data->trigger_offset[current_exp_index][run];
 #else
 							0.5*(cut_data[3]+cut_data[2]);
 #endif
@@ -607,11 +607,11 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 				bool failed_phys_cut = false; //drawn (displayed) cuts only
 				cut_data[0] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].S;
 				cut_data[1] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].A;
-				cut_data[2] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].left;
-				cut_data[3] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].right;
+				cut_data[2] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].left + data->trigger_offset[current_exp_index][run];
+				cut_data[3] = data->mppc_peaks[current_exp_index][ch_ind][run][pk].right + data->trigger_offset[current_exp_index][run];
 				cut_data[4] =
 #ifdef PEAK_AVR_TIME
-							data->mppc_peaks[current_exp_index][ch_ind][run][pk].t;
+							data->mppc_peaks[current_exp_index][ch_ind][run][pk].t + data->trigger_offset[current_exp_index][run];
 #else
 							0.5*(cut_data[3]+cut_data[2]);
 #endif
@@ -696,11 +696,11 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 				bool failed_phys_cut = false; //drawn (displayed) cuts only
 				cut_data[0] = data->pmt_peaks[current_exp_index][ch_ind][run][pk].S;
 				cut_data[1] = data->pmt_peaks[current_exp_index][ch_ind][run][pk].A;
-				cut_data[2] = data->pmt_peaks[current_exp_index][ch_ind][run][pk].left;
-				cut_data[3] = data->pmt_peaks[current_exp_index][ch_ind][run][pk].right;
+				cut_data[2] = data->pmt_peaks[current_exp_index][ch_ind][run][pk].left + data->trigger_offset[current_exp_index][run];
+				cut_data[3] = data->pmt_peaks[current_exp_index][ch_ind][run][pk].right + data->trigger_offset[current_exp_index][run];
 				cut_data[4] =
 #ifdef PEAK_AVR_TIME
-							data->pmt_peaks[current_exp_index][ch_ind][run][pk].t;
+							data->pmt_peaks[current_exp_index][ch_ind][run][pk].t + data->trigger_offset[current_exp_index][run];
 #else
 							0.5*(cut_data[3]+cut_data[2]);
 #endif
@@ -841,11 +841,11 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 					bool failed_phys_cut = false; //drawn (displayed) cuts only
 					cut_data[0] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].S;
 					cut_data[1] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].A;
-					cut_data[2] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].left;
-					cut_data[3] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].right;
+					cut_data[2] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].left + data->trigger_offset[current_exp_index][run];
+					cut_data[3] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].right + data->trigger_offset[current_exp_index][run];
 					cut_data[4] =
 #ifdef PEAK_AVR_TIME
-							data->mppc_peaks[current_exp_index][chan_ind][run][pk].t;
+							data->mppc_peaks[current_exp_index][chan_ind][run][pk].t + data->trigger_offset[current_exp_index][run];
 #else
 							0.5*(cut_data[3]+cut_data[2]);
 #endif
@@ -972,11 +972,11 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 					bool failed_phys_cut = false; //drawn (displayed) cuts only
 					cut_data[0] = (*peaks)[chan_ind][run][pk].S;
 					cut_data[1] = (*peaks)[chan_ind][run][pk].A;
-					cut_data[2] = (*peaks)[chan_ind][run][pk].left;
-					cut_data[3] = (*peaks)[chan_ind][run][pk].right;
+					cut_data[2] = (*peaks)[chan_ind][run][pk].left + data->trigger_offset[current_exp_index][run];
+					cut_data[3] = (*peaks)[chan_ind][run][pk].right + data->trigger_offset[current_exp_index][run];
 					cut_data[4] =
 #ifdef PEAK_AVR_TIME
-							(*peaks)[chan_ind][run][pk].t;
+							(*peaks)[chan_ind][run][pk].t + data->trigger_offset[current_exp_index][run];
 #else
 							0.5*(cut_data[3]+cut_data[2]);
 #endif
@@ -1319,11 +1319,11 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 					bool failed_phys_cut = false; //drawn (displayed) cuts only
 					cut_data[0] = (*peaks)[chan_ind][run][pk].S;
 					cut_data[1] = (*peaks)[chan_ind][run][pk].A;
-					cut_data[2] = (*peaks)[chan_ind][run][pk].left;
-					cut_data[3] = (*peaks)[chan_ind][run][pk].right;
+					cut_data[2] = (*peaks)[chan_ind][run][pk].left + data->trigger_offset[current_exp_index][run];
+					cut_data[3] = (*peaks)[chan_ind][run][pk].right + data->trigger_offset[current_exp_index][run];
 					cut_data[4] =
 #ifdef PEAK_AVR_TIME
-							(*peaks)[chan_ind][run][pk].t;
+							(*peaks)[chan_ind][run][pk].t + data->trigger_offset[current_exp_index][run];
 #else
 							0.5*(cut_data[3]+cut_data[2]);
 #endif
@@ -3014,6 +3014,53 @@ double PostProcessor::get_time_window(void) const
 	if (NULL==curr_hist)
 		return 0;
 	return curr_hist->time_window;
+}
+
+bool PostProcessor::unset_trigger_offsets(void)
+{
+	for (auto ev = data->trigger_offset[current_exp_index].begin(), ev_end_ = data->trigger_offset[current_exp_index].end(); ev != ev_end_; ++ev)
+		(*ev) = 0;
+	return true;
+}
+
+bool PostProcessor::set_trigger_offsets(double extra_offset) //uses trigger type histogram only
+{
+	if (!isValid()) {
+		std::cout << "Wrong input data: no channels or experiments from AnalysisManager" << std::endl;
+		return false;
+	}
+	if (!isTrigger(current_type)) {
+		std::cerr << "PostProcessor::set_trigger_offsets:Error: Can't calculate trigger adjustment for not trigger type histogram (" << type_name(current_type) << ")" << std::endl;
+		return false;
+	}
+	unset_trigger_offsets();
+	struct temp_data {
+		std::vector<double>* offsets;
+		double extra_offset;
+	} offset_data;
+	offset_data.offsets = &(data->trigger_offset[current_exp_index]);
+	offset_data.extra_offset = extra_offset;
+	FunctionWrapper offset_setter(&offset_data);
+	offset_setter.SetFunction([](std::vector<double> &pars, int run, void *data) {
+		if (pars[0] != DBL_MAX && pars[0] != -DBL_MAX)
+			(*((temp_data*)data)->offsets)[run] = ((temp_data*)data)->extra_offset + pars[0];
+		return true;
+	});
+	Operation op;
+	op.operation = &offset_setter;
+	op.apply_run_cuts = false;
+	op.apply_hist_cuts = true; //If there are cuts applied to the top level of the trigger histogram (-1 ch) then for events thrown away trigger offset won't be calculated!
+	//For example '> ty(AStates::PMT_trigger_bNpe); noise_cut(8, 0, 0); set_limits(20, 40);' will mean that only events identified to be in 20-40 us will be adjusted.
+	//And apply_hist_cuts must be set to true because 'noise_cut(8, 0, 0);' is required. Conclusion: care must be taken with cuts and set_trigger_offsets().
+	//This is true in general for so-called composite channels, when high-level (per event) loop includes low-level ones (per peak and/or per channel).
+	//Possible way to settle this issue: separate applicability of cuts for low-level and hight-level (virtual = -1) channels. TODO: actually low-level 
+	//cuts should always be applyed regardless of apply_hist_cuts. And drawn cuts should be absent (impossible to set) for this case.
+	op.apply_phys_cuts = false;
+	std::vector<Operation> operations(1, op);
+	LoopThroughData(operations, current_channel, current_type);
+	Invalidate(invAll);
+	update();
+	return true;
 }
 
 void PostProcessor::set_fit_gauss(int N)

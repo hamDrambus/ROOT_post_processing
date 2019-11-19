@@ -6,7 +6,6 @@ AllRunsResults::AllRunsResults(/*ParameterPile::*/experiment_area experiment)
 	N_of_runs = 0;
 	Iteration_N = 0;
 	for (auto ex = _exp.experiments.begin(); ex != _exp.experiments.end(); ++ex) {
-		int mppc_ch = 0;
 		for (int ch = _exp.channels.get_next_index(); ch != -1; ch = _exp.channels.get_next_index()){
 			std::string prefix_pmt = data_prefix_path + DATA_PMT_VERSION + "/PMT_" + *ex + "/PMT_"+std::to_string(ch)+"/PMT_"+std::to_string(ch)+"_";
 			std::string prefix_mppc = data_prefix_path+"/"+DATA_MPPC_VERSION + "/MPPCs_" + *ex + "/MPPC_" + std::to_string(ch) + "/MPPC_" + std::to_string(ch) + "_";
@@ -23,6 +22,17 @@ AllRunsResults::AllRunsResults(/*ParameterPile::*/experiment_area experiment)
 				} else {
 					if (pmt_S2_integral.back().empty()) { //In order to not change post processing program, fill array with dummy values.
 						pmt_S2_integral.back().resize(pmt_peaks.back().size(), -1);
+					}
+					if (N_of_runs == 0) {
+						N_of_runs = pmt_peaks.back().size();
+					} else {
+						if (N_of_runs != pmt_peaks.back().size()) {
+							std::cout << "Event number mismatch for channel " << ch << "! It has " << pmt_peaks.back().size() << " events instead of expected " << N_of_runs << std::endl;
+							pmt_channels.pop_back();
+							pmt_peaks.pop_back();
+							pmt_S2_integral.pop_back();
+							continue;
+						}
 					}
 					std::cout << "Loaded channel " << ch << std::endl;
 					continue;
@@ -41,9 +51,25 @@ AllRunsResults::AllRunsResults(/*ParameterPile::*/experiment_area experiment)
 					mppc_Double_Is.pop_back();
 					mppc_channels.pop_back();
 				} else {
-					++mppc_ch;
+					if (N_of_runs == 0) {
+						N_of_runs = mppc_peaks.back().size();
+					} else {
+						if (N_of_runs != mppc_peaks.back().size()) {
+							std::cout << "Event number mismatch for channel " << ch << "! It has " << mppc_peaks.back().size() << " events instead of expected " << N_of_runs << std::endl;
+							mppc_peaks.pop_back();
+							mppc_Double_Is.pop_back();
+							mppc_channels.pop_back();
+							continue;
+						}
+						if (N_of_runs != mppc_Double_Is.back().size()) {
+							std::cout << "Event number mismatch for channel " << ch << "! peaks have " << N_of_runs << " events and double intgral has " << mppc_Double_Is.back().size() << std::endl;
+							mppc_peaks.pop_back();
+							mppc_Double_Is.pop_back();
+							mppc_channels.pop_back();
+							continue;
+						}
+					}
 					std::cout << "Loaded channel " << ch << std::endl;
-					N_of_runs = std::max(N_of_runs, (int)std::max(mppc_Double_Is.back().size(), mppc_peaks.back().size()));
 				}
 			}
 		}

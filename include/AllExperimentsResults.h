@@ -28,6 +28,8 @@ public:
 	std::deque<int> pmt_channels;
 	/*ParameterPile::*/experiment_area exp_area;
 protected:
+	//experiment->run:
+	std::deque<std::vector<double> > trigger_offset;
 	//experiment->channel:
 	std::deque<std::deque<double> > N_pe_direct;
 	std::deque<std::deque<double> > N_pe_Double_I;

@@ -13,7 +13,7 @@ class TestSignalGenerator;
 class AllRunsResults
 {
 protected:
-	int N_of_runs;
+	std::size_t N_of_runs;
 	int Iteration_N;
 	/*ParameterPile::*/experiment_area _exp;
 	std::vector<bool> _valid; //per run

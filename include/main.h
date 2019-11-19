@@ -36,7 +36,6 @@ void pch(void); 	//previous channel;
 void update(void);
 void saveas(std::string path = "");	//"" - use default path: "Data/results/{PMT_v1|MPPC_v1}/experiment/{PMT_|MPPC_}ch/{pic&data}
 void status(Bool_t full = false);	//displays current state
-void state(Bool_t full); 			//same as ^
 void set_fit_gauss(int N);
 void set_parameter_val(int index, double val);
 void set_parameter_limits(int index, double left, double right);
@@ -44,6 +43,8 @@ void do_fit(bool is_on);	//always updates visuals
 
 void set_trigger_shaping(double val); //in microseconds
 double get_trigger_shaping(void); //in microseconds
+bool unset_trigger_offsets(void);
+bool set_trigger_offsets(double extra_offset); //uses trigger type histogram only. extra_offset is in microseconds
 
 void set_bins(int n);
 void set_bins(int from, int to); //simultaneous set_bins and set_zoom for discrete distributions

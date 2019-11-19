@@ -65,6 +65,7 @@ void AllExperimentsResults::processAllExperiments(std::deque<AllRunsResults> &al
 		N_pe_direct.push_back(std::deque<double>());
 		N_pe_Double_I.push_back(std::deque<double>());
 		N_pe_result.push_back(std::deque<double>());
+		trigger_offset.push_back(std::vector<double>(i->N_of_runs, 0));
 		N_pe_PMT3.push_back(0);
 		N_pe_PMT1.push_back(0);
 		for (auto ff = mppc_channels.begin(); ff != mppc_channels.end(); ++ff){
