@@ -130,6 +130,8 @@ public:
 	void set_zoom_y (double yl, double yr);
 	void set_zoom (double xl, double xr, double yl, double yr);
 	void unset_zoom(bool do_update = true);
+	bool set_X_title(std::string text);
+	bool set_Y_title(std::string text);
 
 	//Trigger adjustment related:
 	bool set_time_window(double val);

@@ -266,6 +266,24 @@ void unset_zoom(void)
 	post_processor->unset_zoom();
 }
 
+void set_X_title(std::string text)
+{
+	if (NULL == g_data) {
+		status(kFALSE);
+		return;
+	}
+	post_processor->set_X_title(text);
+}
+
+void set_Y_title(std::string text)
+{
+	if (NULL == g_data) {
+		status(kFALSE);
+		return;
+	}
+	post_processor->set_Y_title(text);
+}
+
 void next_canvas(void) //creates new canvas or goes to the next existing. The current one will stay unchanged.
 //Have independent cuts but the new one inherits the previous ones
 {

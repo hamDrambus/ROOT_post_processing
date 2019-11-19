@@ -2047,12 +2047,18 @@ bool PostProcessor::update(void)
 	if (NULL!=canvas) {
 		if (isTH1Dhist(current_type)) {
 			TH1D* hist = get_current_hist1();
-			if (hist)
+			if (hist) {
+				hist->GetXaxis()->SetTitle(setups->x_axis_title.c_str());
+				hist->GetYaxis()->SetTitle(setups->y_axis_title.c_str());
 				hist->Draw("hist");
-		} else {
+			}
+		} else { 
 			TH2D* hist = get_current_hist2();
-			if (hist)
+			if (hist) {
+				hist->GetXaxis()->SetTitle(setups->x_axis_title.c_str());
+				hist->GetYaxis()->SetTitle(setups->y_axis_title.c_str());
 				hist->Draw("colz"/*"lego"*/);
+			}
 		}
 		canvas->Update(); //required for updates axes which are used in drawing cuts
 		TF1* ff = get_current_fit_function();
@@ -2985,6 +2991,26 @@ void PostProcessor::unset_zoom(bool do_update)
 	CanvasSetups::unset_zoom();
 	if (do_update)
 		update();
+}
+
+bool PostProcessor::set_X_title(std::string text)
+{
+	HistogramSetups* curr_hist = get_hist_setups();
+	if (NULL == curr_hist)
+		return false;
+	curr_hist->x_axis_title = text;
+	update();
+	return true;
+}
+
+bool PostProcessor::set_Y_title(std::string text)
+{
+	HistogramSetups* curr_hist = get_hist_setups();
+	if (NULL == curr_hist)
+		return false;
+	curr_hist->y_axis_title = text;
+	update();
+	return true;
 }
 
 bool PostProcessor::set_time_window(double val)

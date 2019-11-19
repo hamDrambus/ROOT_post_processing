@@ -22,9 +22,11 @@ public:
 	Bool_t use_fit;
 	//Following values represent status, not input parameters
 	Bool_t fitted;
+	std::string x_axis_title, y_axis_title;
 	Bool_t is_valid_fit_function;
 	Bool_t use_default_setups;
 	double time_window; //for trigger adjustment algorithm
+
 #ifndef __ROOTCLING__
 	//1st tier parameters of distribution: (stored in order to minimize calls of LoopThroughData to recalculate them)
 	boost::optional<std::size_t> num_of_runs;

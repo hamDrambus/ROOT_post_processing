@@ -51,6 +51,8 @@ void set_bins(int from, int to); //simultaneous set_bins and set_zoom for discre
 void set_zoom (double xl, double xr);
 void set_zoom_y (double yl, double yr);
 void set_zoom (double xl, double xr, double yl, double yr);
+void set_X_title(std::string text);
+void set_Y_title(std::string text);
 void unset_zoom(void);
 void next_canvas(void); //creates new canvas or goes to the next existing. The current one will stay unchanged.
 //Have independent cuts but the new one inherits the previous ones

@@ -38,6 +38,7 @@
 #include <TApplication.h>
 #include <TRint.h>
 #include <TCanvas.h>
+#include <TFrame.h>
 #include <TGraph.h>
 #include <Rtypes.h>
 #include <TVector.h>
