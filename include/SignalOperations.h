@@ -83,6 +83,8 @@ namespace SignalOperations
 	double RMS(std::vector<double>::iterator first, std::vector<double>::iterator last);
 	/*double Mean(std::deque<std::deque<peak>>::iterator first, std::deque<std::deque<peak>>::iterator last, std::function<double(peak& pk)> &value_picker);
 	double RMS(std::deque<std::deque<peak>>::iterator first, std::deque<std::deque<peak>>::iterator last, std::function<double(peak& pk)> &value_picker);*/
+
+	double find_trigger(std::deque<peak_processed> &peaks, double time_window, bool use_Npes);
 };
 
 #endif

@@ -326,4 +326,17 @@ public:
 	peak();
 };
 
+class peak_processed
+{
+public:
+	double S; //Area
+	double A; //Amplitude (from baseline)
+	double left;
+	double right;
+	double t;
+	int Npe;
+	peak_processed(const double& iS, const double& iA, const double& ileft, const double& iright, const double& it, const int& iNpe);
+	peak_processed(const peak& pk, const int& iNpe);
+};
+
 #endif

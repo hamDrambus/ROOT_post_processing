@@ -181,6 +181,24 @@ void do_fit(bool is_on) //always updates visuals
 	post_processor->do_fit(is_on);
 }
 
+void set_trigger_shaping(double val) //in microseconds
+{
+	if (NULL == g_data) {
+		state(kFALSE);
+		return;
+	}
+	post_processor->set_time_window(val);
+}
+
+double get_trigger_shaping(void) //in microseconds
+{
+	if (NULL == g_data) {
+		state(kFALSE);
+		return 0;
+	}
+	return post_processor->get_time_window();
+}
+
 void set_bins(int n)
 {
 	if (NULL == g_data) {
@@ -627,6 +645,8 @@ FunctionWrapper* create_vertical_lines_cut(double left, double right) //do not c
 	case AStates::MPPC_Double_I:
 	case AStates::PMT_S2_int:
 	case AStates::PMT_Ss:
+	case AStates::PMT_trigger_bNpe:
+	case AStates::PMT_trigger_bNpeaks:
 	case AStates::Correlation:
 	case AStates::CorrelationAll:
 	{
@@ -773,6 +793,8 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::MPPC_tbN:
 	case AStates::MPPC_Npe_sum:
 	case AStates::PMT_Npe_sum:
+	case AStates::PMT_trigger_bNpe:
+	case AStates::PMT_trigger_bNpeaks:
 	{
 		picker->SetFunction( [](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -914,6 +936,8 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 	case AStates::MPPC_tbN:
 	case AStates::MPPC_Npe_sum:
 	case AStates::PMT_Npe_sum:
+	case AStates::PMT_trigger_bNpe:
+	case AStates::PMT_trigger_bNpeaks:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -1054,6 +1078,8 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::MPPC_tbN:
 	case AStates::MPPC_Npe_sum:
 	case AStates::PMT_Npe_sum:
+	case AStates::PMT_trigger_bNpe:
+	case AStates::PMT_trigger_bNpeaks:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -1259,6 +1285,8 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 	case AStates::MPPC_tbN:
 	case AStates::MPPC_Npe_sum:
 	case AStates::PMT_Npe_sum:
+	case AStates::PMT_trigger_bNpe:
+	case AStates::PMT_trigger_bNpeaks:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			//{A_min, A0, S0, A1, S1, A_max}
@@ -1362,6 +1390,8 @@ FunctionWrapper* create_A_S_upper_cut(std::vector<double> region) //do not call 
 	case AStates::MPPC_tbN:
 	case AStates::MPPC_Npe_sum:
 	case AStates::PMT_Npe_sum:
+	case AStates::PMT_trigger_bNpe:
+	case AStates::PMT_trigger_bNpeaks:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			//{A0, S0, A1, S1}

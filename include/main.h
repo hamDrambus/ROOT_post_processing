@@ -42,6 +42,9 @@ void set_parameter_val(int index, double val);
 void set_parameter_limits(int index, double left, double right);
 void do_fit(bool is_on);	//always updates visuals
 
+void set_trigger_shaping(double val); //in microseconds
+double get_trigger_shaping(void); //in microseconds
+
 void set_bins(int n);
 void set_bins(int from, int to); //simultaneous set_bins and set_zoom for discrete distributions
 void set_zoom (double xl, double xr);

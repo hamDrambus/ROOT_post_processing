@@ -50,7 +50,7 @@ if (channel==7) {
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
 	x_y_regions = {0.015, 0.015, 0.00065, 0.07, 0.005, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-    cut_A_S_upper(0, 0.005, 1, 0.005, display, channel, "rem_S>0.005");  
+    cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");  
     if (aggressiveness>0) {//select only 1 photoelectron for calibration
         cut_A_S_upper(0.031, 0.0001, 1, 0.0001, display, channel, "2pe");
         cut_A_S_upper(0.015, 0.0016, 0.031, 0.0038, display, channel, "2pe_merged");

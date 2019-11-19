@@ -9,7 +9,7 @@ HistogramSetups::HistogramSetups(const std::deque<int>& channels) :
 	x_mean(boost::none), y_mean(boost::none), x_drawn_mean(boost::none),
 	y_drawn_mean(boost::none), x_variance(boost::none), x_drawn_variance(boost::none),
 	y_variance(boost::none), y_drawn_variance(boost::none), is_valid_fit_function(false),
-	use_default_setups(true), N_bins(0), N_gauss(0), use_fit(false)
+	use_default_setups(true), N_bins(0), N_gauss(0), use_fit(false), time_window(3)
 {
 	for (std::size_t ind = 0, ind_end_ = channels.size(); ind != ind_end_; ++ind)
 		active_channels.push(channels[ind], true);
@@ -33,12 +33,12 @@ std::deque<EventCut>* CanvasSetups::get_run_cuts (int exp_ind)
 	return & (RunCuts[canvas_ind][exp_ind]);
 }
 
-HistogramSetups* CanvasSetups::get_hist_setups(void)
+HistogramSetups* CanvasSetups::get_hist_setups(void) const
 {
 	return get_hist_setups(current_exp_index, current_channel, current_type);
 }
 
-HistogramSetups* CanvasSetups::get_hist_setups(int exp_ind, int channel, Type type)
+HistogramSetups* CanvasSetups::get_hist_setups(int exp_ind, int channel, Type type) const
 {
 	if (canvas_ind>=manual_setups.size()) {
 		std::cerr<<"CanvasSetups::get_hist_setups: Error: canvas index ("<<canvas_ind<<") is out of range"<<std::endl;

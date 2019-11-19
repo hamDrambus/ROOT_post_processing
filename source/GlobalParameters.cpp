@@ -14,6 +14,20 @@ peak::peak() : right(-1), left(-1), S(-1), A(-1)
 #endif
 {}
 
+peak_processed::peak_processed(const double& iS, const double& iA, const double& ileft, const double& iright, const double& it, const int& iNpe) :
+		S(iS), A(iA), left(ileft), right(iright), t(it), Npe(iNpe)
+{}
+
+peak_processed::peak_processed(const peak& pk, const int& iNpe)	:
+		S(pk.S), A(pk.A), left(pk.left), right(pk.right),
+#ifdef PEAK_AVR_TIME
+		t(pk.t),
+#else
+		t(0.5*(pk.left+pk.right)),
+#endif
+		Npe(iNpe)
+{}
+
 GraphicOutputManager *gr_manager = NULL;
 AnalysisManager *manager = NULL;
 AllExperimentsResults* g_data = NULL;

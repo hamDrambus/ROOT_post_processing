@@ -11,7 +11,8 @@ public:
 		MPPC_tbS_sum /*time distribution with weights as peak area S*/,
 		MPPC_tbN_sum /*time distribution with weights as peak Npe*/, MPPC_coord, MPPC_coord_x, MPPC_coord_y, MPPC_Npe_sum, MPPC_S2,
 		Correlation_x, Correlation_y /*these two are mask (virtual) types*/, Correlation /*uses Correlation_x/y*/,CorrelationAll,
-		PMT_S2_S, PMT_Npe_sum, PMT_S2_int, PMT_Ss, PMT_As, PMT_t_S, PMT_A_S, PMT_tbS, PMT_tbN, PMT_sum_N};
+		PMT_S2_S, PMT_Npe_sum, PMT_S2_int, PMT_Ss, PMT_As, PMT_t_S, PMT_A_S, PMT_tbS, PMT_tbN, PMT_sum_N, PMT_trigger_bNpe,
+		PMT_trigger_bNpeaks};
 protected:
 	const Type _first_state;
 	const Type _last_state;
@@ -22,8 +23,8 @@ protected:
 	virtual Bool_t StateChange(int to_ch, int to_exp, Type to_type, int from_ch, int from_exp, Type from_type);
 	virtual Bool_t CorrelationXChange(int exp_index, int to_ch, Type to_type, int from_ch, Type from_type);
 	virtual Bool_t CorrelationYChange(int exp_index, int to_ch, Type to_type, int from_ch, Type from_type);
-	int channel_to_index(int ch);
-	int channel_to_index(int ch, Type type);
+	int channel_to_index(int ch) const;
+	int channel_to_index(int ch, Type type) const;
 
 	void loop_channels_reset(void);
 	int ch_ind_loop;
@@ -64,6 +65,7 @@ public:
 	bool isComposite (Type type) const;
 	Bool_t isPMTtype(Type type) const;
 	Bool_t isVirtual(Type type) const;
+	Bool_t isTrigger(Type type) const;
 };
 
 #endif

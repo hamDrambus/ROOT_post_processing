@@ -2791,4 +2791,31 @@ namespace SignalOperations {
 	//	return rms;
 	//}
 
+	double find_trigger(std::deque<peak_processed> &peaks, double time_window, bool use_Npes)
+	{
+		time_window = std::fabs(time_window);
+		std::sort(peaks.begin(), peaks.end(), [](const peak_processed &a, const peak_processed &b)->bool {
+			return a.left < b.left;
+		});
+		double max_t = -DBL_MAX;
+		std::size_t max_Npes = 0;
+		for (auto pk = peaks.begin(), pk_end_ = peaks.end(); pk!=pk_end_; ++pk) {
+			if (use_Npes)
+				if (pk->Npe<=0)
+					continue;
+			std::size_t Npes = 0;
+			for (auto i = pk; (i!=pk_end_)&&(i->left<=(pk->left + time_window)); ++i) {
+				if (use_Npes)
+					if (i->Npe<=0)
+						continue;
+				Npes += use_Npes ? i->Npe : 1;
+			}
+			if (Npes>max_Npes) {
+				max_Npes = Npes;
+				max_t = pk->left;
+			}
+
+		}
+		return max_t;
+	}
 };

@@ -9,29 +9,32 @@
 #include "CalibrationInfo.h"
 
 //for adding new types of analysis - dependence on AnalysisStates::Type
-//1) AnalysisStates::AnalysisStates (first/last state)
-//2) AnalysisStates::isMultichannel(Type type) const;
-//3) AnalysisStates::isPerRun(Type type) const;
-//4) AnalysisStates::isPMTtype(Type::type) const;
-//5) AnalysisStates::isComposite(Type::type) const;
-//6) std::string AnalysisStates::type_name(Type type) const;
-//7) AnalysisStates::isTH1Dhist(Type::type) const;
-//8) AnalysisStates::isVirtual(Type::type) const;
+//1). AnalysisStates::AnalysisStates (first/last state)
+//2). AnalysisStates::isMultichannel(Type type) const;
+//3). AnalysisStates::isPerRun(Type type) const;
+//4). AnalysisStates::isPMTtype(Type::type) const;
+//5). AnalysisStates::isComposite(Type::type) const;
+//6). std::string AnalysisStates::type_name(Type type) const;
+//7). AnalysisStates::isTH1Dhist(Type::type) const;
+//8). AnalysisStates::isVirtual(Type::type) const;
+//9). Bool_t AStates::isTrigger(Type type) const;
 
-//9) void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int channel, Type type);
-//10) bool PostProcessor::set_correlation_filler(FunctionWrapper* operation, Type type);
-//11) void PostProcessor::print_hist(std::string path);
-//12) bool PostProcessor::update(void);
-//13) void PostProcessor::update_physical(void)
-//14) void PostProcessor::default_hist_setups(HistogramSetups*);
+//10). void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int channel, Type type);
+//11). bool PostProcessor::set_correlation_filler(FunctionWrapper* operation, Type type);
+//12). void PostProcessor::print_hist(std::string path);
+//13). bool PostProcessor::update(void);
+//14). void PostProcessor::update_physical(void)
+//15). void PostProcessor::default_hist_setups(HistogramSetups*);
 
 //15) 2nd tier methods in main:
-//	FunctionWrapper* create_vertical_lines_cut(double left, double right)
-//	FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region)
-//	FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region)
-//	FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region)
-//	FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region)
-//	FunctionWrapper* create_A_S_upper_cut(std::vector<double> region)
+//.	FunctionWrapper* create_vertical_lines_cut(double left, double right)
+//.	FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region)
+//.	FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region)
+//.	FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region)
+//.	FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region)
+//.	FunctionWrapper* create_A_S_upper_cut(std::vector<double> region)
+//.	FunctionWrapper* create_x_y_upper_cut(std::vector<double> region)
+//.	FunctionWrapper* create_x_y_lower_cut(std::vector<double> region)
 
 class PostProcessor : public CanvasSetups {
 public:
@@ -127,6 +130,9 @@ public:
 	void set_zoom_y (double yl, double yr);
 	void set_zoom (double xl, double xr, double yl, double yr);
 	void unset_zoom(bool do_update = true);
+
+	bool set_time_window(double val);
+	double get_time_window(void) const;
 
 	void set_fit_gauss(int N);
 	void set_parameter_val(int index, double val);

@@ -24,6 +24,7 @@ public:
 	Bool_t fitted;
 	Bool_t is_valid_fit_function;
 	Bool_t use_default_setups;
+	double time_window; //for trigger adjustment algorithm
 #ifndef __ROOTCLING__
 	//1st tier parameters of distribution: (stored in order to minimize calls of LoopThroughData to recalculate them)
 	boost::optional<std::size_t> num_of_runs;
@@ -70,8 +71,8 @@ protected:
 
 	std::deque<EventCut>* get_run_cuts (int exp_ind);
 
-	HistogramSetups* get_hist_setups(void);
-	HistogramSetups* get_hist_setups(int exp_ind, int channel, Type type);
+	HistogramSetups* get_hist_setups(void) const;
+	HistogramSetups* get_hist_setups(int exp_ind, int channel, Type type) const;
 	bool set_hist_setups(HistogramSetups* setups, int exp_ind, int channel, Type type); //Creates copy!
 	TCanvas *get_current_canvas (void);
 

@@ -141,6 +141,8 @@ void PostProcessor::print_hist(std::string path)
 	case MPPC_Double_I:
 	case PMT_S2_int:
 	case PMT_Ss:
+	case PMT_trigger_bNpe:
+	case Type::PMT_trigger_bNpeaks:
 	{
 		writer_to_file->SetFunction([](std::vector<double>& pars, int run, void* data) {
 			((temp_data*)data)->str->write((char*)&pars[0], sizeof(double));
@@ -409,6 +411,120 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 						continue;
 					(*operations[o].operation)(cut_data, run);
 				}
+			}
+		}
+		break;
+	}
+	case Type::PMT_trigger_bNpe:
+	case Type::PMT_trigger_bNpeaks: {
+		bool ignore_no_run_cut = true;
+		for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
+			if (!operations[o].apply_run_cuts) {
+				ignore_no_run_cut = false;
+				break;
+			}
+		}
+		//channel->run->peak_itself:
+		std::deque<std::deque<std::deque<peak> > > *peaks = NULL;
+		std::deque<int> *channels = NULL;
+		if (isPMTtype(type)) {
+			channels = &PMT_channels;
+			peaks = &(data->pmt_peaks[current_exp_index]);
+		} else {
+			channels = &MPPC_channels;
+			peaks = &(data->mppc_peaks[current_exp_index]);
+		}
+		int run_size = (*peaks)[0].size();
+		std::vector<double> cut_data(6);
+		for (auto run = 0; run != run_size; ++run) {
+			//[0] - data for no cuts, [1] - data for histogram cuts, [2] - for physical cuts and [3] - for both histogram and physical
+			std::deque<std::deque<peak_processed>> accepted_peaks(4, std::deque<peak_processed>());
+			std::vector<std::vector<double> > trigger_offset(4, std::vector<double> (1, 0));
+			bool failed_run_cut = false;
+			for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
+				if (kFALSE == cut->GetAccept(run)) {
+					failed_run_cut = true;
+					break;
+				}
+			if (failed_run_cut && ignore_no_run_cut)
+				continue;
+
+			for (int chan_ind=0,_ch_ind_end_= channels->size(); chan_ind<_ch_ind_end_;++chan_ind) {
+				if (NULL != setups) {
+					bool *active = setups->active_channels.info((*channels)[chan_ind]);
+					if (NULL == active)
+						continue;
+					if (!(*active))
+						continue;
+				}
+				double s1pe = calibr_info.get_S1pe((*channels)[chan_ind], current_exp_index);
+				for (int pk = 0, pk_end = (*peaks)[chan_ind][run].size(); pk != pk_end; ++pk) {
+					bool failed_hist_cut = false; //normal cuts
+					bool failed_phys_cut = false; //drawn (displayed) cuts only
+					cut_data[0] = (*peaks)[chan_ind][run][pk].S;
+					cut_data[1] = (*peaks)[chan_ind][run][pk].A;
+					cut_data[2] = (*peaks)[chan_ind][run][pk].left;
+					cut_data[3] = (*peaks)[chan_ind][run][pk].right;
+					cut_data[4] =
+#ifdef PEAK_AVR_TIME
+							(*peaks)[chan_ind][run][pk].t;
+#else
+							0.5*(cut_data[3]+cut_data[2]);
+#endif
+					cut_data[5] = s1pe > 0 ? std::round(cut_data[0]/s1pe) : -1;
+					for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
+						if (cut->GetChannel()==(*channels)[chan_ind] && cut->GetAffectingHistogram() && !failed_hist_cut)
+							if (kFALSE == (*cut)(cut_data, run)) //more expensive than GetAffectingHistogram
+								failed_hist_cut = true;
+						if (cut->GetChannel()==(*channels)[chan_ind] && !cut->GetAffectingHistogram() && !failed_phys_cut)
+							if (kFALSE == (*cut)(cut_data, run))
+								failed_phys_cut = true;
+						if (failed_hist_cut && failed_phys_cut)
+							break;
+					}
+					accepted_peaks[0].push_back(peak_processed((*peaks)[chan_ind][run][pk], cut_data[5]));
+					if (!failed_hist_cut)
+						accepted_peaks[1].push_back(peak_processed((*peaks)[chan_ind][run][pk], cut_data[5]));
+					if (!failed_phys_cut)
+						accepted_peaks[2].push_back(peak_processed((*peaks)[chan_ind][run][pk], cut_data[5]));
+					if (!failed_phys_cut && !failed_hist_cut)
+						accepted_peaks[3].push_back(peak_processed((*peaks)[chan_ind][run][pk], cut_data[5]));
+				}
+			}
+
+			for (int i = 0; i<4; ++i) {
+				trigger_offset[i][0] = SignalOperations::find_trigger(accepted_peaks[i], setups->time_window,
+						(type == PMT_trigger_bNpe) ? true : false);
+			}
+			bool failed_hist_phys = false, failed_hist = false, failed_phys = false;
+			for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut)
+				if (-1 == cut->GetChannel()) {
+					if (!failed_hist_phys)
+						if (kFALSE == (*cut)(trigger_offset[3], run))
+							failed_hist_phys = true;
+					if (!failed_hist && cut->GetAffectingHistogram())
+						if (kFALSE == (*cut)(trigger_offset[1], run))
+							failed_hist = true;
+					if (!failed_phys && !cut->GetAffectingHistogram())
+						if (kFALSE == (*cut)(trigger_offset[2], run))
+							failed_phys = true;
+				}
+			for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
+				if (operations[o].apply_run_cuts && failed_run_cut)
+					continue;
+				if (operations[o].apply_hist_cuts && !operations[o].apply_phys_cuts) {
+					if (!failed_hist) (*operations[o].operation)(trigger_offset[1], run);
+					continue;
+				}
+				if (!operations[o].apply_hist_cuts && operations[o].apply_phys_cuts) {
+					if (!failed_phys) (*operations[o].operation)(trigger_offset[2], run);
+					continue;
+				}
+				if (operations[o].apply_hist_cuts && operations[o].apply_phys_cuts) {
+					if (!failed_hist_phys) (*operations[o].operation)(trigger_offset[3], run);
+					continue;
+				}
+				(*operations[o].operation)(trigger_offset[0], run);
 			}
 		}
 		break;
@@ -809,6 +925,13 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 	case Type::MPPC_Npe_sum:
 	case Type::PMT_Npe_sum:
 	{
+		bool ignore_no_run_cut = true;
+		for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
+			if (!operations[o].apply_run_cuts) {
+				ignore_no_run_cut = false;
+				break;
+			}
+		}
 		//channel->run->peak_itself:
 		std::deque<std::deque<std::deque<peak> > > *peaks = NULL;
 		std::deque<int> *channels = NULL;
@@ -830,6 +953,9 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 					failed_run_cut = true;
 					break;
 				}
+
+			if (failed_run_cut && ignore_no_run_cut)
+				continue;
 
 			for (int chan_ind=0,_ch_ind_end_= channels->size(); chan_ind<_ch_ind_end_;++chan_ind) {
 				if (NULL != setups) {
@@ -1266,6 +1392,8 @@ bool PostProcessor::set_correlation_filler(FunctionWrapper* operation, Type type
 	case Type::MPPC_S2:
 	case Type::PMT_S2_S:
 	case Type::PMT_S2_int:
+	case Type::PMT_trigger_bNpe:
+	case Type::PMT_trigger_bNpeaks:
 	{
 		operation->SetFunction([](std::vector<double>& pars, int run, void* data) {
 			(*((correlation_data*)data)->vals)[run] = pars[0];
@@ -1375,20 +1503,28 @@ bool PostProcessor::update(void)
 	case Type::PMT_S2_S:
 	case Type::PMT_S2_int:
 	case Type::PMT_Ss:
+	case Type::PMT_trigger_bNpe:
+	case Type::PMT_trigger_bNpeaks:
 	{
 		drawn_mean_taker.SetFunction(
 		mean_taker.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			if (pars[0] == DBL_MAX || pars[0] == -DBL_MAX)
+				return true;
 			(((mean_variance_data_*)data)->mean_x) += pars[0];
 			return true;
 		}));
 		drawn_variance_taker.SetFunction(
 		variance_taker.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			if (pars[0] == DBL_MAX || pars[0] == -DBL_MAX)
+				return true;
 			double meanX = ((mean_variance_data_*)data)->mean_x;
 			(((mean_variance_data_*)data)->variance_x) += (pars[0] - meanX) * (pars[0] - meanX);
 			return true;
 		}));
 		drawn_limits_finder.SetFunction(
 		limits_finder.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			if (pars[0] == DBL_MAX || pars[0] == -DBL_MAX)
+				return true;
 			std::pair<double,double>* p = &((limits_data_*)data)->x_mm;
 			p->first = std::min(p->first, pars[0]);
 			p->second = std::max(p->second, pars[0]);
@@ -1686,7 +1822,7 @@ bool PostProcessor::update(void)
 	}
 
 	Operation op_fill_count(&fills_counter, true, true, false);
-	Operation op_drawn_fill_count(&drawn_fills_counter, true, true, false);
+	Operation op_drawn_fill_count(&drawn_fills_counter, true, true, true);
 	Operation op_limits(&limits_finder, true, true, false);
 	Operation op_drawn_limits(&drawn_limits_finder, true, true, true);
 	Operation op_mean_taker(&mean_taker, true, true, false);
@@ -1980,7 +2116,7 @@ std::pair<double, double> PostProcessor::hist_y_limits(bool consider_displayed_c
 		std::cerr<<"PostProcessor::hist_x_limits: Error: NULL histogram setups"<<std::endl;
 		return ret;
 	}
-	if (consider_displayed_cuts) {
+	if (!consider_displayed_cuts) {
 		if (setups->y_lims)
 			return *setups->y_lims;
 		return ret;
@@ -2000,7 +2136,7 @@ std::pair<double, double> PostProcessor::hist_x_limits(bool consider_displayed_c
 		std::cerr<<"PostProcessor::hist_x_limits: Error: NULL histogram setups"<<std::endl;
 		return ret;
 	}
-	if (consider_displayed_cuts) {
+	if (!consider_displayed_cuts) {
 		if (setups->x_lims)
 			return *setups->x_lims;
 		return ret;
@@ -2849,6 +2985,35 @@ void PostProcessor::unset_zoom(bool do_update)
 	CanvasSetups::unset_zoom();
 	if (do_update)
 		update();
+}
+
+bool PostProcessor::set_time_window(double val)
+{
+	if (!isTrigger(current_type)) {
+		std::cerr<<"PostProcessor::set_time_window:Error: Can't set time window for not trigger type ("<<type_name(current_type)<<")"<<std::endl;
+		return false;
+	}
+	HistogramSetups* curr_hist = get_hist_setups();
+	if (NULL==curr_hist)
+		return false;
+	bool invalidate = (curr_hist->time_window != std::fabs(val));
+	curr_hist->time_window = std::fabs(val);
+	if (invalidate)
+		Invalidate(invData);
+	update();
+	return true;
+}
+
+double PostProcessor::get_time_window(void) const
+{
+	if (!isTrigger(current_type)) {
+		std::cerr<<"PostProcessor::get_time_window:Error: Can't get time window for not trigger type ("<<type_name(current_type)<<")"<<std::endl;
+		return 0;
+	}
+	HistogramSetups* curr_hist = get_hist_setups();
+	if (NULL==curr_hist)
+		return 0;
+	return curr_hist->time_window;
 }
 
 void PostProcessor::set_fit_gauss(int N)
