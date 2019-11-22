@@ -31,6 +31,7 @@
 #include <boost/random/inversive_congruential.hpp>
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
+#include <boost/lexical_cast.hpp>
 #endif //__CINT__
 
 #include <TROOT.h>
@@ -85,6 +86,11 @@ void ensure_file(std::string fname);
 bool confirm_action (std::string action);
 int getIndex(const std::vector<int>& channels, int ch); //TODO: template
 int getIndex(const std::deque<int>& channels, int ch);
+std::string int_to_str(int num);
+std::string int_to_str(std::size_t num);
+std::string int_to_str(int num, std::size_t decimals);
+std::string int_to_str(std::size_t num, std::size_t decimals);
+std::string dbl_to_str (double val, int precision=0);
 
 template <class T>
 class channel_info {

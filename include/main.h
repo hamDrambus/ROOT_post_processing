@@ -35,6 +35,7 @@ void nch(void);
 void pch(void); 	//previous channel;
 void update(void);
 void saveas(std::string path = "");	//"" - use default path: "Data/results/{PMT_v1|MPPC_v1}/experiment/{PMT_|MPPC_}ch/{pic&data}
+void saveaspng(std::string path = "");	//"" - use default path: "Data/results/{PMT_v1|MPPC_v1}/experiment/{PMT_|MPPC_}ch/{pic&data}
 void status(Bool_t full = false);	//displays current state
 void set_fit_gauss(int N);
 void set_parameter_val(int index, double val);
@@ -43,8 +44,8 @@ void do_fit(bool is_on);	//always updates visuals
 
 void set_trigger_shaping(double val); //in microseconds
 double get_trigger_shaping(void); //in microseconds
-bool unset_trigger_offsets(void);
-bool set_trigger_offsets(double extra_offset); //uses trigger type histogram only. extra_offset is in microseconds
+void unset_trigger_offsets(void);
+void set_trigger_offsets(double extra_offset); //uses trigger type histogram only. extra_offset is in microseconds
 
 void set_bins(int n);
 void set_bins(int from, int to); //simultaneous set_bins and set_zoom for discrete distributions
@@ -53,6 +54,7 @@ void set_zoom_y (double yl, double yr);
 void set_zoom (double xl, double xr, double yl, double yr);
 void set_X_title(std::string text);
 void set_Y_title(std::string text);
+void set_titles(std::string x_title, std::string y_title);
 void unset_zoom(void);
 void next_canvas(void); //creates new canvas or goes to the next existing. The current one will stay unchanged.
 //Have independent cuts but the new one inherits the previous ones
@@ -76,6 +78,7 @@ void set_as_run_cut(std::string name = "");
 int list_run_cuts (void); //returns number of cuts
 void unset_as_run_cut(std::string name = "");
 void print_accepted_events (std::string file, int run_offset, int sub_runs = 1000);
+void print_rejected_events (std::string file, int run_offset, int sub_runs = 1000);
 void clear(void);	//clear cuts for current histogram. Run cuts derived from it are not touched
 void clearAll(void); //clear everything, return to initial state (leaves all existing histograms empty)
 
@@ -134,13 +137,29 @@ void cut_A_S_upper(double A_min, double S_min, double A_max, double S_max, bool 
 void cut_A_S_upper(std::vector<double> region, bool drawn, int channel = -1, std::string _name = "");
 void remcut_A_S_upper(int channel = -1, std::string _name = "");
 
-void cut_x_y_upper(double A_min, double S_min, double A_max, double S_max, bool drawn, std::string _name = "");
+void cut_x_y_upper(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name = "");
 void cut_x_y_upper(std::vector<double> region, bool drawn, std::string _name = "");
-void remcut_x_y_upper(std::string _name = "");
 
-void cut_x_y_lower(double A_min, double S_min, double A_max, double S_max, bool drawn, std::string _name = "");
+void cut_x_y_lower(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name = "");
 void cut_x_y_lower(std::vector<double> region, bool drawn, std::string _name = "");
-void remcut_x_y_lower(std::string _name = "");
+
+void cut_x_y_left(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name = "");
+void cut_x_y_left(std::vector<double> region, bool drawn, std::string _name = "");
+
+void cut_x_y_right(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name = "");
+void cut_x_y_right(std::vector<double> region, bool drawn, std::string _name = "");
+
+void cut_x_y_upper_select(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name = "");
+void cut_x_y_upper_select(std::vector<double> region, bool drawn, std::string _name = "");
+
+void cut_x_y_lower_select(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name = "");
+void cut_x_y_lower_select(std::vector<double> region, bool drawn, std::string _name = "");
+
+void cut_x_y_left_select(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name = "");
+void cut_x_y_left_select(std::vector<double> region, bool drawn, std::string _name = "");
+
+void cut_x_y_right_select(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name = "");
+void cut_x_y_right_select(std::vector<double> region, bool drawn, std::string _name = "");
 
 #ifdef _COMPLIE_MAIN_
 int main(int argc, char* argv[]) {

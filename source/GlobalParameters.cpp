@@ -56,6 +56,47 @@ int getIndex(const std::vector<int>& channels, int ch)
 	return -1;
 }
 
+std::string int_to_str(int num)
+{
+	return boost::lexical_cast<std::string>(num);
+}
+
+std::string int_to_str(std::size_t num)
+{
+	return boost::lexical_cast<std::string>(num);
+}
+
+std::string int_to_str(int num, std::size_t decimals)
+{
+	std::string out = boost::lexical_cast<std::string>(num);
+	if (num < 0) {
+		while ((out.size()-1)<decimals) {
+			out = "0" + out;
+		}
+	} else {
+		while (out.size()<decimals) {
+			out = "0" + out;
+		}
+	}
+	return out;
+}
+
+std::string int_to_str(std::size_t num, std::size_t decimals)
+{
+	std::string out = boost::lexical_cast<std::string>(num);
+	while (out.size()<decimals) {
+		out = "0" + out;
+	}
+	return out;
+}
+
+std::string dbl_to_str (double val, int precision)
+{
+	std::stringstream ss;
+	ss<<std::fixed<<std::setprecision(precision)<<val;
+	return ss.str();
+}
+
 std::string strtoken(std::string &in, std::string break_symbs)
 {
 	std::string out;
@@ -933,6 +974,7 @@ bool viewRegion::OnLine(double x1, double y1, double x2, double y2, double u,
 	int gnuplot_max_size = 1600;
 	int gnuplot_width = 900; //default for gnuplot is 640
 
+	TriggerVersion trigger_version;
 	std::map < std::string, double > experiment_fields;
 	std::map < std::string, double > PMT_V;
 	std::map < std::string, double > MPPC_V;
@@ -960,6 +1002,7 @@ bool viewRegion::OnLine(double x1, double y1, double x2, double y2, double u,
 		gStyle->SetOptFit();
 		gStyle->SetStatY(0.9);
 		gStyle->SetStatX(0.9);
+		trigger_version = trigger_v2;
 		calibaration_points = std::pair<int, int>(3, 6);
 
 		double SiPM_size = 10; //mm

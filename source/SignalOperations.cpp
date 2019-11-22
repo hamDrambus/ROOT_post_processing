@@ -2791,13 +2791,14 @@ namespace SignalOperations {
 	//	return rms;
 	//}
 
-	double find_trigger(std::deque<peak_processed> &peaks, double time_window, bool use_Npes)
+	double find_trigger_v1(std::deque<peak_processed> &peaks, double time_window, bool use_Npes)
 	{
 		time_window = std::fabs(time_window);
 		std::sort(peaks.begin(), peaks.end(), [](const peak_processed &a, const peak_processed &b)->bool {
 			return a.left < b.left;
 		});
 		double max_t = -DBL_MAX;
+		auto found_peak = peaks.end();
 		std::size_t max_Npes = 0;
 		for (auto pk = peaks.begin(), pk_end_ = peaks.end(); pk!=pk_end_; ++pk) {
 			if (use_Npes)
@@ -2813,8 +2814,89 @@ namespace SignalOperations {
 			if (Npes>max_Npes) {
 				max_Npes = Npes;
 				max_t = pk->left;
+				found_peak = pk;
 			}
 
+		}
+		return max_t;
+	}
+
+	double find_trigger_v2(std::deque<peak_processed> &peaks, double time_window, bool use_Npes)
+	{
+		time_window = std::fabs(time_window);
+		std::sort(peaks.begin(), peaks.end(), [](const peak_processed &a, const peak_processed &b)->bool {
+			return a.left < b.left;
+		});
+		double max_t = -DBL_MAX;
+		auto found_peak = peaks.end();
+		std::size_t max_Npes = 0;
+		for (auto pk = peaks.begin(), pk_end_ = peaks.end(); pk!=pk_end_; ++pk) {
+			if (use_Npes && pk->Npe<=0)
+				continue;
+			std::size_t Npes = 0;
+			for (auto i = pk; (i!=pk_end_)&&(i->left<=(pk->left + time_window)); ++i) {
+				if (use_Npes && i->Npe<=0)
+					continue;
+				Npes += use_Npes ? i->Npe : 1;
+			}
+			if (Npes>max_Npes) {
+				max_Npes = Npes;
+				max_t = pk->left;
+				found_peak = pk;
+			}
+
+		}
+		if (found_peak != peaks.end()) {
+			max_t = 0; //average time for all peaks inside the time window
+			double W_sum = 0;
+			for (auto i = found_peak, pk_end_ = peaks.end(); (i!=pk_end_)&&(i->left<=(found_peak->left + time_window)); ++i) {
+				if (use_Npes && i->Npe<=0)
+					continue;
+				W_sum += use_Npes ? i->Npe : 1;
+				max_t += i->t*(use_Npes ? i->Npe : 1);
+			}
+			max_t /= W_sum;
+		}
+		return max_t;
+	}
+
+	double find_trigger_v3(std::deque<peak_processed> &peaks, double time_window, bool use_Npes)
+	{
+		time_window = std::fabs(time_window);
+		std::sort(peaks.begin(), peaks.end(), [](const peak_processed &a, const peak_processed &b)->bool {
+			return a.left < b.left;
+		});
+		double max_t = -DBL_MAX;
+		auto found_peak = peaks.end();
+		std::size_t max_Npes = 0;
+		for (auto pk = peaks.begin(), pk_end_ = peaks.end(); pk!=pk_end_; ++pk) {
+			if (use_Npes && pk->Npe<=0)
+				continue;
+			std::size_t Npes = 0;
+			for (auto i = pk; (i!=pk_end_)&&(i->left<=(pk->left + time_window)); ++i) {
+				if (use_Npes && i->Npe<=0)
+					continue;
+				Npes += use_Npes ? i->Npe : 1;
+			}
+			if (Npes>max_Npes) {
+				max_Npes = Npes;
+				max_t = pk->left;
+				found_peak = pk;
+			}
+
+		}
+		if (found_peak != peaks.end()) {
+			max_t = 0; //average time for all peaks inside the time window
+			double W_sum = 0;
+			for (auto i = found_peak, pk_end_ = peaks.end(); (i!=pk_end_)&&(i->left<=(found_peak->left + time_window)); ++i) {
+				if (use_Npes && i->Npe<=0)
+					continue;
+				double w = use_Npes ? i->Npe : 1;
+				w *= 0.5 + 0.5*(i->left - found_peak->left)/time_window;
+				W_sum += w;
+				max_t += i->t*w;
+			}
+			max_t /= W_sum;
 		}
 		return max_t;
 	}

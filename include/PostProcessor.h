@@ -33,8 +33,8 @@
 //	FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region)
 //	FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region)
 //	FunctionWrapper* create_A_S_upper_cut(std::vector<double> region)
-//	FunctionWrapper* create_x_y_upper_cut(std::vector<double> region)
-//	FunctionWrapper* create_x_y_lower_cut(std::vector<double> region)
+//	FunctionWrapper* create_x_y_vertical_cut(std::vector<double> region, bool right, bool select)
+//	FunctionWrapper* create_x_y_horizontal_cut(std::vector<double> region, bool right, bool select)
 
 class PostProcessor : public CanvasSetups {
 public:
@@ -85,7 +85,7 @@ protected:
 	void update_Npe(void);		//4th part of ::update(void). TODO: actually it is better to move it to CalibrationInfo.
 
 	std::string hist_name();
-	void print_hist(std::string path); //use "" for default path
+	void print_hist(std::string path, bool png_only); //use "" for default path
 public:
 	void LoopThroughData(std::vector<Operation> &operations, int channel, Type type);
 
@@ -101,7 +101,7 @@ public:
 	void save(int ch);	//TODO: make that it saves results such as calibration and Npe(E) (for both PMT and MPPC). That is updates only one line in calibr. file
 	void save_all(void);
 	//TODO: save_calibration(void)
-	void saveAs(std::string path);
+	void saveAs(std::string path, bool png_only);
 	
 	void clear(void);	//clear cuts for current histogram. Run cuts derived from it are not touched
 	void clearAll(void); //clear everything, return to initial state (leaves all existing histograms empty)
@@ -121,7 +121,7 @@ public:
 	int list_run_cuts (void);
 	void unset_as_run_cut(std::string name);//deletes current exp,ch and type from current cuts (if present) deletes from back, that is
 	//if a single exp,ch,type produces several EventCuts, unset must be called respective amount of times
-	void print_accepted_events (std::string file, int run_offset, int sub_runs);
+	void print_events (std::string file, int run_offset, int sub_runs, bool accepted); //accepted = true - print accepted events, false - rejected ones
 	void do_fit(bool do_fit);
 	void set_N_bins(int N);
 	void set_N_bins(int from, int to);

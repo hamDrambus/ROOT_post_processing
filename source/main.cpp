@@ -111,7 +111,16 @@ void saveas(std::string path) //"" - use default path: "Data/results/{PMT_v1|MPP
 		status(kFALSE);
 		return;
 	}
-	post_processor->saveAs(path);
+	post_processor->saveAs(path, false);
+}
+
+void saveaspng(std::string path)
+{
+	if (NULL == post_processor) {
+		status(kFALSE);
+		return;
+	}
+	post_processor->saveAs(path, true);
 }
 
 void calib_status(Bool_t uncalibrated_only)
@@ -194,22 +203,22 @@ double get_trigger_shaping(void) //in microseconds
 	return post_processor->get_time_window();
 }
 
-bool unset_trigger_offsets(void)
+void unset_trigger_offsets(void)
 {
 	if (NULL == g_data) {
 		status(kFALSE);
-		return false;
+		return;
 	}
-	return post_processor->unset_trigger_offsets();
+	post_processor->unset_trigger_offsets();
 }
 
-bool set_trigger_offsets(double extra_offset)  //uses trigger type histogram only. extra_offset is in microseconds
+void set_trigger_offsets(double extra_offset)  //uses trigger type histogram only. extra_offset is in microseconds
 {
 	if (NULL == g_data) {
 		status(kFALSE);
-		return false;
+		return;
 	}
-	return post_processor->set_trigger_offsets(extra_offset);
+	post_processor->set_trigger_offsets(extra_offset);
 }
 
 void set_bins(int n)
@@ -282,6 +291,16 @@ void set_Y_title(std::string text)
 		return;
 	}
 	post_processor->set_Y_title(text);
+}
+
+void set_titles(std::string x_title, std::string y_title)
+{
+	if (NULL == g_data) {
+		status(kFALSE);
+		return;
+	}
+	post_processor->set_X_title(x_title);
+	post_processor->set_Y_title(y_title);
 }
 
 void next_canvas(void) //creates new canvas or goes to the next existing. The current one will stay unchanged.
@@ -408,7 +427,16 @@ void print_accepted_events (std::string file, int run_offset, int sub_runs)
 		status(kFALSE);
 		return;
 	}
-	post_processor->print_accepted_events(file, run_offset, sub_runs);
+	post_processor->print_events(file, run_offset, sub_runs, true);
+}
+
+void print_rejected_events (std::string file, int run_offset, int sub_runs)
+{
+	if (NULL == g_data) {
+		status(kFALSE);
+		return;
+	}
+	post_processor->print_events(file, run_offset, sub_runs, false);
 }
 
 void clear(void)	//clear cuts for current histogram. Run cuts derived from it are not touched
@@ -1217,13 +1245,6 @@ void remcut(int channel, std::string name)
 		status(kFALSE);
 		return;
 	}
-	if (-1 == channel) {
-		if (post_processor->isMultichannel(post_processor->current_type)) {
-			std::cout << "Can't use -1 channel for this cut and multichannel type" << std::endl;
-			return;
-		}
-		std::cout << "Using default channel : " << (channel = post_processor->current_channel) << std::endl;
-	}
 	post_processor->remove_hist_cut(name, channel);
 	if (!post_processor->isMultichannel(post_processor->current_type))
 		update();
@@ -1544,13 +1565,17 @@ void cut_A_S_upper(std::vector<double> region, bool drawn, int channel, std::str
 }
 
 //region is {X0, Y0, X1, Y1} only points above the line are excluded
-FunctionWrapper* create_x_y_upper_cut(std::vector<double> region) //do not call from the CINT
+FunctionWrapper* create_x_y_vertical_cut(std::vector<double> region, bool upper, bool select) //do not call from the CINT
 {
 	struct temp_data {
 		std::vector<double> reg;
+		bool upper;
+		bool select;
 	};
 	temp_data * st_data = new temp_data;
 	st_data->reg = region;
+	st_data->upper = upper;
+	st_data->select = select;
 	FunctionWrapper *picker = new FunctionWrapper(st_data);
 	AStates::Type type = post_processor->current_type;
 	if (type == AStates::Correlation_x)
@@ -1564,6 +1589,8 @@ FunctionWrapper* create_x_y_upper_cut(std::vector<double> region) //do not call 
 	picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 		//{X0, Y0, X1, Y1}
 		std::vector <double> reg = ((temp_data*)data)->reg;
+		bool select = ((temp_data*)data)->select;
+		bool upper = ((temp_data*)data)->upper;
 		if (4 > reg.size())
 			return true;
 		double X0 = reg[0];
@@ -1571,30 +1598,30 @@ FunctionWrapper* create_x_y_upper_cut(std::vector<double> region) //do not call 
 		double X1 = reg[2];
 		double Y1 = reg[3];
 		if (vals[0]<X0 || vals[0] > X1)
-			return true;
+			return !select;
 		if ((vals[1] > (Y0 + (Y1 - Y0)*(vals[0] - X0) / (X1 - X0))))
-			return false;
-		return true;
+			return upper ? select: !select;
+		return upper ? !select : select;
 	});
 
-	picker->SetDrawFunction([](TCanvas *can, void* Data) {
-		if (NULL == can || NULL == Data)
+	picker->SetDrawFunction([](TCanvas *can, void* data) {
+		if (NULL == can || NULL == data)
 			return false;
-		//{A0, S0, A1, S1}
-		std::vector <double> reg = ((temp_data*)Data)->reg;
+		//{X0, Y0, X1, Y1}
+		std::vector <double> reg = ((temp_data*)data)->reg;
+		bool select = ((temp_data*)data)->select;
+		bool upper = ((temp_data*)data)->upper;
 		if (4 > reg.size())
 			return false;
-		double A0 = reg[0];
-		double S0 = reg[1];
-		double A1 = reg[2];
-		double S1 = reg[3];
-		double S_intersect_A_min = S0;
-		double S_intersect_A_max = S1;
+		double X0 = reg[0];
+		double Y0 = reg[1];
+		double X1 = reg[2];
+		double Y1 = reg[3];
 		viewRegion region(can->GetUxmin(), can->GetUymin(), can->GetUxmax(), can->GetUymax());
-		region.polyline_push(A0, DBL_MAX);
-		region.polyline_push(A0, S_intersect_A_min);
-		region.polyline_push(A1, S_intersect_A_max);
-		region.polyline_push(A1, DBL_MAX);
+		region.polyline_push(X0, upper ? DBL_MAX : -DBL_MAX);
+		region.polyline_push(X0, Y0);
+		region.polyline_push(X1, Y1);
+		region.polyline_push(X1, upper ? DBL_MAX : -DBL_MAX);
 		TPolyLine *line = region.get_clipped_polyline();
 		line->SetLineColor(kRed);
 		line->Draw("same");
@@ -1603,14 +1630,18 @@ FunctionWrapper* create_x_y_upper_cut(std::vector<double> region) //do not call 
 	return picker;
 }
 
-//region is {X0, Y0, X1, Y1} only points below the line are excluded
-FunctionWrapper* create_x_y_lower_cut(std::vector<double> region) //do not call from the CINT
+//region is {X0, Y0, X1, Y1} only points above the line are excluded
+FunctionWrapper* create_x_y_horizontal_cut(std::vector<double> region, bool right, bool select) //do not call from the CINT
 {
 	struct temp_data {
 		std::vector<double> reg;
+		bool right;
+		bool select;
 	};
 	temp_data * st_data = new temp_data;
 	st_data->reg = region;
+	st_data->right = right;
+	st_data->select = select;
 	FunctionWrapper *picker = new FunctionWrapper(st_data);
 	AStates::Type type = post_processor->current_type;
 	if (type == AStates::Correlation_x)
@@ -1624,37 +1655,39 @@ FunctionWrapper* create_x_y_lower_cut(std::vector<double> region) //do not call 
 	picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 		//{X0, Y0, X1, Y1}
 		std::vector <double> reg = ((temp_data*)data)->reg;
+		bool select = ((temp_data*)data)->select;
+		bool right = ((temp_data*)data)->right;
 		if (4 > reg.size())
 			return true;
 		double X0 = reg[0];
 		double Y0 = reg[1];
 		double X1 = reg[2];
 		double Y1 = reg[3];
-		if (vals[0]<X0 || vals[0] > X1)
-			return true;
-		if ((vals[1] <= (Y0 + (Y1 - Y0)*(vals[0] - X0) / (X1 - X0))))
-			return false;
-		return true;
+		if (vals[1]<Y0 || vals[1] > Y1)
+			return !select;
+		if ((vals[0] > (X0 + (X1 - X0)*(vals[1] - Y0) / (Y1 - Y0))))
+			return right ? select: !select;
+		return right ? !select : select;
 	});
 
-	picker->SetDrawFunction([](TCanvas *can, void* Data) {
-		if (NULL == can || NULL == Data)
+	picker->SetDrawFunction([](TCanvas *can, void* data) {
+		if (NULL == can || NULL == data)
 			return false;
-		//{A0, S0, A1, S1}
-		std::vector <double> reg = ((temp_data*)Data)->reg;
+		//{X0, Y0, X1, Y1}
+		std::vector <double> reg = ((temp_data*)data)->reg;
+		bool select = ((temp_data*)data)->select;
+		bool right = ((temp_data*)data)->right;
 		if (4 > reg.size())
 			return false;
-		double A0 = reg[0];
-		double S0 = reg[1];
-		double A1 = reg[2];
-		double S1 = reg[3];
-		double S_intersect_A_min = S0;
-		double S_intersect_A_max = S1;
+		double X0 = reg[0];
+		double Y0 = reg[1];
+		double X1 = reg[2];
+		double Y1 = reg[3];
 		viewRegion region(can->GetUxmin(), can->GetUymin(), can->GetUxmax(), can->GetUymax());
-		region.polyline_push(A0, -DBL_MAX);
-		region.polyline_push(A0, S_intersect_A_min);
-		region.polyline_push(A1, S_intersect_A_max);
-		region.polyline_push(A1, -DBL_MAX);
+		region.polyline_push(right ? DBL_MAX : -DBL_MAX, Y0);
+		region.polyline_push(X0, Y0);
+		region.polyline_push(X1, Y1);
+		region.polyline_push(right ? DBL_MAX : -DBL_MAX, Y1);
 		TPolyLine *line = region.get_clipped_polyline();
 		line->SetLineColor(kRed);
 		line->Draw("same");
@@ -1663,13 +1696,13 @@ FunctionWrapper* create_x_y_lower_cut(std::vector<double> region) //do not call 
 	return picker;
 }
 
-void cut_x_y_upper(double A_min, double S_min, double A_max, double S_max, bool drawn, std::string _name)
+void cut_x_y_upper(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name)
 {
 	std::vector<double> region;
-	region.push_back(A_min);
-	region.push_back(S_min);
-	region.push_back(A_max);
-	region.push_back(S_max);
+	region.push_back(X_min);
+	region.push_back(Y_min);
+	region.push_back(X_max);
+	region.push_back(Y_max);
 	cut_x_y_upper(region, drawn, _name);
 }
 
@@ -1679,7 +1712,7 @@ void cut_x_y_upper(std::vector<double> region, bool drawn, std::string _name)
 		status(kFALSE);
 		return;
 	}
-	FunctionWrapper *picker = create_x_y_upper_cut(region);
+	FunctionWrapper *picker = create_x_y_vertical_cut(region, true, false);
 	if (NULL == picker) {
 		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
 		return;
@@ -1698,24 +1731,13 @@ void cut_x_y_upper(std::vector<double> region, bool drawn, std::string _name)
 		update();
 }
 
-void remcut_x_y_upper(std::string _name)
-{
-	if (NULL == g_data) {
-		status(kFALSE);
-		return;
-	}
-	post_processor->remove_hist_cut(_name);
-	if (!post_processor->isMultichannel(post_processor->current_type))
-		update();
-}
-
-void cut_x_y_lower(double A_min, double S_min, double A_max, double S_max, bool drawn, std::string _name)
+void cut_x_y_lower(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name)
 {
 	std::vector<double> region;
-	region.push_back(A_min);
-	region.push_back(S_min);
-	region.push_back(A_max);
-	region.push_back(S_max);
+	region.push_back(X_min);
+	region.push_back(Y_min);
+	region.push_back(X_max);
+	region.push_back(Y_max);
 	cut_x_y_lower(region, drawn, _name);
 }
 
@@ -1725,7 +1747,7 @@ void cut_x_y_lower(std::vector<double> region, bool drawn, std::string _name)
 		status(kFALSE);
 		return;
 	}
-	FunctionWrapper *picker = create_x_y_lower_cut(region);
+	FunctionWrapper *picker = create_x_y_vertical_cut(region, false, false);
 	if (NULL == picker) {
 		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
 		return;
@@ -1744,13 +1766,212 @@ void cut_x_y_lower(std::vector<double> region, bool drawn, std::string _name)
 		update();
 }
 
-void remcut_x_y_lower(std::string _name)
+void cut_x_y_left(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name)
+{
+	std::vector<double> region;
+	region.push_back(X_min);
+	region.push_back(Y_min);
+	region.push_back(X_max);
+	region.push_back(Y_max);
+	cut_x_y_left(region, drawn, _name);
+}
+
+void cut_x_y_left(std::vector<double> region, bool drawn, std::string _name)
 {
 	if (NULL == g_data) {
 		status(kFALSE);
 		return;
 	}
-	post_processor->remove_hist_cut(_name);
+	FunctionWrapper *picker = create_x_y_horizontal_cut(region, false, false);
+	if (NULL == picker) {
+		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
+		return;
+	}
+	if (post_processor->isComposite(post_processor->current_type))
+		post_processor->add_hist_cut(picker, _name, -1, false);
+	else {
+		if (post_processor->isMultichannel(post_processor->current_type)) {
+			for (int chi=0, ch=0; post_processor->loop_channels(post_processor->current_type, ch, chi);)
+				post_processor->add_hist_cut(picker, _name, ch, false);
+		} else {
+			post_processor->add_hist_cut(picker, _name, false);
+		}
+	}
+	if (!post_processor->isMultichannel(post_processor->current_type))
+		update();
+}
+
+void cut_x_y_right(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name)
+{
+	std::vector<double> region;
+	region.push_back(X_min);
+	region.push_back(Y_min);
+	region.push_back(X_max);
+	region.push_back(Y_max);
+	cut_x_y_right(region, drawn, _name);
+}
+
+void cut_x_y_right(std::vector<double> region, bool drawn, std::string _name)
+{
+	if (NULL == g_data) {
+		status(kFALSE);
+		return;
+	}
+	FunctionWrapper *picker = create_x_y_horizontal_cut(region, true, false);
+	if (NULL == picker) {
+		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
+		return;
+	}
+	if (post_processor->isComposite(post_processor->current_type))
+		post_processor->add_hist_cut(picker, _name, -1, false);
+	else {
+		if (post_processor->isMultichannel(post_processor->current_type)) {
+			for (int chi=0, ch=0; post_processor->loop_channels(post_processor->current_type, ch, chi);)
+				post_processor->add_hist_cut(picker, _name, ch, false);
+		} else {
+			post_processor->add_hist_cut(picker, _name, false);
+		}
+	}
+	if (!post_processor->isMultichannel(post_processor->current_type))
+		update();
+}
+
+void cut_x_y_upper_select(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name)
+{
+	std::vector<double> region;
+	region.push_back(X_min);
+	region.push_back(Y_min);
+	region.push_back(X_max);
+	region.push_back(Y_max);
+	cut_x_y_upper_select(region, drawn, _name);
+}
+
+void cut_x_y_upper_select(std::vector<double> region, bool drawn, std::string _name)
+{
+	if (NULL == g_data) {
+		status(kFALSE);
+		return;
+	}
+	FunctionWrapper *picker = create_x_y_vertical_cut(region, true, true);
+	if (NULL == picker) {
+		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
+		return;
+	}
+	if (post_processor->isComposite(post_processor->current_type))
+		post_processor->add_hist_cut(picker, _name, -1, false);
+	else {
+		if (post_processor->isMultichannel(post_processor->current_type)) {
+			for (int chi=0, ch=0; post_processor->loop_channels(post_processor->current_type, ch, chi);)
+				post_processor->add_hist_cut(picker, _name, ch, false);
+		} else {
+			post_processor->add_hist_cut(picker, _name, false);
+		}
+	}
+	if (!post_processor->isMultichannel(post_processor->current_type))
+		update();
+}
+
+void cut_x_y_lower_select(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name)
+{
+	std::vector<double> region;
+	region.push_back(X_min);
+	region.push_back(Y_min);
+	region.push_back(X_max);
+	region.push_back(Y_max);
+	cut_x_y_lower_select(region, drawn, _name);
+}
+
+void cut_x_y_lower_select(std::vector<double> region, bool drawn, std::string _name)
+{
+	if (NULL == g_data) {
+		status(kFALSE);
+		return;
+	}
+	FunctionWrapper *picker = create_x_y_vertical_cut(region, false, true);
+	if (NULL == picker) {
+		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
+		return;
+	}
+	if (post_processor->isComposite(post_processor->current_type))
+		post_processor->add_hist_cut(picker, _name, -1, false);
+	else {
+		if (post_processor->isMultichannel(post_processor->current_type)) {
+			for (int chi=0, ch=0; post_processor->loop_channels(post_processor->current_type, ch, chi);)
+				post_processor->add_hist_cut(picker, _name, ch, false);
+		} else {
+			post_processor->add_hist_cut(picker, _name, false);
+		}
+	}
+	if (!post_processor->isMultichannel(post_processor->current_type))
+		update();
+}
+
+void cut_x_y_left_select(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name)
+{
+	std::vector<double> region;
+	region.push_back(X_min);
+	region.push_back(Y_min);
+	region.push_back(X_max);
+	region.push_back(Y_max);
+	cut_x_y_left_select(region, drawn, _name);
+}
+
+void cut_x_y_left_select(std::vector<double> region, bool drawn, std::string _name)
+{
+	if (NULL == g_data) {
+		status(kFALSE);
+		return;
+	}
+	FunctionWrapper *picker = create_x_y_horizontal_cut(region, false, true);
+	if (NULL == picker) {
+		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
+		return;
+	}
+	if (post_processor->isComposite(post_processor->current_type))
+		post_processor->add_hist_cut(picker, _name, -1, false);
+	else {
+		if (post_processor->isMultichannel(post_processor->current_type)) {
+			for (int chi=0, ch=0; post_processor->loop_channels(post_processor->current_type, ch, chi);)
+				post_processor->add_hist_cut(picker, _name, ch, false);
+		} else {
+			post_processor->add_hist_cut(picker, _name, false);
+		}
+	}
+	if (!post_processor->isMultichannel(post_processor->current_type))
+		update();
+}
+
+void cut_x_y_right_select(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name)
+{
+	std::vector<double> region;
+	region.push_back(X_min);
+	region.push_back(Y_min);
+	region.push_back(X_max);
+	region.push_back(Y_max);
+	cut_x_y_right_select(region, drawn, _name);
+}
+
+void cut_x_y_right_select(std::vector<double> region, bool drawn, std::string _name)
+{
+	if (NULL == g_data) {
+		status(kFALSE);
+		return;
+	}
+	FunctionWrapper *picker = create_x_y_horizontal_cut(region, true, true);
+	if (NULL == picker) {
+		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
+		return;
+	}
+	if (post_processor->isComposite(post_processor->current_type))
+		post_processor->add_hist_cut(picker, _name, -1, false);
+	else {
+		if (post_processor->isMultichannel(post_processor->current_type)) {
+			for (int chi=0, ch=0; post_processor->loop_channels(post_processor->current_type, ch, chi);)
+				post_processor->add_hist_cut(picker, _name, ch, false);
+		} else {
+			post_processor->add_hist_cut(picker, _name, false);
+		}
+	}
 	if (!post_processor->isMultichannel(post_processor->current_type))
 		update();
 }

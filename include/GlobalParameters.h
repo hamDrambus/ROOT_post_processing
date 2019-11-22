@@ -60,6 +60,7 @@ extern PostProcessor* post_processor;
 //namespace ParameterPile
 //{
 	enum DrawEngine { Gnuplot, ROOT_ };
+	enum TriggerVersion { trigger_v1, trigger_v2, trigger_v3};
 
 	Bool_t draw_required(/*ParameterPile::*/experiment_area what);
 
@@ -84,6 +85,7 @@ extern PostProcessor* post_processor;
 	extern int gnuplot_max_size;
 	extern int gnuplot_width;
 
+	extern TriggerVersion trigger_version;
 	extern std::map < std::string, double > experiment_fields;
 	extern std::map < std::string, double > PMT_V;
 	extern std::map < std::string, double > MPPC_V;

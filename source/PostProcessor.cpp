@@ -30,7 +30,7 @@ std::string PostProcessor::hist_name()
 	return name;
 }
 
-void PostProcessor::print_hist(std::string path)
+void PostProcessor::print_hist(std::string path, bool png_only)
 {
 	int ch = current_channel;
 	Type type = current_type;
@@ -53,9 +53,11 @@ void PostProcessor::print_hist(std::string path)
 		}
 	}
 	std::ofstream str;
-	open_output_file(name+".hdata", str, std::ios_base::trunc | std::ios_base::binary);
-	std::size_t real_size = numOfFills(false);
-	str.write((char*)&real_size, sizeof(std::size_t));
+	if (!png_only) {
+		open_output_file(name+".hdata", str, std::ios_base::trunc | std::ios_base::binary);
+		std::size_t real_size = numOfFills(false);
+		str.write((char*)&real_size, sizeof(std::size_t));
+	}
 	struct temp_data {
 		std::ofstream* str;
 		int ch_size;
@@ -184,11 +186,14 @@ void PostProcessor::print_hist(std::string path)
 	op.apply_hist_cuts = true;
 	op.apply_phys_cuts = false;
 	std::vector<Operation> vec(1, op);
-	LoopThroughData(vec, ch, current_type);
+	if (!png_only)
+		LoopThroughData(vec, ch, current_type);
 	delete writer_to_file;
 	str.close();
-	if (NULL!=get_current_canvas())
+	if (NULL!=get_current_canvas()) {
+		ensure_file(name+".png");
 		get_current_canvas()->SaveAs((name+".png").c_str(), "png");
+	}
 }
 
 Bool_t PostProcessor::StateChange(int to_ch, int to_exp, Type to_type, std::size_t to_canvas, int from_ch, int from_exp, Type from_type, std::size_t from_canvas)
@@ -482,19 +487,37 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 						if (failed_hist_cut && failed_phys_cut)
 							break;
 					}
-					accepted_peaks[0].push_back(peak_processed((*peaks)[chan_ind][run][pk], cut_data[5]));
+					accepted_peaks[0].push_back(peak_processed(cut_data[0], cut_data[1], cut_data[2], cut_data[3], cut_data[4], cut_data[5]));
 					if (!failed_hist_cut)
-						accepted_peaks[1].push_back(peak_processed((*peaks)[chan_ind][run][pk], cut_data[5]));
+						accepted_peaks[1].push_back(peak_processed(cut_data[0], cut_data[1], cut_data[2], cut_data[3], cut_data[4], cut_data[5]));
 					if (!failed_phys_cut)
-						accepted_peaks[2].push_back(peak_processed((*peaks)[chan_ind][run][pk], cut_data[5]));
+						accepted_peaks[2].push_back(peak_processed(cut_data[0], cut_data[1], cut_data[2], cut_data[3], cut_data[4], cut_data[5]));
 					if (!failed_phys_cut && !failed_hist_cut)
-						accepted_peaks[3].push_back(peak_processed((*peaks)[chan_ind][run][pk], cut_data[5]));
+						accepted_peaks[3].push_back(peak_processed(cut_data[0], cut_data[1], cut_data[2], cut_data[3], cut_data[4], cut_data[5]));
 				}
 			}
 
 			for (int i = 0; i<4; ++i) {
-				trigger_offset[i][0] = SignalOperations::find_trigger(accepted_peaks[i], setups->time_window,
+				switch (trigger_version) {
+				case trigger_v1: {
+					trigger_offset[i][0] = SignalOperations::find_trigger_v1(accepted_peaks[i], setups->time_window,
 						(type == PMT_trigger_bNpe) ? true : false);
+					break;
+				}
+				case trigger_v2: {
+					trigger_offset[i][0] = SignalOperations::find_trigger_v2(accepted_peaks[i], setups->time_window,
+						(type == PMT_trigger_bNpe) ? true : false);
+					break;
+				}
+				case trigger_v3: {
+					trigger_offset[i][0] = SignalOperations::find_trigger_v3(accepted_peaks[i], setups->time_window,
+						(type == PMT_trigger_bNpe) ? true : false);
+					break;
+				}
+				default:
+					trigger_offset[i][0] = 0;
+				}
+
 			}
 			bool failed_hist_phys = false, failed_hist = false, failed_phys = false;
 			for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut)
@@ -513,7 +536,8 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 				if (operations[o].apply_run_cuts && failed_run_cut)
 					continue;
 				if (operations[o].apply_hist_cuts && !operations[o].apply_phys_cuts) {
-					if (!failed_hist) (*operations[o].operation)(trigger_offset[1], run);
+					if (!failed_hist)
+						(*operations[o].operation)(trigger_offset[1], run);
 					continue;
 				}
 				if (!operations[o].apply_hist_cuts && operations[o].apply_phys_cuts) {
@@ -2243,9 +2267,9 @@ void PostProcessor::save_all(void)
 	str.close();
 }
 
-void PostProcessor::saveAs(std::string path)
+void PostProcessor::saveAs(std::string path, bool png_only)
 {
-	print_hist(path);
+	print_hist(path, png_only);
 }
 
 void PostProcessor::clear(void)	//clear cuts for current histogram. Run cuts derived from it are not touched
@@ -2871,7 +2895,7 @@ void PostProcessor::unset_as_run_cut(std::string name)
 	}
 }
 
-void PostProcessor::print_accepted_events (std::string file, int run_offset, int sub_runs) //TODO: compress the output to intervals
+void PostProcessor::print_events (std::string file, int run_offset, int sub_runs, bool accepted) //TODO: compress the output to intervals
 {
 	std::ofstream str;
 	open_output_file(file, str, std::ios_base::trunc);
@@ -2880,14 +2904,14 @@ void PostProcessor::print_accepted_events (std::string file, int run_offset, int
 	std::deque<EventCut> empty;
 	std::deque<EventCut> *run_cuts = (NULL== get_run_cuts(current_exp_index) ? &empty : get_run_cuts(current_exp_index));
 	std::size_t run_size = isPMTtype(current_type) ? data->pmt_peaks[current_exp_index][ch_ind].size() : data->mppc_peaks[current_exp_index][ch_ind].size();
-	str<<"//run\tsubrun"<<std::endl;
+	str<<"//run\tsubrun\ttrigger"<<std::endl;
 	for (std::size_t run = 0; run != run_size; ++run) {
 		int true_run = run_offset + (int)run_n/sub_runs;
 		int sub_run = (run_n)%(sub_runs);
 		for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); (cut != c_end_); ++cut)
-			if (kFALSE == cut->GetAccept(run))//not calculating it here!
+			if ((!accepted) == cut->GetAccept(run))//not calculating it here!
 				goto _cutted;
-		str<< true_run <<"\t"<<sub_run<<std::endl;
+		str<< true_run <<"\t"<<sub_run<<"\t"<<data->trigger_offset[current_exp_index][run]<<std::endl;
 	_cutted:;
 		++run_n;
 	}
@@ -3069,7 +3093,7 @@ bool PostProcessor::set_trigger_offsets(double extra_offset) //uses trigger type
 	FunctionWrapper offset_setter(&offset_data);
 	offset_setter.SetFunction([](std::vector<double> &pars, int run, void *data) {
 		if (pars[0] != DBL_MAX && pars[0] != -DBL_MAX)
-			(*((temp_data*)data)->offsets)[run] = ((temp_data*)data)->extra_offset + pars[0];
+			(*((temp_data*)data)->offsets)[run] = ((temp_data*)data)->extra_offset - pars[0];
 		return true;
 	});
 	Operation op;
