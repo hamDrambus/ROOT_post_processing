@@ -1941,9 +1941,9 @@ namespace SignalOperations {
 			for (auto i = x_start; (i != _end_)&&(i<x_finish); ((delta<(_end_ - i)) ? i = i + delta : i = _end_)){
 				int shift = (int)(_size_ - (i - _begin_) - N_trust) < 0 ? (_size_ - (i - _begin_) - N_trust) : 0; //accounts for the end
 
-				TVectorD coefs;
+				std::vector<double> coefs;
 				std::vector<double>::iterator x_left = i + shift;
-				fitter(xs, ys, x_left - _begin_, N_trust, coefs, *x_left);
+				coefs = fitter(xs, ys, x_left - _begin_, N_trust, *x_left);
 
 				double y_max_exact, x_max_exact;
 				std::vector<double>::iterator x_max_here;
@@ -1987,9 +1987,9 @@ namespace SignalOperations {
 			for (auto i = x_start; (i != _end_) && (i<x_finish); ((delta<(_end_ - i)) ? i = i + delta : i = _end_)){
 				int shift = (int)(_size_- (i - _begin_) - N_trust) < 0 ? (_size_ - (i - _begin_) - N_trust) : 0; //accounts for the end
 
-				TVectorD coefs;
+				std::vector<double> coefs;
 				std::vector<double>::iterator x_left = i + shift;
-				fitter(xs, ys, x_left - _begin_, N_trust, coefs, *x_left);
+				coefs = fitter(xs, ys, x_left - _begin_, N_trust, *x_left);
 
 				double y_max_exact, x_max_exact;
 				std::vector<double>::iterator x_max_here;
@@ -2042,9 +2042,9 @@ namespace SignalOperations {
 			std::size_t _size_ = xs.size();
 			for (auto i = minimal_iterator; (i != _end_); ((delta < (_end_ - i)) ? i = i + delta : i = _end_)) {
 				int shift = (int)(_size_ - (i - _begin_) - N_trust) < 0 ? (_size_ - (i - _begin_) - N_trust) : 0; //accounts for the end
-				TVectorD coefs;
+				std::vector<double> coefs;
 				std::vector<double>::iterator x_left = i + shift;
-				fitter(xs, ys, (x_left - _begin_), N_trust, coefs, *x_left);
+				coefs = fitter(xs, ys, (x_left - _begin_), N_trust, *x_left);
 
 				//#ifdef _TEMP_CODE
 				//				if ((*i <= 32.49) && (32.49 <= *(i + N_trust - 1))) {
@@ -2180,9 +2180,9 @@ namespace SignalOperations {
 			std::size_t _size_ = xs.size();
 			for (auto i = x_finish; (i != _end_);((delta<(_end_ - i)) ? i = i + delta : i = _end_)){
 				int shift = (int)(_size_ - (i - _begin_) - N_trust) < 0 ? (_size_ - (i - _begin_) - N_trust) : 0; //accounts for the end
-				TVectorD coefs;
+				std::vector<double> coefs;
 				std::vector<double>::iterator x_left = i + shift;
-				fitter(xs, ys, (i - _begin_) + shift, N_trust, coefs, *x_left);
+				coefs = fitter(xs, ys, (i - _begin_) + shift, N_trust, *x_left);
 				std::vector<double>::iterator x_extr;
 				std::vector<double>::iterator x_intersect1, x_intersect2;
 				std::vector<double>::iterator x_inter = _end_; //of interest
@@ -2220,9 +2220,9 @@ namespace SignalOperations {
 			auto _rbegin_ = xs.rbegin();
 			for (auto i = x_left_peak; (i != x_rend); ((delta<(x_rend - i)) ? i = i + delta : i = x_rend)){
 				int shift = (int)(_size_ - (i - _rbegin_) - N_trust) < 0 ? (_size_ - (i - _rbegin_) - N_trust) : 0; //accounts for the rend
-				TVectorD coefs;
+				std::vector<double> coefs;
 				std::vector<double>::iterator x_left = (i + shift).base();
-				fitter(xs, ys, x_left - _begin_, N_trust, coefs, *x_left);
+				coefs = fitter(xs, ys, x_left - _begin_, N_trust, *x_left);
 				std::vector<double>::iterator x_extr;
 				std::vector<double>::iterator x_intersect1, x_intersect2;
 				std::vector<double>::iterator x_inter = _end_; //of interest
@@ -2405,9 +2405,9 @@ namespace SignalOperations {
 			std::size_t _size_ = xs.size();
 			for (auto i = x_start; (i != _end_); ((delta<(_end_ - i)) ? i = i + delta : i = _end_)) {
 				int shift = (int)(_size_ - (i - _begin_) - N_trust) < 0 ? (_size_ - (i - _begin_) - N_trust) : 0; //accounts for the end
-				TVectorD coefs;
+				std::vector<double> coefs;
 				std::vector<double>::iterator x_left = i + shift;
-				fitter(xs, ys, (i - _begin_) + shift, N_trust, coefs, *x_left);
+				coefs = fitter(xs, ys, (i - _begin_) + shift, N_trust, *x_left);
 				std::vector<double>::iterator x_extr;
 				double x_extr_exact, y_extr_exact;
 				fitter.FindExtremum(x_extr, x_extr_exact, y_extr_exact);
@@ -2454,9 +2454,9 @@ namespace SignalOperations {
 			std::size_t _size_ = xs.size();
 			for (auto i = x_start; (i != _rend_); ((delta<(_rend_ - i)) ? i = i + delta : i = _rend_)){
 				int shift = (int)(_size_ - (i - _rbegin_) - N_trust) < 0 ? (_size_ - (i - _rbegin_) - N_trust) : 0; //accounts for the end
-				TVectorD coefs;
+				std::vector<double> coefs;
 				std::vector<double>::reverse_iterator x_left = i + shift;
-				fitter(xs, ys, (i.base() - _begin_) + shift, N_trust, coefs, *x_left);
+				coefs = fitter(xs, ys, (i.base() - _begin_) + shift, N_trust, *x_left);
 				std::vector<double>::iterator x_extr;
 				double x_extr_exact, y_extr_exact;
 				fitter.FindExtremum(x_extr, x_extr_exact, y_extr_exact);

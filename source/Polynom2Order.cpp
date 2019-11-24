@@ -1,38 +1,54 @@
 #include "Polynom2Order.h"
 
-Polynom2Order::Polynom2Order() : PolynomialFit(2), _xs_last(NULL), _ys_last(NULL), _x_left(0), _x_right(0), _x0_in(0)
+Polynom2Order::Polynom2Order() : fitter(2), _xs_last(NULL), _ys_last(NULL), _x_left(0), _x_right(0), _x0_in(0)
+{}
+
+std::vector<double> Polynom2Order::operator ()(const std::vector<double> &xs_in, const std::vector<double> &ys_in, boost::optional<double> &in_x0)
 {
+	return (*this)(xs_in, ys_in, 0, std::min(xs_in.size(), ys_in.size()), in_x0);
 }
-void Polynom2Order::operator ()(std::vector<double> &xs_in, std::vector<double> &ys_in,
-	TVectorD &pars_out, double in_x0) //in_x0 - in what point set zero x (In the SG filter it is convinient to set x_in
-	//to the point in which value is calculated
+//only for a part of a vector
+std::vector<double> Polynom2Order::operator ()(const std::vector<double> & xs_in, const std::vector<double> &ys_in)
 {
-	this->operator()(xs_in, ys_in, 0, xs_in.size(), pars_out, in_x0);
+	boost::optional<double> tmp(boost::none);
+	return (*this)(xs_in, ys_in, tmp);
 }
-void Polynom2Order::operator ()(std::vector<double> &xs_in, std::vector<double> &ys_in,
-	int offset, int N_points, TVectorD &pars_out, double in_x0) //only for a part of a vector
+//Fit only part of a vector. offset+N_points-1 must be in the range of the vector
+std::vector<double> Polynom2Order::operator ()(const std::vector<double> & xs_in, const std::vector<double> &ys_in, int offset, int N_points)
 {
-	if (xs_in.size() != ys_in.size())
-		return;
-	if ((xs_in.size() - offset) < N_points)
-		return;
-	if (N_points < (_order + 1))
-		return;
-	_xs_last = &xs_in;
-	_ys_last = &ys_in;
-	_x_start = xs_in.begin() + offset;
-	_x_finish = xs_in.begin() + offset + N_points;
-	_x_left = *_x_start;
-	_x_right = *(_x_finish - 1);
-	_x0_in = in_x0;
-	PolynomialFit::operator()(xs_in, ys_in, offset, N_points, pars_out, in_x0);
+	boost::optional<double> tmp(boost::none);
+	return (*this)(xs_in, ys_in, offset, N_points, tmp);
 }
-void Polynom2Order::setOrder(int n)
+//in_x0 - relative to what point carry out fit
+std::vector<double> Polynom2Order::operator ()(const std::vector<double> & xs_in, const std::vector<double> &ys_in, double in_x0)
 {
-	_order = 2;
+	boost::optional<double> tmp(in_x0);
+	return (*this)(xs_in, ys_in, tmp);
 }
 
-void Polynom2Order::FindMaximum(std::vector<double>::iterator &x_max, double &x_max_exact, double &y_max_exact)
+std::vector<double> Polynom2Order::operator ()(const std::vector<double> & xs_in, const std::vector<double> &ys_in, int offset, int N_points, double in_x0)
+{
+	boost::optional<double> tmp(in_x0);
+	return (*this)(xs_in, ys_in, offset, N_points, tmp);
+}
+
+std::vector<double> Polynom2Order::operator ()(const std::vector<double> & xs_in, const std::vector<double> &ys_in, int offset, int N_points, boost::optional<double> &in_x0)
+{
+	std::vector<double> out = fitter(xs_in, ys_in, offset, N_points, in_x0);
+	if (out.empty())
+		return out;
+	_last_coefs = out;
+	_xs_last = &xs_in;
+	_ys_last = &ys_in;
+	_x_start = _xs_last->begin() + offset;
+	_x_finish = _xs_last->begin() + offset + N_points;
+	_x_left = *_x_start;
+	_x_right = *(_x_finish - 1);
+	_x0_in = *in_x0; //guaranteed to have value after fitter call
+	return out;
+}
+
+void Polynom2Order::FindMaximum(std::vector<double>::const_iterator &x_max, double &x_max_exact, double &y_max_exact)
 {
 	x_max = _xs_last->end();
 	if (_last_coefs[2] >= 0){ //max at the ends of the range
@@ -70,7 +86,7 @@ void Polynom2Order::FindMaximum(std::vector<double>::iterator &x_max, double &x_
 		}
 	}
 }
-void Polynom2Order::FindMinimum(std::vector<double>::iterator &x_min, double &x_min_exact, double &y_min_exact)
+void Polynom2Order::FindMinimum(std::vector<double>::const_iterator &x_min, double &x_min_exact, double &y_min_exact)
 {
 	x_min = _xs_last->end();
 	if (_last_coefs[2] <= 0){ //min at the ends of the range
@@ -109,7 +125,7 @@ void Polynom2Order::FindMinimum(std::vector<double>::iterator &x_min, double &x_
 	}
 }
 
-void Polynom2Order::Findintersection(std::vector<double>::iterator &x_inter, std::vector<double>::iterator &x_inter2, double &x_inter_exact, double &x_inter_exact2,
+void Polynom2Order::Findintersection(std::vector<double>::const_iterator &x_inter, std::vector<double>::const_iterator &x_inter2, double &x_inter_exact, double &x_inter_exact2,
 	double threshold) //if not found, returns x_iter=xs.end();
 {
 	x_inter = _xs_last->end();
@@ -136,7 +152,7 @@ void Polynom2Order::Findintersection(std::vector<double>::iterator &x_inter, std
 	}
 }
 
-void Polynom2Order::FindExtremum(std::vector<double>::iterator &x_extr, double &x_extr_exact, double &y_extr_exact){
+void Polynom2Order::FindExtremum(std::vector<double>::const_iterator &x_extr, double &x_extr_exact, double &y_extr_exact) {
 	x_extr_exact = -_last_coefs[1] / (2 * _last_coefs[2]);
 	x_extr_exact += _x0_in;
 	if (!(x_extr_exact<_x_left) && !(x_extr_exact>_x_right)){//extremum inside the range
@@ -147,19 +163,19 @@ void Polynom2Order::FindExtremum(std::vector<double>::iterator &x_extr, double &
 	x_extr = _xs_last->end();
 }
 
-double Polynom2Order::Value(double X){
-	if (_last_coefs.GetNrows() < 3)
+double Polynom2Order::Value(double X) {
+	if (_last_coefs.size() < 3)
 		return 0; //TODO: actually it would be better to throw.
 	return _last_coefs[0] + _last_coefs[1] * (X - _x0_in) + _last_coefs[2] * (X - _x0_in)*(X - _x0_in);
 }
 
-double Polynom2Order::Derivative(double X){
-	if (_last_coefs.GetNrows() < 3)
+double Polynom2Order::Derivative(double X) {
+	if (_last_coefs.size() < 3)
 		return 0; //TODO: actually it would be better to throw.
 	return _last_coefs[1] + _last_coefs[2] * 2 * (X - _x0_in);
 }
 
-std::vector<double>::iterator Polynom2Order::find_x_iterator_by_value(double x)
+std::vector<double>::const_iterator Polynom2Order::find_x_iterator_by_value(double x)
 {
 	for (auto h = _x_start; h != (_x_finish - 1); h++) //find in which point of the vector the maximum realizes
 		if (!(*h > x) && !(*(h + 1) < x)){
