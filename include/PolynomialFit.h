@@ -10,7 +10,7 @@
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/lu.hpp>
 #endif
-#include "GlobalParameters.h"
+#include "GlobalDefinitions.h"
 
 //Copy of PolynomialFit.h from ThreeDimSimulation project, but boost is hidden from ROOT
 //because it won't be able to create dictionary for it.
@@ -92,18 +92,10 @@ public:
 	void use_rightmost(bool use) {
 		use_right = use;
 	}
-	void set_leftmost(double val) {
-		left_value = val;
-	}
-	void unset_leftmost(void) {
-		left_value = boost::none;
-	}
-	void set_rightmost(double val) {
-		right_value = val;
-	}
-	void unset_rightmost(void) {
-		right_value = boost::none;
-	}
+	void set_leftmost(double val);
+	void unset_leftmost(void);
+	void set_rightmost(double val);
+	void unset_rightmost(void);
 	void set_out_value(double val) {
 		set_leftmost(val);
 		set_rightmost(val);
@@ -152,7 +144,7 @@ public:
 	void write(std::ofstream& str, std::string comment = "") const;
 
 #ifndef __ROOTCLING__
-	double operator()(double X_point, boost::optional<double> x0 = boost::none) const; //x0 = point is recommended to use. At least x0 must be close to point, or there will be large errors otherwise
+	double operator()(double X_point, boost::optional<double> x0) const; //x0 = point is recommended to use. At least x0 must be close to point, or there will be large errors otherwise
 	//Warning! These functions have defined behaviour only when X/Y values are sorted in the ascending order.
 	//DataVector's X values are supposed to be always sorted, but there is no guarantee about Ys;
 	boost::optional<std::pair<std::size_t, std::size_t>> getX_indices(double X_point) const; //[n_min, n_max] are used, not [n_min, n_max).N_used == n_max - n_min + 1 >= order + 1

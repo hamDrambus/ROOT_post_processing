@@ -213,6 +213,19 @@ void DataVector::initialize(std::vector<double> &xx, std::vector<double> &yy, st
 	});
 }
 
+void DataVector::set_leftmost(double val) {
+	left_value = val;
+}
+void DataVector::unset_leftmost(void) {
+	left_value = boost::none;
+}
+void DataVector::set_rightmost(double val) {
+	right_value = val;
+}
+void DataVector::unset_rightmost(void) {
+	right_value = boost::none;
+}
+
 void DataVector::insert(double x, double y) //do not disrupt order
 {
 	std::size_t sz = xys.size();

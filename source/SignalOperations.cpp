@@ -29,7 +29,7 @@ namespace SignalOperations {
 		str.close();
 	}
 
-	void signal_to_file(std::vector<double> &xs, std::vector<double> &ys, std::string fname)
+	void signal_to_file(const std::vector<double> &xs, const std::vector<double> &ys, std::string fname)
 	{
 		if (xs.size()!=ys.size()){
 			std::cout<<"SignalOperations::signal_to_file: x-y size mismatch"<<std::endl;
@@ -53,7 +53,7 @@ namespace SignalOperations {
 			*i = -*i;
 	}
 
-	double find_baseline_by_median(double approx, std::vector<double> &xs, std::vector<double> &ys, std::deque<peak> &peaks)
+	double find_baseline_by_median(double approx, const std::vector<double> &xs, const std::vector<double> &ys, std::deque<peak> &peaks)
 	{
 		if (xs.size() != ys.size())
 			return approx;
@@ -84,7 +84,7 @@ namespace SignalOperations {
 			return 0.5*(selected_y[ind / 2] + selected_y[1 + (ind / 2)]);
 	}
 
-	double find_baseline_by_median(double approx, std::vector<double> &xs, std::vector<double> &ys)
+	double find_baseline_by_median(double approx, const std::vector<double> &xs, const std::vector<double> &ys)
 	{
 		if (xs.size() != ys.size())
 			return approx;
@@ -99,7 +99,7 @@ namespace SignalOperations {
 			return 0.5*(selected_y[ind / 2] + selected_y[1 + (ind / 2)]);
 	}
 
-	double find_baseline_by_integral(double approx, std::vector<double> &xs, std::vector<double> &ys)
+	double find_baseline_by_integral(double approx, const std::vector<double> &xs, const std::vector<double> &ys)
 	{
 		if ((xs.size() <= 1) || (xs.size() != ys.size()))
 			return approx;
@@ -111,7 +111,7 @@ namespace SignalOperations {
 		return val/dx;
 	}
 
-	double find_baseline_by_integral(double approx, std::vector<double> &xs, std::vector<double> &ys, std::deque<peak> &peaks)
+	double find_baseline_by_integral(double approx, const std::vector<double> &xs, const std::vector<double> &ys, std::deque<peak> &peaks)
 	{
 		if ((xs.size() != ys.size())||(xs.size()<2))
 			return approx;
@@ -119,7 +119,7 @@ namespace SignalOperations {
 		auto _end_ = xs.end();
 		auto _begin_ = xs.begin();
 		double Sum_dx = 0, Sum_int = 0;
-		std::vector<double>::iterator x_cut_left = xs.begin(), x_cut_right = _end_;
+		std::vector<double>::const_iterator x_cut_left = xs.begin(), x_cut_right = _end_;
 		Bool_t do_account = kTRUE;
 		double delta_x = *(++xs.begin()) - *(xs.begin());
 		auto pks_end_ = peaks.end();
@@ -163,7 +163,7 @@ namespace SignalOperations {
 	}
 
 	//Not used, too unstable and very expensive
-	void find_baseline_by_ROOT_advanced(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &ys_out)
+	void find_baseline_by_ROOT_advanced(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out)
 	{
 		if (xs.size() != ys.size()){
 			ys_out.clear();
@@ -182,25 +182,25 @@ namespace SignalOperations {
 		delete[] f_ys;
 		spec->Delete();
 
-		std::vector<double>::iterator x_min;
+		std::vector<double>::const_iterator x_min;
 		double y_min;
 		SignalOperations::get_min(xs, ys_out, xs.begin(), xs.end(), x_min, y_min, 1);
 		if (x_min == xs.end())
 			return;
-		std::vector<double>::reverse_iterator x_prev_min(x_min);
+		std::vector<double>::const_reverse_iterator x_prev_min(x_min);
 		SignalOperations::find_previous_extremum_faster(xs, ys_out, x_prev_min, 5); //TODO: N_trust and ParameterPile
 		if (x_prev_min == xs.rend())
 			return;
 		SignalOperations::find_previous_extremum_faster(xs, ys_out, x_prev_min, 5);
 		if (x_prev_min == xs.rend())
 			return;
-		std::vector<double>::iterator x_cut_from = x_prev_min.base();
+		std::vector<double>::const_iterator x_cut_from = x_prev_min.base();
 		double y_cut_from = ys_out[x_cut_from - xs.begin()];
 		for (auto xx = x_cut_from; xx != x_min; ++xx)
 			ys_out[xx - xs.begin()] = y_cut_from + (*xx-*x_cut_from)*(y_min - y_cut_from)/(*x_min-*x_cut_from);//line
 	}
 
-	void find_baseline_by_ROOT(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &ys_out)
+	void find_baseline_by_ROOT(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out)
 	{
 		int _size_ = ys.size();
 #ifndef _USE_DEQUE
@@ -221,7 +221,7 @@ namespace SignalOperations {
 #endif
 	}
 
-	void find_baseline_by_ROOT_v2(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &ys_out)
+	void find_baseline_by_ROOT_v2(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out)
 	{
 		int _size_ = ys.size();
 #ifndef _USE_DEQUE
@@ -242,7 +242,7 @@ namespace SignalOperations {
 #endif
 	}
 
-	void find_baseline_by_ROOT_v3(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &ys_out)
+	void find_baseline_by_ROOT_v3(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out)
 	{
 		int _size_ = ys.size();
 #ifndef _USE_DEQUE
@@ -263,7 +263,7 @@ namespace SignalOperations {
 #endif
 	}
 
-	void find_baseline_by_ROOT_v4(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &ys_out)
+	void find_baseline_by_ROOT_v4(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out)
 	{
 		int _size_ = ys.size();
 #ifndef _USE_DEQUE
@@ -284,7 +284,7 @@ namespace SignalOperations {
 #endif
 	}
 
-	void find_baseline_by_ROOT_v5(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &ys_out)
+	void find_baseline_by_ROOT_v5(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out)
 	{
 		ys_out.resize(ys.size());
 
@@ -300,7 +300,7 @@ namespace SignalOperations {
 		spec->Delete();
 	}
 
-	void find_baseline_by_ROOT_v6(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &ys_out)
+	void find_baseline_by_ROOT_v6(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out)
 	{
 		ys_out.resize(ys.size());
 
@@ -315,25 +315,25 @@ namespace SignalOperations {
 		delete[] f_ys;
 		spec->Delete();
 
-		std::vector<double>::iterator x_min;
+		std::vector<double>::const_iterator x_min;
 		double y_min;
 		SignalOperations::get_min(xs, ys_out, xs.begin(), xs.end(), x_min, y_min, 1);
 		if (x_min == xs.end())
 			return;
-		std::vector<double>::reverse_iterator x_prev_min(x_min);
+		std::vector<double>::const_reverse_iterator x_prev_min(x_min);
 		SignalOperations::find_previous_extremum_faster(xs, ys_out, x_prev_min, 5);
 		if (x_prev_min == xs.rend())
 			return;
 		SignalOperations::find_previous_extremum_faster(xs, ys_out, x_prev_min, 5);
 		if (x_prev_min == xs.rend())
 			return;
-		std::vector<double>::iterator x_cut_from = x_prev_min.base();
+		std::vector<double>::const_iterator x_cut_from = x_prev_min.base();
 		double y_cut_from = ys_out[x_cut_from - xs.begin()];
 		for (auto xx = x_cut_from; xx != x_min; ++xx)
 			ys_out[xx - xs.begin()] = y_cut_from + (*xx - *x_cut_from)*(y_min - y_cut_from) / (*x_min - *x_cut_from);//line
 	}
 
-	void find_baseline_by_ROOT_v7(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &ys_out)
+	void find_baseline_by_ROOT_v7(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out)
 	{
 		ys_out.resize(ys.size());
 
@@ -349,7 +349,7 @@ namespace SignalOperations {
 		spec->Delete();
 	}
 
-	void find_baseline_by_ROOT_v8(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &ys_out)
+	void find_baseline_by_ROOT_v8(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out)
 	{
 		ys_out.resize(ys.size());
 
@@ -1662,7 +1662,7 @@ namespace SignalOperations {
 	}
 
 
-	void Integrate(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &y_out, double baseline)
+	void Integrate(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &y_out, double baseline)
 	{
 		if ((xs.size() != ys.size()) || (xs.size() <= 1)){
 			y_out.clear();
@@ -1680,7 +1680,7 @@ namespace SignalOperations {
 		}
 	}
 
-	void Integrate(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &y_out, double dx_hint, double baseline)
+	void Integrate(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &y_out, double dx_hint, double baseline)
 	{
 		if ((xs.size() != ys.size()) || (xs.size() <= 1)) {
 			y_out.clear();
@@ -1696,7 +1696,7 @@ namespace SignalOperations {
 		}
 	}
 
-	void Integrate(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &x_out, std::vector<double> &y_out, double left, double right, double dx_hint, double baseline)
+	void Integrate(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &x_out, std::vector<double> &y_out, double left, double right, double dx_hint, double baseline)
 	{
 		y_out.clear();
 		x_out.clear();
@@ -1714,7 +1714,7 @@ namespace SignalOperations {
 		}
 	}
 
-	void Integrate(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &x_out, std::vector<double> &y_out, double left, double right, double baseline)
+	void Integrate(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &x_out, std::vector<double> &y_out, double left, double right, double baseline)
 	{
 		y_out.clear();
 		x_out.clear();
@@ -1734,7 +1734,7 @@ namespace SignalOperations {
 		}
 	}
 
-	void Integrate(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &x_out, std::vector<double> &y_out, std::vector<double>::iterator left, std::vector<double>::iterator right, double dx_hint, double baseline)
+	void Integrate(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &x_out, std::vector<double> &y_out, std::vector<double>::const_iterator left, std::vector<double>::const_iterator right, double dx_hint, double baseline)
 	{
 		if ((right == xs.end()) || (left == xs.end()) || (left >= right) || (xs.size() != ys.size())){
 			x_out.clear();
@@ -1743,8 +1743,8 @@ namespace SignalOperations {
 		}
 		x_out.resize(right - left + 1);
 		y_out.resize(right - left + 1);
-		std::vector<double>::iterator _end_ = ++right;
-		std::vector<double>::iterator _begin_ = left;
+		std::vector<double>::const_iterator _end_ = ++right;
+		std::vector<double>::const_iterator _begin_ = left;
 		double prev = 0;
 		for (auto ix = left, iy = ys.begin() + (left - xs.begin()); (ix != _end_); ++ix, ++iy){
 			prev = dx_hint*(*iy - baseline) + prev;
@@ -1753,7 +1753,7 @@ namespace SignalOperations {
 		}
 	}
 
-	void Integrate(std::vector<double> &xs, std::vector<double> &ys, std::vector<double> &x_out, std::vector<double> &y_out, std::vector<double>::iterator left, std::vector<double>::iterator right, double baseline)
+	void Integrate(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &x_out, std::vector<double> &y_out, std::vector<double>::const_iterator left, std::vector<double>::const_iterator right, double baseline)
 	{
 		if ((right == xs.end()) ||(left == xs.end()) || (left >= right)||(xs.size()!=ys.size())){
 			x_out.clear();
@@ -1762,8 +1762,8 @@ namespace SignalOperations {
 		}
 		x_out.resize(right - left + 1);
 		y_out.resize(right - left + 1);
-		std::vector<double>::iterator _end_ = ++right;
-		std::vector<double>::iterator _begin_ = left;
+		std::vector<double>::const_iterator _end_ = ++right;
+		std::vector<double>::const_iterator _begin_ = left;
 		double prev = 0, dx;
 		for (auto ix = left, iy = ys.begin() + (left-xs.begin()); (ix != _end_); ++ix, ++iy){
 			dx = (ix == (_end_ - 1)) ? (*ix - *(ix - 1)) :
@@ -1774,25 +1774,25 @@ namespace SignalOperations {
 		}
 	}
 
-	void Integrate(std::vector<double> &xs, std::vector<double> &ys, double &y_out, std::vector<double>::iterator left, std::vector<double>::iterator right, double dx_hint, double baseline)
+	void Integrate(const std::vector<double> &xs, const std::vector<double> &ys, double &y_out, std::vector<double>::const_iterator left, std::vector<double>::const_iterator right, double dx_hint, double baseline)
 	{
 		y_out = 0;
 		if ((right == xs.end()) || (left == xs.end()) || (left >= right) || (xs.size() != ys.size()))
 			return;
-		std::vector<double>::iterator _end_ = ++right;
-		std::vector<double>::iterator _begin_ = left;
+		std::vector<double>::const_iterator _end_ = ++right;
+		std::vector<double>::const_iterator _begin_ = left;
 		for (auto ix = left, iy = ys.begin() + (left - xs.begin()); (ix != _end_); ++ix, ++iy){
 			y_out = dx_hint*(*iy - baseline) + y_out;
 		}
 	}
 
-	void Integrate(std::vector<double> &xs, std::vector<double> &ys, double &y_out, std::vector<double>::iterator left, std::vector<double>::iterator right, double baseline)
+	void Integrate(const std::vector<double> &xs, const std::vector<double> &ys, double &y_out, std::vector<double>::const_iterator left, std::vector<double>::const_iterator right, double baseline)
 	{
 		y_out = 0;
 		if ((right == xs.end()) || (left == xs.end()) || (left >= right) || (xs.size() != ys.size()))
 			return;
-		std::vector<double>::iterator _end_ = ++right;
-		std::vector<double>::iterator _begin_ = left;
+		std::vector<double>::const_iterator _end_ = ++right;
+		std::vector<double>::const_iterator _begin_ = left;
 		double dx;
 		for (auto ix = left, iy = ys.begin() + (left - xs.begin()); (ix != _end_); ++ix, ++iy){
 			dx = (ix == (_end_ - 1)) ? (*ix - *(ix - 1)) :
@@ -1917,7 +1917,7 @@ namespace SignalOperations {
 		return find_x_iterator_by_value(x_left, x_right, x); //fallback in case the hint does not work
 	}
 
-	void get_max(std::vector<double> &xs, std::vector<double> &ys, std::vector<double>::iterator x_start, std::vector<double>::iterator x_finish, std::vector<double>::iterator &x_max, double &y_max, int N_trust)
+	void get_max(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double>::const_iterator x_start, std::vector<double>::const_iterator x_finish, std::vector<double>::const_iterator &x_max, double &y_max, int N_trust)
 	{
 		N_trust = std::min((int)(x_finish - x_start), N_trust); //other funtions return invalid results in this case
 		if (xs.size() != ys.size()){
@@ -1942,11 +1942,11 @@ namespace SignalOperations {
 				int shift = (int)(_size_ - (i - _begin_) - N_trust) < 0 ? (_size_ - (i - _begin_) - N_trust) : 0; //accounts for the end
 
 				std::vector<double> coefs;
-				std::vector<double>::iterator x_left = i + shift;
+				std::vector<double>::const_iterator x_left = i + shift;
 				coefs = fitter(xs, ys, x_left - _begin_, N_trust, *x_left);
 
 				double y_max_exact, x_max_exact;
-				std::vector<double>::iterator x_max_here;
+				std::vector<double>::const_iterator x_max_here;
 				fitter.FindMaximum(x_max_here, x_max_exact, y_max_exact);
 				if (y_max < y_max_exact){
 					y_max = y_max_exact;
@@ -1963,7 +1963,7 @@ namespace SignalOperations {
 			}
 		}
 	}
-	void get_min(std::vector<double> &xs, std::vector<double> &ys, std::vector<double>::iterator x_start, std::vector<double>::iterator x_finish, std::vector<double>::iterator &x_min, double &y_min, int N_trust)
+	void get_min(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double>::const_iterator x_start, std::vector<double>::const_iterator x_finish, std::vector<double>::const_iterator &x_min, double &y_min, int N_trust)
 	{
 		N_trust = std::min((int)(x_finish - x_start), N_trust); //other funtions return invalid results in this case
 		if (xs.size() != ys.size()){
@@ -1988,11 +1988,11 @@ namespace SignalOperations {
 				int shift = (int)(_size_- (i - _begin_) - N_trust) < 0 ? (_size_ - (i - _begin_) - N_trust) : 0; //accounts for the end
 
 				std::vector<double> coefs;
-				std::vector<double>::iterator x_left = i + shift;
+				std::vector<double>::const_iterator x_left = i + shift;
 				coefs = fitter(xs, ys, x_left - _begin_, N_trust, *x_left);
 
 				double y_max_exact, x_max_exact;
-				std::vector<double>::iterator x_max_here;
+				std::vector<double>::const_iterator x_max_here;
 				fitter.FindMinimum(x_max_here, x_max_exact, y_max_exact);
 				if (y_min > y_max_exact) {
 					y_min = y_max_exact;
@@ -2009,11 +2009,11 @@ namespace SignalOperations {
 			}
 		}
 	}
-	void get_max(std::vector<double> &xs, std::vector<double> &ys, std::vector<double>::iterator &x_max, double &y_max, int N_trust)
+	void get_max(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double>::const_iterator &x_max, double &y_max, int N_trust)
 	{	get_max(xs, ys, xs.begin(), xs.end(), x_max, y_max, N_trust);}
 	//after getting the peak, the next search must be started from (x_finish+1) or +(N_trust/2)!!!
-	void find_next_peak(std::vector<double> &xs, std::vector<double> &ys, std::vector<double>::iterator &x_start,
-		std::vector<double>::iterator &x_finish, double threshold, int N_trust)//done - now every step by x uses fitting 
+	void find_next_peak(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double>::const_iterator &x_start,
+		std::vector<double>::const_iterator &x_finish, double threshold, int N_trust)//done - now every step by x uses fitting
 		//TODO: does not handle double peak which middle is slightly above
 		//the threshold (slightly means that 2nd order fit would intersect the threshold)
 	{
@@ -2023,7 +2023,7 @@ namespace SignalOperations {
 			x_finish = xs.begin();
 			return;
 		}
-		std::vector<double>::iterator minimal_iterator = x_start;
+		std::vector<double>::const_iterator minimal_iterator = x_start;
 		x_start = xs.end();
 		Bool_t use_fit = kTRUE;
 		if (N_trust < 3) {//2nd order polynom
@@ -2031,8 +2031,8 @@ namespace SignalOperations {
 			use_fit = kFALSE;
 		}
 		int delta = N_trust / 3;
-		std::vector<double>::iterator approx_x_left = minimal_iterator;
-		std::vector<double>::iterator approx_x_right = xs.end();
+		std::vector<double>::const_iterator approx_x_left = minimal_iterator;
+		std::vector<double>::const_iterator approx_x_right = xs.end();
 		Bool_t found_peak = kFALSE;
 
 		auto _end_ = xs.end();
@@ -2043,7 +2043,7 @@ namespace SignalOperations {
 			for (auto i = minimal_iterator; (i != _end_); ((delta < (_end_ - i)) ? i = i + delta : i = _end_)) {
 				int shift = (int)(_size_ - (i - _begin_) - N_trust) < 0 ? (_size_ - (i - _begin_) - N_trust) : 0; //accounts for the end
 				std::vector<double> coefs;
-				std::vector<double>::iterator x_left = i + shift;
+				std::vector<double>::const_iterator x_left = i + shift;
 				coefs = fitter(xs, ys, (x_left - _begin_), N_trust, *x_left);
 
 				//#ifdef _TEMP_CODE
@@ -2069,7 +2069,7 @@ namespace SignalOperations {
 				//					man.Draw();
 				//				}
 				//#endif
-				std::vector<double>::iterator x_inter1, x_inter2;
+				std::vector<double>::const_iterator x_inter1, x_inter2;
 				double x_inter_exact1, x_inter_exact2;
 				fitter.Findintersection(x_inter1, x_inter2, x_inter_exact1, x_inter_exact2, threshold);
 				if (x_inter2 != _end_){
@@ -2121,13 +2121,13 @@ namespace SignalOperations {
 		x_start = _end_;
 	}
 
-	void find_peaks(std::vector<double> &xs, std::vector<double> &ys, std::deque<peak> &peaks, double base_line, double threshold, int N_trust)
+	void find_peaks(const std::vector<double> &xs, const std::vector<double> &ys, std::deque<peak> &peaks, double base_line, double threshold, int N_trust)
 	{
 		peaks.clear();
 
 		if (xs.size() <= 1)
 			return;
-		std::vector<double>::iterator x_peak_l = xs.begin(), x_peak_r = xs.begin();
+		std::vector<double>::const_iterator x_peak_l = xs.begin(), x_peak_r = xs.begin();
 		auto _end_ = xs.end();
 		double delta_x = *(++xs.begin()) - *(xs.begin());
 		while (x_peak_l != _end_) {
@@ -2137,7 +2137,7 @@ namespace SignalOperations {
 				pk.left = *x_peak_l;
 				pk.right = *x_peak_r;
 				SignalOperations::Integrate(xs, ys, pk.S, x_peak_l, x_peak_r, delta_x, base_line);
-				std::vector<double>::iterator pk_max;
+				std::vector<double>::const_iterator pk_max;
 				SignalOperations::get_max(xs, ys, x_peak_l, x_peak_r + 1, pk_max, pk.A, N_trust);
 				if ((pk_max != _end_) && (pk.S > 0) && (pk.right>=pk.left))
 					peaks.push_back(pk);
@@ -2150,7 +2150,7 @@ namespace SignalOperations {
 
 	//seaches peak from x_start, in difference to find_next peak this one first finds peak by threshold_finder and then finds its edges (wider 
 	//than intersection of threshold and signal) using thresh_edges.
-	void find_next_peak_fine(std::vector<double> &xs, std::vector<double> &ys, std::vector<double>::iterator &x_start, std::vector<double>::iterator &x_finish, double &Amp,
+	void find_next_peak_fine(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double>::const_iterator &x_start, std::vector<double>::const_iterator &x_finish, double &Amp,
 		double thresh_finder, double thresh_edges, int N_trust)
 	{
 		if (thresh_edges >= thresh_finder)
@@ -2158,8 +2158,8 @@ namespace SignalOperations {
 		x_finish = xs.end();
 		Bool_t use_fit = kTRUE;
 		int delta = N_trust / 3;
-		std::vector<double>::iterator minimal_iterator = x_start;
-		std::vector<double>::iterator pk_max;
+		std::vector<double>::const_iterator minimal_iterator = x_start;
+		std::vector<double>::const_iterator pk_max;
 		if ((xs.size() != ys.size()) || ((xs.end() - x_start)<N_trust))
 			goto bad_return;
 		find_next_peak(xs, ys, x_start, x_finish, thresh_finder, N_trust);
@@ -2181,11 +2181,11 @@ namespace SignalOperations {
 			for (auto i = x_finish; (i != _end_);((delta<(_end_ - i)) ? i = i + delta : i = _end_)){
 				int shift = (int)(_size_ - (i - _begin_) - N_trust) < 0 ? (_size_ - (i - _begin_) - N_trust) : 0; //accounts for the end
 				std::vector<double> coefs;
-				std::vector<double>::iterator x_left = i + shift;
+				std::vector<double>::const_iterator x_left = i + shift;
 				coefs = fitter(xs, ys, (i - _begin_) + shift, N_trust, *x_left);
-				std::vector<double>::iterator x_extr;
-				std::vector<double>::iterator x_intersect1, x_intersect2;
-				std::vector<double>::iterator x_inter = _end_; //of interest
+				std::vector<double>::const_iterator x_extr;
+				std::vector<double>::const_iterator x_intersect1, x_intersect2;
+				std::vector<double>::const_iterator x_inter = _end_; //of interest
 				double x_extr_exact, y_extr_exact;
 				double x_inter_exact1, x_inter_exact2;
 				fitter.FindExtremum(x_extr, x_extr_exact, y_extr_exact);
@@ -2214,18 +2214,18 @@ namespace SignalOperations {
 					break;
 				}
 			}
-			std::vector<double>::reverse_iterator x_left_peak = std::vector<double>::reverse_iterator(x_start);
-			std::vector<double>::reverse_iterator x_rend = std::vector<double>::reverse_iterator(minimal_iterator);
+			std::vector<double>::const_reverse_iterator x_left_peak = std::vector<double>::const_reverse_iterator(x_start);
+			std::vector<double>::const_reverse_iterator x_rend = std::vector<double>::const_reverse_iterator(minimal_iterator);
 			auto _rend_ = xs.rend();
 			auto _rbegin_ = xs.rbegin();
 			for (auto i = x_left_peak; (i != x_rend); ((delta<(x_rend - i)) ? i = i + delta : i = x_rend)){
 				int shift = (int)(_size_ - (i - _rbegin_) - N_trust) < 0 ? (_size_ - (i - _rbegin_) - N_trust) : 0; //accounts for the rend
 				std::vector<double> coefs;
-				std::vector<double>::iterator x_left = (i + shift).base();
+				std::vector<double>::const_iterator x_left = (i + shift).base();
 				coefs = fitter(xs, ys, x_left - _begin_, N_trust, *x_left);
-				std::vector<double>::iterator x_extr;
-				std::vector<double>::iterator x_intersect1, x_intersect2;
-				std::vector<double>::iterator x_inter = _end_; //of interest
+				std::vector<double>::const_iterator x_extr;
+				std::vector<double>::const_iterator x_intersect1, x_intersect2;
+				std::vector<double>::const_iterator x_inter = _end_; //of interest
 				double x_extr_exact, y_extr_exact;
 				double x_inter_exact1, x_inter_exact2;
 				fitter.FindExtremum(x_extr, x_extr_exact, y_extr_exact);
@@ -2272,8 +2272,8 @@ namespace SignalOperations {
 				//	break;
 				//}
 			}
-			std::vector<double>::reverse_iterator x_left_peak = std::vector<double>::reverse_iterator(x_start);
-			std::vector<double>::reverse_iterator x_rend = std::vector<double>::reverse_iterator(minimal_iterator);
+			std::vector<double>::const_reverse_iterator x_left_peak = std::vector<double>::const_reverse_iterator(x_start);
+			std::vector<double>::const_reverse_iterator x_rend = std::vector<double>::const_reverse_iterator(minimal_iterator);
 			auto _rend_ = xs.rend();
 			auto _rbegin_ = xs.rbegin();
 			for (auto i = x_left_peak, j = ys.rbegin() + (x_left_peak - xs.rbegin()); (i != x_rend); ++i, ++j){
@@ -2300,7 +2300,7 @@ namespace SignalOperations {
 		x_finish = xs.begin();
 		return;
 	}
-	void find_peaks_fine(std::vector<double> &xs, std::vector<double> &ys, std::deque<peak> &peaks, double base_line, double threshold, double threshold_edges, int N_trust)
+	void find_peaks_fine(const std::vector<double> &xs, const std::vector<double> &ys, std::deque<peak> &peaks, double base_line, double threshold, double threshold_edges, int N_trust)
 	{
 		if (threshold_edges >= threshold)
 			threshold_edges = 0;
@@ -2308,7 +2308,7 @@ namespace SignalOperations {
 		if (xs.size() <= 1)
 			return;
 		double delta_x = *(++xs.begin()) - *(xs.begin());
-		std::vector<double>::iterator x_peak_l = xs.begin(), x_peak_r = xs.begin();
+		std::vector<double>::const_iterator x_peak_l = xs.begin(), x_peak_r = xs.begin();
 		auto _end_ = xs.end();
 		while (x_peak_l != _end_) {
 			double Amp;
@@ -2328,7 +2328,7 @@ namespace SignalOperations {
 		}
 	}
 
-	void find_next_extremum_faster(std::vector<double> &xs, std::vector<double> &ys, std::vector<double>::iterator &x_start, int N_trust)
+	void find_next_extremum_faster(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double>::const_iterator &x_start, int N_trust)
 	{	
 		int delta = std::max(N_trust / 2, 1);
 		if ((xs.end() - x_start < (2 * delta + 1)) ||(xs.size()!=ys.size())){
@@ -2358,7 +2358,7 @@ namespace SignalOperations {
 		x_start = _end_; //not found
 	}
 
-	void find_previous_extremum_faster(std::vector<double> &xs, std::vector<double> &ys, std::vector<double>::reverse_iterator &x_start, int N_trust)
+	void find_previous_extremum_faster(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double>::const_reverse_iterator &x_start, int N_trust)
 	{
 		int delta = std::max(N_trust / 2, 1);
 		if ((xs.rend() - x_start < (2 * delta + 1)) || (xs.size() != ys.size())){
@@ -2386,7 +2386,7 @@ namespace SignalOperations {
 		x_start = _rend_; //not found
 	}
 
-	void find_next_extremum(std::vector<double> &xs, std::vector<double> &ys, std::vector<double>::iterator &x_start, int N_trust)
+	void find_next_extremum(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double>::const_iterator &x_start, int N_trust)
 	{
 		if (xs.size() != ys.size()){
 			x_start = xs.end();
@@ -2406,9 +2406,9 @@ namespace SignalOperations {
 			for (auto i = x_start; (i != _end_); ((delta<(_end_ - i)) ? i = i + delta : i = _end_)) {
 				int shift = (int)(_size_ - (i - _begin_) - N_trust) < 0 ? (_size_ - (i - _begin_) - N_trust) : 0; //accounts for the end
 				std::vector<double> coefs;
-				std::vector<double>::iterator x_left = i + shift;
+				std::vector<double>::const_iterator x_left = i + shift;
 				coefs = fitter(xs, ys, (i - _begin_) + shift, N_trust, *x_left);
-				std::vector<double>::iterator x_extr;
+				std::vector<double>::const_iterator x_extr;
 				double x_extr_exact, y_extr_exact;
 				fitter.FindExtremum(x_extr, x_extr_exact, y_extr_exact);
 				if (x_extr != _end_){
@@ -2433,7 +2433,7 @@ namespace SignalOperations {
 		x_start = xs.end(); //not found
 	}
 
-	void find_previous_extremum(std::vector<double> &xs, std::vector<double> &ys, std::vector<double>::reverse_iterator &x_start, int N_trust)
+	void find_previous_extremum(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double>::const_reverse_iterator &x_start, int N_trust)
 	{
 		if (xs.size() != ys.size()){
 			x_start = xs.rend();
@@ -2455,15 +2455,15 @@ namespace SignalOperations {
 			for (auto i = x_start; (i != _rend_); ((delta<(_rend_ - i)) ? i = i + delta : i = _rend_)){
 				int shift = (int)(_size_ - (i - _rbegin_) - N_trust) < 0 ? (_size_ - (i - _rbegin_) - N_trust) : 0; //accounts for the end
 				std::vector<double> coefs;
-				std::vector<double>::reverse_iterator x_left = i + shift;
+				std::vector<double>::const_reverse_iterator x_left = i + shift;
 				coefs = fitter(xs, ys, (i.base() - _begin_) + shift, N_trust, *x_left);
-				std::vector<double>::iterator x_extr;
+				std::vector<double>::const_iterator x_extr;
 				double x_extr_exact, y_extr_exact;
 				fitter.FindExtremum(x_extr, x_extr_exact, y_extr_exact);
 				if (x_extr != _end_) {
 					if (x_extr >= x_start.base())
 						continue; //accidently found previous extremum
-					x_start = std::vector<double>::reverse_iterator(x_extr);
+					x_start = std::vector<double>::const_reverse_iterator(x_extr);
 					return;
 				}
 			}
@@ -2895,6 +2895,45 @@ namespace SignalOperations {
 				w *= 0.5 + 0.5*(i->left - found_peak->left)/time_window;
 				W_sum += w;
 				max_t += i->t*w;
+			}
+			max_t /= W_sum;
+		}
+		return max_t;
+	}
+
+	double find_trigger_S_v2(std::deque<peak_processed> &peaks, double time_window)
+	{
+		time_window = std::fabs(time_window);
+		std::sort(peaks.begin(), peaks.end(), [](const peak_processed &a, const peak_processed &b)->bool {
+			return a.left < b.left;
+		});
+		double max_t = -DBL_MAX;
+		auto found_peak = peaks.end();
+		double max_S = 0;
+		for (auto pk = peaks.begin(), pk_end_ = peaks.end(); pk!=pk_end_; ++pk) {
+			if (pk->S<=0)
+				continue;
+			double S = 0;
+			for (auto i = pk; (i!=pk_end_)&&(i->left<=(pk->left + time_window)); ++i) {
+				if (i->S<=0)
+					continue;
+				S += i->S;
+			}
+			if (S>max_S) {
+				max_S = S;
+				max_t = pk->left;
+				found_peak = pk;
+			}
+
+		}
+		if (found_peak != peaks.end()) {
+			max_t = 0; //average time for all peaks inside the time window
+			double W_sum = 0;
+			for (auto i = found_peak, pk_end_ = peaks.end(); (i!=pk_end_)&&(i->left<=(found_peak->left + time_window)); ++i) {
+				if (i->S<=0)
+					continue;
+				W_sum += i->S;
+				max_t += i->t*(i->S);
 			}
 			max_t /= W_sum;
 		}

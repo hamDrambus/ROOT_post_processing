@@ -144,7 +144,8 @@ void PostProcessor::print_hist(std::string path, bool png_only)
 	case PMT_S2_int:
 	case PMT_Ss:
 	case PMT_trigger_bNpe:
-	case Type::PMT_trigger_bNpeaks:
+	case PMT_trigger_bNpeaks:
+	case PMT_trigger_bS:
 	{
 		writer_to_file->SetFunction([](std::vector<double>& pars, int run, void* data) {
 			((temp_data*)data)->str->write((char*)&pars[0], sizeof(double));
@@ -421,7 +422,8 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 		break;
 	}
 	case Type::PMT_trigger_bNpe:
-	case Type::PMT_trigger_bNpeaks: {
+	case Type::PMT_trigger_bNpeaks:
+	case Type::PMT_trigger_bS: {
 		bool ignore_no_run_cut = true;
 		for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
 			if (!operations[o].apply_run_cuts) {
@@ -498,6 +500,10 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 			}
 
 			for (int i = 0; i<4; ++i) {
+				if (type==PMT_trigger_bS) {
+					trigger_offset[i][0] = SignalOperations::find_trigger_S_v2(accepted_peaks[i], setups->time_window);
+					continue;
+				}
 				switch (trigger_version) {
 				case trigger_v1: {
 					trigger_offset[i][0] = SignalOperations::find_trigger_v1(accepted_peaks[i], setups->time_window,
@@ -1418,6 +1424,7 @@ bool PostProcessor::set_correlation_filler(FunctionWrapper* operation, Type type
 	case Type::PMT_S2_int:
 	case Type::PMT_trigger_bNpe:
 	case Type::PMT_trigger_bNpeaks:
+	case Type::PMT_trigger_bS:
 	{
 		operation->SetFunction([](std::vector<double>& pars, int run, void* data) {
 			(*((correlation_data*)data)->vals)[run] = pars[0];
@@ -1529,6 +1536,7 @@ bool PostProcessor::update(void)
 	case Type::PMT_Ss:
 	case Type::PMT_trigger_bNpe:
 	case Type::PMT_trigger_bNpeaks:
+	case Type::PMT_trigger_bS:
 	{
 		drawn_mean_taker.SetFunction(
 		mean_taker.SetFunction([](std::vector<double>& pars, int run, void* data) {

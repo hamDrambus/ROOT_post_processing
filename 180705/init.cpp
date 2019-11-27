@@ -1,4 +1,5 @@
 {
+
   //From global parameters:
   data_prefix_path = "../Data/180705/results/";
   calibration_file = "180705/results/180705_calibration.dat";
@@ -9,6 +10,20 @@
   OUTPUT_MPPCS_PICS = "MPPCs_v1/MPPCs_";
   OUTPUT_PMT_PICS = "PMT_v1/PMT_";
   OUTPUT_MPPCS = "MPPC_";
+
+  //Initialize data for utility functions:
+	std::ifstream str;
+	str.open(Vdrift_data_fname);
+	if (!str.is_open()) {
+		std::cerr << "Error: Failed to open file with e drift velocity data \"" << Vdrift_data_fname << "\"!" << std::endl;
+	} else {
+	  Vdrift.read(str);
+	  Vdrift.setOrder(1);
+	  Vdrift.setNused(2);
+	  Vdrift.use_leftmost(true); //how to behave if Td is outside of data Tds range
+	  Vdrift.use_rightmost(true);
+  }
+	str.close();
 
   exp_area.experiments.clear();
   exp_area.experiments.push_back("180705_Cd_20kV_800V_12bB_48V");
@@ -40,6 +55,7 @@
   dBs["180705_Cd_18kV_800V_12bB_48V"] = atten0;
   dBs["180705_Cd_16kV_800V_12bB_48V"] = atten0;
   dBs["180705_Cd_14kV_800V_12bB_48V"] = atten0;
+  dBs["180705_Cd_13kV_800V_12bB_48V"] = atten0;
   dBs["180705_Cd_12kV_800V_6bB_48V"] = atten0;
   dBs["180705_Cd_12kV_800V_6bB_48V"] = atten1;
   dBs["180705_Cd_11kV_800V_6bB_48V"] = atten1;
@@ -57,12 +73,18 @@
   experiment_fields["180705_Cd_10kV_800V_6bB_48V"] = 10;
   experiment_fields["180705_Cd_9kV_800V_0bB_48V"] = 9;
   experiment_fields["180705_Cd_8kV_800V_0bB_48V"] = 8;
-  
-  {
-    double coeff = (600 / 804.0)*(1.54 / (1.54*1.8 + 1.01*0.4));
-    for (auto j = experiment_fields.begin(); j != experiment_fields.end(); ++j)
-      j->second *= coeff;
-  }
+
+  std::map<std::string, int> experiment_runs; //required for printing accpeted/rejected events
+  experiment_runs["180705_Cd_20kV_800V_12bB_48V"] = 360;
+  experiment_runs["180705_Cd_18kV_800V_12bB_48V"] = 349;
+  experiment_runs["180705_Cd_16kV_800V_12bB_48V"] = 338;
+  experiment_runs["180705_Cd_14kV_800V_12bB_48V"] = 327;
+  experiment_runs["180705_Cd_13kV_800V_12bB_48V"] = 316;
+  experiment_runs["180705_Cd_12kV_800V_6bB_48V"] = 305;
+  experiment_runs["180705_Cd_11kV_800V_6bB_48V"] = 248;
+  experiment_runs["180705_Cd_10kV_800V_6bB_48V"] = 259;
+  experiment_runs["180705_Cd_9kV_800V_0bB_48V"] = 270;
+  experiment_runs["180705_Cd_8kV_800V_0bB_48V"] = 281;
  
   if (areas_to_draw.empty())
 	areas_to_draw.push_back(experiment_area());

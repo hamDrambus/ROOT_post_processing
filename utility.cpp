@@ -1,76 +1,8 @@
 //LOAD AFTER init.cpp loading "libpost_processing.so"
 
-//This file requires PolynomialFit.h to be compiled in .so because
-//the last version of DataVector uses boost linear algebra instead of ROOT
-//and ROOT's CINT has troubles interpereting (creating dictionary for) boost
-//So use this file after loading .so using init.cpp. The thing is 
-//init.cpp loads libpost_processing.so which contains a lot of code
-//unnecessary for this utility file. It would probably be much better
-//to create separate library with all useful functions I created for
-//my projects so far in one place and load that library.
-//Useful functions: whole SignalOperations::, ensure_folder, str_token,
-//c_str_copy(std::string), PolynomialFit (this one is tricky: may be based 
-//on ROOT only or boost only, the latter is more preferable and currently 
-//used), DataVector, channel_info, compressed run-channel index vectors
-//(exp_area), gnuplot interface and several more.
-
-const double bolzmann_SI = 1.38064852e-23; //SI
-const double Td_is_Vcm2 = 1e-17; //1 Townsend = 1e-17 V*cm^2
-const double LAr_epsilon = 1.54; //doi: 10.1016/j.nima.2019.162431
-const double full_gap_length = 2.2; //cm, the distance between THGEM0 and THGEM1
-const double R3 = 10; //MOhm, THGEM0 resistance. 4 MOhm in experiments before ~ Feb 2019.
-const double Rgap = 600; //MOhm, resistance defining E field in EL gap
-const double Rrest = 200; //MOhm
-const double T = 87; //temperature in K
-const double P = 1.015e5; //pressure in Pa
-
-const std::string Vdrift_data_fname = "ArDriftVel.txt";
-DataVector Vdrift(4, 5); //e drift speed in gaseous Ar as a function of Td (in m/s)
-
-//LAr_layer must be in [0, full_gap_length]
-double gasE_from_kV (double kV, double gasAr_layer) //gasAr_layer is in [cm], returns E in gaseous Ar in [V/cm]
-{ 
-	if (gasAr_layer < 0)
-		gasAr_layer = 0;
-	if (gasAr_layer > full_gap_length)
-		gasAr_layer = full_gap_length;
-	return 1e3*kV*(Rgap / (Rgap + Rrest + R3))*LAr_epsilon / (LAr_epsilon*gasAr_layer + (full_gap_length - gasAr_layer));
-}
-
-double Td_from_E (double E) //E is in [V/cm]
-{
-	double N = 1e-6*P / (T*bolzmann_SI); //in cm^-3
-	return E / N / Td_is_Vcm2;
-}
-
-double Vdr_from_kV (double kV, double gasAr_layer) //LAr_layer is in [cm], returns drift velocity in gaseous Ar in [cm/s]
-{
-	if (!Vdrift.isValid()) {
-		std::ifstream str;
-		str.open(Vdrift_data_fname);
-		if (!str.is_open()) {
-			std::cerr << "Error: Failed to open file with V drfit data \"" << Vdrift_data_fname << "\"!" << std::endl;
-			return DBL_MAX;
-		}
-		Vdrift.read(str);
-	}
-	if (!Vdrift.isValid()) {
-		std::cerr << "Error: Failed to load file with V drfit data \"" << Vdrift_data_fname << "\"!" << std::endl;
-		return DBL_MAX;
-	}
-	double Td = Td_from_E(gasE_from_kV(kV, gasAr_layer));
-	Td = std::fabs(Td);
-	double Vdr = 1e2 * Vdrift(Td);
-	return Vdr;
-}
-
-double drift_time_from_kV(double kV, double gasAr_layer) //gasAr_layer is in [cm], returns drift time in gaseous Ar in [microseconds]
-{
-	double Vdr = Vdr_from_kV(kV, gasAr_layer);
-	if (DBL_MAX == Vdr)
-		return 0;
-	return 1e6*LAr_layer / Vd;
-}
+//The core functionality of this utility was movwd to libpost_processing.so
+//because calculating t_drift through gaseous argon is required
+//for setting trigger adjustment time window (shaping) 
 
 //ROOT wrappers:
 Double_t drift_time_as_f_kV (Double_t *x, Double_t *par) {
@@ -109,7 +41,7 @@ bool load_t_drift_data(std::string file, std::vector<double> &Vs, std::vector<do
 		}
 		if (word.empty())
 			continue;
-		double tau = std::stod<double>(word);
+		double tau = std::stod(word);
 		Vs.push_back(kV);
 		Ts.push_back(tau);
 	}
@@ -137,8 +69,9 @@ int utility (void) {
 	std::vector<Color_t> palette_major = {kBlack, kGreen, kRed, kBlue, kYellow + 2, kMagenta, kOrange + 7};
 	std::vector<Color_t> palette_minor = {kGray + 2, kGreen -2, kMagenta, kAzure + 10, kMagenta+3, kOrange - 7, kOrange + 6};
     double max_val = 0;
+	double min_V0 = 7;
 	bool linear = true;
-	std::string framename = "190404 fast component FWHMs SiPMs";
+	std::string framename = "190404 fast component FWHMs";
     
 	std::vector<double> kVs, Ts;
 	load_t_drift_data("190404/190404_half_widths.txt", kVs, Ts, 4); //4 - SiPMs, 3 - fPMTs
@@ -153,23 +86,49 @@ int utility (void) {
 			max_val = std::max(max_val, ys[i]);
 		}
 	}
-	TGraph* data_pts = new TGraph(size, xs, ys);
+	TGraph* SiPM_data = new TGraph(size, xs, ys);
+	SiPM_data->SetMarkerStyle(kFullSquare);
+	SiPM_data->SetMarkerSize(2);
+
+	load_t_drift_data("190404/190404_half_widths.txt", kVs, Ts, 3); //4 - SiPMs, 3 - fPMTs
+	size = std::min(kVs.size(), Ts.size());
+	if (NULL!=xs)
+		delete[] xs;
+	if (NULL != ys)
+		delete[] ys;
+	xs = NULL; ys = NULL;
+	if (size > 0) {
+		xs = new Double_t[size];
+		ys = new Double_t[size];
+		for (Int_t i = 0; i != size; ++i) {
+			xs[i] = kVs[i];
+			ys[i] = Ts[i];
+			max_val = std::max(max_val, ys[i]);
+		}
+	}
+	TGraph* fPMTs_data = new TGraph(size, xs, ys);
+	fPMTs_data->SetMarkerStyle(kFullCircle);
+	fPMTs_data->SetMarkerSize(2);
+	fPMTs_data->SetMarkerColor(palette_major[5]);
+
 	TF1* time_18mm = new TF1("func1", drift_time_as_f_kV, 2, 22, 2);
 	time_18mm->SetParNames("gas Ar L", "time factor");
 	time_18mm->FixParameter(0, 1.8);
 	time_18mm->FixParameter(1, 1.0);
+	time_18mm->SetLineColor(palette_major[2]);
 
 	TF1* time_Xmm = new TF1("func2", drift_time_as_f_kV, 2, 22, 2);
 	time_Xmm->SetParNames("gas Ar L", "time factor");
 	time_Xmm->SetParLimits(0, 0.5, 2.2);
-	time_Xmm->SetParLimits(1, 0.5, 2.0);
-	data_pts->Fit(time_Xmm);
+	time_Xmm->FixParameter(1, 1.0);
+	time_Xmm->SetLineColor(palette_major[3]);
+	SiPM_data->Fit(time_Xmm);
 
 	double gap_width = 10*time_Xmm->GetParameter(0); //in mm
 	std::string str_gap_width = dbl_to_str(gap_width, 2);
 
-	max_val = std::max(time_Xmm->Eval(2), max_val);
-	max_val = std::max(time_18mm->Eval(2), max_val);
+	max_val = std::max(time_Xmm->Eval(min_V0), max_val);
+	max_val = std::max(time_18mm->Eval(min_V0), max_val);
 
 	max_val *= 1.2;
 
@@ -183,18 +142,20 @@ int utility (void) {
 	TLegend *legend = new TLegend(0.55, 0.65, 0.9, 0.9);
 	//legend->SetHeader("");
 	legend->SetMargin(0.25);
-	TH2F* frame = new TH2F( "frame", framename.c_str(), 500, 2, 22, 500, 0, max_val);
+	TH2F* frame = new TH2F( "frame", framename.c_str(), 500, min_V0, 21, 500, 0, max_val);
 	frame->GetXaxis()->SetTitle("V_{0} [kV]");
 	frame->GetYaxis()->SetTitle("#tau_{D} [#mus]");
 	frame->Draw();
 	
-	data_pts->Draw("*");
+	SiPM_data->Draw("p");
+	fPMTs_data->Draw("p");
 	time_18mm->Draw("same");
 	time_Xmm->Draw("same");
 	
-	legend->AddEntry(data_pts, (std::string("190404 SiPM fast component FWHM")).c_str(), "p");
+	legend->AddEntry(SiPM_data, (std::string("190404 SiPM matrix fast component FWHM")).c_str(), "p");
+	legend->AddEntry(fPMTs_data, (std::string("190404 fPMTs fast component FWHM")).c_str(), "p");
 	legend->AddEntry(time_18mm, (std::string("t_{drift} for 18 mm gap")).c_str(), "l");
-	legend->AddEntry(time_Xmm, (std::string("t_{drift} for best fit ("+ str_gap_width +" mm)")).c_str(), "l");
+	legend->AddEntry(time_Xmm, (std::string("t_{drift} for SiPM best fit ("+ str_gap_width +" mm)")).c_str(), "l");
 
 	frame->Draw("sameaxis");
 	legend->Draw("same");

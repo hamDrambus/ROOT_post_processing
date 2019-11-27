@@ -706,6 +706,7 @@ FunctionWrapper* create_vertical_lines_cut(double left, double right) //do not c
 	case AStates::PMT_Ss:
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
+	case AStates::PMT_trigger_bS:
 	case AStates::Correlation:
 	case AStates::CorrelationAll:
 	{
@@ -854,6 +855,7 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::PMT_Npe_sum:
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
+	case AStates::PMT_trigger_bS:
 	{
 		picker->SetFunction( [](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -997,6 +999,7 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 	case AStates::PMT_Npe_sum:
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
+	case AStates::PMT_trigger_bS:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -1139,6 +1142,7 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::PMT_Npe_sum:
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
+	case AStates::PMT_trigger_bS:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -1160,7 +1164,7 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 	}
 	default:
 	{
-		std::cout << "Error: unknown type - you forgot to implement it in \"create_S_t_rect_select_cut\"" << std::endl;
+		std::cout << "Error: unknown type - you forgot to implement it in \"create_A_S_rect_exclude_cut\"" << std::endl;
 		delete picker;
 		return NULL;
 	}
@@ -1339,6 +1343,7 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 	case AStates::PMT_Npe_sum:
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
+	case AStates::PMT_trigger_bS:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			//{A_min, A0, S0, A1, S1, A_max}
@@ -1369,7 +1374,7 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 	}
 	default:
 	{
-		std::cout << "Error: unknown type - you forgot to implement it in \"create_S_t_rect_select_cut\"" << std::endl;
+		std::cout << "Error: unknown type - you forgot to implement it in \"create_A_S_fastPMT_cut\"" << std::endl;
 		delete picker;
 		return NULL;
 	}
@@ -1444,6 +1449,7 @@ FunctionWrapper* create_A_S_upper_cut(std::vector<double> region) //do not call 
 	case AStates::PMT_Npe_sum:
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
+	case AStates::PMT_trigger_bS:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			//{A0, S0, A1, S1}
@@ -2013,4 +2019,5 @@ void remcut_A_S_upper(int channel, std::string _name)
 	if (!post_processor->isMultichannel(post_processor->current_type))
 		update();
 }
+
 

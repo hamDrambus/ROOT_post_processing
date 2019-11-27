@@ -82,7 +82,7 @@ int compare_forms (void) {
 	//std::vector<double> fit_from (6, 33.5);
 	//std::vector<double> fit_to = {45, 45, 45, 45};
 	std::vector<Color_t> palette_major = {kBlack, kRed, kBlue, kGreen, kYellow + 2, kMagenta, kOrange + 7};
-	std::vector<Color_t> palette_minor = {kGray + 2, kMagenta, kAzure + 10, kGreen -2, kMagenta+3, kOrange - 7};
+	std::vector<Color_t> palette_minor = {kGray + 2, kMagenta, kAzure + 10, kGreen -2, kMagenta+3, kOrange - 7, kOrange + 6};
     double max_val = 0;
 	bool linear = true;
     std::string prefix = "190404/results/Cd_46V_20kV_850V/forms_v2_20-65pe/";

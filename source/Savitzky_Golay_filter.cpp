@@ -67,8 +67,8 @@ void SavitzkyGolayFilter::operator ()(std::vector<double> &xs_in, std::vector<do
 				start_index = xs_in.size() - _n_points;
 
 			PolynomialFit fit(_order);
-			TVectorD A;
-			fit(xs_in, ys_in, start_index, _n_points, A, xs_in[h]);
+			std::vector<double> A;
+			A = fit(xs_in, ys_in, start_index, _n_points, xs_in[h]);
 			ys_out[h] = A[0]; //I moved X coordinates to the point of interest (xs_in[h]) in the matrix construction
 			/*xs_out[h] = 0;
 			for (int row = 0; row < A.GetNrows(); row++)

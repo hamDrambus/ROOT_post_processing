@@ -982,6 +982,70 @@ bool viewRegion::OnLine(double x1, double y1, double x2, double y2, double u,
 	std::pair<int, int> calibaration_points;
 	std::map < int, std::pair<double,double> > MPPC_coords;
 
+
+	std::string Vdrift_data_fname = "ArDriftVel.txt";
+	DataVector Vdrift(4, 5); //e drift speed in gaseous Ar as a function of Td (in m/s)
+	const double bolzmann_SI = 1.38064852e-23; //SI
+	const double Td_is_Vcm2 = 1e-17; //1 Townsend = 1e-17 V*cm^2
+	const double LAr_epsilon = 1.54; //doi: 10.1016/j.nima.2019.162431
+	double full_gap_length = 2.2; //cm, the distance between THGEM0 and THGEM1
+	double R3 = 10; //MOhm, THGEM0 resistance. 4 MOhm in experiments before ~ Feb 2019.
+	double Rgap = 600; //MOhm, resistance defining E field in EL gap
+	double Rrest = 200; //MOhm
+	const double T = 87; //temperature in K
+	const double P = 1.015e5; //pressure in Pa
+
+	//LAr_layer must be in [0, full_gap_length]
+	double gasE_from_kV (double kV, double gasAr_layer) //gasAr_layer is in [cm], returns E in gaseous Ar in [V/cm]
+	{
+		if (gasAr_layer < 0)
+			gasAr_layer = 0;
+		if (gasAr_layer > full_gap_length)
+			gasAr_layer = full_gap_length;
+		return 1e3*kV*(Rgap / (Rgap + Rrest + R3))*LAr_epsilon / (LAr_epsilon*gasAr_layer + (full_gap_length - gasAr_layer));
+	}
+
+	double Td_from_E (double E) //E is in [V/cm]
+	{
+		double N = 1e-6*P / (T*bolzmann_SI); //in cm^-3
+		return E / N / Td_is_Vcm2;
+	}
+
+	double Vdr_from_E (double E) //E is in [V/cm], returns drift velocity in gaseous Ar in [cm/s]
+	{
+		double Td = Td_from_E(E);
+		Td = std::fabs(Td);
+		double Vdr = 1e2 * Vdrift(Td);
+		return Vdr;
+	}
+
+	double Vdr_from_kV (double kV, double gasAr_layer) //LAr_layer is in [cm], returns drift velocity in gaseous Ar in [cm/s]
+	{
+		if (!Vdrift.isValid()) {
+			std::ifstream str;
+			str.open(Vdrift_data_fname);
+			if (!str.is_open()) {
+				std::cerr << "Error: Failed to open file with V drfit data \"" << Vdrift_data_fname << "\"!" << std::endl;
+				return DBL_MAX;
+			}
+			Vdrift.read(str);
+		}
+		if (!Vdrift.isValid()) {
+			std::cerr << "Error: Failed to load file with V drfit data \"" << Vdrift_data_fname << "\"!" << std::endl;
+			return DBL_MAX;
+		}
+		double E = gasE_from_kV(kV, gasAr_layer);
+		return Vdr_from_E(E);
+	}
+
+	double drift_time_from_kV(double kV, double gasAr_layer) //gasAr_layer is in [cm], returns drift time in gaseous Ar in [microseconds]
+	{
+		double Vdr = Vdr_from_kV(kV, gasAr_layer);
+		if (DBL_MAX == Vdr)
+			return 0;
+		return 1e6*gasAr_layer / Vdr;
+	}
+
 	Bool_t draw_required(/*ParameterPile::*/experiment_area what)
 	{
 		for (auto i = areas_to_draw.begin(); i != areas_to_draw.end(); ++i)

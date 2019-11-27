@@ -91,6 +91,8 @@ std::string int_to_str(std::size_t num);
 std::string int_to_str(int num, std::size_t decimals);
 std::string int_to_str(std::size_t num, std::size_t decimals);
 std::string dbl_to_str (double val, int precision=0);
+std::vector<double>::iterator iter_add(std::vector<double>::iterator& to, int what, std::vector<double>::iterator& end);
+std::string strtoken(std::string &in, std::string break_symbs);
 
 template <class T>
 class channel_info {

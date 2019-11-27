@@ -85,7 +85,7 @@ int compare_forms (void) {
 	//std::vector<double> fit_to = {150, 150, 150, 150, 150, 160};
 	std::vector<double> fit_to = {145, 145, 145, 145, 145, 160};
 	std::vector<Color_t> palette_major = {kBlack, kRed, kBlue, kGreen, kYellow + 2, kMagenta, kOrange + 7};
-	std::vector<Color_t> palette_minor = {kGray + 2, kMagenta, kAzure + 10, kGreen -2, kMagenta+3, kOrange - 7};
+	std::vector<Color_t> palette_minor = {kGray + 2, kMagenta, kAzure + 10, kGreen -2, kMagenta+3, kOrange - 7, kOrange + 6};
     double max_val = 0;
 	bool linear = true;
     std::string prefix = "190228/results_v4/Cd_46V_20kV_850V_th500mV/different_methods/09_slowPMTs_trigger_dt=1us_cut_03+04+05+07+08+09/";

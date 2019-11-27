@@ -88,7 +88,7 @@ int fit_fast_forms (void) {
 	std::vector<double> norm_t_right =  {30.6, 31.5, 31.5, 32.0, 32.5, 33.0, 33.5}; //20, 18, ..., 8 kV
 	//std::vector<double> fit_from (7, 27.5);
 	//std::vector<double> fit_to =        {30.4, 30.5, 30.9, 31.2, 32.0, 32.2, 32.2}; //SiPM 20, 18, ..., 8 kV
-	std::vector<std::string> Tds(1, "8.5");	
+	std::vector<std::string> Tds(1, "3.4");	
 	std::vector<double> fit_from (1, 26.6);
 	std::vector<double> fit_to (1, 31);
 	std::vector<Color_t> palette_major = {kBlack, kGreen, kRed, kBlue, kYellow + 2, kMagenta, kOrange + 7};
@@ -96,20 +96,23 @@ int fit_fast_forms (void) {
     double max_val = 0;
 	bool linear = true;
     std::string prefix = "190404/results/Cd_46V_20kV_850V/forms_v2_20-65pe/";
-	read_hist_w (hist_1, prefix + "SiPMs_form_by_Npe.hdata");
+	
 	prefix = "190404/results/Cd_46V_18kV_850V/forms_v2_16-53pe/";
-	//read_hist_w (hist_1, prefix + "SiPMs_form_by_Npe.hdata");
+	
 	prefix = "190404/results/Cd_46V_16kV_850V/forms_v2_14-45pe/";
-	//read_hist_w (hist_1, prefix + "SiPMs_form_by_Npe.hdata");
+	
 	prefix = "190404/results/Cd_46V_14kV_850V/forms_v2_11-37pe/";
-	//read_hist_w (hist_1, prefix + "SiPMs_form_by_Npe.hdata");
+	
 	prefix = "190404/results/Cd_46V_12kV_850V/forms_v2_9-30pe/";
-	//read_hist_w (hist_1, prefix + "SiPMs_form_by_Npe.hdata");
+	
 	prefix = "190404/results/Cd_46V_10kV_850V/forms_v2_8-24pe/";
-	//read_hist_w (hist_1, prefix + "SiPMs_form_by_Npe.hdata");
+	
 	prefix = "190404/results/Cd_46V_8kV_850V/forms_v2_6-17pe/";
-	//read_hist_w (hist_1, prefix + "SiPMs_form_by_Npe.hdata");
-	std::string framename = std::string("190404 Signal forms (v2) Cd peak SiPM matrix");// + " " + Tds[0] + " Td";
+	read_hist_w (hist_1, prefix + "8_form_by_Npeaks.hdata");
+	read_hist_w (hist_1, prefix + "9_form_by_Npeaks.hdata");
+	read_hist_w (hist_1, prefix + "10_form_by_Npeaks.hdata");
+	read_hist_w (hist_1, prefix + "11_form_by_Npeaks.hdata");
+	std::string framename = std::string("190404 Signal forms (v2) Cd peak fPMTs (no WLS)");// + " " + Tds[0] + " Td";
 
     for (int hh = 0, hh_end_ = hists.size(); hh!=hh_end_; ++hh) {
         double baseline = 0;
@@ -214,7 +217,7 @@ int fit_fast_forms (void) {
 		}
 	}
 	
-	legend->AddEntry(hist_1, (std::string(Tds[0] + " Td SiPM matrix Cd peak")).c_str(), "l");
+	legend->AddEntry(hist_1, (std::string(Tds[0] + " Td fPMTs (no WLS) Cd peak")).c_str(), "l");
 	//legend->AddEntry(hist_2, (std::string(Tds[1] + " Td SiPM matrix Cd peak")).c_str(), "l");
 	//legend->AddEntry(hist_3, (std::string(Tds[2] + " Td SiPM matrix Cd peak")).c_str(), "l");
 	//legend->AddEntry(hist_4, (std::string(Tds[3] + " Td SiPM matrix Cd peak")).c_str(), "l");

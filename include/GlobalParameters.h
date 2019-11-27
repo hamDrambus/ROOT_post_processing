@@ -3,6 +3,7 @@
 
 #include "GlobalDefinitions.h"
 #include "ExperimentArea.h"
+#include "PolynomialFit.h"
 
 #define ROOT_BL_CALL_V0 find_background_v_0(f_ys, ys.size(), 80,	TSpectrum::kBackDecreasingWindow, TSpectrum::kBackOrder2, kTRUE, TSpectrum::kBackSmoothing3, kFALSE,2);
 #define ROOT_BL_CALL_V2 find_background_v_0(f_ys, ys.size(), 60,	TSpectrum::kBackDecreasingWindow, TSpectrum::kBackOrder2, kTRUE, TSpectrum::kBackSmoothing3, kFALSE,2);
@@ -13,8 +14,6 @@
 #define ROOT_BL_CALL_V7 find_background_v_raw(f_ys, ys.size(), 20,	TSpectrum::kBackIncreasingWindow, TSpectrum::kBackOrder2, kFALSE, TSpectrum::kBackSmoothing3, kFALSE);
 #define ROOT_BL_CALL_V8 find_background_v_raw(f_ys, ys.size(), 20,	TSpectrum::kBackIncreasingWindow, TSpectrum::kBackOrder2, kFALSE, TSpectrum::kBackSmoothing3, kFALSE);
 
-std::vector<double>::iterator iter_add(std::vector<double>::iterator& to, int what, std::vector<double>::iterator& end);
-std::string strtoken(std::string &in, std::string break_symbs);
 
 class viewRegion { //helper class for drawing cuts (clipping lines to pad axes)
 protected:
@@ -62,11 +61,28 @@ extern PostProcessor* post_processor;
 	enum DrawEngine { Gnuplot, ROOT_ };
 	enum TriggerVersion { trigger_v1, trigger_v2, trigger_v3};
 
+	double gasE_from_kV (double kV, double gasAr_layer); //gasAr_layer is in [cm], returns E in gaseous Ar in [V/cm]
+	double Td_from_E (double E); //E is in [V/cm]
+	double Vdr_from_E (double E); //E is in [V/cm], returns drift velocity in gaseous Ar in [cm/s]
+	double Vdr_from_kV (double kV, double gasAr_layer); //LAr_layer is in [cm], returns drift velocity in gaseous Ar in [cm/s]
+	double drift_time_from_kV(double kV, double gasAr_layer); //gasAr_layer is in [cm], returns drift time in gaseous Ar in [microseconds]
 	Bool_t draw_required(/*ParameterPile::*/experiment_area what);
 
 	extern std::deque <experiment_area> areas_to_draw;
 	extern std::string this_path;
 	
+	extern std::string Vdrift_data_fname;
+	extern DataVector Vdrift; //e drift speed in gaseous Ar as a function of Td (in m/s)
+	extern const double bolzmann_SI; //SI
+	extern const double Td_is_Vcm2; //1 Townsend = 1e-17 V*cm^2
+	extern const double LAr_epsilon; //doi: 10.1016/j.nima.2019.162431
+	extern double full_gap_length; //cm, the distance between THGEM0 and THGEM1
+	extern double R3; //MOhm, THGEM0 resistance. 4 MOhm in experiments before ~ Feb 2019.
+	extern double Rgap; //MOhm, resistance defining E field in EL gap
+	extern double Rrest; //MOhm
+	extern const double T; //temperature in K
+	extern const double P; //pressure in Pa
+
 	extern std::string data_prefix_path;
 	extern std::string calibration_file;
 	extern std::string data_output_path;
