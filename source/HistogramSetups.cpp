@@ -343,6 +343,10 @@ CanvasSetups::CanvasSetups(std::deque<int> &mppc_channels_, std::deque<int> &pmt
 	ind_state.type = current_type;
 	canvases_states.push_back(ind_state);
 	new_c->cd();
+	new_c->SetGrid();
+	new_c->SetTicks();
+	new_c->ToggleEventStatus();
+	new_c->ToggleToolBar();
 	fit_functions.push_back(NULL);
 	hists_1D.push_back(NULL);
 	hists_2D.push_back(NULL);
@@ -441,6 +445,10 @@ void CanvasSetups::next_canvas(void)
 		ind_state.type = current_type;
 		canvases_states.push_back(ind_state);
 		new_c->cd();
+		new_c->SetGrid();
+		new_c->SetTicks();
+		new_c->ToggleEventStatus();
+		new_c->ToggleToolBar();
 		fit_functions.push_back(NULL);
 		hists_1D.push_back(NULL);
 		hists_2D.push_back(NULL);

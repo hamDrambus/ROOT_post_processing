@@ -71,10 +71,10 @@ int utility (void) {
     double max_val = 0;
 	double min_V0 = 7;
 	bool linear = true;
-	std::string framename = "190404 fast component FWHMs";
+	std::string framename = "180705 adjusted trigger fast component FWHMs";
     
 	std::vector<double> kVs, Ts;
-	load_t_drift_data("190404/190404_half_widths.txt", kVs, Ts, 4); //4 - SiPMs, 3 - fPMTs
+	load_t_drift_data("180705/results_v3/180705_half_widths.txt", kVs, Ts, 4); //4 - SiPMs, 3 - fPMTs
 	Int_t size = std::min(kVs.size(), Ts.size());
 	Double_t *xs = NULL, *ys = NULL;
 	if (size > 0) {
@@ -90,7 +90,7 @@ int utility (void) {
 	SiPM_data->SetMarkerStyle(kFullSquare);
 	SiPM_data->SetMarkerSize(2);
 
-	load_t_drift_data("190404/190404_half_widths.txt", kVs, Ts, 3); //4 - SiPMs, 3 - fPMTs
+	/*load_t_drift_data("190404/190404_half_widths.txt", kVs, Ts, 3); //4 - SiPMs, 3 - fPMTs
 	size = std::min(kVs.size(), Ts.size());
 	if (NULL!=xs)
 		delete[] xs;
@@ -110,6 +110,7 @@ int utility (void) {
 	fPMTs_data->SetMarkerStyle(kFullCircle);
 	fPMTs_data->SetMarkerSize(2);
 	fPMTs_data->SetMarkerColor(palette_major[5]);
+*/
 
 	TF1* time_18mm = new TF1("func1", drift_time_as_f_kV, 2, 22, 2);
 	time_18mm->SetParNames("gas Ar L", "time factor");
@@ -120,7 +121,7 @@ int utility (void) {
 	TF1* time_Xmm = new TF1("func2", drift_time_as_f_kV, 2, 22, 2);
 	time_Xmm->SetParNames("gas Ar L", "time factor");
 	time_Xmm->SetParLimits(0, 0.5, 2.2);
-	time_Xmm->FixParameter(1, 1.0);
+	time_Xmm->FixParameter(1, 1);
 	time_Xmm->SetLineColor(palette_major[3]);
 	SiPM_data->Fit(time_Xmm);
 
@@ -148,12 +149,12 @@ int utility (void) {
 	frame->Draw();
 	
 	SiPM_data->Draw("p");
-	fPMTs_data->Draw("p");
+	//fPMTs_data->Draw("p");
 	time_18mm->Draw("same");
 	time_Xmm->Draw("same");
 	
-	legend->AddEntry(SiPM_data, (std::string("190404 SiPM matrix fast component FWHM")).c_str(), "p");
-	legend->AddEntry(fPMTs_data, (std::string("190404 fPMTs fast component FWHM")).c_str(), "p");
+	legend->AddEntry(SiPM_data, (std::string("180705 v3 SiPM matrix fast component FWHM")).c_str(), "p");
+	//legend->AddEntry(fPMTs_data, (std::string("190404 fPMTs fast component FWHM")).c_str(), "p");
 	legend->AddEntry(time_18mm, (std::string("t_{drift} for 18 mm gap")).c_str(), "l");
 	legend->AddEntry(time_Xmm, (std::string("t_{drift} for SiPM best fit ("+ str_gap_width +" mm)")).c_str(), "l");
 

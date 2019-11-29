@@ -253,7 +253,7 @@ void DataVector::push_back(double x, double y)//faster version not checking that
 	xys.push_back(std::pair<double, double>(x, y));
 }
 
-void DataVector::read(std::ifstream& str) //TODO: add try/catch for handling stoi and stod
+void DataVector::read(std::ifstream& str) //DONE: add try/catch for handling stoi and stod
 {
 	clear();
 	std::string line, word;

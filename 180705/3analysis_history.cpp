@@ -25,7 +25,7 @@ void central_SiPMs(bool on) {
 void save_forms (std::string path, bool N_only)
 {
 	ty(AStates::MPPC_tbN_sum);
-	central_SiPMs(true);	
+	central_SiPMs(true);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, 0, false);
@@ -525,7 +525,6 @@ if (calibrate) {
 //First are signal forms without cuts at all, even Npe, aggressiveness = 0. There are time windows for Npe though.
 if (!forms)
 	return;
-std::string aggr = "";
 std::string folder, S2_start, S2_finish;
 double d_S2_start, d_S2_finish;
 int first_run = 0;

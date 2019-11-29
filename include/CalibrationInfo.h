@@ -46,7 +46,7 @@ public:
 		//void force_S1pe(int ch, double pmt_v, double val); //forces specific value which is not erased by calculateS1pe
 		bool unforce_S1pe(int ch, double V); //returns true if recalculation is required
 		bool isforced_S1pe(int ch, double V);
-		double get_S1pe(int ch, double V) const; //~~TODO~~ ROOT's CINT can't handle boost: rewrite with boost::optional
+		double get_S1pe(int ch, double V) const; //DONE ROOT's CINT can't handle boost: rewrite with boost::optional
 	};
 protected:
 	S1pe_table s1pe_table_;

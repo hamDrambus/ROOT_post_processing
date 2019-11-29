@@ -1,5 +1,5 @@
 {
-if (true) {
+if (false) {
 	int offset = -2;
 	cut_x_y_lower(25, 0 + offset, 48, 18+ offset, true, "1");
 	cut_x_y_lower(48, 18+ offset, 68, 28+ offset, true, "2");
@@ -22,36 +22,37 @@ if (false) {
 	if (aggressiveness>=2)//remove afterimpulses
 		cut_A_S_upper(0.011, 0.0015, 0.026, 0.0038, display, channel, "2pe_merged");
 	}
-	if (false) {
-		analysis_history(false, 2); //20
-		nex();
-		analysis_history(false, 2); //18
-		nex();
-		analysis_history(false, 2); //16
-		nex();
-		analysis_history(false, 2); //14
-		nex();
-		analysis_history(false, 2); //12
-		nex();
-		analysis_history(false, 2);	//10
-		nex();
-		analysis_history(false, 2);	//8
-		nex();
-	}
-	if (false) {
-		analysis_history(true, 2); //20
-		nex();
-		analysis_history(true, 2); //18
-		nex();
-		analysis_history(true, 2); //16
-		nex();
-		analysis_history(true, 2); //14
-		nex();
-		analysis_history(true, 2); //12
-		nex();
-		analysis_history(true, 2);	//10
-		nex();
-		analysis_history(true, 2);	//8
-		nex();
-	}
+if (true) {
+	analysis_history(false, 0); //20
+	nex();
+	analysis_history(false, 0); //18
+	nex();
+	analysis_history(false, 0); //16
+	nex();
+	analysis_history(false, 0); //14
+	nex();
+	analysis_history(false, 0); //12
+	nex();
+	analysis_history(false, 0);	//10
+	nex();
+	analysis_history(false, 0);	//8
+	nex();
+}
+if (false) {
+	analysis_history(true, 2); //20
+	nex();
+	analysis_history(true, 2); //18
+	nex();
+	analysis_history(true, 2); //16
+	nex();
+	analysis_history(true, 2); //14
+	nex();
+	analysis_history(true, 2); //12
+	nex();
+	analysis_history(true, 2);	//10
+	nex();
+	analysis_history(true, 2);	//8
+	nex();
+}
+
 } 
