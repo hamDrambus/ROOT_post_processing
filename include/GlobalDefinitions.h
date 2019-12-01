@@ -315,6 +315,7 @@ public:
 	TestSignalGenerator(std::string prefix);
 };
 
+
 #if defined(__WIN32__)
 #define INVOKE_GNUPLOT(a) system(("start \"\" \"%GNUPLOT%\\gnuplot.exe\" -c \"" + a + "\"").c_str())
 #else
@@ -346,6 +347,13 @@ public:
 	int Npe;
 	peak_processed(const double& iS, const double& iA, const double& ileft, const double& iright, const double& it, const int& iNpe);
 	peak_processed(const peak& pk, const int& iNpe);
+};
+
+class TestFastSignalGenerator {
+protected:
+	peak MergePeaks(std::deque<peak> &peaks);
+public:
+	TestFastSignalGenerator(std::string prefix);
 };
 
 #endif

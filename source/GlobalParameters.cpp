@@ -368,6 +368,132 @@ TestSignalGenerator::TestSignalGenerator(std::string prefix)
 	}
 }
 
+//Merges only rectangular (step-like) peaks!
+peak TestFastSignalGenerator::MergePeaks(std::deque<peak> &peaks_cluster) // peaks_cluster must be not empty!
+{
+	peak merged_pk;
+	if (peaks_cluster.empty())
+		return merged_pk;
+	std::deque<peak>::iterator left = std::min_element(peaks_cluster.begin(), peaks_cluster.end(), [](const peak& a, const peak &b)->bool {
+		return a.left < b.left;
+	});
+	std::deque<peak>::iterator right = std::min_element(peaks_cluster.begin(), peaks_cluster.end(), [](const peak& a, const peak &b)->bool {
+		return a.right > b.right;
+	});
+	double t_left = left->left;
+	double t_right = right->right;
+
+	merged_pk.left = t_left;
+	merged_pk.right = t_right;
+	merged_pk.S = 0;
+	merged_pk.A = 0;
+	merged_pk.t = 0;
+	std::deque<std::pair<double, double>> fronts; //necessary to correctly determine amplitude of peaks sum
+	for (std::size_t a = 0, a_end_ = peaks_cluster.size(); a != a_end_; ++a) {
+		merged_pk.S += peaks_cluster[a].S;
+		merged_pk.t += peaks_cluster[a].S * peaks_cluster[a].t;
+		fronts.push_back(std::pair<double, double>(peaks_cluster[a].left, peaks_cluster[a].A));
+		fronts.push_back(std::pair<double, double>(peaks_cluster[a].right, -peaks_cluster[a].A));
+	}
+	std::sort(fronts.begin(), fronts.end(), [](const std::pair<double, bool>& a, const std::pair<double, bool> &b)->bool {
+		return a.first < b.second;
+	});
+	double A = 0, A_max = 0;
+	for (std::size_t a = 0, a_end_ = fronts.size(); a != a_end_; ++a) {
+		A += fronts[a].second;
+		if (fronts[a].second > 0) {
+			A_max = std::max(A_max, A);
+		}
+	}
+	merged_pk.A = A_max;
+	return merged_pk;
+}
+
+TestFastSignalGenerator::TestFastSignalGenerator(std::string prefix) //Generate fast component signal in 5 channels (4 separate and thier sum)
+//for testing trigger jitter adjustment algorithm performance on ideal (step) signal.
+{
+	//Single peak characteristics:
+	double dt = 0.05; //us
+	double A = 1;
+	double S = A * dt;
+	std::pair<double, double> time(20, 22.6);
+	std::pair<std::size_t, std::size_t> Npes (5, 12); //in a single PMT channel (1-4)
+	double jitter = 0;
+	double max_jitter = 5;
+	std::string folder = {"20kV_exp"};
+	std::vector<int> chs = {1, 2, 3, 4, 0}; //PMTs
+	
+	TRandom1 *rand = new TRandom1(42);
+
+	//generate events into memory
+	experiment_area area;
+	std::deque<AllRunsResults> data;
+	data.push_back(AllRunsResults(area));
+	std::size_t event_end_ = 10000;
+	data.back()._valid.resize(event_end_, true);
+	for (std::size_t c = 0, c_end_ = chs.size(); c != c_end_; ++c) {
+		data.back().pmt_channels.push_back(chs[c]);
+		data.back().pmt_peaks.push_back(std::deque<std::deque<peak> >(event_end_));
+		data.back().pmt_S2_integral.push_back(std::vector<double>(event_end_));
+	}
+	for (std::size_t event = 0; event != event_end_; ++event) {
+		double jitter_offset = rand->Gaus(0, jitter);
+		jitter_offset = std::min(jitter_offset, max_jitter);
+		jitter_offset = std::max(jitter_offset, -max_jitter);
+		for (std::size_t c = 0, c_end_ = chs.size() - 1; c != c_end_; ++c) { //the last channel is a sum of all previous
+			std::size_t Nphe_ = Npes.first + rand->Integer(Npes.second - Npes.first + 1);
+			for (int phe = 0; phe <= Nphe_; ++phe) {
+				peak pk;
+				pk.t = rand->Uniform(time.first, time.second) + jitter_offset;
+				pk.left = pk.t - 0.5* dt;
+				pk.right = pk.t - 0.5* dt;
+				pk.A = A;
+				pk.S = S;
+				data.back().pmt_peaks[c][event].push_back(pk);
+				data.back().pmt_peaks[c_end_][event].push_back(pk); //0 channel is a sum of all channels
+			}
+		}
+		for (std::size_t c = 0, c_end_ = chs.size(); c != c_end_; ++c) { //merge superimposed peaks
+			std::deque<peak> peaks = data.back().pmt_peaks[c][event];
+			data.back().pmt_S2_integral[c][event] = peaks.size();
+			std::sort(peaks.begin(), peaks.end(), [](const peak& a, const peak &b)->bool {
+				return a.left < b.left;
+			});
+
+			std::deque<peak> processed_peaks;
+			std::deque<peak> peak_cluster; //superimposed peaks
+			double cluster_right_time = 0;
+			for (std::size_t pk = 0, pk_end_ = peaks.size(); pk != pk_end_; ++pk) {
+				if (peak_cluster.empty()) {
+					peak_cluster.push_back(peaks[pk]);
+					cluster_right_time = peaks[pk].right;
+					continue;
+				}
+				if (cluster_right_time >= peaks[pk].left) {
+					peak_cluster.push_back(peaks[pk]);
+					cluster_right_time = std::max(cluster_right_time, peaks[pk].right);
+					continue;
+				} else {
+					peak merged_pk = MergePeaks(peak_cluster);
+					processed_peaks.push_back(merged_pk);
+					peak_cluster.clear();
+					peak_cluster.push_back(peaks[pk]);
+					cluster_right_time = peaks[pk].right;
+				}
+			}
+			if (!peak_cluster.empty()) {
+				peak merged_pk = MergePeaks(peak_cluster);
+				processed_peaks.push_back(merged_pk);
+			}
+			data.back().pmt_peaks[c][event] = processed_peaks;
+		}
+	}
+
+	//write events as in Data_processing 
+	data.back()._exp.experiments.push_back(folder);
+	data.back().SaveTo(prefix);
+}
+
 void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> ys,/* ParameterPile::*/DrawEngine de)
 {
 	if (xs.size() != ys.size()){

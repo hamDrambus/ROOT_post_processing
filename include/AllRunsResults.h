@@ -48,6 +48,7 @@ public:
 	friend SingleRunData;
 	friend AllExperimentsResults;
 	friend TestSignalGenerator;
+	friend TestFastSignalGenerator;
 };
 
 
