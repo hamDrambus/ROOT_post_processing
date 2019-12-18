@@ -36,11 +36,12 @@
   experiment_fields["190228_Cd_18kV_850V_46V_th500mV"] = 18;
   experiment_fields["190228_Cd_16kV_850V_46V_th500mV"] = 16;
  
-  {
-    double coeff = (600 / 804.0)*(1.54 / (1.54*1.8 + 1.01*0.4));
-    for (auto j = experiment_fields.begin(); j != experiment_fields.end(); ++j)
-      j->second *= coeff;
-  }
+  std::map<std::string, int> experiment_runs; //required for printing accpeted/rejected events
+  experiment_runs["190228_Cd_20kV_850V_46V_th500mV"] = 112;
+  experiment_runs["190228_Cd_20kV_850V_46V_th600mV"] = 1;
+  experiment_runs["190228_Bkg_20kV_850V_46V_th500mV"] = 64;
+  experiment_runs["190228_Cd_18kV_850V_46V_th500mV"] = 86;
+  experiment_runs["190228_Cd_16kV_850V_46V_th500mV"] = 112;
  
   if (areas_to_draw.empty())
 	areas_to_draw.push_back(experiment_area());

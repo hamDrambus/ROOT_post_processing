@@ -462,6 +462,7 @@ void analysis_history(bool calibrate, int method = 0) {
 //method = 0 - new event selection (suppressing events with large tails)
 calibration_file = "190404/results/190404_calibration.dat";
 post_processor->calibr_info.Load(calibration_file);
+trigger_version = TriggerVersion::trigger_v2;
 data_output_path = "190404/results_v3/";
 std::map<std::string, std::pair<double, double> > S2_times;
 S2_times["190404_Cd_20kV_850V_46V_th250mV_0"] = std::pair<double, double> (25, 40);
@@ -484,9 +485,9 @@ exp_folders["190404_Cd_10kV_850V_46V_th150mV"] = "Cd_46V_10kV_850V";
 exp_folders["190404_Cd_8kV_850V_46V_th140mV"] = "Cd_46V_8kV_850V";
 
 //Ultimately I have to choose single procedure for signal forms among them for all data.
-//TODO: experiments loop (need long strings whens saving pictures). Currently I have to run this calibration script for each nex();  
 //TODO: move S2 times from cut_S2_times.cpp here. Use them instead of 23-65us
 bool forms = !calibrate;
+//CALIBRATION (slow PMT and SiPMs)
 for (std::size_t exp_ind = 0; calibrate && (exp_ind!= exp_area.experiments.size()); ++exp_ind) {
 std::string folder, S2_start, S2_finish;
 double d_S2_start, d_S2_finish;
@@ -512,8 +513,6 @@ if (S2_times_entry != S2_times.end()) {
 }
 for (std::size_t chi = 0, chi_end_ = calib_channels.size(); calibrate && chi!=chi_end_; ++chi) { 
 int channel = calib_channels[chi];
-
-//CALIBRATION (slow PMT and SiPMs)
 //parameters set by Cd_20kV_850V_46V, but valid for all fields. 
 if (channel==15) {
 ch(15);
@@ -1393,6 +1392,13 @@ ty(AStates::PMT_Npe_sum);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 
+ty(AStates::PMT_sum_N);
+	off_ch(8); off_ch(9); off_ch(10); off_ch(11);
+	on_ch(12); on_ch(13); on_ch(14); on_ch(15);
+	time_zoom_sPMTs(d_S2_start, d_S2_finish);
+	saveaspng(FOLDER + Num + "_slowPMTs_Npeaks_w_"+S2_start+"-"+S2_finish+"us_"+cuts);
+	Num = int_to_str(++no, 2);
+
 save_forms(FOLDER + "forms_small_Npes/", false);
 	unset_as_run_cut("En_spec");
 	cuts.erase(cuts.end()-3, cuts.end());
@@ -1403,9 +1409,16 @@ ty(AStates::PMT_Npe_sum);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 
+ty(AStates::PMT_sum_N);
+	draw_limits(3, 30);
+	saveaspng(FOLDER + Num + "_slowPMTs_Npeaks_w_"+S2_start+"-"+S2_finish+"us_"+cuts);
+	set_as_run_cut("N_peaks");	cuts += "+" + Num;
+	Num = int_to_str(++no, 2);
+
 save_forms(FOLDER + "forms_Cd_right/", false);
 	unset_as_run_cut("En_spec");
-	cuts.erase(cuts.end()-3, cuts.end());
+	unset_as_run_cut("N_peaks");
+	cuts.erase(cuts.end()-6, cuts.end());
 
 ty(AStates::PMT_Npe_sum);
 	draw_limits(10, 37);
@@ -1413,10 +1426,17 @@ ty(AStates::PMT_Npe_sum);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 
-print_accepted_events(FOLDER + "forms_Cd_peak/"+Num+"_events_"+cuts+".txt", first_run);
+ty(AStates::PMT_sum_N);
+	draw_limits(3, 30);
+	saveaspng(FOLDER + Num + "_slowPMTs_Npeaks_w_"+S2_start+"-"+S2_finish+"us_"+cuts);
+	set_as_run_cut("N_peaks");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_Cd_peak/"+Num+"_events_"+cuts+".txt", first_run);
+	Num = int_to_str(++no, 2);
+
 save_forms(FOLDER + "forms_Cd_peak/", false);
 	unset_as_run_cut("En_spec");
-	cuts.erase(cuts.end()-3, cuts.end());
+	unset_as_run_cut("N_peaks");
+	cuts.erase(cuts.end()-6, cuts.end());
 
 ty(AStates::PMT_Npe_sum);
 	draw_limits(45, 120);
@@ -1424,9 +1444,16 @@ ty(AStates::PMT_Npe_sum);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 
+ty(AStates::PMT_sum_N);
+	draw_limits(4, 40);
+	saveaspng(FOLDER + Num + "_slowPMTs_Npeaks_w_"+S2_start+"-"+S2_finish+"us_"+cuts);
+	set_as_run_cut("N_peaks");	cuts += "+" + Num;
+	Num = int_to_str(++no, 2);
+
 save_forms(FOLDER + "forms_cosmic/", false);
 	unset_as_run_cut("En_spec");
-	cuts.erase(cuts.end()-3, cuts.end());
+	unset_as_run_cut("N_peaks");
+	cuts.erase(cuts.end()-6, cuts.end());
 }
 
 if (exp == "190404_Cd_10kV_850V_46V_th150mV" && method == 0) {
@@ -1542,9 +1569,19 @@ ty(AStates::PMT_Npe_sum);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 
+ty(AStates::PMT_sum_N);
+	off_ch(8); off_ch(9); off_ch(10); off_ch(11);
+	on_ch(12); on_ch(13); on_ch(14); on_ch(15);
+	time_zoom_sPMTs(d_S2_start, d_S2_finish);
+	draw_limits(3, 20);
+	saveaspng(FOLDER + Num + "_slowPMTs_Npeaks_w_"+S2_start+"-"+S2_finish+"us_"+cuts);
+	set_as_run_cut("N_peaks");	cuts += "+" + Num;
+	Num = int_to_str(++no, 2);
+
 save_forms(FOLDER + "forms_Cd_right/", false);
 	unset_as_run_cut("En_spec");
-	cuts.erase(cuts.end()-3, cuts.end());
+	unset_as_run_cut("N_peaks");
+	cuts.erase(cuts.end()-6, cuts.end());
 
 ty(AStates::PMT_Npe_sum);
 	draw_limits(4, 30);
@@ -1552,10 +1589,17 @@ ty(AStates::PMT_Npe_sum);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 
-print_accepted_events(FOLDER + "forms_Cd_peak/"+Num+"_events_"+cuts+".txt", first_run);
+ty(AStates::PMT_sum_N);
+	draw_limits(3, 30);
+	saveaspng(FOLDER + Num + "_slowPMTs_Npeaks_w_"+S2_start+"-"+S2_finish+"us_"+cuts);
+	set_as_run_cut("N_peaks");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_Cd_peak/"+Num+"_events_"+cuts+".txt", first_run);
+	Num = int_to_str(++no, 2);
+
 save_forms(FOLDER + "forms_Cd_peak/", false);
 	unset_as_run_cut("En_spec");
-	cuts.erase(cuts.end()-3, cuts.end());
+	unset_as_run_cut("N_peaks");
+	cuts.erase(cuts.end()-6, cuts.end());
 
 ty(AStates::PMT_Npe_sum);
 	draw_limits(40, 120);
@@ -1563,9 +1607,16 @@ ty(AStates::PMT_Npe_sum);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 
+ty(AStates::PMT_sum_N);
+	draw_limits(6, 40);
+	saveaspng(FOLDER + Num + "_slowPMTs_Npeaks_w_"+S2_start+"-"+S2_finish+"us_"+cuts);
+	set_as_run_cut("N_peaks");	cuts += "+" + Num;
+	Num = int_to_str(++no, 2);
+
 save_forms(FOLDER + "forms_cosmic/", false);
 	unset_as_run_cut("En_spec");
-	cuts.erase(cuts.end()-3, cuts.end());
+	unset_as_run_cut("N_peaks");
+	cuts.erase(cuts.end()-6, cuts.end());
 }
 
 if (exp == "190404_Cd_8kV_850V_46V_th140mV" && method == 0) {
@@ -1681,9 +1732,19 @@ ty(AStates::PMT_Npe_sum);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 
+ty(AStates::PMT_sum_N);
+	off_ch(8); off_ch(9); off_ch(10); off_ch(11);
+	on_ch(12); on_ch(13); on_ch(14); on_ch(15);
+	time_zoom_sPMTs(d_S2_start, d_S2_finish);
+	draw_limits(3, 20);
+	saveaspng(FOLDER + Num + "_slowPMTs_Npeaks_w_"+S2_start+"-"+S2_finish+"us_"+cuts);
+	set_as_run_cut("N_peaks");	cuts += "+" + Num;
+	Num = int_to_str(++no, 2);
+
 save_forms(FOLDER + "forms_Cd_right/", false);
 	unset_as_run_cut("En_spec");
-	cuts.erase(cuts.end()-3, cuts.end());
+	set_as_run_cut("N_peaks");
+	cuts.erase(cuts.end()-6, cuts.end());
 
 ty(AStates::PMT_Npe_sum);
 	draw_limits(3, 22);
@@ -1691,10 +1752,17 @@ ty(AStates::PMT_Npe_sum);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 
-print_accepted_events(FOLDER + "forms_Cd_peak/"+Num+"_events_"+cuts+".txt", first_run);
+ty(AStates::PMT_sum_N);
+	draw_limits(3, 20);
+	saveaspng(FOLDER + Num + "_slowPMTs_Npeaks_w_"+S2_start+"-"+S2_finish+"us_"+cuts);
+	set_as_run_cut("N_peaks");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_Cd_peak/"+Num+"_events_"+cuts+".txt", first_run);
+	Num = int_to_str(++no, 2);
+
 save_forms(FOLDER + "forms_Cd_peak/", false);
 	unset_as_run_cut("En_spec");
-	cuts.erase(cuts.end()-3, cuts.end());
+	unset_as_run_cut("N_peaks");
+	cuts.erase(cuts.end()-6, cuts.end());
 
 ty(AStates::PMT_Npe_sum);
 	draw_limits(30, 120);
@@ -1702,9 +1770,16 @@ ty(AStates::PMT_Npe_sum);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 
+ty(AStates::PMT_sum_N);
+	draw_limits(6, 30);
+	saveaspng(FOLDER + Num + "_slowPMTs_Npeaks_w_"+S2_start+"-"+S2_finish+"us_"+cuts);
+	set_as_run_cut("N_peaks");	cuts += "+" + Num;
+	Num = int_to_str(++no, 2);
+
 save_forms(FOLDER + "forms_cosmic/", false);
 	unset_as_run_cut("En_spec");
-	cuts.erase(cuts.end()-3, cuts.end());
+	unset_as_run_cut("N_peaks");
+	cuts.erase(cuts.end()-6, cuts.end());
 }
 //END OF FORMS
 } 

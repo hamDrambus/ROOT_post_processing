@@ -1,16 +1,21 @@
 {
-
+  name_scheme_version = name_scheme_v2;
   //From global parameters:
-  data_prefix_path = "../Data/180705/results/";
-  calibration_file = "180705/results/180705_calibration.dat";
-  data_output_path = "180705/results/";
-  DATA_MPPC_VERSION = "MPPCs_v1";
-  DATA_PMT_VERSION = "PMT_v1";
-
-  OUTPUT_MPPCS_PICS = "MPPCs_v1/MPPCs_";
-  OUTPUT_PMT_PICS = "PMT_v1/PMT_";
-  OUTPUT_MPPCS = "MPPC_";
-
+  if (name_scheme_version == name_scheme_v1) {
+    data_prefix_path = "../Data/180705/results/";
+    calibration_file = "180705/results/180705_calibration.dat";
+    data_output_path = "180705/results/";
+    DATA_MPPC_VERSION = "MPPCs_v1";
+    DATA_PMT_VERSION = "PMT_v1";
+  }
+  if (name_scheme_version == name_scheme_v2) {
+    data_prefix_path = "../Data/180705/results_v2/";
+    calibration_file = "180705/results_v4/180705_calibration.dat";
+    data_output_path = "180705/results_v4/";
+    DATA_MPPC_VERSION = "SiPM";
+    DATA_PMT_VERSION = "PMT";
+  }
+  std::cout<<"data_prefix_path: \""<<data_prefix_path<<"\""<<std::endl;
   //Initialize data for utility functions:
 	std::ifstream str;
 	str.open(Vdrift_data_fname);
@@ -46,10 +51,8 @@
   {
   channel_info<dB_info> atten0;
   atten0.push(0, dB_info(12)); //decibells, not ratio
-  atten0.push(1, dB_info(12));
   channel_info<dB_info> atten1;
   atten1.push(0, dB_info(6)); //decibells, not ratio
-  atten1.push(1, dB_info(6));
   dBs.clear();
   dBs["180705_Cd_20kV_800V_12bB_48V"] = atten0;
   dBs["180705_Cd_18kV_800V_12bB_48V"] = atten0;

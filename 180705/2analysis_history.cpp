@@ -384,23 +384,23 @@ void analysis_history(bool calibrate, int method = 1) {
 //Created on 22.11.2019
 //method = 1 - use trigger_v2, with detailed analysis at 20kV, 16kV and 10kV
 //(sPMTs/fPMTs for trigger {1.5, 2, 2.5, 3, 3.5us})
-
+double trigger_at = 32;
 calibration_file = data_output_path+"180705_calibration.dat";
 data_output_path = "180705/results_v2/";
 trigger_version = TriggerVersion::trigger_v2;
 
 post_processor->calibr_info.Load(calibration_file);
 std::map<std::string, std::pair<double, double> > S2_times;
-S2_times["180705_Cd_20kV_800V_12bB_48V"] = std::pair<double, double> (25, 40);
-S2_times["180705_Cd_18kV_800V_12bB_48V"] = std::pair<double, double> (25, 40);
-S2_times["180705_Cd_16kV_800V_12bB_48V"] = std::pair<double, double> (25, 40);
-S2_times["180705_Cd_14kV_800V_12bB_48V"] = std::pair<double, double> (25, 40);
-S2_times["180705_Cd_13kV_800V_12bB_48V"] = std::pair<double, double> (25, 40);
-S2_times["180705_Cd_12kV_800V_6bB_48V"] = std::pair<double, double> (25, 40);
-S2_times["180705_Cd_11kV_800V_6bB_48V"] = std::pair<double, double> (25, 40);
-S2_times["180705_Cd_10kV_800V_6bB_48V"] = std::pair<double, double> (25, 40);
-S2_times["180705_Cd_9kV_800V_0bB_48V"] = std::pair<double, double> (25, 40);
-S2_times["180705_Cd_8kV_800V_0bB_48V"] = std::pair<double, double> (25, 40);
+S2_times["180705_Cd_20kV_800V_12bB_48V"] = std::pair<double, double> (25, 38);
+S2_times["180705_Cd_18kV_800V_12bB_48V"] = std::pair<double, double> (25, 38);
+S2_times["180705_Cd_16kV_800V_12bB_48V"] = std::pair<double, double> (25, 38);
+S2_times["180705_Cd_14kV_800V_12bB_48V"] = std::pair<double, double> (25, 38);
+S2_times["180705_Cd_13kV_800V_12bB_48V"] = std::pair<double, double> (25, 38);
+S2_times["180705_Cd_12kV_800V_6bB_48V"] = std::pair<double, double> (25, 38);
+S2_times["180705_Cd_11kV_800V_6bB_48V"] = std::pair<double, double> (25, 38);
+S2_times["180705_Cd_10kV_800V_6bB_48V"] = std::pair<double, double> (25, 38);
+S2_times["180705_Cd_9kV_800V_0bB_48V"] = std::pair<double, double> (25, 38);
+S2_times["180705_Cd_8kV_800V_0bB_48V"] = std::pair<double, double> (25, 38);
 std::map<std::string, std::string> exp_folders;
 exp_folders["180705_Cd_20kV_800V_12bB_48V"] = "Cd_48V_20kV_800V";
 exp_folders["180705_Cd_18kV_800V_12bB_48V"] = "Cd_48V_18kV_800V";
@@ -882,12 +882,12 @@ ty(AStates::PMT_Npe_sum);
 	}
 }
 
-if (exp == "180705_Cd_10kV_800V_6bB_48V" && method == 1) { 	
+if (exp == "180705_Cd_12kV_800V_6bB_48V" && method == 1) { 	
 	std::string meth = "";
 	std::string path = "";
-	double dt_shaping = 2.0;
-	std::string dt = "dt=2.0us";
-	std::string DT = "dt=2.0#mus";
+	double dt_shaping;
+	std::string dt;
+	std::string DT;
 	std::string cuts = "no_cuts";
 	std::string zoomx = "Npe" + dbl_to_str(160-d_S2_start, 0);
 	std::string zoomy = "Npe" + dbl_to_str(d_S2_finish-d_S2_start, 0);
@@ -900,7 +900,105 @@ if (exp == "180705_Cd_10kV_800V_6bB_48V" && method == 1) {
 	ch(0); noise_cut(0, 0, 0); noise_cut(1, 0, 0);
 	cut_t(d_S2_start, 160, false, 1);
 	cut_t(d_S2_start, 160, false, 0);
-	set_bins(0, 300);
+	set_bins(0, 700);
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+cuts);
+	Num = int_to_str(++no, 2);
+
+	ty(AStates::PMT_sum_N);
+	off_ch(0); off_ch(1); off_ch(12);
+	noise_cut(8, 0, 0);
+	noise_cut(9, 0, 0);
+	noise_cut(10, 0, 0);
+	noise_cut(11, 0, 0);
+	time_zoom(d_S2_start, 160);
+	set_bins(0, 400);
+	saveaspng(FOLDER + Num+"_fastPMTs_Npe_"+cuts);
+	Num = int_to_str(++no, 2);
+
+set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
+	ty(AStates::Correlation_y);
+	cut_t(d_S2_start, d_S2_finish, false, 0);
+	ty(AStates::Correlation);
+	set_zoom(0, 700, 0, 700);
+	set_bins(700);
+	cut_x_y_right(10, 0, 700, 546, true, "1");
+	set_titles("N_{pe} t#in["+S2_start+", 160] #mus", "N_{pe} t#in["+S2_start+", "+S2_finish+"] #mus");
+	update();
+	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us");
+	set_as_run_cut("good_sPMTs_ZxZy");	cuts = "cuts_"+Num;
+	Num = int_to_str(++no, 2);
+	remcut(-1, "1");
+
+ty(AStates::PMT_Npe_sum);
+	time_zoom(d_S2_start, 160);
+	draw_limits(61, 180);
+	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
+	set_as_run_cut("Cd_peak");	cuts += "+" + Num;
+	Num = int_to_str(++no, 2);
+
+ty(AStates::PMT_sum_N);
+	time_zoom(d_S2_start, d_S2_finish);
+	draw_limits(5, 300);
+	saveaspng(FOLDER + Num + "_fastPMTs_Npeaks_"+cuts);
+	set_as_run_cut("N_peaks");	cuts += "+" + Num;
+	Num = int_to_str(++no, 2);
+
+	//Now apply different trigger adjustments for valid events and Cd peak
+	std::vector<std::pair<double, double> > fPMT_trigger_lims;
+	std::vector<double> shapinngs = {3.0, 3.5, 4.0, 4.5, 5.0};
+	fPMT_trigger_lims.push_back(std::pair<double, double> (30.3, 35.5));
+	fPMT_trigger_lims.push_back(std::pair<double, double> (30.3, 35.5));
+	fPMT_trigger_lims.push_back(std::pair<double, double> (30.3, 35.5));
+	fPMT_trigger_lims.push_back(std::pair<double, double> (30.3, 35.5));
+	fPMT_trigger_lims.push_back(std::pair<double, double> (30.3, 35.5));
+	
+	for (std::size_t sh = 0, sh_end_ = shapinngs.size(); sh != sh_end_; ++sh) {
+		dt_shaping = shapinngs[sh];
+		dt = "dt="+dbl_to_str(dt_shaping, 1) + "us";
+		DT = "dt="+dbl_to_str(dt_shaping, 1) + "#mus";
+
+	ty(AStates::PMT_trigger_bS);
+		off_ch(0); off_ch(1); off_ch(12);
+		noise_cut(8, 0, 0);
+		noise_cut(9, 0, 0);
+		noise_cut(10, 0, 0);
+		noise_cut(11, 0, 0);
+		set_zoom(25, 45);
+		set_bins(300);
+		set_trigger_shaping(dt_shaping);
+		draw_limits(fPMT_trigger_lims[sh].first, fPMT_trigger_lims[sh].second); 
+		saveaspng(FOLDER + Num+"_fastPMTs_Strigger_"+dt+"_"+cuts+"_zoom");
+		set_as_run_cut("good_trigger");	cuts += "+" + Num;
+		set_trigger_offsets(trigger_at);
+	
+	save_forms(FOLDER + Num + "_fastPMTs_Strigger_"+dt+"_"+cuts+"/", false);
+		Num = int_to_str(++no, 2);
+
+		unset_trigger_offsets();
+		unset_as_run_cut("good_trigger");
+		cuts.erase(cuts.end()-3, cuts.end());
+	}
+}
+
+if (exp == "180705_Cd_11kV_800V_6bB_48V" && method == 1) { 	
+	std::string meth = "";
+	std::string path = "";
+	double dt_shaping;
+	std::string dt;
+	std::string DT;
+	std::string cuts = "no_cuts";
+	std::string zoomx = "Npe" + dbl_to_str(160-d_S2_start, 0);
+	std::string zoomy = "Npe" + dbl_to_str(d_S2_finish-d_S2_start, 0);
+	int no = 0; //number
+	std::string Num = int_to_str(++no, 2); //="01"
+	std::string FOLDER = data_output_path + folder + "/different_methods/";
+
+	//Set AStates::PMT_Npe_sum and AStates::PMT_sum_N cuts for future correlations
+	ty(AStates::PMT_Npe_sum);
+	ch(0); noise_cut(0, 0, 0); noise_cut(1, 0, 0);
+	cut_t(d_S2_start, 160, false, 1);
+	cut_t(d_S2_start, 160, false, 0);
+	set_bins(0, 500);
 	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+cuts);
 	Num = int_to_str(++no, 2);
 
@@ -915,154 +1013,360 @@ if (exp == "180705_Cd_10kV_800V_6bB_48V" && method == 1) {
 	saveaspng(FOLDER + Num+"_fastPMTs_Npe_"+cuts);
 	Num = int_to_str(++no, 2);
 
-	//Set AStates::PMT_trigger_bNpe and AStates::PMT_trigger_bNpeaks for future correlations
-	ty(AStates::PMT_trigger_bNpe);
-	ch(0); noise_cut(0, 0, 0);
-	set_trigger_shaping(dt_shaping);
-	set_zoom(20, 45);
-	set_bins(350);
-	saveaspng(FOLDER + Num+"_slowPMTs_trigger_"+cuts+"_"+dt+"_zoom");
+set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
+	ty(AStates::Correlation_y);
+	cut_t(d_S2_start, d_S2_finish, false, 0);
+	ty(AStates::Correlation);
+	set_zoom(0, 500, 0, 500);
+	set_bins(500);
+	cut_x_y_right(10, 0, 500, 400, true, "1");
+	set_titles("N_{pe} t#in["+S2_start+", 160] #mus", "N_{pe} t#in["+S2_start+", "+S2_finish+"] #mus");
+	update();
+	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us");
+	set_as_run_cut("good_sPMTs_ZxZy");	cuts = "cuts_"+Num;
 	Num = int_to_str(++no, 2);
-	
-	ty(AStates::PMT_trigger_bNpeaks);
-	off_ch(0); off_ch(1); off_ch(12);
-	noise_cut(8, 0, 0);
-	noise_cut(9, 0, 0);
-	noise_cut(10, 0, 0);
-	noise_cut(11, 0, 0);
-	set_trigger_shaping(dt_shaping);
-	set_zoom(20, 45);
-	set_bins(350);
-	saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
+	remcut(-1, "1");
+
+ty(AStates::PMT_Npe_sum);
+	time_zoom(d_S2_start, 160);
+	draw_limits(47, 130);
+	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
+	set_as_run_cut("Cd_peak");	cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 
+ty(AStates::PMT_sum_N);
+	time_zoom(d_S2_start, d_S2_finish);
+	draw_limits(5, 300);
+	saveaspng(FOLDER + Num + "_fastPMTs_Npeaks_"+cuts);
+	set_as_run_cut("N_peaks");	cuts += "+" + Num;
+	Num = int_to_str(++no, 2);
+
+	//Now apply different trigger adjustments for valid events and Cd peak
+	std::vector<std::pair<double, double> > fPMT_trigger_lims;
+	std::vector<double> shapinngs = {3.0, 3.5, 4.0, 4.5, 5.0};
+	fPMT_trigger_lims.push_back(std::pair<double, double> (30.0, 35.5));
+	fPMT_trigger_lims.push_back(std::pair<double, double> (30.0, 35.5));
+	fPMT_trigger_lims.push_back(std::pair<double, double> (29.7, 34.3));
+	fPMT_trigger_lims.push_back(std::pair<double, double> (29.6, 34.2));
+	fPMT_trigger_lims.push_back(std::pair<double, double> (29.5, 34.5));
+	
+	for (std::size_t sh = 0, sh_end_ = shapinngs.size(); sh != sh_end_; ++sh) {
+		dt_shaping = shapinngs[sh];
+		dt = "dt="+dbl_to_str(dt_shaping, 1) + "us";
+		DT = "dt="+dbl_to_str(dt_shaping, 1) + "#mus";
+
 	ty(AStates::PMT_trigger_bS);
+		off_ch(0); off_ch(1); off_ch(12);
+		noise_cut(8, 0, 0);
+		noise_cut(9, 0, 0);
+		noise_cut(10, 0, 0);
+		noise_cut(11, 0, 0);
+		set_zoom(25, 45);
+		set_bins(300);
+		set_trigger_shaping(dt_shaping);
+		draw_limits(fPMT_trigger_lims[sh].first, fPMT_trigger_lims[sh].second); 
+		saveaspng(FOLDER + Num+"_fastPMTs_Strigger_"+dt+"_"+cuts+"_zoom");
+		set_as_run_cut("good_trigger");	cuts += "+" + Num;
+		set_trigger_offsets(trigger_at);
+	
+	save_forms(FOLDER + Num + "_fastPMTs_Strigger_"+dt+"_"+cuts+"/", false);
+		Num = int_to_str(++no, 2);
+
+		unset_trigger_offsets();
+		unset_as_run_cut("good_trigger");
+		cuts.erase(cuts.end()-3, cuts.end());
+	}
+}
+
+if (exp == "180705_Cd_10kV_800V_6bB_48V" && method == 1) { 	
+	std::string meth = "";
+	std::string path = "";
+	double dt_shaping;
+	std::string dt;
+	std::string DT;
+	std::string cuts = "no_cuts";
+	std::string zoomx = "Npe" + dbl_to_str(160-d_S2_start, 0);
+	std::string zoomy = "Npe" + dbl_to_str(d_S2_finish-d_S2_start, 0);
+	int no = 0; //number
+	std::string Num = int_to_str(++no, 2); //="01"
+	std::string FOLDER = data_output_path + folder + "/different_methods/";
+
+	//Set AStates::PMT_Npe_sum and AStates::PMT_sum_N cuts for future correlations
+	ty(AStates::PMT_Npe_sum);
+	ch(0); noise_cut(0, 0, 0); noise_cut(1, 0, 0);
+	cut_t(d_S2_start, 160, false, 1);
+	cut_t(d_S2_start, 160, false, 0);
+	set_bins(0, 400);
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+cuts);
+	Num = int_to_str(++no, 2);
+
+	ty(AStates::PMT_sum_N);
 	off_ch(0); off_ch(1); off_ch(12);
 	noise_cut(8, 0, 0);
 	noise_cut(9, 0, 0);
 	noise_cut(10, 0, 0);
 	noise_cut(11, 0, 0);
-	set_trigger_shaping(dt_shaping);
-	set_zoom(20, 45);
-	set_bins(350);
-	saveaspng(FOLDER + Num+"_fastPMTs_Strigger_"+cuts+"_"+dt+"_zoom");
+	time_zoom(d_S2_start, 160);
+	set_bins(0, 250);
+	saveaspng(FOLDER + Num+"_fastPMTs_Npe_"+cuts);
 	Num = int_to_str(++no, 2);
 
 set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	ty(AStates::Correlation_y);
 	cut_t(d_S2_start, d_S2_finish, false, 0);
 	ty(AStates::Correlation);
-	set_zoom(0, 300, 0, 300);
-	set_bins(300);
-	cut_x_y_right_select(8, 0, 300, 250, true, "1");
+	set_zoom(0, 400, 0, 400);
+	set_bins(400);
+	cut_x_y_right(8, 0, 400, 330, true, "1");
 	set_titles("N_{pe} t#in["+S2_start+", 160] #mus", "N_{pe} t#in["+S2_start+", "+S2_finish+"] #mus");
-	update();
-	set_as_run_cut("temp");
-	path = FOLDER + Num + "_slowPMTs_Npe_"+cuts+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us_right_noise/events_sPMTs_right_noise";
-	saveaspng(path);
-	print_accepted_events(path+".txt", 360);
-	unset_as_run_cut("temp");
-	cut_x_y_right(8, 0, 300, 250, true, "1");
 	update();
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us");
 	set_as_run_cut("good_sPMTs_ZxZy");	cuts = "cuts_"+Num;
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1");
-	
-set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bNpeaks, -1, -1);
-	ty(AStates::Correlation);
-	set_zoom(20, 45, 20, 45);
-	set_bins(600);
-	set_titles("t by slowPMTs " + DT, "t by fastPMTs " + DT);
-	saveaspng(FOLDER + Num+"_slowPMTs_vs_fastPMTs_trigger_"+cuts+"_"+dt+"_zoom");
-	Num = int_to_str(++no, 2);
 
 ty(AStates::PMT_Npe_sum);
+	time_zoom(d_S2_start, 160);
 	draw_limits(24, 70);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("Cd_peak");	cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 
+ty(AStates::PMT_sum_N);
+	time_zoom(d_S2_start, d_S2_finish);
+	draw_limits(5, 100);
+	saveaspng(FOLDER + Num + "_fastPMTs_Npeaks_"+cuts);
+	set_as_run_cut("N_peaks");	cuts += "+" + Num;
+	Num = int_to_str(++no, 2);
+
 	//Now apply different trigger adjustments for valid events and Cd peak
 	std::vector<std::pair<double, double> > fPMT_trigger_lims;
-	std::vector<std::pair<double, double> > sPMT_trigger_lims;
-	std::vector<double> shapinngs = {2.0, 2.5, 3.0, 4.0, 5.0};
-	fPMT_trigger_lims.push_back(std::pair<double, double> (30.5, 33.1)); //2.0 us shaping
-	sPMT_trigger_lims.push_back(std::pair<double, double> (27, 37));	
-	fPMT_trigger_lims.push_back(std::pair<double, double> (30.3, 33.4)); //2.5 us shaping
-	sPMT_trigger_lims.push_back(std::pair<double, double> (27, 37));
-	fPMT_trigger_lims.push_back(std::pair<double, double> (30.1, 33.8)); //3.0 us shaping
-	sPMT_trigger_lims.push_back(std::pair<double, double> (27, 37));
-	fPMT_trigger_lims.push_back(std::pair<double, double> (29.5, 34.3)); //4.0 us shaping
-	sPMT_trigger_lims.push_back(std::pair<double, double> (29.7, 35.0));
-	fPMT_trigger_lims.push_back(std::pair<double, double> (29.0, 35.0)); //5.0 us shaping
-	sPMT_trigger_lims.push_back(std::pair<double, double> (29.2, 35.3));
+	std::vector<double> shapinngs = {3.0, 3.5, 4.0, 4.5, 5.0};
+	fPMT_trigger_lims.push_back(std::pair<double, double> (30.2, 33.7));
+	fPMT_trigger_lims.push_back(std::pair<double, double> (30.0, 33.9));
+	fPMT_trigger_lims.push_back(std::pair<double, double> (29.5, 34.2));
+	fPMT_trigger_lims.push_back(std::pair<double, double> (29.5, 34.3));
+	fPMT_trigger_lims.push_back(std::pair<double, double> (29.6, 34.5));
 	
 	for (std::size_t sh = 0, sh_end_ = shapinngs.size(); sh != sh_end_; ++sh) {
 		dt_shaping = shapinngs[sh];
 		dt = "dt="+dbl_to_str(dt_shaping, 1) + "us";
 		DT = "dt="+dbl_to_str(dt_shaping, 1) + "#mus";
-		//DRAW SLOW-FAST PMT TRIGGER CORRELATION FOR Cd PEAK
-	set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bNpeaks, -1, -1);
-		ty(AStates::Correlation_x);
-		set_trigger_shaping(dt_shaping);
-		ty(AStates::Correlation_y);
-		set_trigger_shaping(dt_shaping);
-		ty(AStates::Correlation);
-		set_zoom(20, 45, 20, 45);
-		set_bins(600);
-		set_titles("t by slowPMTs " + DT, "t by fastPMTs " + DT);
-		saveaspng(FOLDER + Num+"_slowPMTs_vs_fastPMTs_trigger_"+cuts+"_"+dt+"_zoom");
-		Num = int_to_str(++no, 2);
-
-		//APPLY slowPMTs TRIGGER CORRECTION trigger_v2
-	ty(AStates::PMT_trigger_bS);
-		set_trigger_shaping(dt_shaping);
-		saveaspng(FOLDER + Num+"_fastPMTs_Strigger_"+cuts+"_"+dt+"_zoom");
-		Num = int_to_str(++no, 2);
 
 	ty(AStates::PMT_trigger_bNpeaks);
+		off_ch(0); off_ch(1); off_ch(12);
+		noise_cut(8, 0, 0);
+		noise_cut(9, 0, 0);
+		noise_cut(10, 0, 0);
+		noise_cut(11, 0, 0);
+		set_zoom(25, 45);
+		set_bins(300);
 		set_trigger_shaping(dt_shaping);
-		saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
-		Num = int_to_str(++no, 2);
-
-	ty(AStates::PMT_trigger_bNpe);
-		set_trigger_shaping(dt_shaping);
-		draw_limits(sPMT_trigger_lims[sh].first, sPMT_trigger_lims[sh].second);
-		set_as_run_cut("valid_trigger_sPMTs"); cuts += "+" + Num;
-		saveaspng(FOLDER + Num+"_slowPMTs_trigger_"+cuts+"_"+dt+"_zoom");
-		unset_draw_limits();
-		set_trigger_offsets(30);
-		Num = int_to_str(++no, 2);
-
-	ty(AStates::PMT_trigger_bNpeaks);
-		saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
-		Num = int_to_str(++no, 2);
-
-	save_forms(FOLDER + Num + "_slowPMTs_trigger_"+dt+"_"+cuts+"/", false);
-
-		//APPLY fastPMTs (by peak number) TRIGGER CORRECTION trigger_v2
-		unset_trigger_offsets();
-		unset_as_run_cut("valid_trigger_sPMTs");
-		cuts.erase(cuts.end()-3, cuts.end());
-
-	ty(AStates::PMT_trigger_bNpeaks);
-		draw_limits(fPMT_trigger_lims[sh].first, fPMT_trigger_lims[sh].second);
-		set_as_run_cut("valid_trigger_fPMTs"); cuts += "+" + Num;
-		saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
-		unset_draw_limits();
-		set_trigger_offsets(30);
-		Num = int_to_str(++no, 2);
-
-	ty(AStates::PMT_trigger_bNpe);
-		saveaspng(FOLDER + Num+"_slowPMTs_trigger_"+cuts+"_"+dt+"_zoom");
-		Num = int_to_str(++no, 2);
-
+		draw_limits(fPMT_trigger_lims[sh].first, fPMT_trigger_lims[sh].second); 
+		saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+dt+"_"+cuts+"_zoom");
+		set_as_run_cut("good_trigger");	cuts += "+" + Num;
+		set_trigger_offsets(trigger_at);
+	
 	save_forms(FOLDER + Num + "_fastPMTs_Ntrigger_"+dt+"_"+cuts+"/", false);
-	print_accepted_events(FOLDER + Num + "_fastPMTs_Ntrigger_"+dt+"_"+cuts+"/events.txt", 259);
+		Num = int_to_str(++no, 2);
 
 		unset_trigger_offsets();
-		unset_as_run_cut("valid_trigger_fPMTs");
+		unset_as_run_cut("good_trigger");
+		cuts.erase(cuts.end()-3, cuts.end());
+	}
+}
+
+if (exp == "180705_Cd_9kV_800V_0bB_48V" && method == 1) { 	
+	std::string meth = "";
+	std::string path = "";
+	double dt_shaping;
+	std::string dt;
+	std::string DT;
+	std::string cuts = "no_cuts";
+	std::string zoomx = "Npe" + dbl_to_str(160-d_S2_start, 0);
+	std::string zoomy = "Npe" + dbl_to_str(d_S2_finish-d_S2_start, 0);
+	int no = 0; //number
+	std::string Num = int_to_str(++no, 2); //="01"
+	std::string FOLDER = data_output_path + folder + "/different_methods/";
+
+	//Set AStates::PMT_Npe_sum and AStates::PMT_sum_N cuts for future correlations
+	ty(AStates::PMT_Npe_sum);
+	ch(0); noise_cut(0, 0, 0); noise_cut(1, 0, 0);
+	cut_t(d_S2_start, 160, false, 1);
+	cut_t(d_S2_start, 160, false, 0);
+	set_bins(0, 200);
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+cuts);
+	Num = int_to_str(++no, 2);
+
+	ty(AStates::PMT_sum_N);
+	off_ch(0); off_ch(1); off_ch(12);
+	noise_cut(8, 0, 0);
+	noise_cut(9, 0, 0);
+	noise_cut(10, 0, 0);
+	noise_cut(11, 0, 0);
+	time_zoom(d_S2_start, 160);
+	set_bins(0, 150);
+	saveaspng(FOLDER + Num+"_fastPMTs_Npe_"+cuts);
+	Num = int_to_str(++no, 2);
+
+set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
+	ty(AStates::Correlation_y);
+	cut_t(d_S2_start, d_S2_finish, false, 0);
+	ty(AStates::Correlation);
+	set_zoom(0, 200, 0, 200);
+	set_bins(200);
+	cut_x_y_right(8, 0, 200, 160, true, "1");
+	set_titles("N_{pe} t#in["+S2_start+", 160] #mus", "N_{pe} t#in["+S2_start+", "+S2_finish+"] #mus");
+	update();
+	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us");
+	set_as_run_cut("good_sPMTs_ZxZy");	cuts = "cuts_"+Num;
+	Num = int_to_str(++no, 2);
+	remcut(-1, "1");
+
+ty(AStates::PMT_Npe_sum);
+	time_zoom(d_S2_start, 160);
+	draw_limits(13, 35);
+	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
+	set_as_run_cut("Cd_peak");	cuts += "+" + Num;
+	Num = int_to_str(++no, 2);
+
+ty(AStates::PMT_sum_N);
+	time_zoom(d_S2_start, d_S2_finish);
+	draw_limits(5, 100);
+	saveaspng(FOLDER + Num + "_fastPMTs_Npeaks_"+cuts);
+	set_as_run_cut("N_peaks");	cuts += "+" + Num;
+	Num = int_to_str(++no, 2);
+
+	//Now apply different trigger adjustments for valid events and Cd peak
+	std::vector<std::pair<double, double> > fPMT_trigger_lims;
+	std::vector<double> shapinngs = {3.5, 4.0, 4.5, 5.0, 5.5};
+	fPMT_trigger_lims.push_back(std::pair<double, double> (30.0, 34.0));
+	fPMT_trigger_lims.push_back(std::pair<double, double> (29.7, 34.2));
+	fPMT_trigger_lims.push_back(std::pair<double, double> (29.5, 34.3));
+	fPMT_trigger_lims.push_back(std::pair<double, double> (29.6, 34.6));
+	fPMT_trigger_lims.push_back(std::pair<double, double> (29.6, 34.7));
+	
+	for (std::size_t sh = 0, sh_end_ = shapinngs.size(); sh != sh_end_; ++sh) {
+		dt_shaping = shapinngs[sh];
+		dt = "dt="+dbl_to_str(dt_shaping, 1) + "us";
+		DT = "dt="+dbl_to_str(dt_shaping, 1) + "#mus";
+
+	ty(AStates::PMT_trigger_bNpeaks);
+		off_ch(0); off_ch(1); off_ch(12);
+		noise_cut(8, 0, 0);
+		noise_cut(9, 0, 0);
+		noise_cut(10, 0, 0);
+		noise_cut(11, 0, 0);
+		set_zoom(25, 45);
+		set_bins(300);
+		set_trigger_shaping(dt_shaping);
+		draw_limits(fPMT_trigger_lims[sh].first, fPMT_trigger_lims[sh].second); 
+		saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+dt+"_"+cuts+"_zoom");
+		set_as_run_cut("good_trigger");	cuts += "+" + Num;
+		set_trigger_offsets(trigger_at);
+	
+	save_forms(FOLDER + Num + "_fastPMTs_Ntrigger_"+dt+"_"+cuts+"/", false);
+		Num = int_to_str(++no, 2);
+
+		unset_trigger_offsets();
+		unset_as_run_cut("good_trigger");
+		cuts.erase(cuts.end()-3, cuts.end());
+	}
+}
+
+if (exp == "180705_Cd_8kV_800V_0bB_48V" && method == 1) { 	
+	std::string meth = "";
+	std::string path = "";
+	double dt_shaping;
+	std::string dt;
+	std::string DT;
+	std::string cuts = "no_cuts";
+	std::string zoomx = "Npe" + dbl_to_str(160-d_S2_start, 0);
+	std::string zoomy = "Npe" + dbl_to_str(d_S2_finish-d_S2_start, 0);
+	int no = 0; //number
+	std::string Num = int_to_str(++no, 2); //="01"
+	std::string FOLDER = data_output_path + folder + "/different_methods/";
+
+	//Set AStates::PMT_Npe_sum and AStates::PMT_sum_N cuts for future correlations
+	ty(AStates::PMT_Npe_sum);
+	ch(0); noise_cut(0, 0, 0); noise_cut(1, 0, 0);
+	cut_t(d_S2_start, 160, false, 1);
+	cut_t(d_S2_start, 160, false, 0);
+	set_bins(0, 200);
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+cuts);
+	Num = int_to_str(++no, 2);
+
+	ty(AStates::PMT_sum_N);
+	off_ch(0); off_ch(1); off_ch(12);
+	noise_cut(8, 0, 0);
+	noise_cut(9, 0, 0);
+	noise_cut(10, 0, 0);
+	noise_cut(11, 0, 0);
+	time_zoom(d_S2_start, 160);
+	set_bins(0, 150);
+	saveaspng(FOLDER + Num+"_fastPMTs_Npe_"+cuts);
+	Num = int_to_str(++no, 2);
+
+set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
+	ty(AStates::Correlation_y);
+	cut_t(d_S2_start, d_S2_finish, false, 0);
+	ty(AStates::Correlation);
+	set_zoom(0, 200, 0, 200);
+	set_bins(200);
+	cut_x_y_right(8, 0, 200, 170, true, "1");
+	set_titles("N_{pe} t#in["+S2_start+", 160] #mus", "N_{pe} t#in["+S2_start+", "+S2_finish+"] #mus");
+	update();
+	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us");
+	set_as_run_cut("good_sPMTs_ZxZy");	cuts = "cuts_"+Num;
+	Num = int_to_str(++no, 2);
+	remcut(-1, "1");
+
+ty(AStates::PMT_sum_N);
+	time_zoom(d_S2_start, 160);
+	draw_limits(6, 17);
+	saveaspng(FOLDER + Num + "_fastPMTs_Npeaks_"+cuts);
+	set_as_run_cut("Cd_peak");	cuts += "+" + Num;
+	Num = int_to_str(++no, 2);
+
+	time_zoom(d_S2_start, d_S2_finish);
+	draw_limits(5, 40);
+	saveaspng(FOLDER + Num + "_fastPMTs_Npeaks_"+cuts);
+	set_as_run_cut("N_peaks");	cuts += "+" + Num;
+	Num = int_to_str(++no, 2);
+
+	//Now apply different trigger adjustments for valid events and Cd peak
+	std::vector<std::pair<double, double> > fPMT_trigger_lims;
+	std::vector<double> shapinngs = {3.5, 4.0, 4.5, 5.0, 5.5};
+	fPMT_trigger_lims.push_back(std::pair<double, double> (30.1, 34.0));
+	fPMT_trigger_lims.push_back(std::pair<double, double> (29.5, 34.3));
+	fPMT_trigger_lims.push_back(std::pair<double, double> (29.5, 34.5));
+	fPMT_trigger_lims.push_back(std::pair<double, double> (29.0, 35.0));
+	fPMT_trigger_lims.push_back(std::pair<double, double> (29.0, 35.0));
+	
+	for (std::size_t sh = 0, sh_end_ = shapinngs.size(); sh != sh_end_; ++sh) {
+		dt_shaping = shapinngs[sh];
+		dt = "dt="+dbl_to_str(dt_shaping, 1) + "us";
+		DT = "dt="+dbl_to_str(dt_shaping, 1) + "#mus";
+
+	ty(AStates::PMT_trigger_bNpeaks);
+		off_ch(0); off_ch(1); off_ch(12);
+		noise_cut(8, 0, 0);
+		noise_cut(9, 0, 0);
+		noise_cut(10, 0, 0);
+		noise_cut(11, 0, 0);
+		set_zoom(25, 45);
+		set_bins(300);
+		set_trigger_shaping(dt_shaping);
+		draw_limits(fPMT_trigger_lims[sh].first, fPMT_trigger_lims[sh].second); 
+		saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+dt+"_"+cuts+"_zoom");
+		set_as_run_cut("good_trigger");	cuts += "+" + Num;
+		set_trigger_offsets(trigger_at);
+	
+	save_forms(FOLDER + Num + "_fastPMTs_Ntrigger_"+dt+"_"+cuts+"/", false);
+		Num = int_to_str(++no, 2);
+
+		unset_trigger_offsets();
+		unset_as_run_cut("good_trigger");
 		cuts.erase(cuts.end()-3, cuts.end());
 	}
 }

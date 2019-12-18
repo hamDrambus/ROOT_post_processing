@@ -6,34 +6,40 @@ if (false) {
 	dBs["180705_Cd_20kV_800V_12bB_48V"] = atten0;
 }
 if (false) {
-	int channel = 0;
+	int channel = 59;
 	bool display = true;
-	int aggressiveness = 0;	
-	if (aggressiveness !=1) {
-    	cut_A_S_upper(1.4, 0, 1e2, 0, display, channel, "rem_A>1.4");
-		cut_A_S_upper(0.0, 0.55, 1.4, 1.1, display, channel, "rem_S>~0.7");
-	}
+	int device_condition = 0;
+	int aggressiveness = 2;
+
+	x_y_regions = {0.021, 0.021, 0.0015, 0.05, 0.0, 1e3};
+	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	if (aggressiveness>=1)//select only 1 photoelectron for calibration
+		cut_A_S_upper(0.044, 0.0001, 1, 0.0001, display, channel, "2pe");
+	if (aggressiveness>=2)//remove afterimpulses
+		cut_A_S_upper(0.020, 0.0023, 0.044, 0.0061, display, channel, "2pe_merged");
 }
 	if (true) {
-		analysis_history(false, 0); //20
+		int method = 0;
+		analysis_history(false, method); //20
 		nex();
-		analysis_history(false, 0); //18
+		analysis_history(false, method); //18
 		nex();
-		analysis_history(false, 0); //16
+		analysis_history(false, method); //16
 		nex();
-		analysis_history(false, 0); //14
+		analysis_history(false, method); //14
 		nex();
-		analysis_history(false, 0); //13
+		analysis_history(false, method); //13
 		nex();
-		analysis_history(false, 0); //12
+		analysis_history(false, method); //12
 		nex();
-		analysis_history(false, 0); //11
+		analysis_history(false, method); //11
 		nex();
-		analysis_history(false, 0); //10
+		analysis_history(false, method); //10
 		nex();
-		analysis_history(false, 0); //9
+		analysis_history(false, method); //9
 		nex();
-		analysis_history(false, 0); //8
+		analysis_history(false, method); //8
 		nex();
 	}
 } 

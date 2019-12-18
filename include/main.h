@@ -36,7 +36,7 @@ void pch(void); 	//previous channel;
 void update(void);
 void saveas(std::string path = "");	//"" - use default path: "Data/results/{PMT_v1|MPPC_v1}/experiment/{PMT_|MPPC_}ch/{pic&data}
 void saveaspng(std::string path = "");	//"" - use default path: "Data/results/{PMT_v1|MPPC_v1}/experiment/{PMT_|MPPC_}ch/{pic&data}
-void status(Bool_t full = false);	//displays current state
+void status(void);	//displays current state
 void set_fit_gauss(int N);
 void set_parameter_val(int index, double val);
 void set_parameter_limits(int index, double left, double right);
@@ -136,6 +136,18 @@ void remcut_A_S_fast_PMT(int channel = -1, std::string _name = "");
 void cut_A_S_upper(double A_min, double S_min, double A_max, double S_max, bool drawn, int channel = -1, std::string _name = "");
 void cut_A_S_upper(std::vector<double> region, bool drawn, int channel = -1, std::string _name = "");
 void remcut_A_S_upper(int channel = -1, std::string _name = "");
+
+void cut_A_S_lower(double A_min, double S_min, double A_max, double S_max, bool drawn, int channel = -1, std::string _name = "");
+void cut_A_S_lower(std::vector<double> region, bool drawn, int channel = -1, std::string _name = "");
+void remcut_A_S_lower(int channel = -1, std::string _name = "");
+
+void cut_A_S_left(double A_min, double S_min, double A_max, double S_max, bool drawn, int channel = -1, std::string _name = "");
+void cut_A_S_left(std::vector<double> region, bool drawn, int channel = -1, std::string _name = "");
+void remcut_A_S_left(int channel = -1, std::string _name = "");
+
+void cut_A_S_right(double A_min, double S_min, double A_max, double S_max, bool drawn, int channel = -1, std::string _name = "");
+void cut_A_S_right(std::vector<double> region, bool drawn, int channel = -1, std::string _name = "");
+void remcut_A_S_right(int channel = -1, std::string _name = "");
 
 void cut_x_y_upper(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name = "");
 void cut_x_y_upper(std::vector<double> region, bool drawn, std::string _name = "");

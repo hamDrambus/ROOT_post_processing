@@ -7,14 +7,26 @@ AllRunsResults::AllRunsResults(/*ParameterPile::*/experiment_area experiment)
 	Iteration_N = 0;
 	for (auto ex = _exp.experiments.begin(); ex != _exp.experiments.end(); ++ex) {
 		for (int ch = _exp.channels.get_next_index(); ch != -1; ch = _exp.channels.get_next_index()){
-			std::string prefix_pmt = data_prefix_path + DATA_PMT_VERSION + "/PMT_" + *ex + "/PMT_"+std::to_string(ch)+"/PMT_"+std::to_string(ch)+"_";
-			std::string prefix_mppc = data_prefix_path+"/"+DATA_MPPC_VERSION + "/MPPCs_" + *ex + "/MPPC_" + std::to_string(ch) + "/MPPC_" + std::to_string(ch) + "_";
+			std::string prefix_pmt;
+			std::string prefix_mppc;
+			if (name_scheme_version == name_scheme_v1) {
+				prefix_pmt = data_prefix_path + DATA_PMT_VERSION + "/PMT_" + *ex + "/PMT_"+std::to_string(ch)+"/PMT_"+std::to_string(ch)+"_";
+				prefix_mppc = data_prefix_path +DATA_MPPC_VERSION + "/MPPCs_" + *ex + "/MPPC_" + std::to_string(ch) + "/MPPC_" + std::to_string(ch) + "_";
+			}
+			if (name_scheme_version == name_scheme_v2) {
+				std::string ch_str = std::to_string(ch);
+				prefix_pmt = data_prefix_path + *ex + "/" + DATA_PMT_VERSION + "_" + ch_str+"/"+ DATA_PMT_VERSION + "_" + ch_str + "_";
+				prefix_mppc = data_prefix_path + *ex + "/" + DATA_MPPC_VERSION + "_" + ch_str + "/" + DATA_MPPC_VERSION + "_" + ch_str + "_";
+			}
 			if (test_file(prefix_pmt + "peaks.dat")) {
 				pmt_channels.push_back(ch);
 				pmt_peaks.push_back(std::deque<std::deque<peak>>());
 				pmt_S2_integral.push_back(std::vector<double>());
 				vector_from_file(pmt_peaks.back(), prefix_pmt + "peaks.dat");
-				vector_from_file(pmt_S2_integral.back(), prefix_pmt + "S2_int.dat"); //pmt_S2_integral is not necessary for all channels
+				if (name_scheme_version == name_scheme_v1)
+					vector_from_file(pmt_S2_integral.back(), prefix_pmt + "S2_int.dat"); //pmt_S2_integral is not necessary for all channels
+				if (name_scheme_version == name_scheme_v2)
+					vector_from_file(pmt_S2_integral.back(), prefix_pmt + "I.dat"); //pmt_S2_integral is not necessary for all channels
 				if (pmt_peaks.back().empty()) {
 					pmt_channels.pop_back();
 					pmt_peaks.pop_back();
@@ -45,8 +57,7 @@ AllRunsResults::AllRunsResults(/*ParameterPile::*/experiment_area experiment)
 
 				vector_from_file(mppc_peaks.back(), prefix_mppc + "peaks.dat");
 				vector_from_file(mppc_Double_Is.back(), prefix_mppc + "double_I.dat");
-
-				if (mppc_peaks.back().empty()|| mppc_Double_Is.back().empty()) { //empty files
+				if (mppc_peaks.back().empty()) { //empty files
 					mppc_peaks.pop_back();
 					mppc_Double_Is.pop_back();
 					mppc_channels.pop_back();
@@ -61,13 +72,16 @@ AllRunsResults::AllRunsResults(/*ParameterPile::*/experiment_area experiment)
 							mppc_channels.pop_back();
 							continue;
 						}
-						if (N_of_runs != mppc_Double_Is.back().size()) {
+						if (mppc_Double_Is.back().empty()) { //In order to not change post processing program, fill array with dummy values.
+							mppc_Double_Is.back().resize(mppc_peaks.back().size(), -1);
+						}
+						/*if (N_of_runs != mppc_Double_Is.back().size()) {
 							std::cout << "Event number mismatch for channel " << ch << "! peaks have " << N_of_runs << " events and double intgral has " << mppc_Double_Is.back().size() << std::endl;
 							mppc_peaks.pop_back();
 							mppc_Double_Is.pop_back();
 							mppc_channels.pop_back();
 							continue;
-						}
+						}*/
 					}
 					std::cout << "Loaded channel " << ch << std::endl;
 				}

@@ -60,6 +60,7 @@ extern PostProcessor* post_processor;
 //{
 	enum DrawEngine { Gnuplot, ROOT_ };
 	enum TriggerVersion { trigger_v1, trigger_v2, trigger_v3};
+	enum NamingScheme { name_scheme_v1, name_scheme_v2}; //v1 - before 2019.12.06 refactoring of Data_processing, v2 - after
 
 	double gasE_from_kV (double kV, double gasAr_layer); //gasAr_layer is in [cm], returns E in gaseous Ar in [V/cm]
 	double Td_from_E (double E); //E is in [V/cm]
@@ -90,10 +91,6 @@ extern PostProcessor* post_processor;
 	extern std::string DATA_MPPC_VERSION;
 	extern std::string DATA_PMT_VERSION;
 
-	extern std::string OUTPUT_MPPCS_PICS;
-	extern std::string OUTPUT_PMT_PICS;
-	extern std::string OUTPUT_MPPCS;
-
 	extern experiment_area exp_area;
 	extern int threads_number;
 
@@ -102,6 +99,7 @@ extern PostProcessor* post_processor;
 	extern int gnuplot_width;
 
 	extern TriggerVersion trigger_version;
+	extern NamingScheme name_scheme_version;
 	extern std::map < std::string, double > experiment_fields;
 	extern std::map < std::string, double > PMT_V;
 	extern std::map < std::string, double > MPPC_V;

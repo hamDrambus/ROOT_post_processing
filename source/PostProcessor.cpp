@@ -24,8 +24,15 @@ CanvasSetups(_data->mppc_channels,_data->pmt_channels, _data->exp_area.experimen
 
 std::string PostProcessor::hist_name()
 {
-	std::string name = (isPMTtype(current_type) ? "PMT#" : "MPPC#") + (isMultichannel(current_type) ? "All" : std::to_string(current_channel) )
-		+ "_" + g_data->exp_area.experiments[current_exp_index];
+	std::string name;
+	if (name_scheme_version == name_scheme_v1) {
+		name = (isPMTtype(current_type) ? "PMT#" : "MPPC#");
+	}
+	if (name_scheme_version == name_scheme_v2) {
+		name = (isPMTtype(current_type) ? DATA_PMT_VERSION + "#" : DATA_MPPC_VERSION + "#");
+	}
+	name += (isMultichannel(current_type) ? "All" : std::to_string(current_channel) )
+				+ "_" + g_data->exp_area.experiments[current_exp_index];
 	name += "_" + type_name(current_type);
 	return name;
 }
@@ -40,16 +47,18 @@ void PostProcessor::print_hist(std::string path, bool png_only)
 		type = _y_corr;
 	int exp_ind = current_exp_index;
 	std::string name = path;
+	std::string device;
+	if (name_scheme_version == name_scheme_v1) {
+		device = (isPMTtype(current_type) ? "PMT" : "MPPC");
+	}
+	if (name_scheme_version == name_scheme_v2) {
+		device = (isPMTtype(current_type) ? DATA_PMT_VERSION: DATA_MPPC_VERSION);
+	}
 	if (name=="") {
 		if (isMultichannel(type)) {
-			name = data_output_path + (isPMTtype(type) ? OUTPUT_PMT_PICS : OUTPUT_MPPCS_PICS)+ "_" + type_name(type)+"/" +
-					(isPMTtype(type) ? "PMT_" : "MPPC_")+g_data->exp_area.experiments[exp_ind]
-				+ "_" + type_name(type);
+			name = data_output_path + g_data->exp_area.experiments[exp_ind] + "/" + device + "_" + type_name(type);
 		} else {
-			name = data_output_path + (isPMTtype(type) ? OUTPUT_PMT_PICS : OUTPUT_MPPCS_PICS) + g_data->exp_area.experiments[exp_ind]
-				+ "/" + (isPMTtype(type) ? "PMT_" : "MPPC_") + std::to_string(ch)
-				+ "/" + (isPMTtype(type) ? "PMT_" : "MPPC_") + std::to_string(ch)
-				+ "_" + type_name(type);
+			name = data_output_path + g_data->exp_area.experiments[exp_ind] + "/" + device + "_" + std::to_string(ch) + "_" + type_name(type);
 		}
 	}
 	std::ofstream str;
@@ -262,7 +271,7 @@ void PostProcessor::save(int channel)
 			N_pe_result.push_back(data->N_pe_Double_I[pt][ch_ind]);
 	}
 	std::ofstream file;
-	open_output_file(data_output_path + OUTPUT_MPPCS_PICS + std::to_string(channel) + "_Npe.txt", file);
+	open_output_file(data_output_path + DATA_MPPC_VERSION + std::to_string(channel) + "_Npe.txt", file);
 	file << "E[kV/cm]\tN_pe_direct\tN_pe_Double_I\tN_pe_result" << std::endl;
 	for (std::size_t pt = 0; pt < data->exp_area.experiments.size(); ++pt)
 		file << data->Fields[pt] << "\t" << data->N_pe_direct[pt][ch_ind] << "\t" << data->N_pe_Double_I[pt][ch_ind] << "\t" << N_pe_result[pt] << std::endl;

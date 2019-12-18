@@ -33,12 +33,12 @@
   experiment_fields["190131_Cd_20kV_850V_46V_coll_6mm_th1.3V"] = 20;
   experiment_fields["190131_Cd_20kV_850V_46V_coll_2mm_th1.2V"] = 20;
   experiment_fields["190131_Bkg_20kV_850V_46V_coll_2mm_th1.3V"] = 20;
- 
-  {
-    double coeff = (600 / 804.0)*(1.54 / (1.54*1.8 + 1.01*0.4));
-    for (auto j = experiment_fields.begin(); j != experiment_fields.end(); ++j)
-      j->second *= coeff;
-  }
+
+  std::map<std::string, int> experiment_runs; //required for printing accpeted/rejected events
+  experiment_runs["190131_Cd_20kV_850V_46V_coll_2mm_th1.3V"] = 91;
+  experiment_runs["190131_Cd_20kV_850V_46V_coll_6mm_th1.3V"] = 154;
+  experiment_runs["190131_Cd_20kV_850V_46V_coll_2mm_th1.2V"] = 135;
+  experiment_runs["190131_Bkg_20kV_850V_46V_coll_2mm_th1.3V"] = 123;
  
   if (areas_to_draw.empty())
 	areas_to_draw.push_back(experiment_area());

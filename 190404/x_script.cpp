@@ -23,13 +23,13 @@ if (false) {
 		cut_A_S_upper(0.011, 0.0015, 0.026, 0.0038, display, channel, "2pe_merged");
 	}
 if (true) {
-	analysis_history(false, 0); //20
+	//analysis_history(false, 0); //20
 	nex();
-	analysis_history(false, 0); //18
+	//analysis_history(false, 0); //18
 	nex();
-	analysis_history(false, 0); //16
+	//analysis_history(false, 0); //16
 	nex();
-	analysis_history(false, 0); //14
+	//analysis_history(false, 0); //14
 	nex();
 	analysis_history(false, 0); //12
 	nex();

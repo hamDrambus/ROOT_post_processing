@@ -15,7 +15,8 @@
 	public:
 		area_vector(void);
 		int get_order_index_by_index(int ind);
-		int get_index_by_order_index(int ind);
+		int get_index_by_order_index(std::size_t ind) const;
+		std::size_t size(void) const;
 		int get_next_index(void); //for running through all indices
 		int get_next_index(int after);
 		void push_pair(int left, int right);

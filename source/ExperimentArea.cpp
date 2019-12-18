@@ -25,13 +25,14 @@
 		}
 		return -1;
 	}
-	int area_vector::get_index_by_order_index(int ind)
+
+	int area_vector::get_index_by_order_index(std::size_t ind) const
 	{
 		if (!_is_valid)
 			return -1;
 		Bool_t even = kTRUE;
 		int l = -1, r = -1, N = 0;
-		for (auto i = _vec.begin(); i != _vec.end(); i++, even = !even){
+		for (auto i = _vec.begin(), i_end_ = _vec.end(); i != i_end_; ++i, even = !even) {
 			if (even)
 				l = *i;
 			else {
@@ -42,6 +43,24 @@
 			}
 		}
 		return -1;
+	}
+
+	std::size_t area_vector::size(void) const
+	{
+		if (!_is_valid)
+			return 0;
+		Bool_t even = kTRUE;
+		int l = -1, r = -1;
+		std::size_t N = 0;
+		for (auto i = _vec.begin(), i_end_ = _vec.end(); i != i_end_; ++i, even = !even) {
+			if (even)
+				l = *i;
+			else {
+				r = *i;
+				N += r - l + 1;
+			}
+		}
+		return N;
 	}
 
 	int area_vector::get_next_index(void) //for running through all indices

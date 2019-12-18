@@ -1,5 +1,5 @@
 
-void read_hist (TH1D *hist, std::string fname) {
+void read_hist (std::vector<TH1D*> &hist, std::vector<double> &offsets, std::size_t index, std::string fname) {
 	std::ifstream str;
 	str.open(fname, std::ios_base::binary);
 	if (!str.is_open()) {
@@ -12,12 +12,12 @@ void read_hist (TH1D *hist, std::string fname) {
 	double val;
 	while (!str.eof()) {
 		str.read((char*)&val, sizeof(double));
-        hist->Fill(val);
+        hist[index]->Fill(val + offsets[index]);
 	}
 	str.close();
 }
 
-void read_hist_w (TH1D *hist, std::string fname) {
+void read_hist_w (std::vector<TH1D*> &hist, std::vector<double> &offsets, std::size_t index, std::string fname) {
 	std::ifstream str;
 	str.open(fname, std::ios_base::binary);
 	if (!str.is_open()) {
@@ -34,7 +34,7 @@ void read_hist_w (TH1D *hist, std::string fname) {
 		if (str.eof())
 			break;
         str.read((char*)&val2, sizeof(double));
-        hist->Fill(val1, val2);
+        hist[index]->Fill(val1 + offsets[index], val2);
 	}
 	str.close();
 } 
@@ -52,10 +52,10 @@ int compare_forms (void) {
     gStyle->SetStatY(0.9);
     gStyle->SetStatX(0.9);
     int DEF_W = 1300, DEF_H = 700;
-    int Nbins = 1400;
+    int Nbins = 1800;
     double time_left = 0, time_right = 160;//us
-    double time_pretrigger_left = 0, time_pretrigger_right = 15;
-	double norm_t_left = 24;
+    double time_pretrigger_left = 7, time_pretrigger_right = 20;
+	double norm_t_left = 28;
     TF1 *unity_f = new TF1("f1", "1", time_left, time_right);
     TH1D* hist_1 = new TH1D ("hist1", "hist1", Nbins, time_left, time_right);
     TH1D* hist_2 = new TH1D ("hist2", "hist2", Nbins, time_left, time_right);
@@ -64,40 +64,80 @@ int compare_forms (void) {
     TH1D* hist_5 = new TH1D ("hist5", "hist5", Nbins, time_left, time_right);
     TH1D* hist_6 = new TH1D ("hist6", "hist6", Nbins, time_left, time_right);
 	TH1D* hist_7 = new TH1D ("hist6", "hist6", Nbins, time_left, time_right);
+    std::vector<std::string> Tds =      {"8.5","4.2","6.8","4.2","6.8","4.2","8.5"};
+	//std::vector<double> offsets = 		{31.81-27.38,  31.81-27.05,  0.0,  0.0,  0.0,  0.0,  31.81-27.48};
+	std::vector<double> offsets(7, 0);
+	//std::vector<double> scale = 		{25*525,  5*625.0,  625.0,  125.0,  25.0,  5.0,  1.0}; //LOG
+	std::vector<double> scale = 		{3.0,  2.5,  2.0,  1.5,  1.0,  0.5,  0.0}; //Linear	
+	//std::vector<double> norm_t_right =  {35.0, 37.7, 34.9, 38.2, 34.8, 36.2, 34.8}; //no trigger adjustment
+	std::vector<double> norm_t_right =  {33.7, 35.3, 33.8, 34.52, 33.2, 34.9, 33.6}; //with trigger adjustment
+	std::vector<double> fit_from = 	    {36.0, 36.0, 36.0, 36.0, 35.1, 36.0, 36.0}; //20, 18, ..., 8 kV
+	std::vector<double> fit_to =        {160,  160,  160,  50,  50.0, 52.0, 52.0}; //edge SiPMs 20, 18, ..., 8 kV
+	
     std::vector<TH1D*> hists;
     hists.push_back(hist_1);
     hists.push_back(hist_2);
     hists.push_back(hist_3);
     hists.push_back(hist_4);
     hists.push_back(hist_5);
-    //hists.push_back(hist_6);
-	//hists.push_back(hist_7);
-	//kVs:								  20,   18,   16 kV
-    //std::vector<std::string> Tds =      {"8.5","7.6","6.8"};
-	//std::vector<double> norm_t_right =  {34.2, 34.3, 34.8}; //20, 18, 16 kV
-	//std::vector<double> fit_from = 	  	{35.0, 35.0, 35.0}; //20, 18, 16 kV
-	//std::vector<double> fit_to =        {160,  160,  160,  160,  160,  55,   50}; //fPMTs
-	//std::vector<double> fit_to =        {50,  50,  50}; //SiPMs
-	std::vector<std::string> Tds(6, "8.5");
-	std::vector<double> norm_t_right = {30.6, 34.5, 34.5, 30.8, 30.8};
-	std::vector<double> fit_from = {30.6, 35.0, 35.0, 32.0, 32.0};
-	std::vector<double> fit_to = {50, 50, 50, 50, 160};
+    hists.push_back(hist_6);
+	hists.push_back(hist_7);
 	std::vector<Color_t> palette_major = {kBlack, kRed, kBlue, kGreen, kYellow + 2, kMagenta, kOrange + 7};
-	std::vector<Color_t> palette_minor = {kGray + 2, kMagenta, kAzure + 10, kGreen -2, kMagenta+3, kOrange - 7};
+	std::vector<Color_t> palette_minor = {kGray + 2, kMagenta, kAzure + 10, kGreen -2, kMagenta+3, kOrange - 7, kOrange + 6};
     double max_val = 0;
 	bool linear = true;
-    std::string prefix = "190131/results/Cd_46V_20kV_850V_2mm_th1.3V/forms_10-28pe/";
-	read_hist_w (hist_1, prefix + "SiPM38_form_by_Npe.hdata");
-	prefix = "190228/results/Cd_46V_20kV_850V/forms_31-72pe/";
-	read_hist_w (hist_2, prefix + "SiPM38_form_by_Npe.hdata");
-	prefix = "190228/results/Cd_46V_20kV_850V_1/forms_36-72pe/";
-	read_hist_w (hist_3, prefix + "SiPM38_form_by_Npe.hdata");
-	prefix = "190307/results/Cd_46V_20kV_850V/forms_v2_20-55pe/";
-	read_hist_w (hist_4, prefix + "SiPM38_form_by_Npe.hdata");
+	bool do_fit = false;
+    /*std::string prefix = "190404/results/Cd_46V_20kV_850V/forms_v2_20-65pe/";
+	read_hist_w (hists, offsets, 0, prefix + "8_form_by_Npeaks.hdata");
+	read_hist_w (hists, offsets, 0, prefix + "9_form_by_Npeaks.hdata");
+	read_hist_w (hists, offsets, 0, prefix + "10_form_by_Npeaks.hdata");
+	read_hist_w (hists, offsets, 0, prefix + "11_form_by_Npeaks.hdata");
+	prefix = "190404/results/Cd_46V_10kV_850V/forms_v2_8-24pe/";
+	read_hist_w (hists, offsets, 1, prefix + "8_form_by_Npeaks.hdata");
+	read_hist_w (hists, offsets, 1, prefix + "9_form_by_Npeaks.hdata");
+	read_hist_w (hists, offsets, 1, prefix + "10_form_by_Npeaks.hdata");
+	read_hist_w (hists, offsets, 1, prefix + "11_form_by_Npeaks.hdata");
+	prefix = "180705/results/Cd_48V_16kV_800V/forms_116-175pe/";
+	read_hist_w (hists, offsets, 2, prefix + "fastPMT9_form_by_S.hdata");
+	read_hist_w (hists, offsets, 2, prefix + "fastPMT10_form_by_S.hdata");
+	read_hist_w (hists, offsets, 2, prefix + "fastPMT11_form_by_S.hdata");
+	prefix = "180705/results/Cd_48V_10kV_800V/forms_55-85pe/";
+	read_hist_w (hists, offsets, 3, prefix + "fastPMT9_form_by_S.hdata");
+	read_hist_w (hists, offsets, 3, prefix + "fastPMT10_form_by_S.hdata");
+	read_hist_w (hists, offsets, 3, prefix + "fastPMT11_form_by_S.hdata");
+	prefix = "180705/results/Cd_48V_16kV_800V/forms_116-175pe/";
+	read_hist_w (hists, offsets, 4, prefix + "SiPMs_form_by_Npe.hdata");
+	prefix = "180705/results/Cd_48V_10kV_800V/forms_55-85pe/";
+	read_hist_w (hists, offsets, 5, prefix + "SiPMs_form_by_Npe.hdata");
 	prefix = "190404/results/Cd_46V_20kV_850V/forms_v2_20-65pe/";
-	read_hist_w (hist_5, prefix + "SiPMs_form_by_Npe.hdata");
+	read_hist_w (hists, offsets, 6, prefix + "SiPMs_form_by_Npe.hdata");
+	*/
+	std::string prefix = "190404/results_v3/Cd_46V_20kV_850V/forms_Cd_peak/";
+	read_hist_w (hists, offsets, 0, prefix + "8_form_by_Npeaks.hdata");
+	read_hist_w (hists, offsets, 0, prefix + "9_form_by_Npeaks.hdata");
+	read_hist_w (hists, offsets, 0, prefix + "10_form_by_Npeaks.hdata");
+	read_hist_w (hists, offsets, 0, prefix + "11_form_by_Npeaks.hdata");
+	prefix = "190404/results_v3/Cd_46V_10kV_850V/forms_Cd_peak/";
+	read_hist_w (hists, offsets, 1, prefix + "8_form_by_Npeaks.hdata");
+	read_hist_w (hists, offsets, 1, prefix + "9_form_by_Npeaks.hdata");
+	read_hist_w (hists, offsets, 1, prefix + "10_form_by_Npeaks.hdata");
+	read_hist_w (hists, offsets, 1, prefix + "11_form_by_Npeaks.hdata");
+	prefix = "180705/results_v3/Cd_48V_16kV_800V/forms_Cd_peak/";
+	read_hist_w (hists, offsets, 2, prefix + "9_form_by_S.hdata");
+	read_hist_w (hists, offsets, 2, prefix + "10_form_by_S.hdata");
+	read_hist_w (hists, offsets, 2, prefix + "11_form_by_S.hdata");
+	prefix = "180705/results_v3/Cd_48V_10kV_800V/forms_Cd_peak/";
+	read_hist_w (hists, offsets, 3, prefix + "9_form_by_S.hdata");
+	read_hist_w (hists, offsets, 3, prefix + "10_form_by_S.hdata");
+	read_hist_w (hists, offsets, 3, prefix + "11_form_by_S.hdata");
+	prefix = "180705/results_v3/Cd_48V_16kV_800V/forms_Cd_peak/";
+	read_hist_w (hists, offsets, 4, prefix + "SiPMs_form_by_Npe.hdata");
+	prefix = "180705/results_v3/Cd_48V_10kV_800V/forms_Cd_peak/";
+	read_hist_w (hists, offsets, 5, prefix + "SiPMs_form_by_Npe.hdata");
+	prefix = "190404/results_v3/Cd_46V_20kV_850V/forms_Cd_peak/";
+	read_hist_w (hists, offsets, 6, prefix + "SiPMs_form_by_Npe.hdata");
 
-	std::string framename = std::string("Signal forms SiPM (no WLS) Cd peak") + " " + Tds[0] + " Td";
+	std::string framename = std::string("Signal forms with trigger adjustment Cd peak");// + " " + Tds[0] + " Td";
 
     for (int hh = 0, hh_end_ = hists.size(); hh!=hh_end_; ++hh) {
         double baseline = 0;
@@ -120,7 +160,10 @@ int compare_forms (void) {
 	           integral += hists[hh]->GetBinContent(bin) * hists[hh]->GetBinWidth(bin);
 		    }
         }
-		hists[hh]->Scale(1.0/integral);
+		hists[hh]->Scale((linear? 1: scale[hh])*1.0/integral);
+		if (linear) {
+			hists[hh]->Add(unity_f, scale[hh]);	
+		}
     }
     std::vector<double> fractions;
 	std::vector<std::string> frs;
@@ -154,12 +197,14 @@ int compare_forms (void) {
 	TCanvas *c_ = new TCanvas ((std::string(" ") + framename).c_str(), (std::string(" ") + framename).c_str(), DEF_W, DEF_H);
 	c_->SetGrid();
 	c_->SetTicks();
+	c_->ToggleEventStatus();
+    c_->ToggleToolBar();
 	if (!linear)
 		c_->SetLogy();
 	TLegend *legend = new TLegend(0.55, 0.65, 0.9, 0.9);
 	//legend->SetHeader("");
 	legend->SetMargin(0.25);
-	TH2F* frame = new TH2F( "frame", framename.c_str(), 500, time_left, time_right, 500, linear ? 0 : 1e-4, std::min(max_val, 1.0));
+	TH2F* frame = new TH2F( "frame", framename.c_str(), 500, time_left, time_right, 500, linear ? 0 : 1e-4, max_val);
 	frame->GetXaxis()->SetTitle("t [#mus]");
 	frame->GetYaxis()->SetTitle("");
 	frame->Draw();
@@ -172,17 +217,17 @@ int compare_forms (void) {
 	std::vector<std::string> tau1, tau2;
 	std::vector<TF1*> ffs(hists.size(), NULL);
 	int precision1 = 2, precision2 = 0;
-	for (int hh = 0, hh_end_ = hists.size(); hh!=hh_end_; ++hh) {
+	for (int hh = 0, hh_end_ = hists.size(); hh!=hh_end_ && do_fit; ++hh) {
 		ffs[hh] = new TF1("fit1", FittingF_2exp, fit_from[hh], fit_to[hh], 5);
 		ffs[hh]->SetParNames("start_time", "amplitude1", "#tau1", "amplitude2", "#tau2");
 		ffs[hh]->FixParameter(0, fit_from[hh]);
 		ffs[hh]->SetParLimits(1, 1e-3, 2);
 		ffs[hh]->SetParLimits(2, 1, 10);
 		if (fit_to[hh]<time_right) {
-			ffs[hh]->SetParLimits(3, 1e-5, 2e-4);
+			ffs[hh]->SetParLimits(3, 1e-5, 1e-1);
 			ffs[hh]->FixParameter(4, 1e6);	
 		} else {
-			ffs[hh]->SetParLimits(3, 5e-5, 1e-2);
+			ffs[hh]->SetParLimits(3, 3e-4, 1e-1);
 			ffs[hh]->SetParLimits(4, 30, 1000);
 		}
 		ffs[hh]->SetLineColor(palette_minor[hh]);
@@ -193,27 +238,28 @@ int compare_forms (void) {
 		ss << std::fixed << std::setprecision(precision2) << (ffs[hh]->GetParameter(4)>1000 ? 0 : ffs[hh]->GetParameter(4));
 		tau2.push_back(ss.str());
 		ss.str("");
+		//ffs[hh]->Draw("same");
     }
-	ffs[0]->Draw("same");
-	ffs[1]->Draw("same");
-	ffs[2]->Draw("same");
-	ffs[3]->Draw("same");
-	ffs[4]->Draw("same");
+	//ffs[0]->Draw("same");
+	//ffs[1]->Draw("same");
+	//ffs[2]->Draw("same");
+	//ffs[3]->Draw("same");
+	//ffs[4]->Draw("same");
 	//ffs[5]->Draw("same");
 	//ffs[6]->Draw("same");
-	if (!linear) { 
-		double ypos0 = 0.03;	
-		double ypos1 = 0.02;
-		double offset = 0.09/0.05;
+	if (!linear && do_fit) { 
+		double ypos0 = 0.02;	
+		double ypos1 = 0.008;
+		double offset = 0.08/0.05;
 		auto *txtfr0 = new TLatex (80, ypos1*std::pow(offset, frs.size()), "Slow fraction:");
 		txtfr0->SetTextAlign(12); txtfr0->SetTextSize(0.05);
 		txtfr0->SetTextColor(kBlack); txtfr0->Draw();
 		for (int hh = 0, hh_end_ = tau1.size(); hh!=hh_end_; ++hh) {
-			auto *txt1 = new TLatex (52, ypos0*std::pow(offset, hh_end_ - hh - 1), (std::string("#tau=")+tau1[hh]).c_str());
+			auto *txt1 = new TLatex (50, ypos0*std::pow(offset, hh_end_ - hh - 1), (std::string("#tau=")+tau1[hh]).c_str());
 			txt1->SetTextAlign(12); txt1->SetTextSize(0.05);
 			txt1->SetTextColor(palette_major[hh]); txt1->Draw();
 
-			auto *txt11 = new TLatex (120, ypos1*std::pow(offset, hh_end_ - hh - 1), (std::string("#tau=")+tau2[hh]).c_str());
+			auto *txt11 = new TLatex (105, ypos1*std::pow(offset, hh_end_ - hh - 1), (std::string("#tau=")+tau2[hh]).c_str());
 			txt11->SetTextAlign(12); txt11->SetTextSize(0.05);
 			txt11->SetTextColor(palette_major[hh]); txt11->Draw();
 
@@ -221,15 +267,16 @@ int compare_forms (void) {
 			txtfr1->SetTextAlign(12); txtfr1->SetTextSize(0.05);
 			txtfr1->SetTextColor(palette_major[hh]); txtfr1->Draw();
 		}
-	} else {
-		double ypos0 = 0.2;	
-		double ypos1 = 0.07;
-		double offset = 0.045;
-		auto *txtfr0 = new TLatex (70, ypos1+offset*frs.size(), "Slow fraction:");
+	}
+	if (linear && do_fit) { 
+		double ypos0 = 0.17;	
+		double ypos1 = 0.17;
+		double offset = 0.035;
+		auto *txtfr0 = new TLatex (36, ypos1+offset*frs.size(), "Slow fraction:");
 		txtfr0->SetTextAlign(12); txtfr0->SetTextSize(0.05);
 		txtfr0->SetTextColor(kBlack); txtfr0->Draw();
 		for (int hh = 0, hh_end_ = tau1.size(); hh!=hh_end_; ++hh) {
-			auto *txt1 = new TLatex (37, ypos0+offset*(hh_end_ - hh - 1), (std::string("#tau=")+tau1[hh]).c_str());
+			auto *txt1 = new TLatex (34.3, ypos0+offset*(hh_end_ - hh - 1), (std::string("#tau=")+tau1[hh]).c_str());
 			txt1->SetTextAlign(12); txt1->SetTextSize(0.05);
 			txt1->SetTextColor(palette_major[hh]); txt1->Draw();
 
@@ -237,19 +284,19 @@ int compare_forms (void) {
 			txt11->SetTextAlign(12); txt11->SetTextSize(0.05);
 			txt11->SetTextColor(palette_major[hh]); txt11->Draw();
 
-			auto *txtfr1 = new TLatex (70, ypos1+offset*(hh_end_ - hh - 1), (frs[hh]).c_str());
+			auto *txtfr1 = new TLatex (36, ypos1+offset*(hh_end_ - hh - 1), (frs[hh]).c_str());
 			txtfr1->SetTextAlign(12); txtfr1->SetTextSize(0.05);
 			txtfr1->SetTextColor(palette_major[hh]); txtfr1->Draw();
 		}
 	}
 	
-	legend->AddEntry(hist_1, (std::string(Tds[0] + " Td 190131 SiPM Cd peak th=1.3V")).c_str(), "l");
-	legend->AddEntry(hist_2, (std::string(Tds[1] + " Td 190228 SiPM Cd peak th=500mV")).c_str(), "l");
-	legend->AddEntry(hist_3, (std::string(Tds[2] + " Td 190228 SiPM Cd peak th=600mV")).c_str(), "l");
-	legend->AddEntry(hist_4, (std::string(Tds[3] + " Td 190307 SiPM Cd peak th=430mV")).c_str(), "l");
-	legend->AddEntry(hist_5, (std::string(Tds[4] + " Td 190404 SiPMs Cd peak th=250mV")).c_str(), "l");
-	//legend->AddEntry(hist_6, (std::string(Tds[5] + " Td fPMTs#2-4 Cd peak")).c_str(), "l");
-	//legend->AddEntry(hist_7, (std::string(Tds[6] + " Td fPMTs#2-4 Cd peak")).c_str(), "l");
+	legend->AddEntry(hist_1, (std::string(Tds[0] + " Td fPMTs (no WLS) trigger sh. ampl.")).c_str(), "l");
+	legend->AddEntry(hist_2, (std::string(Tds[1] + " Td fPMTs (no WLS) trigger sh. ampl.")).c_str(), "l");
+	legend->AddEntry(hist_3, (std::string(Tds[2] + " Td fPMTs (with WLS) trigger 4 slowPMTs")).c_str(), "l");
+	legend->AddEntry(hist_4, (std::string(Tds[3] + " Td fPMTs (with WLS) trigger 4 slowPMTs")).c_str(), "l");
+	legend->AddEntry(hist_5, (std::string(Tds[4] + " Td SiPM matrix trigger 4 slowPMTs")).c_str(), "l");
+	legend->AddEntry(hist_6, (std::string(Tds[5] + " Td SiPM matrix trigger 4 slowPMTs")).c_str(), "l");
+	legend->AddEntry(hist_7, (std::string(Tds[6] + " Td SiPM matrix trigger sh. ampl.")).c_str(), "l");
 
 	frame->Draw("sameaxis");
 	legend->Draw("same");

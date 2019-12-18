@@ -1089,10 +1089,6 @@ bool viewRegion::OnLine(double x1, double y1, double x2, double y2, double u,
 	std::string DATA_MPPC_VERSION;
 	std::string DATA_PMT_VERSION;
 
-	std::string OUTPUT_MPPCS_PICS;
-	std::string OUTPUT_PMT_PICS;
-	std::string OUTPUT_MPPCS;
-
 	experiment_area exp_area;
 	int threads_number = 6; //obv. must be >=1
 
@@ -1101,6 +1097,7 @@ bool viewRegion::OnLine(double x1, double y1, double x2, double y2, double u,
 	int gnuplot_width = 900; //default for gnuplot is 640
 
 	TriggerVersion trigger_version;
+	NamingScheme name_scheme_version;
 	std::map < std::string, double > experiment_fields;
 	std::map < std::string, double > PMT_V;
 	std::map < std::string, double > MPPC_V;
@@ -1192,7 +1189,6 @@ bool viewRegion::OnLine(double x1, double y1, double x2, double y2, double u,
 		gStyle->SetOptFit();
 		gStyle->SetStatY(0.9);
 		gStyle->SetStatX(0.9);
-		trigger_version = trigger_v2;
 		calibaration_points = std::pair<int, int>(3, 6);
 
 		double SiPM_size = 10; //mm
@@ -1230,6 +1226,8 @@ bool viewRegion::OnLine(double x1, double y1, double x2, double y2, double u,
 
 		if (!full)
 			return;
+		trigger_version = trigger_v2;
+		name_scheme_version = name_scheme_v1;
 		if (areas_to_draw.empty())
 			areas_to_draw.push_back(experiment_area());
 		areas_to_draw.back().channels.erase();
@@ -1256,12 +1254,13 @@ bool viewRegion::OnLine(double x1, double y1, double x2, double y2, double u,
 		calibration_file = "PMT_SiPM_48V_180215.dat";
 		data_output_path = "180215/results/";
 
-		DATA_MPPC_VERSION = "MPPCs_v1";
-		DATA_PMT_VERSION = "PMT_v1";
-
-		OUTPUT_MPPCS_PICS = "MPPCs_v1/MPPCs_";
-		OUTPUT_PMT_PICS = "PMT_v1/PMT_";
-		OUTPUT_MPPCS = "MPPC_";
+		if (name_scheme_version == name_scheme_v1) {
+			DATA_MPPC_VERSION = "MPPCs_v1";
+			DATA_PMT_VERSION = "PMT_v1";
+		} else {
+			DATA_MPPC_VERSION = "SiPM";
+			DATA_PMT_VERSION = "PMT";
+		}
 
 		PMT_V.clear();
 		PMT_V["X-ray_6kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
@@ -1277,7 +1276,6 @@ bool viewRegion::OnLine(double x1, double y1, double x2, double y2, double u,
 		dBs["X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = atten0;
 		dBs["X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = atten0;
 
-		double coeff = (600 / 804.0)*(1.54 / (1.54*1.8 + 1.01*0.4));
 		experiment_fields.clear();
 		experiment_fields["X-ray_6kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 6;
 		experiment_fields["X-ray_8kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 8;
@@ -1286,8 +1284,6 @@ bool viewRegion::OnLine(double x1, double y1, double x2, double y2, double u,
 		experiment_fields["X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 12;
 		experiment_fields["X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 14;
 
-		for (auto j = experiment_fields.begin(); j != experiment_fields.end(); ++j)
-			j->second *= coeff;
 
 		areas_to_draw.back().experiments.clear();
 		areas_to_draw.back().experiments.push_back("X-ray_6kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");

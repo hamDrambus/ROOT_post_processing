@@ -2,7 +2,8 @@
 	//This file is for substituting typing into console.
 	//x_y_regions = {0.0035, 0.0035, 0.00008, 0.012, 0.00013, 0.05};//large A ch15 Cd_20kV_850V_46V Not really important for S2 Npe
 	//cut_A_S_fast_PMT(x_y_regions, false, 5, "small_A-S_noise");
-	ty(AnalysisStates::PMT_Npe_sum);
+if (false) {
+	ty(AStates::PMT_Npe_sum);
 	std::string meth = "_v2";
 	set_zoom(0, 140);
 	set_bins(140);
@@ -17,4 +18,17 @@
 	set_as_run_cut(npe_cut);
 	cut_S_t_rect_select(25, 160, 0, 1e5, false, 0);
 	cut_S_t_rect_select(25, 160, 0, 1e5, false, 1);
+}
+if (true) {
+	analysis_history(false, 0); //20
+	nex();
+	analysis_history(false, 0); //20 bkg
+	nex();
+	analysis_history(false, 0); //18
+	nex();
+	analysis_history(false, 0); //16
+	nex();
+	analysis_history(false, 0); //14
+	nex();
+}
 }
