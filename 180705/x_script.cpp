@@ -42,4 +42,27 @@ if (false) {
 		analysis_history(false, method); //8
 		nex();
 	}
+	if (true) {
+		int method = 1;
+		analysis_history(false, method); //20
+		nex();
+		analysis_history(false, method); //18
+		nex();
+		analysis_history(false, method); //16
+		nex();
+		analysis_history(false, method); //14
+		nex();
+		analysis_history(false, method); //13
+		nex();
+		analysis_history(false, method); //12
+		nex();
+		analysis_history(false, method); //11
+		nex();
+		analysis_history(false, method); //10
+		nex();
+		analysis_history(false, method); //9
+		nex();
+		analysis_history(false, method); //8
+		nex();
+	}
 } 

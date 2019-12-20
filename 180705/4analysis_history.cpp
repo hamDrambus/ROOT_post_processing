@@ -393,14 +393,22 @@ if (channel==59) {
 
 }//noise_cut
 
-void analysis_history(bool calibrate, int method = 0) {
+void analysis_history(bool calibrate, std::size_t method = 0) {
 //Created on 17.12.2019
-//method = 0 - use fast PMTs for trigger_v2 (byS for large fields/Npe and byNpeaks for low) with
+//method = 0 - use fast PMTs for trigger_v2 (byNpe for large fields/byNpeaks for low) with
 //optimal dt determined as
 //dt_trigger_optimal[us] = 0.3923 + 0.9728*Tdrift(18mm)[us] (for previous analysis)
+//method = 1 - same as 0 but not using trigger adjustment (raw signals, but with same event selection as 0) 
 data_output_path = "180705/results_v4/";
 calibration_file = data_output_path+"180705_calibration.dat";
 trigger_version = TriggerVersion::trigger_v2;
+if (method==1)
+	data_output_path = "180705/results_v1/";
+
+if (method>1) {
+	std::cout<<"There is no method > 1, quitting"<<std::endl;
+	return;
+}
 
 post_processor->calibr_info.Load(calibration_file);
 std::map<std::string, std::pair<double, double> > S2_times;
@@ -693,7 +701,7 @@ else {
     first_run = -10000;
 }
 
-if (exp == "180705_Cd_20kV_800V_12bB_48V" && method == 0) {
+if (exp == "180705_Cd_20kV_800V_12bB_48V") {
 	double dt_shaping = 0.3923 + 0.9728*drift_time_from_kV(experiment_fields[exp], 1.8);
 	std::string dt = "dt="+dbl_to_str(dt_shaping, 1)+"us";
 	std::string DT = "dt="+dbl_to_str(dt_shaping, 1)+"#mus"; //ROOT supports greek letters
@@ -817,7 +825,8 @@ set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bS, -1, -1);
 
 ty(AStates::PMT_trigger_bNpe);
 	saveaspng(FOLDER + Num+"_fastPMTs_Npetrigger_"+cuts+"_"+dt+"_zoom");
-	set_trigger_offsets(trigger_at); cuts += "+" + Num;
+	if (0==method)
+		set_trigger_offsets(trigger_at); cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 
 ty(AStates::PMT_trigger_bS);
@@ -832,6 +841,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(130, 230);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_W_left/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_W_left/", false, PMT_state, SiPM_state);
@@ -842,6 +852,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(231, 400);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_W_right/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_W_right/", false, PMT_state, SiPM_state);
@@ -849,9 +860,10 @@ save_forms(FOLDER + "forms_W_right/", false, PMT_state, SiPM_state);
 	cuts.erase(cuts.end()-3, cuts.end());
 
 ty(AStates::PMT_Npe_sum);
-	draw_limits(520, 645);
+	draw_limits(550, 705);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_Cd_right/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_Cd_right/", false, PMT_state, SiPM_state);
@@ -859,7 +871,7 @@ save_forms(FOLDER + "forms_Cd_right/", false, PMT_state, SiPM_state);
 	cuts.erase(cuts.end()-3, cuts.end());
 
 ty(AStates::PMT_Npe_sum);
-	draw_limits(520, 730);
+	draw_limits(550, 780);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
 	print_accepted_events(FOLDER + "forms_Cd_peak/"+Num+"_events_"+cuts+".txt", first_run);
@@ -870,7 +882,7 @@ save_forms(FOLDER + "forms_Cd_peak/", false, PMT_state, SiPM_state);
 	cuts.erase(cuts.end()-3, cuts.end());
 }
 
-if (exp == "180705_Cd_18kV_800V_12bB_48V" && method == 0) {
+if (exp == "180705_Cd_18kV_800V_12bB_48V") {
 	double dt_shaping = 0.3923 + 0.9728*drift_time_from_kV(experiment_fields[exp], 1.8);
 	std::string dt = "dt="+dbl_to_str(dt_shaping, 1)+"us";
 	std::string DT = "dt="+dbl_to_str(dt_shaping, 1)+"#mus"; //ROOT supports greek letters
@@ -994,7 +1006,8 @@ set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bS, -1, -1);
 
 ty(AStates::PMT_trigger_bNpe);
 	saveaspng(FOLDER + Num+"_fastPMTs_Npetrigger_"+cuts+"_"+dt+"_zoom");
-	set_trigger_offsets(trigger_at); cuts += "+" + Num;
+	if (0==method)
+		set_trigger_offsets(trigger_at); cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 
 ty(AStates::PMT_trigger_bS);
@@ -1009,6 +1022,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(130, 210);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_W_left/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_W_left/", false, PMT_state, SiPM_state);
@@ -1019,6 +1033,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(211, 370);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_W_right/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_W_right/", false, PMT_state, SiPM_state);
@@ -1029,6 +1044,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(440, 585);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_Cd_right/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_Cd_right/", false, PMT_state, SiPM_state);
@@ -1047,7 +1063,7 @@ save_forms(FOLDER + "forms_Cd_peak/", false, PMT_state, SiPM_state);
 	cuts.erase(cuts.end()-3, cuts.end());
 }
 
-if (exp == "180705_Cd_16kV_800V_12bB_48V" && method == 0) {
+if (exp == "180705_Cd_16kV_800V_12bB_48V") {
 	double dt_shaping = 0.3923 + 0.9728*drift_time_from_kV(experiment_fields[exp], 1.8);
 	std::string dt = "dt="+dbl_to_str(dt_shaping, 1)+"us";
 	std::string DT = "dt="+dbl_to_str(dt_shaping, 1)+"#mus"; //ROOT supports greek letters
@@ -1171,7 +1187,8 @@ set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bS, -1, -1);
 
 ty(AStates::PMT_trigger_bNpe);
 	saveaspng(FOLDER + Num+"_fastPMTs_Npetrigger_"+cuts+"_"+dt+"_zoom");
-	set_trigger_offsets(trigger_at); cuts += "+" + Num;
+	if (0==method)
+		set_trigger_offsets(trigger_at); cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 
 ty(AStates::PMT_trigger_bS);
@@ -1186,6 +1203,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(60, 130);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_W_left/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_W_left/", false, PMT_state, SiPM_state);
@@ -1196,6 +1214,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(131, 200);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_W_right/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_W_right/", false, PMT_state, SiPM_state);
@@ -1206,6 +1225,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(330, 455);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_Cd_right/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_Cd_right/", false, PMT_state, SiPM_state);
@@ -1224,7 +1244,7 @@ save_forms(FOLDER + "forms_Cd_peak/", false, PMT_state, SiPM_state);
 	cuts.erase(cuts.end()-3, cuts.end());
 }
 
-if (exp == "180705_Cd_14kV_800V_12bB_48V" && method == 0) {
+if (exp == "180705_Cd_14kV_800V_12bB_48V") {
 	double dt_shaping = 0.3923 + 0.9728*drift_time_from_kV(experiment_fields[exp], 1.8);
 	std::string dt = "dt="+dbl_to_str(dt_shaping, 1)+"us";
 	std::string DT = "dt="+dbl_to_str(dt_shaping, 1)+"#mus"; //ROOT supports greek letters
@@ -1348,7 +1368,8 @@ set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bS, -1, -1);
 
 ty(AStates::PMT_trigger_bNpe);
 	saveaspng(FOLDER + Num+"_fastPMTs_Npetrigger_"+cuts+"_"+dt+"_zoom");
-	set_trigger_offsets(trigger_at); cuts += "+" + Num;
+	if (0==method)
+		set_trigger_offsets(trigger_at); cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 
 ty(AStates::PMT_trigger_bS);
@@ -1363,6 +1384,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(70, 150);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_W_peak/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_W_peak/", false, PMT_state, SiPM_state);
@@ -1373,6 +1395,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(195, 280);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_Cd_right/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_Cd_right/", false, PMT_state, SiPM_state);
@@ -1394,6 +1417,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(420, 650);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_cosmic/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_cosmic/", false, PMT_state, SiPM_state);
@@ -1401,7 +1425,7 @@ save_forms(FOLDER + "forms_cosmic/", false, PMT_state, SiPM_state);
 	cuts.erase(cuts.end()-3, cuts.end());
 }
 
-if (exp == "180705_Cd_13kV_800V_12bB_48V" && method == 0) {
+if (exp == "180705_Cd_13kV_800V_12bB_48V") {
 	double dt_shaping = 0.3923 + 0.9728*drift_time_from_kV(experiment_fields[exp], 1.8);
 	std::string dt = "dt="+dbl_to_str(dt_shaping, 1)+"us";
 	std::string DT = "dt="+dbl_to_str(dt_shaping, 1)+"#mus"; //ROOT supports greek letters
@@ -1525,7 +1549,8 @@ set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bS, -1, -1);
 
 ty(AStates::PMT_trigger_bNpe);
 	saveaspng(FOLDER + Num+"_fastPMTs_Npetrigger_"+cuts+"_"+dt+"_zoom");
-	set_trigger_offsets(trigger_at); cuts += "+" + Num;
+	if (0==method)
+		set_trigger_offsets(trigger_at); cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 
 ty(AStates::PMT_trigger_bS);
@@ -1540,6 +1565,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(30, 100);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_W_peak/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_W_peak/", false, PMT_state, SiPM_state);
@@ -1550,6 +1576,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(115, 200);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_Cd_right/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_Cd_right/", false, PMT_state, SiPM_state);
@@ -1571,6 +1598,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(330, 600);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_cosmic/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_cosmic/", false, PMT_state, SiPM_state);
@@ -1578,7 +1606,7 @@ save_forms(FOLDER + "forms_cosmic/", false, PMT_state, SiPM_state);
 	cuts.erase(cuts.end()-3, cuts.end());
 }
 
-if (exp == "180705_Cd_12kV_800V_6bB_48V" && method == 0) {
+if (exp == "180705_Cd_12kV_800V_6bB_48V") {
 	double dt_shaping = 0.3923 + 0.9728*drift_time_from_kV(experiment_fields[exp], 1.8);
 	std::string dt = "dt="+dbl_to_str(dt_shaping, 1)+"us";
 	std::string DT = "dt="+dbl_to_str(dt_shaping, 1)+"#mus"; //ROOT supports greek letters
@@ -1702,7 +1730,8 @@ set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bNpeaks, -1, -1);
 
 ty(AStates::PMT_trigger_bNpe);
 	saveaspng(FOLDER + Num+"_fastPMTs_Npetrigger_"+cuts+"_"+dt+"_zoom");
-	set_trigger_offsets(trigger_at); cuts += "+" + Num;
+	if (0==method)
+		set_trigger_offsets(trigger_at); cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 
 ty(AStates::PMT_trigger_bS);
@@ -1717,6 +1746,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(20, 73);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_W_peak/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_W_peak/", false, PMT_state, SiPM_state);
@@ -1727,6 +1757,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(83, 129);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_Cd_right/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_Cd_right/", false, PMT_state, SiPM_state);
@@ -1748,6 +1779,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(220, 400);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_cosmic/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_cosmic/", false, PMT_state, SiPM_state);
@@ -1755,7 +1787,7 @@ save_forms(FOLDER + "forms_cosmic/", false, PMT_state, SiPM_state);
 	cuts.erase(cuts.end()-3, cuts.end());
 }
 
-if (exp == "180705_Cd_11kV_800V_6bB_48V" && method == 0) {
+if (exp == "180705_Cd_11kV_800V_6bB_48V") {
 	double dt_shaping = 0.3923 + 0.9728*drift_time_from_kV(experiment_fields[exp], 1.8);
 	std::string dt = "dt="+dbl_to_str(dt_shaping, 1)+"us";
 	std::string DT = "dt="+dbl_to_str(dt_shaping, 1)+"#mus"; //ROOT supports greek letters
@@ -1879,7 +1911,8 @@ set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bNpeaks, -1, -1);
 
 ty(AStates::PMT_trigger_bNpe);
 	saveaspng(FOLDER + Num+"_fastPMTs_Npetrigger_"+cuts+"_"+dt+"_zoom");
-	set_trigger_offsets(trigger_at); cuts += "+" + Num;
+	if (0==method)
+		set_trigger_offsets(trigger_at); cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 
 ty(AStates::PMT_trigger_bS);
@@ -1894,6 +1927,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(15, 50);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_small_Npes/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_small_Npes/", false, PMT_state, SiPM_state);
@@ -1904,6 +1938,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(55, 89);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_Cd_right/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_Cd_right/", false, PMT_state, SiPM_state);
@@ -1925,6 +1960,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(150, 300);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_cosmic/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_cosmic/", false, PMT_state, SiPM_state);
@@ -1932,7 +1968,7 @@ save_forms(FOLDER + "forms_cosmic/", false, PMT_state, SiPM_state);
 	cuts.erase(cuts.end()-3, cuts.end());
 }
 
-if (exp == "180705_Cd_10kV_800V_6bB_48V" && method == 0) {
+if (exp == "180705_Cd_10kV_800V_6bB_48V") {
 	double dt_shaping = 0.3923 + 0.9728*drift_time_from_kV(experiment_fields[exp], 1.8);
 	std::string dt = "dt="+dbl_to_str(dt_shaping, 1)+"us";
 	std::string DT = "dt="+dbl_to_str(dt_shaping, 1)+"#mus"; //ROOT supports greek letters
@@ -2056,7 +2092,8 @@ set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bNpeaks, -1, -1);
 
 ty(AStates::PMT_trigger_bNpe);
 	saveaspng(FOLDER + Num+"_fastPMTs_Npetrigger_"+cuts+"_"+dt+"_zoom");
-	set_trigger_offsets(trigger_at); cuts += "+" + Num;
+	if (0==method)
+		set_trigger_offsets(trigger_at); cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 
 ty(AStates::PMT_trigger_bS);
@@ -2071,6 +2108,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(0, 26);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_small_Npes/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_small_Npes/", false, PMT_state, SiPM_state);
@@ -2081,6 +2119,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(28, 50);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_Cd_right/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_Cd_right/", false, PMT_state, SiPM_state);
@@ -2102,6 +2141,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(90, 200);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_cosmic/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_cosmic/", false, PMT_state, SiPM_state);
@@ -2109,7 +2149,7 @@ save_forms(FOLDER + "forms_cosmic/", false, PMT_state, SiPM_state);
 	cuts.erase(cuts.end()-3, cuts.end());
 }
 
-if (exp == "180705_Cd_9kV_800V_0bB_48V" && method == 0) {
+if (exp == "180705_Cd_9kV_800V_0bB_48V") {
 	double dt_shaping = 0.3923 + 0.9728*drift_time_from_kV(experiment_fields[exp], 1.8);
 	std::string dt = "dt="+dbl_to_str(dt_shaping, 1)+"us";
 	std::string DT = "dt="+dbl_to_str(dt_shaping, 1)+"#mus"; //ROOT supports greek letters
@@ -2228,7 +2268,8 @@ set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bNpeaks, -1, -1);
 
 ty(AStates::PMT_trigger_bNpe);
 	saveaspng(FOLDER + Num+"_fastPMTs_Npetrigger_"+cuts+"_"+dt+"_zoom");
-	set_trigger_offsets(trigger_at); cuts += "+" + Num;
+	if (0==method)
+		set_trigger_offsets(trigger_at); cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 
 ty(AStates::PMT_trigger_bS);
@@ -2243,6 +2284,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(0, 15);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_small_Npes/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_small_Npes/", false, PMT_state, SiPM_state);
@@ -2253,6 +2295,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(16, 25);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_Cd_right/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_Cd_right/", false, PMT_state, SiPM_state);
@@ -2274,6 +2317,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(50, 120);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_cosmic/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_cosmic/", false, PMT_state, SiPM_state);
@@ -2281,7 +2325,7 @@ save_forms(FOLDER + "forms_cosmic/", false, PMT_state, SiPM_state);
 	cuts.erase(cuts.end()-3, cuts.end());
 }
 
-if (exp == "180705_Cd_8kV_800V_0bB_48V" && method == 0) {
+if (exp == "180705_Cd_8kV_800V_0bB_48V") {
 	double dt_shaping = 0.3923 + 0.9728*drift_time_from_kV(experiment_fields[exp], 1.8);
 	std::string dt = "dt="+dbl_to_str(dt_shaping, 1)+"us";
 	std::string DT = "dt="+dbl_to_str(dt_shaping, 1)+"#mus"; //ROOT supports greek letters
@@ -2400,7 +2444,8 @@ set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bNpeaks, -1, -1);
 
 ty(AStates::PMT_trigger_bNpeaks); //Different from higher fields! trgger by N peaks is used here. (Poor calibration of fPMTs)
 	saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
-	set_trigger_offsets(trigger_at); cuts += "+" + Num;
+	if (0==method)
+		set_trigger_offsets(trigger_at); cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 
 ty(AStates::PMT_trigger_bNpe);
@@ -2422,6 +2467,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(10, 16);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_Cd_right/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_Cd_right/", false, PMT_state, SiPM_state);
@@ -2443,6 +2489,7 @@ ty(AStates::PMT_Npe_sum);
 	draw_limits(40, 120);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
 	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + "forms_cosmic/"+Num+"_events_"+cuts+".txt", first_run);
 	Num = int_to_str(++no, 2);
 
 save_forms(FOLDER + "forms_cosmic/", false, PMT_state, SiPM_state);
