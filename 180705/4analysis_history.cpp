@@ -111,8 +111,8 @@ void save_forms (std::string path, bool N_only, int PMT_condition, int SiPM_cond
 //selected at that stage at 20kV; during Npe plots (for Cd peak selection, which is required during signal forms) and during 
 //plotting PMT signal forms themselves. Without this function changing cut parameters would have to take place in several places
 //which is very error-prone. Besides, it is easier to re-use this file for other analyzes.
-void noise_cut(int channel, int aggressiveness, int device_condition, bool display) { //Same as
-//aggresiveness: (if out of range 0 is used)
+void noise_cut(int channel, int aggressiveness, int device_condition, bool display) {
+//aggresiveness:
 //	PMT: 0 - cut only noise, 1 - remove peaks with too large A or S
 //	SiPM: 0 - cut only noise, 1 - select only single phe peaks (including merged peaks - same A but double S)
 //		2 - select only single phe peaks without merged ones.
@@ -393,7 +393,7 @@ if (channel==59) {
 
 }//noise_cut
 
-void analysis_history(bool calibrate, std::size_t method = 0) {
+void analysis_history(bool calibrate, unsigned int method = 0) {
 //Created on 17.12.2019
 //method = 0 - use fast PMTs for trigger_v2 (byNpe for large fields/byNpeaks for low) with
 //optimal dt determined as
@@ -404,7 +404,6 @@ calibration_file = data_output_path+"180705_calibration.dat";
 trigger_version = TriggerVersion::trigger_v2;
 if (method==1)
 	data_output_path = "180705/results_v1/";
-
 if (method>1) {
 	std::cout<<"There is no method > 1, quitting"<<std::endl;
 	return;
@@ -2444,8 +2443,10 @@ set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bNpeaks, -1, -1);
 
 ty(AStates::PMT_trigger_bNpeaks); //Different from higher fields! trgger by N peaks is used here. (Poor calibration of fPMTs)
 	saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
-	if (0==method)
-		set_trigger_offsets(trigger_at); cuts += "+" + Num;
+	if (0==method) {
+		set_trigger_offsets(trigger_at);
+		cuts += "+" + Num;
+	}
 	Num = int_to_str(++no, 2);
 
 ty(AStates::PMT_trigger_bNpe);

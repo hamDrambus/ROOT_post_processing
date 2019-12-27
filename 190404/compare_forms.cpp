@@ -5,6 +5,34 @@ std::string dbl_to_str (double val, int precision)
 	return ss.str();
 }
 
+double integrate(TH1D *hist, double from, double to) {
+	double Int = 0;
+    for (int bin = 1, bin_end = hist->GetNbinsX()+1; bin!=bin_end; ++bin) {
+	    if (hist->GetBinCenter(bin)>from && hist->GetBinCenter(bin)<to) {
+           Int += hist->GetBinContent(bin) * hist->GetBinWidth(bin);
+	    }
+    }
+	return Int;
+}
+
+double average(TH1D *hist, double from, double to) {
+	double baseline = 0;
+    int counts = 0;
+    for (int bin = 1, bin_end = hist->GetNbinsX()+1; bin!=bin_end; ++bin) {
+	    if (hist->GetBinCenter(bin)>from && hist->GetBinCenter(bin)<to) {
+           baseline += hist->GetBinContent(bin);
+           ++counts;
+	    }
+    }
+	return baseline/counts;
+}
+
+void subtract_baseline(TH1D *hist, double baseline) {
+    for (int bin = 1, bin_end = hist->GetNbinsX()+1; bin!=bin_end; ++bin) {
+		hist->SetBinContent(bin, std::max(hist->GetBinContent(bin) - baseline, 0.0));		
+    }
+}
+
 void read_hist (TH1D *hist, std::string fname) {
 	std::ifstream str;
 	str.open(fname, std::ios_base::binary);
@@ -54,6 +82,43 @@ Double_t FittingF_2exp (Double_t *x, Double_t *par) {
   return (x[0] < par[0]) ? 0 : (par[1]*std::exp((par[0]-x[0])/par[2]) + par[3]*std::exp((par[0]-x[0])/par[4]));
 }
 
+void add_text(double x, double y, std::string title, std::vector<std::string> &entries, std::vector<Color_t>& colors) {
+	TPad *pad = (TPad*)gPad;
+	double offset;
+	if (pad->GetLogy()) {
+		TH2F* frame = (TH2F*)gDirectory->FindObject("frame");
+		if (NULL==frame)
+			return;		
+		offset = std::log(frame->GetYaxis()->GetXmax()/frame->GetYaxis()->GetXmin())/5.75;
+		std::cout<<"Size="<<entries.size()<<", offset = "<<offset<<std::endl;
+		if (!title.empty()) {
+			auto *txtfr0 = new TLatex (x, y*std::pow(offset, entries.size()), title.c_str());
+			txtfr0->SetTextAlign(12); txtfr0->SetTextSize(0.05);
+			txtfr0->SetTextColor(kBlack); txtfr0->Draw();
+		}
+		for (int hh = 0, hh_end_ = entries.size(); hh!=hh_end_; ++hh) {
+			auto *txt1 = new TLatex (x, y*std::pow(offset, hh_end_ - hh - 1), entries[hh].c_str());
+			txt1->SetTextAlign(12); txt1->SetTextSize(0.05);
+			txt1->SetTextColor(colors[hh]); txt1->Draw();
+		}
+	} else {
+		TH2F* frame = (TH2F*)gDirectory->FindObject("frame");
+		if (NULL==frame)
+			return;
+		offset = (frame->GetYaxis()->GetXmax() - frame->GetYaxis()->GetXmin())/18;
+		if (!title.empty()) {
+			auto *txtfr0 = new TLatex (x, y+offset*entries.size(), title.c_str());
+			txtfr0->SetTextAlign(12); txtfr0->SetTextSize(0.05);
+			txtfr0->SetTextColor(kBlack); txtfr0->Draw();
+		}		
+		for (int hh = 0, hh_end_ = entries.size(); hh!=hh_end_; ++hh) {
+			auto *txt1 = new TLatex (x, y+offset*(hh_end_ - hh - 1), entries[hh].c_str());
+			txt1->SetTextAlign(12); txt1->SetTextSize(0.05);
+			txt1->SetTextColor(colors[hh]); txt1->Draw();
+		}
+	}
+}
+
 int compare_forms (void) {
     gStyle->SetStatY(0.9);
     gStyle->SetStatX(0.9);
@@ -79,10 +144,11 @@ int compare_forms (void) {
     hists.push_back(hist_6);
 	hists.push_back(hist_7);
     std::vector<std::string> Tds =      {"8.5","7.6","6.8","5.9","5.1","4.2","3.4"};//20, 18, ..., 8 kV
-	std::vector<double> norm_t_right =  {33.6, 33.8, 34.0, 34.3, 34.8, 35.5, 35.8}; //20, 18, ..., 8 kV
-	std::vector<double> fit_from = 	    {36.0, 36.0, 36.0, 36.0, 35.1, 36.0, 36.0}; //20, 18, ..., 8 kV
-	//std::vector<double> fit_to =        {160,  160,  160,  160,  53.0, 52.0, 52.0}; //PMTs 20, 18, ..., 8 kV
-	std::vector<double> fit_to =        {160,  160,  160,  45,  55.0, 52.0, 52.0}; //SiPMs 20, 18, ..., 8 kV
+	std::vector<double> norm_t_right =  {33.7, 33.8, 34.1, 34.4, 34.9, 35.4, 35.4}; //20, 18, ..., 8 kV
+	std::vector<double> fit_from = 	    {35.0, 35.0, 35.5, 35.3, 35.3, 35.4, 35.4}; //20, 18, ..., 8 kV
+	std::vector<double> fit_to =        {160,  160,  160,  160,  53.0, 52.0, 52.0}; //PMTs 20, 18, ..., 8 kV
+	//std::vector<double> fit_from = 	    {32.4, 32.1, 32.1, 32.8, 32.9, 33.0, 33.0}; //SiPMs
+	//std::vector<double> fit_to =        {160,  160,  160,  48.7,  55.0, 52.0, 52.0}; //SiPMs 20, 18, ..., 8 kV
 	//std::vector<double> fit_to =        {160,  160,  160,  50,  50.0, 52.0, 52.0}; //edge SiPMs 20, 18, ..., 8 kV
 	//std::vector<std::string> Tds(6, "3.4");
 	//std::vector<double> norm_t_right (6, 33.5);
@@ -91,63 +157,57 @@ int compare_forms (void) {
 	std::vector<Color_t> palette_major = {kBlack, kRed, kBlue, kGreen, kYellow + 2, kMagenta, kOrange + 7};
 	std::vector<Color_t> palette_minor = {kGray + 2, kMagenta, kAzure + 10, kGreen -2, kMagenta+3, kOrange - 7, kOrange + 6};
     double max_val = 0;
-	bool linear = false;
-    std::string prefix = "190404/results_v3/Cd_46V_20kV_850V/forms_Cd_peak/";
-	read_hist_w (hist_1, prefix + "SiPMs_form_by_Npe.hdata");
-	prefix = "190404/results_v3/Cd_46V_18kV_850V/forms_Cd_peak/";
-	read_hist_w (hist_2, prefix + "SiPMs_form_by_Npe.hdata");
-	prefix = "190404/results_v3/Cd_46V_16kV_850V/forms_Cd_peak/";
-	read_hist_w (hist_3, prefix + "SiPMs_form_by_Npe.hdata");
-	prefix = "190404/results_v3/Cd_46V_14kV_850V/forms_Cd_peak/";
-	read_hist_w (hist_4, prefix + "SiPMs_form_by_Npe.hdata");
-	prefix = "190404/results_v3/Cd_46V_12kV_850V/forms_Cd_peak/";
-	read_hist_w (hist_5, prefix + "SiPMs_form_by_Npe.hdata");
-	prefix = "190404/results_v3/Cd_46V_10kV_850V/forms_Cd_peak/";
-	read_hist_w (hist_6, prefix + "SiPMs_form_by_Npe.hdata");
-	prefix = "190404/results_v3/Cd_46V_8kV_850V/forms_Cd_peak/";
-	read_hist_w (hist_7, prefix + "SiPMs_form_by_Npe.hdata");
-	std::string framename = std::string("190404 (no WLS) Signal forms SiPM matrix Cd peak");// + " " + Tds[0] + " Td";
+	bool linear = true;
+    std::string prefix = "190404/results_v4/Cd_46V_20kV_850V/forms_Cd_peak/";
+	read_hist_w (hist_1, prefix + "8_form_by_Npeaks.hdata");
+	read_hist_w (hist_1, prefix + "9_form_by_Npeaks.hdata");
+	read_hist_w (hist_1, prefix + "10_form_by_Npeaks.hdata");
+	read_hist_w (hist_1, prefix + "11_form_by_Npeaks.hdata");
+	prefix = "190404/results_v4/Cd_46V_18kV_850V/forms_Cd_peak/";
+	read_hist_w (hist_2, prefix + "8_form_by_Npeaks.hdata");
+	read_hist_w (hist_2, prefix + "9_form_by_Npeaks.hdata");
+	read_hist_w (hist_2, prefix + "10_form_by_Npeaks.hdata");
+	read_hist_w (hist_2, prefix + "11_form_by_Npeaks.hdata");
+	prefix = "190404/results_v4/Cd_46V_16kV_850V/forms_Cd_peak/";
+	read_hist_w (hist_3, prefix + "8_form_by_Npeaks.hdata");
+	read_hist_w (hist_3, prefix + "9_form_by_Npeaks.hdata");
+	read_hist_w (hist_3, prefix + "10_form_by_Npeaks.hdata");
+	read_hist_w (hist_3, prefix + "11_form_by_Npeaks.hdata");
+	prefix = "190404/results_v4/Cd_46V_14kV_850V/forms_Cd_peak/";
+	read_hist_w (hist_4, prefix + "8_form_by_Npeaks.hdata");
+	read_hist_w (hist_4, prefix + "9_form_by_Npeaks.hdata");
+	read_hist_w (hist_4, prefix + "10_form_by_Npeaks.hdata");
+	read_hist_w (hist_4, prefix + "11_form_by_Npeaks.hdata");
+	prefix = "190404/results_v4/Cd_46V_12kV_850V/forms_Cd_peak/";
+	read_hist_w (hist_5, prefix + "8_form_by_Npeaks.hdata");
+	read_hist_w (hist_5, prefix + "9_form_by_Npeaks.hdata");
+	read_hist_w (hist_5, prefix + "10_form_by_Npeaks.hdata");
+	read_hist_w (hist_5, prefix + "11_form_by_Npeaks.hdata");
+	prefix = "190404/results_v4/Cd_46V_10kV_850V/forms_Cd_peak/";
+	read_hist_w (hist_6, prefix + "8_form_by_Npeaks.hdata");
+	read_hist_w (hist_6, prefix + "9_form_by_Npeaks.hdata");
+	read_hist_w (hist_6, prefix + "10_form_by_Npeaks.hdata");
+	read_hist_w (hist_6, prefix + "11_form_by_Npeaks.hdata");
+	prefix = "190404/results_v4/Cd_46V_8kV_850V/forms_Cd_peak/";
+	read_hist_w (hist_7, prefix + "8_form_by_Npeaks.hdata");
+	read_hist_w (hist_7, prefix + "9_form_by_Npeaks.hdata");
+	read_hist_w (hist_7, prefix + "10_form_by_Npeaks.hdata");
+	read_hist_w (hist_7, prefix + "11_form_by_Npeaks.hdata");
+	std::string framename = std::string("190404 v4 (no WLS) Signal forms fast PMTs Cd peak");// + " " + Tds[0] + " Td";
 
     for (int hh = 0, hh_end_ = hists.size(); hh!=hh_end_; ++hh) {
-        double baseline = 0;
-        int counts = 0;
-        for (int bin = 1, bin_end = hists[hh]->GetNbinsX()+1; bin!=bin_end; ++bin) {
-		    if (hists[hh]->GetBinCenter(bin)>time_pretrigger_left && hists[hh]->GetBinCenter(bin)<time_pretrigger_right) {
-	           baseline += hists[hh]->GetBinContent(bin);
-               ++counts;
-		    }
-        }
         hists[hh]->Sumw2();
-        baseline = -1*baseline/counts;
-        hists[hh]->Add(unity_f, baseline);
-    }
-	
-	for (int hh = 0, hh_end_ = hists.size(); hh!=hh_end_; ++hh) {
-        double integral = 0;
-        for (int bin = 1, bin_end = hists[hh]->GetNbinsX()+1; bin!=bin_end; ++bin) {
-		    if (hists[hh]->GetBinCenter(bin)>norm_t_left && hists[hh]->GetBinCenter(bin)<norm_t_right[hh]) {
-	           integral += hists[hh]->GetBinContent(bin) * hists[hh]->GetBinWidth(bin);
-		    }
-        }
+        double baseline = average(hists[hh], time_pretrigger_left, time_pretrigger_right);
+		subtract_baseline(hists[hh], baseline);
+        double integral = integrate(hists[hh], norm_t_left, norm_t_right[hh]);
 		hists[hh]->Scale(1.0/integral);
     }
     std::vector<double> fractionsS(hists.size(), 0), fractionsL(hists.size(), 0), fractionsLost(hists.size(), 0);
 	std::vector<std::string> frsS(hists.size(), ""), frsL(hists.size(), ""), frsLost(hists.size(), "");
-	std::stringstream ss;
 	int fr_precision = 2;
 	for (int hh = 0, hh_end_ = hists.size(); hh!=hh_end_; ++hh) {
-        double fast_integral = 0;
-		double full_integral = 0;        
-		for (int bin = 1, bin_end = hists[hh]->GetNbinsX()+1; bin!=bin_end; ++bin) {
-			if (hists[hh]->GetBinContent(bin)<0.0)
-				hists[hh]->SetBinContent(bin, 0.0);
-		    if (hists[hh]->GetBinCenter(bin)>norm_t_left && hists[hh]->GetBinCenter(bin)<norm_t_right[hh]) {
-	           fast_integral += hists[hh]->GetBinContent(bin) * hists[hh]->GetBinWidth(bin);
-		    }
-			if (hists[hh]->GetBinCenter(bin)>norm_t_left) {
-	           full_integral += hists[hh]->GetBinContent(bin) * hists[hh]->GetBinWidth(bin);
-		    }
-        }
+        double fast_integral = integrate(hists[hh], norm_t_left, norm_t_right[hh]);
+		double full_integral = integrate(hists[hh], norm_t_left, DBL_MAX);
 		fractionsS[hh] = full_integral-fast_integral;
 		fractionsL[hh] = full_integral;
     }
@@ -159,16 +219,13 @@ int compare_forms (void) {
 	gStyle->SetGridWidth(1);
 	gStyle->SetOptStat("");
 	TCanvas *c_ = new TCanvas ((std::string(" ") + framename).c_str(), (std::string(" ") + framename).c_str(), DEF_W, DEF_H);
-	c_->SetGrid();
-	c_->SetTicks();
-	c_->ToggleEventStatus();
-    c_->ToggleToolBar();
+	c_->SetGrid(); c_->SetTicks(); c_->ToggleEventStatus(); c_->ToggleToolBar();
 	if (!linear)
 		c_->SetLogy();
 	TLegend *legend = new TLegend(0.55, 0.65, 0.9, 0.9);
 	//legend->SetHeader("");
 	legend->SetMargin(0.25);
-	TH2F* frame = new TH2F( "frame", framename.c_str(), 500, time_left, time_right, 500, linear ? 0 : 1e-4, max_val);
+	TH2F* frame = new TH2F("frame", framename.c_str(), 500, time_left, time_right, 500, linear ? 0 : 1e-4, max_val);
 	frame->GetXaxis()->SetTitle("t [#mus]");
 	frame->GetYaxis()->SetTitle("");
 	frame->Draw();
@@ -196,8 +253,8 @@ int compare_forms (void) {
 		}
 		ffs[hh]->SetLineColor(palette_minor[hh]);
     	hists[hh]->Fit(ffs[hh]);
-		tau1.push_back(dbl_to_str(ffs[hh]->GetParameter(2), precision1));
-		tau2.push_back(dbl_to_str((ffs[hh]->GetParameter(4)>1000 ? 0 : ffs[hh]->GetParameter(4)), precision2));
+		tau1.push_back("#tau_{1}=" + dbl_to_str(ffs[hh]->GetParameter(2), precision1));
+		tau2.push_back("#tau_{2}=" + dbl_to_str((ffs[hh]->GetParameter(4)>1000 ? 0 : ffs[hh]->GetParameter(4)), precision2));
 		double long_component_extra;
 		double long_component_full;
 		if (fit_to[hh]<time_right) {
@@ -226,60 +283,24 @@ int compare_forms (void) {
 		std::cout<<Tds[hh]<<" Td. Lost signal fraction:"<<frsLost[hh]<<std::endl;
     }
 	if (!linear) { 
-		double ypos0 = 0.02;	
-		double ypos1 = 0.008;
-		double offset = 0.08/0.05;
-		auto *txtfr0 = new TLatex (80, ypos1*std::pow(offset, frsS.size()), "Slow fraction:");
-		txtfr0->SetTextAlign(12); txtfr0->SetTextSize(0.05);
-		txtfr0->SetTextColor(kBlack); txtfr0->Draw();
-		for (int hh = 0, hh_end_ = tau1.size(); hh!=hh_end_; ++hh) {
-			auto *txt1 = new TLatex (50, ypos0*std::pow(offset, hh_end_ - hh - 1), (std::string("#tau=")+tau1[hh]).c_str());
-			txt1->SetTextAlign(12); txt1->SetTextSize(0.05);
-			txt1->SetTextColor(palette_major[hh]); txt1->Draw();
-
-			auto *txt11 = new TLatex (111, ypos1*std::pow(offset, hh_end_ - hh - 1), (std::string("#tau=")+tau2[hh]).c_str());
-			txt11->SetTextAlign(12); txt11->SetTextSize(0.05);
-			txt11->SetTextColor(palette_major[hh]); txt11->Draw();
-
-			auto *txtfr1 = new TLatex (80, ypos1*std::pow(offset, hh_end_ - hh - 1), (frsS[hh]).c_str());
-			txtfr1->SetTextAlign(12); txtfr1->SetTextSize(0.05);
-			txtfr1->SetTextColor(palette_major[hh]); txtfr1->Draw();
-			auto *txtfr2 = new TLatex (96, ypos1*std::pow(offset, hh_end_ - hh - 1), (frsL[hh]).c_str());
-			txtfr2->SetTextAlign(12); txtfr2->SetTextSize(0.05);
-			txtfr2->SetTextColor(palette_major[hh]); txtfr2->Draw();
-		}
+		add_text(50, 0.02, "", tau1, palette_major);
+		add_text(80, 0.008, "Slow fractions:", frsS, palette_major);
+		add_text(96, 0.008, "", frsL, palette_major);
+		add_text(111, 0.008, "", tau2, palette_major);
 	} else {
-		double ypos0 = 0.17;	
-		double ypos1 = 0.17;
-		double offset = 0.035;
-		auto *txtfr0 = new TLatex (36, ypos1+offset*frsS.size(), "Slow fraction:");
-		txtfr0->SetTextAlign(12); txtfr0->SetTextSize(0.05);
-		txtfr0->SetTextColor(kBlack); txtfr0->Draw();
-		for (int hh = 0, hh_end_ = tau1.size(); hh!=hh_end_; ++hh) {
-			auto *txt1 = new TLatex (34.3, ypos0+offset*(hh_end_ - hh - 1), (std::string("#tau=")+tau1[hh]).c_str());
-			txt1->SetTextAlign(12); txt1->SetTextSize(0.05);
-			txt1->SetTextColor(palette_major[hh]); txt1->Draw();
-
-			auto *txt11 = new TLatex (115, ypos1+offset*(hh_end_ - hh - 1), (std::string("#tau=")+tau2[hh]).c_str());
-			txt11->SetTextAlign(12); txt11->SetTextSize(0.05);
-			txt11->SetTextColor(palette_major[hh]); txt11->Draw();
-
-			auto *txtfr1 = new TLatex (36, ypos1+offset*(hh_end_ - hh - 1), (frsS[hh]).c_str());
-			txtfr1->SetTextAlign(12); txtfr1->SetTextSize(0.05);
-			txtfr1->SetTextColor(palette_major[hh]); txtfr1->Draw();
-			auto *txtfr2 = new TLatex (37, ypos1+offset*(hh_end_ - hh - 1), (frsL[hh]).c_str());
-			txtfr2->SetTextAlign(12); txtfr2->SetTextSize(0.05);
-			txtfr2->SetTextColor(palette_major[hh]); txtfr2->Draw();
-		}
+		add_text(34.2, 0.138, "", tau1, palette_major);
+		add_text(35.9, 0.14, "Slow fractions:", frsS, palette_major);
+		add_text(36.9, 0.14, "", frsL, palette_major);
+		add_text(38.2, 0.14, "", tau2, palette_major);
 	}
 	
-	legend->AddEntry(hist_1, (std::string(Tds[0] + " Td SiPM matrix Cd peak")).c_str(), "l");
-	legend->AddEntry(hist_2, (std::string(Tds[1] + " Td SiPM matrix Cd peak")).c_str(), "l");
-	legend->AddEntry(hist_3, (std::string(Tds[2] + " Td SiPM matrix Cd peak")).c_str(), "l");
-	legend->AddEntry(hist_4, (std::string(Tds[3] + " Td SiPM matrix Cd peak")).c_str(), "l");
-	legend->AddEntry(hist_5, (std::string(Tds[4] + " Td SiPM matrix Cd peak")).c_str(), "l");
-	legend->AddEntry(hist_6, (std::string(Tds[5] + " Td SiPM matrix Cd peak")).c_str(), "l");
-	legend->AddEntry(hist_7, (std::string(Tds[6] + " Td SiPM matrix Cd peak")).c_str(), "l");
+	legend->AddEntry(hist_1, (std::string(Tds[0] + " Td fPMTs Cd peak")).c_str(), "l");
+	legend->AddEntry(hist_2, (std::string(Tds[1] + " Td fPMTs Cd peak")).c_str(), "l");
+	legend->AddEntry(hist_3, (std::string(Tds[2] + " Td fPMTs Cd peak")).c_str(), "l");
+	legend->AddEntry(hist_4, (std::string(Tds[3] + " Td fPMTs Cd peak")).c_str(), "l");
+	legend->AddEntry(hist_5, (std::string(Tds[4] + " Td fPMTs Cd peak")).c_str(), "l");
+	legend->AddEntry(hist_6, (std::string(Tds[5] + " Td fPMTs Cd peak")).c_str(), "l");
+	legend->AddEntry(hist_7, (std::string(Tds[6] + " Td fPMTs Cd peak")).c_str(), "l");
 
 	frame->Draw("sameaxis");
 	legend->Draw("same");

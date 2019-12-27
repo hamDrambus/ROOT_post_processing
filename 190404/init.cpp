@@ -1,22 +1,42 @@
 {
+ name_scheme_version = name_scheme_v2;
+ int aggressive_PMT_cuts = 0; //0 - no cuts at all, only PMT15 (original analysis of 08.2019). 1 - very low A-S exclusion, also exclude high A low S. Calibration as well as Npe and signal forms must be plotted from scratch for every agrressiveness level.
   //From global parameters:
-  data_prefix_path = "../Data/190404/results/";
-  int aggressive_PMT_cuts = 0; //0 - no cuts at all, only PMT15 (original analysis of 08.2019). 1 - very low A-S exclusion, also exclude high A low S. Calibration as well as Npe and signal forms must be plotted from scratch for every agrressiveness level.
-  if (aggressive_PMT_cuts==1)
-    calibration_file = "190404/results/190404_calibration_aggr=1.dat";
-  else
-    calibration_file = "190404/results/190404_calibration.dat";
-  data_output_path = "190404/results/";
-  DATA_MPPC_VERSION = "MPPCs_v1";
-  DATA_PMT_VERSION = "PMT_v1";
-
-  OUTPUT_MPPCS_PICS = "MPPCs_v1/MPPCs_";
-  OUTPUT_PMT_PICS = "PMT_v1/PMT_";
-  OUTPUT_MPPCS = "MPPC_";
+  if (name_scheme_version == name_scheme_v1) {
+    if (aggressive_PMT_cuts==1)
+      calibration_file = "190404/results/190404_calibration_aggr=1.dat";
+    else
+      calibration_file = "190404/results/190404_calibration.dat";
+    data_prefix_path = "../Data/190404/results/";
+    data_output_path = "190404/results/";
+    DATA_MPPC_VERSION = "MPPCs_v1";
+    DATA_PMT_VERSION = "PMT_v1";
+  }
+  if (name_scheme_version == name_scheme_v2) {
+    data_prefix_path = "../Data/190404/results_v2/";
+    calibration_file = "190404/results_v4/190404_calibration.dat";
+    data_output_path = "190404/results_v4/";
+    DATA_MPPC_VERSION = "SiPM";
+    DATA_PMT_VERSION = "PMT";
+  }
+  std::cout<<"data_prefix_path: \""<<data_prefix_path<<"\""<<std::endl;
+  //Initialize data for utility functions:
+	std::ifstream str;
+	str.open(Vdrift_data_fname);
+	if (!str.is_open()) {
+	  std::cerr << "Error: Failed to open file with e drift velocity data \"" << Vdrift_data_fname << "\"!" << std::endl;
+	} else {
+    Vdrift.read(str);
+    Vdrift.setOrder(1);
+    Vdrift.setNused(2);
+    Vdrift.use_leftmost(true); //how to behave if Td is outside of data Tds range
+    Vdrift.use_rightmost(true);
+  }
+	str.close();
 
   exp_area.experiments.clear();
   exp_area.experiments.push_back("190404_Cd_20kV_850V_46V_th250mV");
-  //exp_area.experiments.push_back("190404_Cd_20kV_850V_46V_th250mV_0");
+  exp_area.experiments.push_back("190404_Cd_20kV_850V_46V_th250mV_0");
   exp_area.experiments.push_back("190404_Cd_18kV_850V_46V_th230mV");
   exp_area.experiments.push_back("190404_Cd_16kV_850V_46V_th210mV");
   exp_area.experiments.push_back("190404_Cd_14kV_850V_46V_th200mV");
@@ -82,4 +102,7 @@
   Initialize();
   //Following variables are required for analysis_history.cpp
   std::vector<int> calib_channels = {15, 14, 13, 12, 11, 10, 9, 8};
+  for (int ch=32; ch!=64; ++ch) {
+    calib_channels.push_back(ch);
+  }
 }

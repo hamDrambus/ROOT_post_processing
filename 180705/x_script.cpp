@@ -19,7 +19,7 @@ if (false) {
 	if (aggressiveness>=2)//remove afterimpulses
 		cut_A_S_upper(0.020, 0.0023, 0.044, 0.0061, display, channel, "2pe_merged");
 }
-	if (true) {
+	if (false) {
 		int method = 0;
 		analysis_history(false, method); //20
 		nex();

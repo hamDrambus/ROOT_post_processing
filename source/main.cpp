@@ -1466,7 +1466,7 @@ FunctionWrapper* create_A_S_vertical_cut(std::vector<double> region, bool upper,
 			double S0 = reg[1];
 			double A1 = reg[2];
 			double S1 = reg[3];
-			if (vals[1]<A0 || vals[1] > A1)
+			if (vals[1]<std::min(A0, A1) || vals[1] > std::max(A1, A0))
 				return !select;
 			if ((vals[0] > (S0 + (S1 - S0)*(vals[1] - A0) / (A1 - A0))))
 				return upper ? select: !select;
@@ -1576,7 +1576,7 @@ FunctionWrapper* create_A_S_horizontal_cut(std::vector<double> region, bool righ
 			double S0 = reg[1];
 			double A1 = reg[2];
 			double S1 = reg[3];
-			if (vals[0]<S0 || vals[0] > S1)
+			if (vals[0]<std::min(S0, S1) || vals[0] > std::max(S0, S1))
 				return !select;
 			if ((vals[1] > (A0 + (A1 - A0)*(vals[0] - S0) / (S1 - S0))))
 				return right ? select: !select;
@@ -1903,7 +1903,7 @@ FunctionWrapper* create_x_y_vertical_cut(std::vector<double> region, bool upper,
 		double Y0 = reg[1];
 		double X1 = reg[2];
 		double Y1 = reg[3];
-		if (vals[0]<X0 || vals[0] > X1)
+		if (vals[0]<std::min(X0, X1) || vals[0] > std::max(X0, X1))
 			return !select;
 		if ((vals[1] > (Y0 + (Y1 - Y0)*(vals[0] - X0) / (X1 - X0))))
 			return upper ? select: !select;
@@ -1969,7 +1969,7 @@ FunctionWrapper* create_x_y_horizontal_cut(std::vector<double> region, bool righ
 		double Y0 = reg[1];
 		double X1 = reg[2];
 		double Y1 = reg[3];
-		if (vals[1]<Y0 || vals[1] > Y1)
+		if (vals[1]<std::min(Y0, Y1) || vals[1] > std::max(Y0, Y1))
 			return !select;
 		if ((vals[0] > (X0 + (X1 - X0)*(vals[1] - Y0) / (Y1 - Y0))))
 			return right ? select: !select;
