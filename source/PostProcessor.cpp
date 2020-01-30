@@ -2057,7 +2057,7 @@ std::size_t PostProcessor::numOfFills(bool consider_displayed_cuts)
 		std::cerr<<"PostProcessor::numOfFills: Error: NULL histogram setups"<<std::endl;
 		return ret;
 	}
-	if (consider_displayed_cuts) {
+	if (!consider_displayed_cuts) {
 		if (setups->num_of_fills)
 			return *setups->num_of_fills;
 		return ret;

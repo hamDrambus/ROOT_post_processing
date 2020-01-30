@@ -1,3 +1,5 @@
+#define PAIR std::pair<double, double>
+
 std::string dbl_to_str (double val, int precision)
 {
 	std::stringstream ss;
@@ -82,6 +84,14 @@ Double_t FittingF_2exp (Double_t *x, Double_t *par) {
   return (x[0] < par[0]) ? 0 : (par[1]*std::exp((par[0]-x[0])/par[2]) + par[3]*std::exp((par[0]-x[0])/par[4]));
 }
 
+Double_t FittingF_exp (Double_t *x, Double_t *par) {
+  //par[0] - start time (fixed), related to par[2]
+  //par[1] - offset
+  //par[2] - amplitude
+  //par[3] - tau
+  return (x[0] < par[0]) ? 0 : (par[1] + par[2]*std::exp((par[0]-x[0])/par[3]));
+}
+
 void add_text(double x, double y, std::vector<std::string> title, std::vector<std::string> &entries, std::vector<Color_t>& colors) {
 	TPad *pad = (TPad*)gPad;
 	double offset;
@@ -119,6 +129,34 @@ void add_text(double x, double y, std::vector<std::string> title, std::vector<st
 	}
 }
 
+struct pulse_shape {
+//INPUT:
+	std::string folder;
+	std::vector<std::string> fnames;
+	std::string Td;
+	double fast_t_center; //used for signal alignment
+	PAIR fast_t; //fast component start&finish time, used for signal normalization
+	double scale;
+	bool subtract_baseline;
+	bool renormalize;
+	//Fit:
+	PAIR slow_fit_t;
+	PAIR long_fit_t;	
+	PAIR baseline_bound;	
+	PAIR slow_ampl_bound;	
+	PAIR slow_tau_bound;
+	PAIR long_ampl_bound;
+	PAIR long_tau_bound;
+	bool simultaneous_fit; //long+slow simultaneously or not
+	bool do_fit;
+//OUTPUT:
+	TH1D* hist;
+	std::vector<TF1*> fit_fs;
+	double total_integral;
+	double fast_integral;
+	double restored_integral; //outside of 160 mus
+}
+
 int compare_forms (void) {
     gStyle->SetStatY(0.9);
     gStyle->SetStatX(0.9);
@@ -145,69 +183,35 @@ int compare_forms (void) {
 	std::vector<bool> do_draw = 		{1,    1, 	 0,    1,    0,    1,    0};
 	std::vector<bool> do_fit = 			{1,    1, 	 1,    1,    1,    0,    0};
     std::vector<std::string> Tds =      {"8.5","7.6","6.8","5.9","5.1","4.2","3.4"};//20, 18, ..., 8 kV
-	//std::vector<double> trigger_offsets = {0,   0,    0,    0,    0, 	0,    0};
-	//std::vector<double> norm_t_right =  {33.7, 33.9, 34.2, 34.5, 35.0, 35.5, 35.5}; //PMTs 20, 18, ..., 8 kV
-	//std::vector<double> fit_from = 	    {35.0, 35.5, 35.7, 35.8, 35.9, 35.5, 36.7}; //PMTs 20, 18, ..., 8 kV
-	//std::vector<double> fit_to =        {160,  160,  160,  160,  56.6, 58.0, 62.0}; //PMTs 20, 18, ..., 8 kV
-	//std::vector<double> norm_t_right =  {34.2, 34.3, 34.5, 35.0, 35.4, 35.8, 35.8}; //SiPMs 20, 18, ..., 8 kV
-	//std::vector<double> fit_from = 	    {35.0, 35.0, 35.0, 35.0, 35.6, 35.8, 35.8}; //SiPMs 20, 18, ..., 8 kV
-	//std::vector<double> fit_to =        {160,  160,  160,  160,  53.0, 53.0, 45.5}; //SiPMs 20, 18, ..., 8 kV
-	//No trigger adjustment:
-	//std::vector<double> trigger_offsets = {0.6,   0.5,    0,    0.2,    0, 	0,    0};
-	//std::vector<double> norm_t_right =  {31.0, 31.5, 0.0, 32.0, 0.0, 32.9, 0.0}; //PMTs 20, 18, ..., 8 kV
-	//std::vector<double> fit_from = 	    {32.9, 32.9, 0.0, 33.7, 0.0, 33.0, 0.0}; //PMTs 20, 18, ..., 8 kV
-	//std::vector<double> fit_to =        {160,  160,  160,  160,  56.6, 58.0, 62.0}; //PMTs 20, 18, ..., 8 kV
-	//std::vector<double> norm_t_right =  {31.4, 31.5, 0.0, 32.2, 0.0, 32.9, 0.0}; //SiPMs 20, 18, ..., 8 kV
-	//std::vector<double> fit_from = 	    {31.8, 31.8, 0.0, 32.5, 0.0, 33.0, 0.0}; //SiPMs 20, 18, ..., 8 kV
-	//std::vector<double> fit_to =        {160,  160,  160,  160,  56.6, 58.0, 62.0}; //SiPMs 20, 18, ..., 8 kV
-	//Combined trigger:
-	std::vector<double> trigger_offsets = {3.2,   3.1,    0,    2.7,    0, 	0,    0};
-	//std::vector<double> norm_t_right =  {33.6, 34.1, 0.0, 34.5, 0.0, 35.5, 0.0}; //PMTs 20, 18, ..., 8 kV
-	//std::vector<double> fit_from = 	    {35.5, 35.5, 0.0, 35.6, 0.0, 35.5, 0.0}; //PMTs 20, 18, ..., 8 kV
-	//std::vector<double> fit_to =        {160,  160,  160,  160,  56.6, 58.0, 62.0}; //PMTs 20, 18, ..., 8 kV
-	std::vector<double> norm_t_right =  {33.0, 33.0, 0.0, 34.6, 0.0, 38.8, 0.0}; //SiPMs 20, 18, ..., 8 kV
-	std::vector<double> fit_from = 	    {34.4, 34.2, 0.0, 34.6, 0.0, 35.8, 0.0}; //SiPMs 20, 18, ..., 8 kV
-	std::vector<double> fit_to =        {160,  160,  160,  160,  53.0, 53.0, 45.5}; //SiPMs 20, 18, ..., 8 kV
+	std::vector<double> trigger_offsets = {0,   0,    0,    0,   1.5, 	1.5,  1.5};
+	//std::vector<double> norm_t_right =  {35.0, 35.2, 35.4, 35.6, 35.8, 36.4, 36.7}; //WLS PMTs 20, 18, ..., 8 kV
+	//std::vector<double> fit_from = 	    {35.5, 35.6, 35.7, 35.8, 36.6, 37.0, 36.7}; //WLS PMTs 20, 18, ..., 8 kV
+	//std::vector<double> fit_to =        {160,  160,  160,  160,  56.6, 58.0, 52.0}; //WLS PMTs 20, 18, ..., 8 kV
+	//std::vector<double> norm_t_right =  {34.0, 34.6, 35.0, 35.0, 35.8, 36.4, 36.7}; //bare PMTs 20, 18, ..., 8 kV
+	//std::vector<double> fit_from = 	    {35.0, 35.0, 35.0, 35.5, 36.6, 37.0, 36.7}; //bare PMTs 20, 18, ..., 8 kV
+	//std::vector<double> fit_to =        {160,  160,  160,  53.8,  53.0, 49.5, 45.5}; //bare PMTs 20, 18, ..., 8 kV
+	std::vector<double> norm_t_right =  {34.3, 34.6, 34.9, 35.0, 35.6, 36.1, 37.5}; //SiPMs 20, 18, ..., 8 kV
+	std::vector<double> fit_from = 	    {35.5, 35.6, 35.0, 35.4, 35.6, 36.0, 37.5}; //SiPMs 20, 18, ..., 8 kV
+	std::vector<double> fit_to =        {160,  160,  160,  160,  53.0, 49.5, 45.5}; //SiPMs 20, 18, ..., 8 kV
 	std::vector<Color_t> palette_major = {kBlack, kRed, kMagenta, kGreen, kYellow + 2, kBlue, kOrange + 7};
 	std::vector<Color_t> palette_minor = {kGray + 2, kMagenta, kMagenta+3, kGreen -2, kMagenta+3, kAzure + 10, kOrange + 6};
     double max_val = 0;
 	bool linear = true;
-    std::string prefix = "190404/results_v1/Cd_46V_20kV_850V/forms_Cd_peak/";
+    std::string prefix = "180705/results_v1/Cd_48V_20kV_800V/forms_Cd_peak/";
 	read_hist_w (hist_1, prefix + "SiPMs_form_by_Npe.hdata", trigger_offsets[0]);
-	//read_hist_w (hist_1, prefix + "9_form_by_S.hdata", trigger_offsets[0]);
-	//read_hist_w (hist_1, prefix + "10_form_by_S.hdata", trigger_offsets[0]);
-	//read_hist_w (hist_1, prefix + "11_form_by_S.hdata", trigger_offsets[0]);
-	prefix = "190404/results_v1/Cd_46V_18kV_850V/forms_Cd_peak/";
+	prefix = "180705/results_v1/Cd_48V_18kV_800V/forms_Cd_peak/";
 	read_hist_w (hist_2, prefix + "SiPMs_form_by_Npe.hdata", trigger_offsets[1]);
-	//read_hist_w (hist_2, prefix + "9_form_by_S.hdata", trigger_offsets[1]);
-	//read_hist_w (hist_2, prefix + "10_form_by_S.hdata", trigger_offsets[1]);
-	//read_hist_w (hist_2, prefix + "11_form_by_S.hdata", trigger_offsets[1]);
-	prefix = "190404/results_v1/Cd_46V_16kV_850V/forms_Cd_peak/";
+	prefix = "180705/results_v1/Cd_48V_16kV_800V/forms_Cd_peak/";
 	read_hist_w (hist_3, prefix + "SiPMs_form_by_Npe.hdata", trigger_offsets[2]);
-	//read_hist_w (hist_3, prefix + "9_form_by_S.hdata", trigger_offsets[2]);
-	//read_hist_w (hist_3, prefix + "10_form_by_S.hdata", trigger_offsets[2]);
-	//read_hist_w (hist_3, prefix + "11_form_by_S.hdata", trigger_offsets[2]);
-	prefix = "190404/results_v1/Cd_46V_14kV_850V/forms_Cd_peak/";
+	prefix = "180705/results_v1/Cd_48V_14kV_800V/forms_Cd_peak/";
 	read_hist_w (hist_4, prefix + "SiPMs_form_by_Npe.hdata", trigger_offsets[3]);
-	//read_hist_w (hist_4, prefix + "9_form_by_S.hdata", trigger_offsets[3]);
-	//read_hist_w (hist_4, prefix + "10_form_by_S.hdata", trigger_offsets[3]);
-	//read_hist_w (hist_4, prefix + "11_form_by_S.hdata", trigger_offsets[3]);
-	prefix = "190404/results_v4/Cd_46V_12kV_850V/forms_Cd_peak/";
+	prefix = "180705/results_v4/Cd_48V_12kV_800V/forms_Cd_peak/";
 	read_hist_w (hist_5, prefix + "SiPMs_form_by_Npe.hdata", trigger_offsets[4]);
-	//read_hist_w (hist_5, prefix + "9_form_by_S.hdata", trigger_offsets[4]);
-	//read_hist_w (hist_5, prefix + "10_form_by_S.hdata", trigger_offsets[4]);
-	//read_hist_w (hist_5, prefix + "11_form_by_S.hdata", trigger_offsets[4]);
-	prefix = "190404/results_v4/Cd_46V_10kV_850V/forms_Cd_peak/";
+	prefix = "180705/results_v4/Cd_48V_10kV_800V/forms_Cd_peak/";
 	read_hist_w (hist_6, prefix + "SiPMs_form_by_Npe.hdata", trigger_offsets[5]);
-	//read_hist_w (hist_6, prefix + "9_form_by_S.hdata", trigger_offsets[5]);
-	//read_hist_w (hist_6, prefix + "10_form_by_S.hdata", trigger_offsets[6]);
-	//read_hist_w (hist_6, prefix + "11_form_by_S.hdata", trigger_offsets[6]);
-	prefix = "190404/results_v4/Cd_46V_8kV_850V/forms_Cd_peak/";
-	read_hist_w (hist_7, prefix + "SiPMs_form_by_Npe.hdata", trigger_offsets[7]);
-	//read_hist_w (hist_7, prefix + "9_form_by_S.hdata", trigger_offsets[7]);
-	//read_hist_w (hist_7, prefix + "10_form_by_S.hdata", trigger_offsets[7]);
-	//read_hist_w (hist_7, prefix + "11_form_by_S.hdata", trigger_offsets[7]);
-	std::string framename = std::string("Results for SiPM matrix (no WLS in setup) 88 keV ^{209}Cd");// + " " + Tds[0] + " Td";
+	prefix = "180705/results_v4/Cd_48V_8kV_800V/forms_Cd_peak/";
+	read_hist_w (hist_7, prefix + "SiPMs_form_by_Npe.hdata", trigger_offsets[6]);
+	std::string framename = std::string("Results for SiPM matrix, 88 keV ^{209}Cd");// + " " + Tds[0] + " Td";
 
     for (int hh = 0, hh_end_ = hists.size(); hh!=hh_end_; ++hh) {
         hists[hh]->Sumw2();
@@ -267,10 +271,10 @@ int compare_forms (void) {
 			ffs[hh]->FixParameter(4, 1e6);	
 		} else {
 			ffs[hh]->SetParLimits(3, 3e-4, 1e-1);
-			ffs[hh]->SetParLimits(4, 50, 1000);
+			ffs[hh]->SetParLimits(4, 30, 1000);
 		}
 		ffs[hh]->SetLineColor(palette_minor[hh]);
-    	hists[hh]->Fit(ffs[hh], "N");
+    	hists[hh]->Fit(ffs[hh], "NWL");
 		if (!do_draw[hh] || !do_fit[hh])
 			continue;
 		palette_text.push_back(palette_major[hh]);
@@ -307,10 +311,10 @@ int compare_forms (void) {
 		std::vector<std::string> no_title;
 		std::vector<std::string> Slow_title = {"Contribution:", "Slow"};
 		std::vector<std::string> Long_title = {"Long"};
-		add_text(50, 0.025, no_title, tau1, palette_text);
-		add_text(85, 0.007, Slow_title, frsS, palette_text);
-		add_text(101, 0.007, Long_title, frsL, palette_text);
-		add_text(116, 0.007, no_title, tau2, palette_text);
+		add_text(50, 0.04, no_title, tau1, palette_text);
+		add_text(85, 0.0047, Slow_title, frsS, palette_text);
+		add_text(101, 0.0047, Long_title, frsL, palette_text);
+		add_text(116, 0.0047, no_title, tau2, palette_text);
 	} else {
 		std::vector<std::string> no_title;
 		std::vector<std::string> Slow_title = {"Slow component", "contribution:"};
@@ -322,7 +326,7 @@ int compare_forms (void) {
 	}
 	
 	if (do_draw[0])
-		legend->AddEntry(hist_1, ("E/N = " +std::string(Tds[0] + " Td, SiPM matrix")).c_str(), "l");	
+		legend->AddEntry(hist_1, ("E/N = " + std::string(Tds[0] + " Td, SiPM matrix")).c_str(), "l");	
 	if (do_draw[1])
 		legend->AddEntry(hist_2, ("E/N = " +std::string(Tds[1] + " Td, SiPM matrix")).c_str(), "l");
 	if (do_draw[2])

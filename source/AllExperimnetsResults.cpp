@@ -50,6 +50,7 @@ void AllExperimentsResults::processAllExperiments(std::deque<AllRunsResults> &al
 		if (!valid_merge){
 			std::cout << "AllExperimentResults::processAllExperiments Warning: invalid merge for" << std::endl;
 			std::cout << "\t" << i->_exp.experiments.back()<<std::endl;
+			i->Clear();
 			continue;
 		}
 		exp_area.experiments.push_back(i->_exp.experiments.back());
@@ -73,6 +74,7 @@ void AllExperimentsResults::processAllExperiments(std::deque<AllRunsResults> &al
 			N_pe_Double_I.back().push_back(0);
 			N_pe_result.back().push_back(0);
 		}
+		i->Clear();
 	}
 	for (int exp = 0, e_end_ = exp_area.experiments.size(); exp != e_end_; ++exp){
 		int run_size = mppc_channels.empty() ? (pmt_channels.empty() ? 0 : pmt_peaks[exp][0].size()): mppc_peaks[exp][0].size();

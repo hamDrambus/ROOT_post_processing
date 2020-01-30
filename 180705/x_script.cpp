@@ -19,31 +19,8 @@ if (false) {
 	if (aggressiveness>=2)//remove afterimpulses
 		cut_A_S_upper(0.020, 0.0023, 0.044, 0.0061, display, channel, "2pe_merged");
 }
-	if (false) {
-		int method = 0;
-		analysis_history(false, method); //20
-		nex();
-		analysis_history(false, method); //18
-		nex();
-		analysis_history(false, method); //16
-		nex();
-		analysis_history(false, method); //14
-		nex();
-		analysis_history(false, method); //13
-		nex();
-		analysis_history(false, method); //12
-		nex();
-		analysis_history(false, method); //11
-		nex();
-		analysis_history(false, method); //10
-		nex();
-		analysis_history(false, method); //9
-		nex();
-		analysis_history(false, method); //8
-		nex();
-	}
 	if (true) {
-		int method = 1;
+		int method = 0;
 		analysis_history(false, method); //20
 		nex();
 		analysis_history(false, method); //18

@@ -75,7 +75,6 @@ protected:
 	
 	virtual bool Invalidate(unsigned int label);
 
-	std::size_t numOfFills(bool consider_displayed_cuts = false);
 	std::size_t numOfRuns (void);
 	std::pair<double, double> hist_x_limits(bool consider_displayed_cuts = false); //considering cuts
 	std::pair<double, double> hist_y_limits(bool consider_displayed_cuts = false); //valid only for 2d plots
@@ -89,6 +88,7 @@ protected:
 public:
 	void LoopThroughData(std::vector<Operation> &operations, int channel, Type type);
 
+	std::size_t numOfFills(bool consider_displayed_cuts = false);
 	bool update(void); //mandates:	0)Calculate and store all relevant parameters for current state (x/y limits, number of entries to histogram, etc.)
 	//								1)update current picture. (only displayed histogram but not a png, as well as TF1)
 	//								2)update physical parameters obtained from the current hist
