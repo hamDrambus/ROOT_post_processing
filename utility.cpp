@@ -12,10 +12,10 @@ Double_t drift_time_as_f_kV (Double_t *x, Double_t *par) {
   return par[1]* drift_time_from_kV(x[0], par[0]);
 }
 
-bool load_t_drift_data(std::string file, std::vector<double> &Vs, std::vector<double> &Ts, int y_column)
+//column number starts from 0
+bool load_column_data(std::string file, std::vector<double> &Vs, std::size_t y_column)
 {
 	Vs.clear();
-	Ts.clear();
 	std::ifstream str;
 	str.open(file);
 	if (!str.is_open()) {
@@ -30,20 +30,16 @@ bool load_t_drift_data(std::string file, std::vector<double> &Vs, std::vector<do
 		if (line.size() >= 2) //Ignore simple c style comment
 			if ((line[0] == '/') && (line[1] == '/'))
 				continue;
-		int column = 1;
+		std::size_t column = 0;
 		word = strtoken(line, "\t ");
-		if (word.empty())
-			continue;
-		double kV = std::stod(word);
 		while (column < y_column && !word.empty()) {
 			word = strtoken(line, "\t ");
 			++column;
 		}
 		if (word.empty())
 			continue;
-		double tau = std::stod(word);
-		Vs.push_back(kV);
-		Ts.push_back(tau);
+		double val = std::stod(word);
+		Vs.push_back(val);
 	}
 	return true;
 }
@@ -64,6 +60,31 @@ TGraph* CreateGraph(std::vector<double> &ixs, std::vector<double> &iys) {
 		delete [] ys;
 	}
 	return out;
+}
+
+TGraphErrors* CreateGraph(std::vector<double> &ixs, std::vector<double> &iys, std::vector<double> &iyes) {
+	TGraphErrors* out = NULL;
+	Int_t size = std::min(ixs.size(), iys.size());
+	Int_t err_size = iyes.size();
+	Double_t *xs = NULL, *ys = NULL, *xes = NULL, *yes = NULL;
+	if (size > 0) {
+		xs = new Double_t[size];
+		ys = new Double_t[size];
+		xes = new Double_t[size];
+		yes = new Double_t[size];
+		for (Int_t i = 0; i != size; ++i) {
+			xs[i] = ixs[i];
+			ys[i] = iys[i];
+			xes[i] = 0;			
+			yes[i] = 1*(i < err_size ? iyes[i] : 0);
+		}
+		out = new TGraphErrors(size, xs, ys, xes, yes);
+		delete [] xs;
+		delete [] ys;
+		delete [] xes;
+		delete [] yes;
+	}
+	return out;
 } 
 
 int utility (void) {
@@ -82,6 +103,7 @@ int utility (void) {
 
     gStyle->SetStatY(0.9);
     gStyle->SetStatX(0.9);
+	gStyle->SetEndErrorSize(3);
     int DEF_W = 1300, DEF_H = 700;
     
 	std::vector<Color_t> palette_major = {kBlack, kGreen, kRed, kBlue, kYellow + 2, kMagenta, kOrange + 7};
@@ -89,26 +111,19 @@ int utility (void) {
     double max_val = 0;
 	double min_V0 = 7;
 	bool linear = true;
-	std::string framename = "190404 adjusted trigger fast component FWHMs";
+	std::string framename = "Data without WLS: fast component FWHM";
     
-	std::vector<double> kVs, Ts;
-	load_t_drift_data("190404/results_v3/190404_half_widths.txt", kVs, Ts, 3); //4 - SiPMs, 3 - fPMTs
-	TGraph* fPMTs_data = CreateGraph(kVs, Ts);
-	if (NULL!=fPMTs_data) {
-		max_val = std::max(max_val, *std::max_element(Ts.begin(), Ts.end()));
-		fPMTs_data->SetMarkerStyle(kFullCircle);
-		fPMTs_data->SetMarkerSize(2);
-		fPMTs_data->SetMarkerColor(palette_major[5]);
-	}
-	kVs.clear();
-	Ts.clear();
+	std::vector<double> kVs, Ts, errors;
 
-	load_t_drift_data("190404/results_v3/190404_half_widths.txt", kVs, Ts, 4); //4 - SiPMs, 3 - fPMTs
-	TGraph* SiPMs_data = CreateGraph(kVs, Ts);
+	load_column_data("190404/190404_half_widths.txt", kVs, 0);
+	load_column_data("190404/190404_half_widths.txt", Ts, 6);
+	load_column_data("190404/190404_half_widths.txt", errors, 7);
+	TGraphErrors* SiPMs_data = CreateGraph(kVs, Ts, errors);
 	if (NULL!=SiPMs_data) {
 		max_val = std::max(max_val, *std::max_element(Ts.begin(), Ts.end()));
 		SiPMs_data->SetMarkerStyle(kFullSquare);
 		SiPMs_data->SetMarkerSize(2);
+		SiPMs_data->SetLineWidth(3);
 		SiPMs_data->SetMarkerColor(palette_major[0]);
 	}
 	kVs.clear();
@@ -120,26 +135,17 @@ int utility (void) {
 	time_18mm->FixParameter(1, 1.0);
 	time_18mm->SetLineColor(palette_major[2]);
 
-	TF1* time_Xmm = new TF1("func2", drift_time_as_f_kV, 2, 22, 2);
-	time_Xmm->SetParNames("gas Ar L", "time factor");
-	time_Xmm->SetParLimits(0, 0.5, 2.2);
-	time_Xmm->FixParameter(1, 1);
-	time_Xmm->SetLineColor(palette_major[1]);
-	if (fPMTs_data)
-		fPMTs_data->Fit(time_Xmm);
-
 	TF1* time_Xmm2 = new TF1("func3", drift_time_as_f_kV, 2, 22, 2);
 	time_Xmm2->SetParNames("gas Ar L", "time factor");
 	time_Xmm2->SetParLimits(0, 0.5, 2.2);
 	time_Xmm2->FixParameter(1, 1);
 	time_Xmm2->SetLineColor(palette_major[3]);
 	if (SiPMs_data)
-		SiPMs_data->Fit(time_Xmm2);
+		SiPMs_data->Fit(time_Xmm2, "NREF");
 
-	std::string gap_width_fPMTs = dbl_to_str(10*time_Xmm->GetParameter(0), 2);//in mm
 	std::string gap_width_SiPMs = dbl_to_str(10*time_Xmm2->GetParameter(0), 2);//in mm
+	std::string gap_width_SiPMs_error = dbl_to_str(10*time_Xmm2->GetParError(0), 2);//in mm
 
-	max_val = std::max(time_Xmm->Eval(min_V0), max_val);
 	max_val = std::max(time_Xmm2->Eval(min_V0), max_val);
 	max_val = std::max(time_18mm->Eval(min_V0), max_val);
 
@@ -159,28 +165,20 @@ int utility (void) {
 	legend->SetMargin(0.25);
 	TH2F* frame = new TH2F( "frame", framename.c_str(), 500, min_V0, 21, 500, 0, max_val);
 	frame->GetXaxis()->SetTitle("V_{0} [kV]");
-	frame->GetYaxis()->SetTitle("#tau_{D} [#mus]");
+	frame->GetYaxis()->SetTitle("#tau_{drift} [#mus]");
 	frame->Draw();
 	
 	if (SiPMs_data)
 		SiPMs_data->Draw("p");
-	if (fPMTs_data)	
-		fPMTs_data->Draw("p");
 	time_18mm->Draw("same");
 	if (SiPMs_data)
-		time_Xmm->Draw("same");
-	if (fPMTs_data)
 		time_Xmm2->Draw("same");
 	
 	if (SiPMs_data)
-		legend->AddEntry(SiPMs_data, (std::string("190404 v3 SiPM matrix fast component FWHM")).c_str(), "p");
-	if (fPMTs_data)	
-		legend->AddEntry(fPMTs_data, (std::string("190404 v3 fPMTs fast component FWHM")).c_str(), "p");
+		legend->AddEntry(SiPMs_data, (std::string("SiPM matrix fast component FWHM")).c_str(), "p");
 	legend->AddEntry(time_18mm, (std::string("t_{drift} for 18 mm gap")).c_str(), "l");
 	if (SiPMs_data)
-		legend->AddEntry(time_Xmm2, (std::string("t_{drift} for SiPMs best fit ("+ gap_width_SiPMs +" mm)")).c_str(), "l");
-	if (fPMTs_data)
-		legend->AddEntry(time_Xmm, (std::string("t_{drift} for fPMTs best fit ("+ gap_width_fPMTs +" mm)")).c_str(), "l");
+		legend->AddEntry(time_Xmm2, (std::string("t_{drift} from best fit ("+ gap_width_SiPMs +"#pm" + gap_width_SiPMs_error + " mm)")).c_str(), "l");
 
 	frame->Draw("sameaxis");
 	legend->Draw("same");

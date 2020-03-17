@@ -728,6 +728,10 @@ if (exp == "180705_Cd_20kV_800V_12bB_48V") {
 	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+cuts);
 	Num = int_to_str(++no, 2);
 
+save_forms(FOLDER + "forms_all/", false, PMT_state, SiPM_state);
+	unset_as_run_cut("En_spec");
+	cuts.erase(cuts.end()-3, cuts.end());
+
 ty(AStates::PMT_Npe_sum);
 	draw_limits(130, 230);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
@@ -824,6 +828,10 @@ if (exp == "180705_Cd_18kV_800V_12bB_48V") {
 	set_bins(0, 200);
 	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+cuts);
 	Num = int_to_str(++no, 2);
+
+save_forms(FOLDER + "forms_all/", false, PMT_state, SiPM_state);
+	unset_as_run_cut("En_spec");
+	cuts.erase(cuts.end()-3, cuts.end());
 
 ty(AStates::PMT_Npe_sum);
 	draw_limits(130, 210);
@@ -922,6 +930,10 @@ if (exp == "180705_Cd_16kV_800V_12bB_48V") {
 	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+cuts);
 	Num = int_to_str(++no, 2);
 
+save_forms(FOLDER + "forms_all/", false, PMT_state, SiPM_state);
+	unset_as_run_cut("En_spec");
+	cuts.erase(cuts.end()-3, cuts.end());
+
 ty(AStates::PMT_Npe_sum);
 	draw_limits(60, 130);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
@@ -1019,6 +1031,10 @@ if (exp == "180705_Cd_14kV_800V_12bB_48V") {
 	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+cuts);
 	Num = int_to_str(++no, 2);
 
+save_forms(FOLDER + "forms_all/", false, PMT_state, SiPM_state);
+	unset_as_run_cut("En_spec");
+	cuts.erase(cuts.end()-3, cuts.end());
+
 ty(AStates::PMT_Npe_sum);
 	draw_limits(70, 150);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
@@ -1115,6 +1131,10 @@ if (exp == "180705_Cd_13kV_800V_12bB_48V") {
 	set_bins(0, 200);
 	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+cuts);
 	Num = int_to_str(++no, 2);
+
+save_forms(FOLDER + "forms_all/", false, PMT_state, SiPM_state);
+	unset_as_run_cut("En_spec");
+	cuts.erase(cuts.end()-3, cuts.end());
 
 ty(AStates::PMT_Npe_sum);
 	draw_limits(30, 100);
@@ -1310,6 +1330,10 @@ if (exp == "180705_Cd_11kV_800V_6bB_48V") {
 	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+cuts);
 	Num = int_to_str(++no, 2);
 
+save_forms(FOLDER + "forms_all/", false, PMT_state, SiPM_state);
+	unset_as_run_cut("En_spec");
+	cuts.erase(cuts.end()-3, cuts.end());
+
 ty(AStates::PMT_Npe_sum);
 	draw_limits(15, 50);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
@@ -1406,6 +1430,10 @@ if (exp == "180705_Cd_10kV_800V_6bB_48V") {
 	set_bins(0, 200);
 	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+cuts);
 	Num = int_to_str(++no, 2);
+
+save_forms(FOLDER + "forms_all/", false, PMT_state, SiPM_state);
+	unset_as_run_cut("En_spec");
+	cuts.erase(cuts.end()-3, cuts.end());
 
 ty(AStates::PMT_Npe_sum);
 	draw_limits(0, 26);
@@ -1504,6 +1532,10 @@ if (exp == "180705_Cd_9kV_800V_0bB_48V") {
 	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+cuts);
 	Num = int_to_str(++no, 2);
 
+save_forms(FOLDER + "forms_all/", false, PMT_state, SiPM_state);
+	unset_as_run_cut("En_spec");
+	cuts.erase(cuts.end()-3, cuts.end());
+
 ty(AStates::PMT_Npe_sum);
 	draw_limits(0, 15);
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
@@ -1600,6 +1632,10 @@ if (exp == "180705_Cd_8kV_800V_0bB_48V") {
 	set_bins(0, 200);
 	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+cuts);
 	Num = int_to_str(++no, 2);
+
+save_forms(FOLDER + "forms_all/", false, PMT_state, SiPM_state);
+	unset_as_run_cut("En_spec");
+	cuts.erase(cuts.end()-3, cuts.end());
 
 ty(AStates::PMT_sum_N);
 	time_zoom(d_S2_start, d_S2_finish);

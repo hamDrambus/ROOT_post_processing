@@ -880,10 +880,17 @@ set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	cut_x_y_right(84.2, 68.9, 250, 212, true, "4");
 	update();
 	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts+"_"+S2_start+"-90us_vs_"+S2_start+"-160us");
-	set_as_run_cut("good_sPMTs_ZxZy2");	cuts = "cuts_"+Num;
+	set_as_run_cut("good_sPMTs_ZxZy2");	cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1"); remcut(-1, "2"); remcut(-1, "3"); remcut(-1, "4");
 	
+	//Pic for paper:
+	ty(AStates::PMT_Npe_sum);
+	draw_limits(25, 67);
+	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
+	Num = int_to_str(++no, 2);
+	//end pic for paper
+
 set_corr(AStates::PMT_trigger_bNpeaks, AStates::PMT_trigger_bNpe, -1, -1);
 	ty(AStates::Correlation);
 	set_zoom(20, 45, 20, 45);
