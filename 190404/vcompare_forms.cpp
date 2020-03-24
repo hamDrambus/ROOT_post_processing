@@ -267,7 +267,7 @@ int vcompare_forms (void) {
     gStyle->SetStatY(0.9);
     gStyle->SetStatX(0.9);
     int DEF_W = 1300, DEF_H = 700; //adsf - for fast Ctrl+F
-	std::string def_fit_option = "NWLRE";
+	std::string def_fit_option = "NRE";
 	bool fit_bad_forms = true;
 	bool subtact_baseline = true;
 	pulse_shape* define = NULL;
@@ -283,11 +283,11 @@ define->fast_t = PAIR(22, 30.83);
 define->scale = 1;
 define->subtract_baseline = subtact_baseline;
 define->renormalize = true;
-define->max_time = 29.7;
+define->max_time = 29.6;
 define->slow_fit_t = PAIR(31.7, 160);
 define->long_fit_t = PAIR(31.7, 160);
 define->baseline_bound = PAIR(1e-5, 1e-1);
-define->raise_tau_bound = PAIR(5, 5);
+define->raise_tau_bound = PAIR(2.25, 2.25);
 define->slow_ampl_bound = PAIR(1e-3, 2);
 define->slow_tau_bound = PAIR(1, 10);
 define->long_ampl_bound = PAIR(3e-4, 1e-1);
@@ -908,13 +908,15 @@ define->fast_t = PAIR(23, 30.4);
 define->scale = 1;
 define->subtract_baseline = subtact_baseline;
 define->renormalize = true;
-define->slow_fit_t = PAIR(32.5, 160);
-define->long_fit_t = PAIR(32.5, 160);
+define->max_time = 29.6;
+define->slow_fit_t = PAIR(31.0, 160);
+define->long_fit_t = PAIR(31.0, 160);
 define->baseline_bound = PAIR(1e-5, 1e-1);
+define->raise_tau_bound = PAIR(1.7, 1.7);
 define->slow_ampl_bound = PAIR(1e-3, 1);
 define->slow_tau_bound = PAIR(1, 10);
 define->long_ampl_bound = PAIR(3e-4, 1e-1);
-define->long_tau_bound = PAIR(30, 200);
+define->long_tau_bound = PAIR(20, 200);
 define->rising_time = 1;
 define->simultaneous_fit = true;
 define->do_fit = true;
@@ -1019,7 +1021,7 @@ define->fnames = {"8_form_by_S.hdata", "9_form_by_S.hdata", "10_form_by_S.hdata"
 define->Td = "4.2";
 define->device = "4PMT";
 define->fast_t_center = 29.4;
-define->fast_t = PAIR(23, 32.8);
+define->fast_t = PAIR(24, 32.8);
 define->scale = 1;
 define->subtract_baseline = subtact_baseline;
 define->renormalize = true;
@@ -1523,21 +1525,21 @@ define->simultaneous_fit = false;
 define->do_fit = fit_bad_forms;
 define->fit_option = def_fit_option;*/
 
-	std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger};
+	std::vector<pulse_shape> pulses = {PMT4_20kV_no_trigger};
 
 	std::vector<Color_t> palette_major = {kBlack, kRed, kBlue, kGreen, kYellow + 2, kMagenta, kOrange + 7};
 	std::vector<Color_t> palette_minor = {kGray + 1, kRed-3, kAzure + 6, kGreen -2, kMagenta+3, kOrange - 7, kOrange + 6};
-	int Nbins = 1800;
+	int Nbins = 600;
 	bool center_pulses = false;
 	bool print_errors = true;
   double time_pretrigger_left = 7, time_pretrigger_right = 20;
   double time_left = 0, time_right = 160;//us
   double max_val = 0;
 	double trigger_at = 32;
-	bool linear = true;
+	bool linear = false;
 	double y_min = 1e-4;
 	//qewr - for fast Crtl + F
-	std::string framename = std::string("Results for SiPM-matrix (no WLS in setup), 88 keV #gamma ^{109}Cd");// + " " + Tds[0] + " Td";
+	std::string framename = std::string("Results for 4PMT (no WLS in setup), 88 keV #gamma ^{109}Cd");// + " " + Tds[0] + " Td";
 
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {
 		std::string hist_name = "hist" + std::to_string(hh);
