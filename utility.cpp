@@ -112,14 +112,20 @@ int utility (void) {
     double max_val = 0;
 	double min_V0 = 7;
 	bool linear = true;
-	std::string framename = "Data without WLS: fast component FWHM";
+  double error_factor = 2.0;
+	std::string framename = "Data without WLS: EL gap thickness measurement";
 
-	std::vector<double> kVs, Ts, errors;
+	std::vector<double> kVs, Ts, errors, PMT_Ts, PMT_Errs;
 
 	load_column_data("190404/190404_FWHMs.txt", kVs, 0);
-	load_column_data("190404/190404_FWHMs.txt", Ts, 9);
+	load_column_data("190404/190404_FWHMs.txt", PMT_Ts, 3);
+	load_column_data("190404/190404_FWHMs.txt", PMT_Errs, 5);
+  load_column_data("190404/190404_FWHMs.txt", Ts, 9);
 	load_column_data("190404/190404_FWHMs.txt", errors, 10);
+  for (std::size_t i=0, i_end_=errors.size(); i!=i_end_; ++i)
+    errors[i] *= error_factor;
 	TGraphErrors* SiPMs_data = CreateGraph(kVs, Ts, errors);
+  TGraphErrors* PMTs_data = NULL; //CreateGraph(kVs, PMT_Ts, PMT_Errs);
 	if (NULL!=SiPMs_data) {
 		max_val = std::max(max_val, *std::max_element(Ts.begin(), Ts.end()));
 		SiPMs_data->SetMarkerStyle(kFullSquare);
@@ -127,22 +133,33 @@ int utility (void) {
 		SiPMs_data->SetLineWidth(3);
 		SiPMs_data->SetMarkerColor(palette_major[0]);
 	}
+  if (NULL!=PMTs_data) {
+		max_val = std::max(max_val, *std::max_element(PMT_Ts.begin(), PMT_Ts.end()));
+		PMTs_data->SetMarkerStyle(kFullCircle);
+		PMTs_data->SetMarkerSize(2);
+		PMTs_data->SetLineWidth(3);
+		PMTs_data->SetMarkerColor(palette_major[1]);
+	}
 	kVs.clear();
 	Ts.clear();
+  errors.clear();
+  PMT_Ts.clear();
+	PMT_Errs.clear();
 
 	TF1* time_18mm = new TF1("func1", drift_time_as_f_kV, 2, 22, 3);
-	time_18mm->SetParNames("gas Ar L", "time factor");
+	time_18mm->SetParNames("gas Ar L", "time factor", "offset");
 	time_18mm->FixParameter(0, 1.8);
 	time_18mm->FixParameter(1, 1.0);
   time_18mm->FixParameter(2, 0);
-	time_18mm->SetLineColor(palette_major[2]);
+	time_18mm->SetLineColor(palette_major[0]);
+  time_18mm->SetLineStyle(2);
 
 	TF1* time_Xmm2 = new TF1("func3", drift_time_as_f_kV, 2, 22, 3);
-	time_Xmm2->SetParNames("gas Ar L", "time factor");
+	time_Xmm2->SetParNames("gas Ar L", "time factor", "offset");
 	time_Xmm2->SetParLimits(0, 0.5, 2.2);
 	time_Xmm2->FixParameter(1, 1);
-  time_Xmm2->SetParLimits(2, 0, 2.0);
-	time_Xmm2->SetLineColor(palette_major[3]);
+  time_Xmm2->FixParameter(2, 0);
+	time_Xmm2->SetLineColor(palette_major[0]);
 	if (SiPMs_data)
 		SiPMs_data->Fit(time_Xmm2, "NREF");
 
@@ -168,25 +185,29 @@ int utility (void) {
 	legend->SetMargin(0.25);
 	TH2F* frame = new TH2F( "frame", framename.c_str(), 500, min_V0, 21, 500, 0, max_val);
 	frame->GetXaxis()->SetTitle("V_{0} [kV]");
-	frame->GetYaxis()->SetTitle("#tau_{drift} [#mus]");
+	frame->GetYaxis()->SetTitle("T_{drift} [#mus]");
 	frame->Draw();
 
 	if (SiPMs_data)
 		SiPMs_data->Draw("p");
+  if (PMTs_data)
+    PMTs_data->Draw("p same");
 	time_18mm->Draw("same");
 	if (SiPMs_data)
 		time_Xmm2->Draw("same");
 
 	if (SiPMs_data)
-		legend->AddEntry(SiPMs_data, (std::string("SiPM matrix fast component FWHM")).c_str(), "p");
-	legend->AddEntry(time_18mm, (std::string("t_{drift} for 18 mm gap")).c_str(), "l");
+		legend->AddEntry(SiPMs_data, (std::string("SiPM-matrix fast component FWHM")).c_str(), "p");
+  if (PMTs_data)
+		legend->AddEntry(PMTs_data, (std::string("4PMT fast component FWHM")).c_str(), "p");
+	legend->AddEntry(time_18mm, (std::string("T_{drift} for 18 mm gap")).c_str(), "l");
 	if (SiPMs_data)
-		legend->AddEntry(time_Xmm2, (std::string("t_{drift} from best fit ("+ gap_width_SiPMs +"#pm" + gap_width_SiPMs_error + " mm)")).c_str(), "l");
+		legend->AddEntry(time_Xmm2, (std::string("Best fit (EL gap thickness="+ gap_width_SiPMs +"#pm" + gap_width_SiPMs_error + " mm)")).c_str(), "l");
 
 	frame->Draw("sameaxis");
 	legend->Draw("same");
 	c_->Update();
 
 
-    return 0;
+  return 0;
 }

@@ -4,6 +4,8 @@ project(Post_processing)
 find_package(Boost 1.33 REQUIRED)
 find_package(ROOT 6.04 REQUIRED)
 
+message(STATUS "ROOT include directories: ${ROOT_INCLUDE_DIRS}")
+
 set(ROOT_DICTIONARY_FILE post_processor_dict.cpp)
 set(ROOT_DICTIONARY_HEADER post_processor_dict.pcm)
 set(ROOT_LIBS Gui Core RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics MathCore Thread MultiProc Geom m Spectrum Thread)
@@ -24,7 +26,7 @@ message(STATUS "Username: ${USERNAME}")
 
 add_custom_command(
     OUTPUT  ${ROOT_DICTIONARY_FILE}
-    COMMAND sudo rootcint -f ${CMAKE_CURRENT_BINARY_DIR}/${ROOT_DICTIONARY_FILE} -c -I${CMAKE_SOURCE_DIR}/include ${HEADERS}
+    COMMAND rootcint -f ${CMAKE_CURRENT_BINARY_DIR}/${ROOT_DICTIONARY_FILE} -c -I${CMAKE_SOURCE_DIR}/include ${HEADERS}
     DEPENDS ${HEADERS_FULL}
 )
 
@@ -40,7 +42,7 @@ message(STATUS "CXX compilation flags: ${CMAKE_CXX_FLAGS}")
 message(STATUS "CXX linking flags: ${CMAKE_SHARED_LINKER_FLAGS}")
 
 add_definitions(-DNDEBUG -DR__HAVE_CONFIG)
-include_directories(${Boost_INCLUDE_DIR} ${ROOT_INCLUDE_DIR} include)
+include_directories(${Boost_INCLUDE_DIR} ${ROOT_INCLUDE_DIRS} include)
 add_library(post_processing SHARED ${SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/${ROOT_DICTIONARY_FILE})
 target_link_libraries(post_processing PUBLIC ${ROOT_LIBS})
 install(TARGETS post_processing DESTINATION ${CMAKE_BUILD_TYPE})
