@@ -2,14 +2,15 @@
 
 //The core functionality of this utility was movwd to libpost_processing.so
 //because calculating t_drift through gaseous argon is required
-//for setting trigger adjustment time window (shaping) 
+//for setting trigger adjustment time window (shaping)
 
 //ROOT wrappers:
 Double_t drift_time_as_f_kV (Double_t *x, Double_t *par) {
   //x[0] - kV
   //par[0] - gas Ar layer in [cm] (fixed)
   //par[1] - a linear adjustment for drift time;
-  return par[1]* drift_time_from_kV(x[0], par[0]);
+  //par[2] - offset;
+  return par[2] + par[1]* drift_time_from_kV(x[0], par[0]);
 }
 
 //column number starts from 0
@@ -75,7 +76,7 @@ TGraphErrors* CreateGraph(std::vector<double> &ixs, std::vector<double> &iys, st
 		for (Int_t i = 0; i != size; ++i) {
 			xs[i] = ixs[i];
 			ys[i] = iys[i];
-			xes[i] = 0;			
+			xes[i] = 0;
 			yes[i] = 1*(i < err_size ? iyes[i] : 0);
 		}
 		out = new TGraphErrors(size, xs, ys, xes, yes);
@@ -85,7 +86,7 @@ TGraphErrors* CreateGraph(std::vector<double> &ixs, std::vector<double> &iys, st
 		delete [] yes;
 	}
 	return out;
-} 
+}
 
 int utility (void) {
 	std::ifstream str;
@@ -105,19 +106,19 @@ int utility (void) {
     gStyle->SetStatX(0.9);
 	gStyle->SetEndErrorSize(3);
     int DEF_W = 1300, DEF_H = 700;
-    
+
 	std::vector<Color_t> palette_major = {kBlack, kGreen, kRed, kBlue, kYellow + 2, kMagenta, kOrange + 7};
 	std::vector<Color_t> palette_minor = {kGray + 2, kGreen -2, kMagenta, kAzure + 10, kMagenta+3, kOrange - 7, kOrange + 6};
     double max_val = 0;
 	double min_V0 = 7;
 	bool linear = true;
 	std::string framename = "Data without WLS: fast component FWHM";
-    
+
 	std::vector<double> kVs, Ts, errors;
 
-	load_column_data("190404/190404_half_widths.txt", kVs, 0);
-	load_column_data("190404/190404_half_widths.txt", Ts, 6);
-	load_column_data("190404/190404_half_widths.txt", errors, 7);
+	load_column_data("190404/190404_FWHMs.txt", kVs, 0);
+	load_column_data("190404/190404_FWHMs.txt", Ts, 9);
+	load_column_data("190404/190404_FWHMs.txt", errors, 10);
 	TGraphErrors* SiPMs_data = CreateGraph(kVs, Ts, errors);
 	if (NULL!=SiPMs_data) {
 		max_val = std::max(max_val, *std::max_element(Ts.begin(), Ts.end()));
@@ -129,16 +130,18 @@ int utility (void) {
 	kVs.clear();
 	Ts.clear();
 
-	TF1* time_18mm = new TF1("func1", drift_time_as_f_kV, 2, 22, 2);
+	TF1* time_18mm = new TF1("func1", drift_time_as_f_kV, 2, 22, 3);
 	time_18mm->SetParNames("gas Ar L", "time factor");
 	time_18mm->FixParameter(0, 1.8);
 	time_18mm->FixParameter(1, 1.0);
+  time_18mm->FixParameter(2, 0);
 	time_18mm->SetLineColor(palette_major[2]);
 
-	TF1* time_Xmm2 = new TF1("func3", drift_time_as_f_kV, 2, 22, 2);
+	TF1* time_Xmm2 = new TF1("func3", drift_time_as_f_kV, 2, 22, 3);
 	time_Xmm2->SetParNames("gas Ar L", "time factor");
 	time_Xmm2->SetParLimits(0, 0.5, 2.2);
 	time_Xmm2->FixParameter(1, 1);
+  time_Xmm2->SetParLimits(2, 0, 2.0);
 	time_Xmm2->SetLineColor(palette_major[3]);
 	if (SiPMs_data)
 		SiPMs_data->Fit(time_Xmm2, "NREF");
@@ -167,13 +170,13 @@ int utility (void) {
 	frame->GetXaxis()->SetTitle("V_{0} [kV]");
 	frame->GetYaxis()->SetTitle("#tau_{drift} [#mus]");
 	frame->Draw();
-	
+
 	if (SiPMs_data)
 		SiPMs_data->Draw("p");
 	time_18mm->Draw("same");
 	if (SiPMs_data)
 		time_Xmm2->Draw("same");
-	
+
 	if (SiPMs_data)
 		legend->AddEntry(SiPMs_data, (std::string("SiPM matrix fast component FWHM")).c_str(), "p");
 	legend->AddEntry(time_18mm, (std::string("t_{drift} for 18 mm gap")).c_str(), "l");

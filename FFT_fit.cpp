@@ -13,7 +13,7 @@ void read_hist (TH1D *hist, std::string fname) {
 	std::ifstream str;
 	str.open(fname, std::ios_base::binary);
 	if (!str.is_open()) {
-        std::cerr<<"Failed to open file '"<<fname<<"'"<<std::endl;	    
+        std::cerr<<"Failed to open file '"<<fname<<"'"<<std::endl;
         return;
     }
 	std::size_t real_size = 0;
@@ -31,7 +31,7 @@ void read_hist_w (TH1D *hist, std::string fname) {
 	std::ifstream str;
 	str.open(fname, std::ios_base::binary);
 	if (!str.is_open()) {
-        std::cerr<<"Failed to open file '"<<fname<<"'"<<std::endl;	    
+        std::cerr<<"Failed to open file '"<<fname<<"'"<<std::endl;
         return;
     }
 	std::size_t real_size = 0;
@@ -79,14 +79,14 @@ int FFT_fit (void) {
     gStyle->SetStatY(0.9);
     gStyle->SetStatX(0.9);
     int DEF_W = 1300, DEF_H = 700;
-    int Nbins = 600;
-	double triplet_tau = 3.3; //us
+    int Nbins = 1800;
+	double triplet_tau = 3.1; //us
 	std::vector<double> VUV_fr = {1, 0.5, 0.2, 0.0};
-    double time_left = 0, time_right = 160;//us
-    double time_pretrigger_left = 7, time_pretrigger_right = 20;
+  double time_left = 0, time_right = 160;//us
+  double time_pretrigger_left = 7, time_pretrigger_right = 20;
 	double norm_t_left = 28;
-    TF1 *unity_f = new TF1("f1", "1", time_left, time_right);
-    TH1D* hist_1 = new TH1D ("hist1", "hist1", Nbins, time_left, time_right);
+  TF1 *unity_f = new TF1("f1", "1", time_left, time_right);
+  TH1D* hist_1 = new TH1D ("hist1", "hist1", Nbins, time_left, time_right);
 	TH1D* hist_2 = NULL;
 	TH1* hist_fft = NULL;
 	TH1D* hist_result = NULL;
@@ -100,7 +100,7 @@ int FFT_fit (void) {
 	//std::vector<double> norm_t_right =  {35.0, 35.0, 35.0, 35.0, 33.2, 34.9, 33.6};
 	//std::vector<double> fit_from = 	    {38.6, 37.0, 36.2, 36.1, 35.1, 36.0, 36.0};
 	//std::vector<double> fit_to =        {49,  49,  49,  55,  50.0, 52.0, 52.0};
-	
+
     std::vector<TH1D*> hists;
     //hists.push_back(hist_1);
     //hists.push_back(hist_2);
@@ -114,13 +114,16 @@ int FFT_fit (void) {
     double max_val = 0;
 	bool linear = false;
 	bool do_fit = true;
-	std::string prefix = "180705/results_v1/Cd_48V_12kV_800V/forms_Cd_peak/";
+	std::string prefix = "180705/results_v1/Cd_48V_18kV_800V/forms_Cd_peak/";
 	//read_hist_w (hist_1, prefix + "SiPMs_form_by_Npe.hdata");
 	read_hist_w (hist_1, prefix + "9_form_by_S.hdata");
 	read_hist_w (hist_1, prefix + "10_form_by_S.hdata");
 	read_hist_w (hist_1, prefix + "11_form_by_S.hdata");
+	double fraction = 0.02;
+	double tau = 3.87;
+	double t_drift = 3.9;
 
-	std::string framename = std::string("180705 3PMT+WLS 8.5 Td, slow component contribution = 0.245, #tau_{S} = 5.56, t_{drift} = 2.20");// + Tds[0] + " Td";
+	std::string framename = std::string("180705 3PMT+WLS 7.6 Td, slow component contribution = ") + dbl_to_str(fraction, 3) + ", #tau_{S} = "+dbl_to_str(tau, 2)+", t_{drift} = "+dbl_to_str(t_drift, 2);// + Tds[0] + " Td";
 	//std::string framename = std::string("180705 SiPM-matrix convolution with ") + dbl_to_str(triplet_tau, 1) + "#mus, " + Tds[0] + " Td";
 
 	{
@@ -141,14 +144,14 @@ int FFT_fit (void) {
 	           integral += hist_1->GetBinContent(bin) * hist_1->GetBinWidth(bin);
 		    }
         }
-		hist_1->Scale(1.0/integral);
+				hist_1->Scale(1.0/integral);
     }
 
-	TCanvas *c_2 = new TCanvas (std::string("Input form").c_str(), std::string("Input form").c_str(), DEF_W, DEF_H);
+	TCanvas *c_2 = new TCanvas (std::string("3PMT+WLS form").c_str(), std::string("3PMT+WLS form").c_str(), DEF_W, DEF_H);
 	c_2->SetGrid();
 	c_2->SetTicks();
 	c_2->ToggleEventStatus();
-    c_2->ToggleToolBar();
+  c_2->ToggleToolBar();
 	if (!linear)
 		c_2->SetLogy();
 	TLegend *legend_2 = new TLegend(0.55, 0.65, 0.9, 0.9);
@@ -175,14 +178,14 @@ int FFT_fit (void) {
 		ffnc->SetParLimits(1, 1e-3, 2);
 		ffnc->SetParLimits(2, 1, 10);
 		ffnc->SetParLimits(3, 1e-5, 1e-1);
-		ffnc->SetParLimits(4, 15, 200);	
+		ffnc->SetParLimits(4, 15, 200);
 
 		ffnc->SetLineColor(palette_minor[0]);
-    	hist_1->Fit(ffnc, "NWLRE");
+    hist_1->Fit(ffnc, "NRE");
 		tau1 = dbl_to_str(ffnc->GetParameter(2), 2);
 		tau2 = dbl_to_str(ffnc->GetParameter(4), 0);
 		ffnc->Draw("same");
-		double ypos0 = 0.057;	
+		double ypos0 = 0.057;
 		double ypos1 = 0.008;
 		double offset = 0.08/0.05;
 		auto *txt1 = new TLatex (50, ypos0*std::pow(offset, 0), (std::string("#tau_{S}=")+tau1).c_str());
@@ -192,33 +195,28 @@ int FFT_fit (void) {
 		auto *txt11 = new TLatex (105, ypos1*std::pow(offset, 0), (std::string("#tau_{L}=")+tau2).c_str());
 		txt11->SetTextAlign(12); txt11->SetTextSize(0.05);
 		txt11->SetTextColor(palette_major[0]); txt11->Draw();
-		hist_2 = (TH1D*) hist_1->Clone();
+		hist_2 = new TH1D ("hist_input", "hist_input", Nbins, time_left, time_right);
+
+		fraction = fraction/(1.0-fraction);
 		for (int bin = 1, bin_end = hist_2->GetNbinsX()+1; bin!=bin_end; ++bin) {
 			double x = hist_2->GetBinCenter(bin);
 			double y = hist_2->GetBinContent(bin);
-		    if (x<=start_time) {
-	           y = std::max(0.0, y - ffnc->GetParameter(3));
-		    } else {
-			   double par0 = start_time;
-			   double par3 = ffnc->GetParameter(3);
-			   double par4 = ffnc->GetParameter(4);
-	           y = std::max(0.0, y - par3*std::exp((par0-x)/par4));
-		    }
+			y = (x>=(32.6 - t_drift) && x<=32.6) ? 1.0/t_drift : 0;
+			y += (x>=32.6) ? fraction*std::exp(-1*(x-32.6)/tau)/tau : 0;
 			hist_2->SetBinContent(bin, y);
-        }
-    }
-	
-	for (int bin = 1, bin_end = hist_2->GetNbinsX()+1; bin!=bin_end; ++bin) {
-		double x = hist_2->GetBinCenter(bin);
-		double y = hist_2->GetBinContent(bin);
-		double fraction = 0.0338;
-		double tau = 3.5;
-		double t_drift = 3.72;
-		y = (x>=(32.6 - t_drift) && x<=32.6) ? 1.0/t_drift : 0;
-		fraction = fraction/(1.0-fraction);
-		y += (x>=32.6) ? fraction*std::exp(-1*(x-32.6)/tau)/tau : 0;
-		hist_2->SetBinContent(bin, y);
+		}
 	}
+
+	TCanvas *c_3 = new TCanvas (std::string("Input form").c_str(), std::string("Input form").c_str(), DEF_W, DEF_H);
+	c_3->SetGrid();
+	c_3->SetTicks();
+	c_3->ToggleEventStatus();
+	c_3->ToggleToolBar();
+	if (!linear)
+		c_3->SetLogy();
+	hist_2->SetLineWidth(2);
+	hist_2->SetLineColor(palette_major[0]);
+	hist_2->Draw("hist Lsame");
 
 	double *re_signal_fft = new double [Nbins];
 	double *im_signal_fft = new double [Nbins];
@@ -235,14 +233,14 @@ int FFT_fit (void) {
 
 	hist_fft = hist_2->FFT(0, "MAG");
 	TVirtualFFT *fft = TVirtualFFT::GetCurrentTransform();
-	
+
 	fft->GetPointsComplex(re_signal_fft, im_signal_fft);
 	for (std::size_t k = 0; k!=Nbins; ++k) {
 		double re = re_signal_fft[k];
 		double im = im_signal_fft[k];
 		re_signal_fft[k] = re * re_conv_fft[k] - im * im_conv_fft[k];
 		im_signal_fft[k] = re * im_conv_fft[k] + im * re_conv_fft[k];
-	}	
+	}
 	TVirtualFFT *fft_back = TVirtualFFT::FFT(1, &Nbins, "C2R M");
 	fft_back->SetPointsComplex(re_signal_fft, im_signal_fft);
 	fft_back->Transform();
@@ -301,7 +299,7 @@ int FFT_fit (void) {
 	triplet_fit->SetParLimits(1, 1e-3, 1e3);
 	triplet_fit->SetParLimits(2, 1, 10);
 	triplet_fit->SetParLimits(3, 1e-6, 1e-1);
-	triplet_fit->SetParLimits(4, 11, 1e6);	
+	triplet_fit->SetParLimits(4, 11, 1e6);
 	std::cout<<"Triplet fit:"<<std::endl;
 	triplet_fit->SetLineColor(palette_minor[3]);
 	hist_triplet_exp->Fit(triplet_fit);
@@ -321,7 +319,7 @@ int FFT_fit (void) {
 	frame->GetXaxis()->SetTitle("t [#mus]");
 	frame->GetYaxis()->SetTitle("");
 	frame->Draw();
-	
+
 	for (int hh = 0, hh_end_ = hists.size(); hh!=hh_end_; ++hh) {
 		hists[hh]->SetLineWidth(2);
 		hists[hh]->SetLineColor(palette_major[hh]);
@@ -337,7 +335,7 @@ int FFT_fit (void) {
 		ffs[hh]->SetParLimits(2, 1, 10);
 		if (fit_to[hh]<150) {
 			ffs[hh]->SetParLimits(3, 1e-8, 1e-1);
-			ffs[hh]->FixParameter(4, 1e6);	
+			ffs[hh]->FixParameter(4, 1e6);
 		} else {
 			ffs[hh]->SetParLimits(3, 3e-4, 1e-1);
 			ffs[hh]->SetParLimits(4, 30, 1000);
@@ -348,9 +346,9 @@ int FFT_fit (void) {
 		tau2.push_back(dbl_to_str(ffs[hh]->GetParameter(4)>1000 ? 0 : ffs[hh]->GetParameter(4), 0));
 		ffs[hh]->Draw("same");
     }
-	if (!linear && do_fit) { 
-		double ypos0 = 0.057;	
-		double ypos1 = 0.008;
+	if (!linear && do_fit) {
+		double ypos0 = 0.057;
+		double ypos1 = 0.008;fraction = fraction/(1.0-fraction);
 		double offset = 0.08/0.05;
 		for (int hh = 0, hh_end_ = tau1.size(); hh!=hh_end_; ++hh) {
 			auto *txt1 = new TLatex (50, ypos0*std::pow(offset, hh_end_ - hh - 1), (std::string("#tau_{S}=")+tau1[hh]).c_str());
@@ -363,8 +361,8 @@ int FFT_fit (void) {
 
 		}
 	}
-	if (linear && do_fit) { 
-		double ypos0 = 0.18;	
+	if (linear && do_fit) {
+		double ypos0 = 0.18;
 		double ypos1 = 0.18;
 		double offset = 0.035;
 		for (int hh = 0, hh_end_ = tau1.size(); hh!=hh_end_; ++hh) {
@@ -378,7 +376,7 @@ int FFT_fit (void) {
 
 		}
 	}
-	
+
 	legend->AddEntry(hists[0], (std::string(Tds[0] + " Td 180705 SiPM-matrix " + dbl_to_str(VUV_fr[0], 1) +" triplet contribution" )).c_str(), "l");
 	legend->AddEntry(hists[1], (std::string(Tds[0] + " Td 180705 SiPM-matrix " + dbl_to_str(VUV_fr[1], 1) +" triplet contribution" )).c_str(), "l");
 	legend->AddEntry(hists[2], (std::string(Tds[0] + " Td 180705 SiPM-matrix " + dbl_to_str(VUV_fr[2], 1) +" triplet contribution" )).c_str(), "l");
