@@ -25,6 +25,8 @@
 */
 //DONE: new interface:
 //+//
+enum XY_cut_type : unsigned int {Horizontal = 0x1, UpperLeft = 0x2, Inclusive = 0x4}; //e.g. 0b111 = 7 = cut_x_y_upper_select, 0b000 = cut_x_y_right
+
 void Initialize(bool pars_in_script = true);
 void GenTest(std::string prefix);
 void ch(int ch); //Go to channel. Does not save previous hist in file but does save parameters such as cuts

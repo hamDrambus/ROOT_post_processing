@@ -1870,64 +1870,83 @@ void remcut_A_S_right(int channel, std::string _name)
 		update();
 }
 
-//region is {X0, Y0, X1, Y1} only points above the line are excluded
-FunctionWrapper* create_x_y_vertical_cut(std::vector<double> region, bool upper, bool select) //do not call from the CINT
+//region is arbitrary {X0, Y0, X1, Y1, ... XN, YN} line
+FunctionWrapper* create_x_y_cut(std::vector<double> region, unsigned int cut_type) //do not call from the CINT
 {
-	struct temp_data {
-		std::vector<double> reg;
-		bool upper;
-		bool select;
-	};
-	temp_data * st_data = new temp_data;
-	st_data->reg = region;
-	st_data->upper = upper;
-	st_data->select = select;
-	FunctionWrapper *picker = new FunctionWrapper(st_data);
 	AStates::Type type = post_processor->current_type;
 	if (type == AStates::Correlation_x)
 		type = post_processor->_x_corr;
 	if (type == AStates::Correlation_y)
 		type = post_processor->_y_corr;
-	if (post_processor->isTH1Dhist(type)) {
-		delete picker;
+	if (post_processor->isTH1Dhist(type) || (region.size() % 2 !=0) || region.size() < 4) {
 		return NULL;
 	}
+	struct temp_data {
+		std::vector<double> reg_x, reg_y;
+		bool horizontal;
+		bool upper_left;
+		bool select;
+	};
+	std::size_t size = region.size();
+	temp_data * st_data = new temp_data;
+	st_data->horizontal = cut_type & XY_cut_type::Horizontal;
+	st_data->upper_left = cut_type & XY_cut_type::UpperLeft;
+	st_data->select = cut_type & XY_cut_type::Inclusive;
+	//Add line going to the infinity before first point
+	if (st_data->horizontal && st_data->upper_left) {
+		st_data->reg_x.push_back(-DBL_MAX);
+		st_data->reg_y.push_back(region[1]);
+	}
+	if (st_data->horizontal && !st_data->upper_left) {
+		st_data->reg_x.push_back(DBL_MAX);
+		st_data->reg_y.push_back(region[1]);
+	}
+	if (!st_data->horizontal && st_data->upper_left) {
+		st_data->reg_x.push_back(region[0]);
+		st_data->reg_y.push_back(DBL_MAX);
+	}
+	if (!st_data->horizontal && !st_data->upper_left) {
+		st_data->reg_x.push_back(region[0]);
+		st_data->reg_y.push_back(-DBL_MAX);
+	}
+	for (std::size_t i = 0; i != size; ++i)
+		if (i % 2)
+			st_data->reg_y.push_back(region[i]);
+		else
+			st_data->reg_x.push_back(region[i]);
+	//Add line going to the infinity after last point
+	if (st_data->horizontal && st_data->upper_left) {
+		st_data->reg_x.push_back(-DBL_MAX);
+		st_data->reg_y.push_back(region[size-1]);
+	}
+	if (st_data->horizontal && !st_data->upper_left) {
+		st_data->reg_x.push_back(DBL_MAX);
+		st_data->reg_y.push_back(region[size-1]);
+	}
+	if (!st_data->horizontal && st_data->upper_left) {
+		st_data->reg_x.push_back(region[size-2]);
+		st_data->reg_y.push_back(DBL_MAX);
+	}
+	if (!st_data->horizontal && !st_data->upper_left) {
+		st_data->reg_x.push_back(region[size-2]);
+		st_data->reg_y.push_back(-DBL_MAX);
+	}
+	FunctionWrapper *picker = new FunctionWrapper(st_data);
 	picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 		//{X0, Y0, X1, Y1}
-		std::vector <double> reg = ((temp_data*)data)->reg;
-		bool select = ((temp_data*)data)->select;
-		bool upper = ((temp_data*)data)->upper;
-		if (4 > reg.size())
-			return true;
-		double X0 = reg[0];
-		double Y0 = reg[1];
-		double X1 = reg[2];
-		double Y1 = reg[3];
-		if (vals[0]<std::min(X0, X1) || vals[0] > std::max(X0, X1))
-			return !select;
-		if ((vals[1] > (Y0 + (Y1 - Y0)*(vals[0] - X0) / (X1 - X0))))
-			return upper ? select: !select;
-		return upper ? !select : select;
+		temp_data* d = ((temp_data*)data);
+		bool edge = false;
+		bool inside = viewRegion::IsInPolygon(vals[0], vals[1], d->reg_x, d->reg_y, edge);
+		return d->select ? inside : !inside;
 	});
 
 	picker->SetDrawFunction([](TCanvas *can, void* data) {
 		if (NULL == can || NULL == data)
 			return false;
 		//{X0, Y0, X1, Y1}
-		std::vector <double> reg = ((temp_data*)data)->reg;
-		bool select = ((temp_data*)data)->select;
-		bool upper = ((temp_data*)data)->upper;
-		if (4 > reg.size())
-			return false;
-		double X0 = reg[0];
-		double Y0 = reg[1];
-		double X1 = reg[2];
-		double Y1 = reg[3];
+		temp_data* d = ((temp_data*)data);
 		viewRegion region(can->GetUxmin(), can->GetUymin(), can->GetUxmax(), can->GetUymax());
-		region.polyline_push(X0, upper ? DBL_MAX : -DBL_MAX);
-		region.polyline_push(X0, Y0);
-		region.polyline_push(X1, Y1);
-		region.polyline_push(X1, upper ? DBL_MAX : -DBL_MAX);
+		region.set_polyline(d->reg_x, d->reg_y);
 		TPolyLine *line = region.get_clipped_polyline();
 		line->SetLineColor(kRed);
 		line->Draw("same");
@@ -1936,71 +1955,6 @@ FunctionWrapper* create_x_y_vertical_cut(std::vector<double> region, bool upper,
 	return picker;
 }
 
-//region is {X0, Y0, X1, Y1} only points above the line are excluded
-FunctionWrapper* create_x_y_horizontal_cut(std::vector<double> region, bool right, bool select) //do not call from the CINT
-{
-	struct temp_data {
-		std::vector<double> reg;
-		bool right;
-		bool select;
-	};
-	temp_data * st_data = new temp_data;
-	st_data->reg = region;
-	st_data->right = right;
-	st_data->select = select;
-	FunctionWrapper *picker = new FunctionWrapper(st_data);
-	AStates::Type type = post_processor->current_type;
-	if (type == AStates::Correlation_x)
-		type = post_processor->_x_corr;
-	if (type == AStates::Correlation_y)
-		type = post_processor->_y_corr;
-	if (post_processor->isTH1Dhist(type)) {
-		delete picker;
-		return NULL;
-	}
-	picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
-		//{X0, Y0, X1, Y1}
-		std::vector <double> reg = ((temp_data*)data)->reg;
-		bool select = ((temp_data*)data)->select;
-		bool right = ((temp_data*)data)->right;
-		if (4 > reg.size())
-			return true;
-		double X0 = reg[0];
-		double Y0 = reg[1];
-		double X1 = reg[2];
-		double Y1 = reg[3];
-		if (vals[1]<std::min(Y0, Y1) || vals[1] > std::max(Y0, Y1))
-			return !select;
-		if ((vals[0] > (X0 + (X1 - X0)*(vals[1] - Y0) / (Y1 - Y0))))
-			return right ? select: !select;
-		return right ? !select : select;
-	});
-
-	picker->SetDrawFunction([](TCanvas *can, void* data) {
-		if (NULL == can || NULL == data)
-			return false;
-		//{X0, Y0, X1, Y1}
-		std::vector <double> reg = ((temp_data*)data)->reg;
-		bool select = ((temp_data*)data)->select;
-		bool right = ((temp_data*)data)->right;
-		if (4 > reg.size())
-			return false;
-		double X0 = reg[0];
-		double Y0 = reg[1];
-		double X1 = reg[2];
-		double Y1 = reg[3];
-		viewRegion region(can->GetUxmin(), can->GetUymin(), can->GetUxmax(), can->GetUymax());
-		region.polyline_push(right ? DBL_MAX : -DBL_MAX, Y0);
-		region.polyline_push(X0, Y0);
-		region.polyline_push(X1, Y1);
-		region.polyline_push(right ? DBL_MAX : -DBL_MAX, Y1);
-		TPolyLine *line = region.get_clipped_polyline();
-		line->SetLineColor(kRed);
-		line->Draw("same");
-		return true;
-	});
-	return picker;
-}
 
 void cut_x_y_upper(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name)
 {
@@ -2018,7 +1972,7 @@ void cut_x_y_upper(std::vector<double> region, bool drawn, std::string _name)
 		status();
 		return;
 	}
-	FunctionWrapper *picker = create_x_y_vertical_cut(region, true, false);
+	FunctionWrapper *picker = create_x_y_cut(region, XY_cut_type::UpperLeft|XY_cut_type::Inclusive);
 	if (NULL == picker) {
 		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
 		return;
@@ -2053,7 +2007,7 @@ void cut_x_y_lower(std::vector<double> region, bool drawn, std::string _name)
 		status();
 		return;
 	}
-	FunctionWrapper *picker = create_x_y_vertical_cut(region, false, false);
+	FunctionWrapper *picker = create_x_y_cut(region, 0);
 	if (NULL == picker) {
 		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
 		return;
@@ -2088,7 +2042,7 @@ void cut_x_y_left(std::vector<double> region, bool drawn, std::string _name)
 		status();
 		return;
 	}
-	FunctionWrapper *picker = create_x_y_horizontal_cut(region, false, false);
+	FunctionWrapper *picker = create_x_y_cut(region, XY_cut_type::Horizontal|XY_cut_type::UpperLeft);
 	if (NULL == picker) {
 		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
 		return;
@@ -2123,7 +2077,7 @@ void cut_x_y_right(std::vector<double> region, bool drawn, std::string _name)
 		status();
 		return;
 	}
-	FunctionWrapper *picker = create_x_y_horizontal_cut(region, true, false);
+	FunctionWrapper *picker = create_x_y_cut(region, XY_cut_type::Horizontal);
 	if (NULL == picker) {
 		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
 		return;
@@ -2158,7 +2112,7 @@ void cut_x_y_upper_select(std::vector<double> region, bool drawn, std::string _n
 		status();
 		return;
 	}
-	FunctionWrapper *picker = create_x_y_vertical_cut(region, true, true);
+	FunctionWrapper *picker = create_x_y_cut(region, XY_cut_type::UpperLeft|XY_cut_type::Inclusive);
 	if (NULL == picker) {
 		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
 		return;
@@ -2193,7 +2147,7 @@ void cut_x_y_lower_select(std::vector<double> region, bool drawn, std::string _n
 		status();
 		return;
 	}
-	FunctionWrapper *picker = create_x_y_vertical_cut(region, false, true);
+	FunctionWrapper *picker = create_x_y_cut(region, XY_cut_type::Inclusive);
 	if (NULL == picker) {
 		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
 		return;
@@ -2228,7 +2182,7 @@ void cut_x_y_left_select(std::vector<double> region, bool drawn, std::string _na
 		status();
 		return;
 	}
-	FunctionWrapper *picker = create_x_y_horizontal_cut(region, false, true);
+	FunctionWrapper *picker = create_x_y_cut(region, XY_cut_type::Horizontal|XY_cut_type::UpperLeft|XY_cut_type::Inclusive);
 	if (NULL == picker) {
 		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
 		return;
@@ -2263,7 +2217,7 @@ void cut_x_y_right_select(std::vector<double> region, bool drawn, std::string _n
 		status();
 		return;
 	}
-	FunctionWrapper *picker = create_x_y_horizontal_cut(region, true, true);
+	FunctionWrapper *picker = create_x_y_cut(region, XY_cut_type::Horizontal|XY_cut_type::Inclusive);
 	if (NULL == picker) {
 		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
 		return;

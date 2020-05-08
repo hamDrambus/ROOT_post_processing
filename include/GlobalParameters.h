@@ -35,6 +35,10 @@ public:
 	static int LinesCrossed(double x1, double y1, double x2, double y2,
 		double u1, double v1, double u2, double v2, double& xc, double& yc);
 	static bool OnLine(double x1, double y1, double x2, double y2, double u, double v);
+	static bool IsInf(double val);
+	static bool InRange(double val, double a, double b, double tolerance);
+	static bool RangesIntersect(double x1, double x2, double x3, double x4, double tolerance, double &p);
+	static bool IsValidLine(double x1, double y1, double x2, double y2);
 
 	void polyline_push(double x, double y);
 	bool get_polyline(std::size_t ind, double &x, double &y) const;

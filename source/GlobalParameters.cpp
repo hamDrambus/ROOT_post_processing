@@ -651,142 +651,161 @@ void viewRegion::clear_polyline(void)
 }
 
 //0 - not crossed, 1 - crossed, 2 - crossed at ends
+//Supports lines with infinite points
+//Modified code taken from Garfield++
 int viewRegion::LinesCrossed(double x1, double y1, double x2, double y2,
-	double u1, double v1, double u2, double v2, double& xc, double& yc)
-{
-	//check infinity points: //TODO: write all cases properly
-	double finite_x_max = 0, finite_y_max = 0;
-	finite_x_max = (x1!=DBL_MAX && x1!=-DBL_MAX ? std::max(std::fabs(x1), finite_x_max) : finite_x_max);
-	finite_x_max = (x2!=DBL_MAX && x2!=-DBL_MAX ? std::max(std::fabs(x2), finite_x_max) : finite_x_max);
-	finite_x_max = (u1!=DBL_MAX && u1!=-DBL_MAX ? std::max(std::fabs(u1), finite_x_max) : finite_x_max);
-	finite_x_max = (u2!=DBL_MAX && u2!=-DBL_MAX ? std::max(std::fabs(u2), finite_x_max) : finite_x_max);
-	finite_y_max = (y1!=DBL_MAX && y1!=-DBL_MAX ? std::max(std::fabs(y1), finite_y_max) : finite_y_max);
-	finite_y_max = (y2!=DBL_MAX && y2!=-DBL_MAX ? std::max(std::fabs(y2), finite_y_max) : finite_y_max);
-	finite_y_max = (v1!=DBL_MAX && v1!=-DBL_MAX ? std::max(std::fabs(v1), finite_y_max) : finite_y_max);
-	finite_y_max = (v2!=DBL_MAX && v2!=-DBL_MAX ? std::max(std::fabs(v2), finite_y_max) : finite_y_max);
+	double u1, double v1, double u2, double v2, double& xc, double& yc) {
 
-	if ((x1==DBL_MAX)&&(y1==DBL_MAX))
+	if (!IsValidLine(x1, y1, x2, y2) || !IsValidLine(u1, v1, u2, v2))
 		return 0;
-	if (x1==DBL_MAX) {
-		x1 = finite_x_max;
-		y1 = y2;
-	}
-	if (x2==DBL_MAX) {
-		x2 = finite_x_max;
-		y2 = y1;
-	}
-	if (x1==-DBL_MAX) {
-		x1 = -finite_x_max;
-		y1 = y2;
-	}
-	if (x2==-DBL_MAX) {
-		x2 = -finite_x_max;
-		y2 = y1;
-	}
-	if (y1==DBL_MAX) {
-		y1 = finite_y_max;
-		x1 = x2;
-	}
-	if (y2==DBL_MAX) {
-		y2 = finite_y_max;
-		x2 = x1;
-	}
-	if (y1==-DBL_MAX) {
-		y1 = -finite_y_max;
-		x1 = x2;
-	}
-	if (y2==-DBL_MAX) {
-		y2 = -finite_y_max;
-		x2 = x1;
-	}
-
-	if (u1==DBL_MAX) {
-		u1 = finite_x_max;
-		v1 = v2;
-	}
-	if (u2==DBL_MAX) {
-		u2 = finite_x_max;
-		v2 = v1;
-	}
-	if (u1==-DBL_MAX) {
-		u1 = -finite_x_max;
-		v1 = v2;
-	}
-	if (u2==-DBL_MAX) {
-		u2 = -finite_x_max;
-		v2 = v1;
-	}
-	if (v1==DBL_MAX) {
-		v1 = finite_y_max;
-		u1 = u2;
-	}
-	if (v2==DBL_MAX) {
-		v2 = finite_y_max;
-		u2 = u1;
-	}
-	if (v1==-DBL_MAX) {
-		v1 = -finite_y_max;
-		u1 = u2;
-	}
-	if (v2==-DBL_MAX) {
-		v2 = -finite_y_max;
-		u2 = u1;
-	}
 	// Set the tolerances.
-	double xtol =
-		1.0e-10 *
-		std::max(std::abs(x1),
-			std::max(std::abs(x2), std::max(std::abs(u1), std::abs(u2))));
-	double ytol =
-		1.0e-10 *
-		std::max(std::abs(y1),
-			std::max(std::abs(y2), std::max(std::abs(v1), std::abs(v2))));
+	double xtol = 1.0e-10 * std::max(std::abs(IsInf(x1) ? 0.0 : x1),
+			std::max(std::abs(IsInf(x2) ? 0.0 : x2),
+			std::max(std::abs(IsInf(u1) ? 0.0 : u1),
+					std::abs(IsInf(u2) ? 0.0 : u2))));
+	double ytol = 1.0e-10 * std::max(std::abs(IsInf(y1) ? 0.0 : y1),
+			std::max(std::abs(IsInf(y2) ? 0.0 : y2),
+			std::max(std::abs(IsInf(v1) ? 0.0 : v1),
+					std::abs(IsInf(v2) ? 0.0 : v2))));
 	if (xtol <= 0) xtol = 1.0e-10;
 	if (ytol <= 0) ytol = 1.0e-10;
 
+	//Check for crossing because one of the endpoints is on both lines.
+	if (OnLine(x1, y1, x2, y2, u1, v1)) {
+		xc = u1;
+		yc = v1;
+		return 2;
+	} else if (OnLine(x1, y1, x2, y2, u2, v2)) {
+		xc = u2;
+		yc = v2;
+		return 2;
+	} else if (OnLine(u1, v1, u2, v2, x1, y1)) {
+		xc = x1;
+		yc = y1;
+		return 2;
+	} else if (OnLine(u1, v1, u2, v2, x2, y2)) {
+		xc = x2;
+		yc = y2;
+		return 2;
+	}
+	//First, handle singularity cases
+	if (IsInf(x1) || IsInf(x2)) {
+		if (x1 == x2) //checked endpoint crossings already
+			return 0;
+		//y1==y2 && !IsInf(y1) && !IsInf(y2) === First line is horizontal
+		if (IsInf(u1) || IsInf(u2)) //Second line is singular as well
+			return 0; //checked endpoint crossings already
+		if (IsInf(v1) || IsInf(v2)) { //Second line is singular as well
+			//u1==u2 && !IsInf(u1) && !IsInf(u2)
+			if (InRange(y1, v1, v2, ytol) && InRange(u1, x1, x2, xtol)) { //lines are orthogonal
+				xc = u1;
+				yc = y1;
+				return 1;
+			}
+			return 0;
+		}
+		//Second line is not singular
+		if ((y1 + ytol) <= std::min(v1, v2) || (y1 - ytol) >= std::max(v1, v2))
+			return 0;
+		xc = u1 + (u2 - u1)*(y1 - v1)/(v2 - v1); //v2 == v1 case is considered in OnLine
+		if (InRange(xc, x1, x2, xtol)) {
+			yc = y1;
+			return 1;
+		}
+		return 0;
+	}
+	if (IsInf(u1) || IsInf(u2)) {
+		if (u1 == u2) //checked endpoint crossings already
+			return 0;
+		//v1==v2 && !IsInf(v1) && !IsInf(v2) === Second line is horizontal
+		if (IsInf(x1) || IsInf(x2)) //First line is singular as well
+			return 0; //checked endpoint crossings already
+		if (IsInf(y1) || IsInf(y2)) { //First line is singular as well
+			//u1==u2 && !IsInf(u1) && !IsInf(u2)
+			if (InRange(v1, y1, y2, ytol) && InRange(x1, u1, u2, xtol)) { //lines are orthogonal
+				xc = x1;
+				yc = v1;
+				return 1;
+			}
+			return 0;
+		}
+		//First line is not singular
+		if ((v1 + ytol) <= std::min(y1, y2) || (v1 - ytol) >= std::max(y1, y2))
+			return 0;
+		xc = x1 + (x2 - x1)*(v1 - y1)/(y2 - y1); //y2 == y1 case is considered in OnLine
+		if (InRange(xc, u1, u2, xtol)) {
+			yc = v1;
+			return 1;
+		}
+		return 0;
+	}
+	if (IsInf(y1) || IsInf(y2)) {
+		if (y1 == y2) //checked endpoint crossings already
+			return 0;
+		//x1==x2 && !IsInf(x1) && !IsInf(x2) === First line is horizontal
+		if (IsInf(v1) || IsInf(v2)) //Second line is singular as well
+			return 0; //checked endpoint crossings already
+		if (IsInf(u1) || IsInf(u2)) { //Second line is singular as well
+			//v1==v2 && !IsInf(v1) && !IsInf(v2)
+			if (InRange(x1, u1, u2, xtol) && InRange(v1, y1, y2, ytol)) { //lines are orthogonal
+				xc = x1;
+				yc = v1;
+				return 1;
+			}
+			return 0;
+		}
+		//Second line is not singular
+		if ((x1 + xtol) <= std::min(u1, u2) || (x1 - xtol) >= std::max(u1, u2))
+			return 0;
+		yc = v1 + (v2 - v1)*(x1 - u1)/(u2 - u1); //u2 == u1 case is considered in OnLine
+		if (InRange(yc, y1, y2, ytol)) {
+			xc = x1;
+			return 1;
+		}
+		return 0;
+	}
+	if (IsInf(v1) || IsInf(v2)) {
+		if (v1 == v2) //checked endpoint crossings already
+			return 0;
+		//u1==u2 && !IsInf(u1) && !IsInf(u2) === Second line is horizontal
+		if (IsInf(y1) || IsInf(y2)) //First line is singular as well
+			return 0; //checked endpoint crossings already
+		if (IsInf(x1) || IsInf(x2)) { //First line is singular as well
+			//v1==v2 && !IsInf(v1) && !IsInf(v2)
+			if (InRange(u1, x1, x2, xtol) && InRange(y1, v1, v2, ytol)) { //lines are orthogonal
+				xc = u1;
+				yc = y1;
+				return 1;
+			}
+			return 0;
+		}
+		//First line is not singular
+		if ((u1 + xtol) <= std::min(x1, x2) || (u1 - xtol) >= std::max(x1, x2))
+			return 0;
+		yc = y1 + (y2 - y1)*(u1 - x1)/(x2 - x1); //x2 == x1 case is considered in OnLine
+		if (InRange(yc, v1, v2, ytol)) {
+			xc = u1;
+			return 1;
+		}
+		return 0;
+	}
 	// Compute the distances and determinant (dx,dy) x (du,dv).
 	double dy = y2 - y1;
 	double dv = v2 - v1;
 	double dx = x1 - x2;
 	double du = u1 - u2;
 	double det = dy * du - dx * dv;
-
-	// Check for crossing because one of the endpoints is on both lines.
-	if (OnLine(x1, y1, x2, y2, u1, v1)) {
-		xc = u1;
-		yc = v1;
-		return 2;
-	}
-	else if (OnLine(x1, y1, x2, y2, u2, v2)) {
-		xc = u2;
-		yc = v2;
-		return 2;
-	}
-	else if (OnLine(u1, v1, u2, v2, x1, y1)) {
-		xc = x1;
-		yc = y1;
-		return 2;
-	}
-	else if (OnLine(u1, v1, u2, v2, x2, y2)) {
-		xc = x2;
-		yc = y2;
-		return 2;
-	}
 	// Check if the lines are parallel (zero determinant).
-	else if (std::abs(det) < xtol * ytol)
+	if (std::abs(det) < xtol * ytol)
 		return 0;
-	// No special case: compute point of intersection.
-	else {
-
+	else {// No special case: compute point of intersection.
 		// Solve crossing equations.
 		xc = (du * (x1 * y2 - x2 * y1) - dx * (u1 * v2 - u2 * v1)) / det;
 		yc = ((-1 * dv) * (x1 * y2 - x2 * y1) + dy * (u1 * v2 - u2 * v1)) / det;
-
 		// Determine if this point is on both lines.
 		if (OnLine(x1, y1, x2, y2, xc, yc) && OnLine(u1, v1, u2, v2, xc, yc))
 			return 1;
 	}
-	// The lines do not cross if we have reached this point.
 	return 0;
 }
 
@@ -894,187 +913,241 @@ void viewRegion::ClipToView(const std::vector<double>& px, const std::vector<dou
   }
 }
 
-// Ported from Garfield (function INTERD):
-// Returns true if the point (x,y) is inside of the specified polygon.
+// Modified code taken from Garfield++
+// Returns true if the point (x,y) is inside of the specified polygon (or on its edge).
+// Supports polygon with edges going to the infinity (untested)
 // x: the x-coordinate
 // y: the y-coordinate
 // px: the x-vertices of the polygon
 // py: the y-vertices of the polygon
 // edge: a variable set to true if the point is located on the polygon edge
-bool viewRegion::IsInPolygon(double x, double y, const std::vector<double>& px,
-                             const std::vector<double>& py, bool& edge) {
+bool viewRegion::IsInPolygon(double x, double y, const std::vector<double>& px, const std::vector<double>& py, bool& edge) {
+	// Get the number and coordinates of the polygon vertices.
+	std::size_t pN = px.size();
+	// Handle the special case of less than 2 vertices.
+	if (pN < 2) return false;
+	// Handle the special case of exactly 2 vertices (a line).
+	if (pN == 2) return OnLine(px[0], py[0], px[1], py[1], x, y);
+	double px_average = 0, py_average = 0;
+	std::size_t px_finite_num = 0, py_finite_num = 0;
+	for (std::size_t i = 0; i < pN; ++i) {
+		if (!IsInf(px[i])) {
+			++px_finite_num;
+			px_average += px[i];
+		}
+		if (!IsInf(py[i])) {
+			++py_finite_num;
+			py_average += py[i];
+		};
+	}
+	px_average = (px_finite_num == 0 ? 0 : px_average/px_finite_num);
+	py_average = (py_finite_num == 0 ? 0 : py_average/py_finite_num);
+	// Set the minimum and maximum coordinates of all polygon vertices.
+	double px_min = DBL_MAX, py_min = DBL_MAX;
+	double px_max = -DBL_MAX, py_max = -DBL_MAX;
+	double px_true_min = DBL_MAX, py_true_min = DBL_MAX;
+	double px_true_max = -DBL_MAX, py_true_max = -DBL_MAX;
+	for (std::size_t i = 0; i < pN; ++i) {
+		px_min = std::min(px_min, IsInf(px[i]) ? DBL_MAX : px[i] - px_average);
+		py_min = std::min(py_min, IsInf(py[i]) ? DBL_MAX : py[i] - py_average);
+		px_max = std::max(px_max, IsInf(px[i]) ? -DBL_MAX : px[i] - px_average);
+		py_max = std::max(py_max, IsInf(py[i]) ? -DBL_MAX : py[i] - py_average);
+		px_true_min = std::min(px_true_min, px[i]);
+		py_true_min = std::min(py_true_min, py[i]);
+		px_true_max = std::max(px_true_max, px[i]);
+		py_true_max = std::max(py_true_max, py[i]);
+	}
+	// Set the tolerances
+	double xtol = 1.0e-10 * std::max(std::abs(px_min), std::abs(px_max));
+	double ytol = 1.0e-10 * std::max(std::abs(py_min), std::abs(py_max));
+	if (xtol <= 0) xtol = 1.0e-10;
+	if (ytol <= 0) ytol = 1.0e-10;
+	// If we have essentially one x value, check to see if y is in range.
+	if (std::abs(px_max - px_min) < xtol) {
+		edge = ((y + ytol) > px_true_min && (y - ytol) < py_true_max &&
+				std::abs(px_max + px_min + 2 * px_average  - 2 * x) < xtol);
+		return edge;
+	}
+	// If we have essentially one y value, check to see if x is in range.
+	if (std::abs(py_max - py_min) < ytol) {
+		edge = ((x + xtol) > px_true_min && (x - xtol) < px_true_max &&
+				std::abs(py_max + py_min + 2 * py_average- 2 * y) < ytol);
+		return edge;
+	}
+	//Need 4 counters to account for polygon points going to the infinity
+	std::size_t nXcross_left = 0, nXcross_right = 0, nYcross_up = 0, nYcross_down = 0;
 
-  // Get the number and coordinates of the polygon vertices.
-  int pN = (int)px.size();
-
-  // Handle the special case of less than 2 vertices.
-  if (pN < 2) return false;
-  // Handle the special case of exactly 2 vertices (a line).
-  if (pN == 2) return OnLine(px[0], py[0], px[1], py[1], x, y);
-
-  // Set the minimum and maximum coordinates of all polygon vertices.
-  double px_min = px[0], py_min = py[0];
-  double px_max = px[0], py_max = py[0];
-  for (int i = 0; i < pN; ++i) {
-    px_min = std::min(px_min, px[i]);
-    py_min = std::min(py_min, py[i]);
-    px_max = std::max(px_max, px[i]);
-    py_max = std::max(py_max, py[i]);
-  }
-
-  // Set the tolerances
-  double xtol = 1.0e-10 * std::max(std::abs(px_min), std::abs(px_max));
-  double ytol = 1.0e-10 * std::max(std::abs(py_min), std::abs(py_max));
-  if (xtol <= 0) xtol = 1.0e-10;
-  if (ytol <= 0) ytol = 1.0e-10;
-
-  // If we have essentially one x value, check to see if y is in range.
-  if (std::abs(px_max - px_min) < xtol) {
-    edge = (y > (py_min - ytol) && y < (py_max + ytol) &&
-            std::abs(px_max + px_min - 2 * x) < xtol);
-    return false;
-  }
-  // If we have essentially one y value, check to see if x is in range.
-  if (std::abs(py_max - py_min) < ytol) {
-    edge = (x > (px_min - xtol) && x < (px_max + xtol) &&
-            std::abs(py_max + py_min - 2 * y) < ytol);
-    return false;
-  }
-
-  // Set "infinity" points.
-  double xinf = px_min - std::abs(px_max - px_min);
-  double yinf = py_min - std::abs(py_max - py_min);
-
-  // Loop until successful or maximum iterations (100) reached.
-  int niter = 0;
-  bool done = false;
-  int ncross = 0;
-
-  TRandom *rand = new TRandom1();
-  while (!done && niter < 100) {
-
-    // Assume we will finish on this loop.
-    done = true;
-
-    // Loop over all edges, counting the number of edges crossed by a line
-    //  extending from (x,y) to (xinf,yinf).
-    ncross = 0;
-    for (int i = 0; (done && i < pN); ++i) {
-
-      // Determine whether the point lies on the edge.
-      if (OnLine(px[i % pN], py[i % pN], px[(i + 1) % pN], py[(i + 1) % pN], x,
-                 y)) {
-
-        edge = true;
-        return false;
-      }
-
-      // Determine whether this edge is crossed; if so increment the counter.
-      double xc = 0., yc = 0.;
-      if (LinesCrossed(x, y, xinf, yinf, px[i % pN], py[i % pN],
-                       px[(i + 1) % pN], py[(i + 1) % pN], xc, yc))
-        ++ncross;
-
-      // Ensure this vertex is not crossed by the line from (x,y)
-      //  to (xinf,yinf); if so recompute (xinf,yinf) and start over.
-      if (OnLine(x, y, xinf, yinf, px[i], py[i])) {
-
-        // Recompute (xinf,yinf).
-		xinf = px_min - rand->Uniform() * std::abs(px_max - xinf);
-        yinf = py_min - rand->Uniform() * std::abs(py_max - yinf);
-
-        // Start over.
-        done = false;
-        ++niter;
-      }
-    }
-  }
-
-  // If we failed to finish iterating, return false.
-  if (niter >= 100) {
-    std::cerr <<"viewRegion::IsInPolygon: unable to determine whether ("
-              << x << ", " << y << ") is inside a polygon.  Returning false.\n";
-    return false;
-  }
-
-  // Point is inside for an odd, nonzero number of crossings.
-  return (ncross != 2 * (ncross / 2));
+    for (int i = 0; i < pN; ++i) {
+    	if (OnLine(px[i % pN], py[i % pN], px[(i + 1) % pN], py[(i + 1) % pN], x, y)) {
+			edge = true;
+			return true;
+    	}
+		// Determine whether this edge is crossed; if so increment the counter.
+		double xc = 0., yc = 0.;
+		int cross_type = LinesCrossed(x, y, DBL_MAX, y, px[i % pN], py[i % pN], px[(i + 1) % pN], py[(i + 1) % pN], xc, yc);
+		if (cross_type) {
+			if (2 == cross_type && !IsInf(xc) && !IsInf(yc))
+				nXcross_right += 2; //account for collinear intersection
+			else
+				nXcross_right += 1;
+		}
+		cross_type = LinesCrossed(x, y, -DBL_MAX, y, px[i % pN], py[i % pN], px[(i + 1) % pN], py[(i + 1) % pN], xc, yc);
+		if (cross_type) {
+			if (2 == cross_type && !IsInf(xc) && !IsInf(yc))
+				nXcross_left += 2; //account for collinear intersection
+			else
+				nXcross_left += 1;
+		}
+		cross_type = LinesCrossed(x, y, x, DBL_MAX, px[i % pN], py[i % pN], px[(i + 1) % pN], py[(i + 1) % pN], xc, yc);
+		if (cross_type) {
+			if (2 == cross_type && !IsInf(xc) && !IsInf(yc))
+				nYcross_up += 2; //account for collinear intersection
+			else
+				nYcross_up += 1;
+		}
+		cross_type = LinesCrossed(x, y, x, -DBL_MAX, px[i % pN], py[i % pN], px[(i + 1) % pN], py[(i + 1) % pN], xc, yc);
+		if (cross_type) {
+			if (2 == cross_type && !IsInf(xc) && !IsInf(yc))
+				nYcross_down += 2; //account for collinear intersection
+			else
+				nYcross_down += 1;
+		}
+	}
+	// Point is inside for an odd, nonzero number of crossings.
+	return (nYcross_up % 2)||(nYcross_down % 2)||(nXcross_left % 2)||(nXcross_right % 2);
 }
 
 //
 // Determines whether the point (u,v) lies on the line connecting
 //  points (x1,y1) and (x2,y2).
 //
-// Ported from Garfield function ONLIND
-//
-bool viewRegion::OnLine(double x1, double y1, double x2, double y2, double u,
-                        double v) {
-  // Set the tolerances
-  double xtol =
-      1.0e-10 * std::max(std::abs(x1), std::max(std::abs(x2), std::abs(u)));
-  double ytol =
-      1.0e-10 * std::max(std::abs(y1), std::max(std::abs(y2), std::abs(v)));
-  if (xtol <= 0) xtol = 1.0e-10;
-  if (ytol <= 0) ytol = 1.0e-10;
+//  Supports horizontal/vertical lines going to the infinity (+-DBL_MAX)
+//  Modification of code taken from Garfield++
+bool viewRegion::OnLine(double x1, double y1, double x2, double y2, double u, double v) {
+	//Check that input line is valid
+	if (!IsValidLine(x1, y1, x2, y2))
+		return false;
+	// Set the tolerances
+	double xtol = 1.0e-10 * std::max(std::abs(IsInf(x1) ? 0.0 : x1), std::max(std::abs(IsInf(x2) ? 0.0 : x2), std::abs(IsInf(u) ? 0.0 : u)));
+	double ytol = 1.0e-10 * std::max(std::abs(IsInf(y1) ? 0.0 : y1), std::max(std::abs(IsInf(y2) ? 0.0 : y2), std::abs(IsInf(v) ? 0.0 : v)));
+	if (xtol <= 0) xtol = 1.0e-10;
+	if (ytol <= 0) ytol = 1.0e-10;
+	//First, handle singularity cases
+	if (IsInf(x1) || IsInf(x2)) {
+		if (x1 == x2)
+			return (u == x1 && InRange(v, y1, y2, ytol));
+		return std::abs(y1 - v) <= ytol && InRange(u, x1, x2, xtol);
+	}
+	if (IsInf(y1) || IsInf(y2)) {
+		if (y1 == y2)
+			return (v == y1 && InRange(u, x1, x2, xtol));
+		return std::abs(x1 - u) <= xtol && InRange(v, y1, y2, ytol);
+	}
+	if (IsInf(u) || IsInf(v))
+		return false;
+	//Now all points are not singular
+	//To store the coordinates of the comparison point
+	double xc = 0, yc = 0;
 
-  // To store the coordinates of the comparison point
-  double xc = 0, yc = 0;
+	// Check if (u,v) is the point (x1,y1) or (x2,y2)
+	if ((std::abs(x1 - u) <= xtol && std::abs(y1 - v) <= ytol) || (std::abs(x2 - u) <= xtol && std::abs(y2 - v) <= ytol))
+		return true;
+	else {
+		if (std::abs(x1 - x2) <= xtol && std::abs(y1 - y2) <= ytol) // Check if the line is actually a point
+			return false;
+		else {
+			if (std::abs(u - x1) + std::abs(v - y1) < std::abs(u - x2) + std::abs(v - y2)) { // Choose (x1,y1) as starting point if closer to (u,v)
+				// Compute the component of the line from (x1,y1) to (u,v)
+				//  along the line from (x1,y1) to (x2,y2)
+				double dpar = ((u - x1) * (x2 - x1) + (v - y1) * (y2 - y1)) /
+							  ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+				// Determine the point on the line to which to compare (u,v)
+				if (dpar < 0.0) {
+					xc = x1;
+					yc = y1;
+				} else {
+					if (dpar > 1.0) {
+						xc = x2;
+						yc = y2;
+					} else {
+						xc = x1 + dpar * (x2 - x1);
+						yc = y1 + dpar * (y2 - y1);
+					}
+				}
+			} else { // Choose (x2,y2) as starting point if closer to (u,v)
+				// Compute the component of the line from (x2,y2) to (u,v)
+				//  along the line from (x2,y2) to (x1,y1)
+				double dpar = ((u - x2) * (x1 - x2) + (v - y2) * (y1 - y2)) /
+							  ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+				// Determine the point on the line to which to compare (u,v)
+				if (dpar < 0.0) {
+					xc = x2;
+					yc = y2;
+				} else {
+					if (dpar > 1.0) {
+						xc = x1;
+						yc = y1;
+					} else {
+						xc = x2 + dpar * (x1 - x2);
+						yc = y2 + dpar * (y1 - y2);
+					}
+				}
+			}
+		}
+	}
+	// Compare the calculated point to (u,v)
+	if (std::abs(u - xc) < xtol && std::abs(v - yc) < ytol)
+		return true;
+	return false;
+}
 
-  // Check if (u,v) is the point (x1,y1) or (x2,y2)
-  if ((std::abs(x1 - u) <= xtol && std::abs(y1 - v) <= ytol) ||
-      (std::abs(x2 - u) <= xtol && std::abs(y2 - v) <= ytol)) {
-    return true;
-  }
-  // Check if the line is actually a point
-  else if (std::abs(x1 - x2) <= xtol && std::abs(y1 - y2) <= ytol) {
-    return false;
-  }
-  // Choose (x1,y1) as starting point if closer to (u,v)
-  else if (std::abs(u - x1) + std::abs(v - y1) <
-           std::abs(u - x2) + std::abs(v - y2)) {
+//TODO: tolerances should be here as well (e.g. y1!=y2 condition when x1 is infinite)
+bool viewRegion::IsValidLine(double x1, double y1, double x2, double y2) {
+	if (IsInf(x1))
+		if ((x1 != x2) && (y1 != y2 || IsInf(y1) || IsInf(y2)))
+			return false;
+	if (IsInf(x2))
+		if ((x1 != x2) && (y1 != y2 || IsInf(y1) || IsInf(y2)))
+			return false;
+	if (IsInf(y1))
+		if ((y1 != y2) && (x1 != x2 || IsInf(x1) || IsInf(x2)))
+			return false;
+	if (IsInf(y2))
+		if ((y1 != y2) && (x1 != x2 || IsInf(x1) || IsInf(x2)))
+			return false;
+	return true;
+}
 
-    // Compute the component of the line from (x1,y1) to (u,v)
-    //  along the line from (x1,y1) to (x2,y2)
-    double dpar = ((u - x1) * (x2 - x1) + (v - y1) * (y2 - y1)) /
-                  ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+bool viewRegion::IsInf(double val) {
+	return val == DBL_MAX || val == -DBL_MAX;
+}
 
-    // Determine the point on the line to which to compare (u,v)
-    if (dpar < 0.0) {
-      xc = x1;
-      yc = y1;
-    } else if (dpar > 1.0) {
-      xc = x2;
-      yc = y2;
-    } else {
-      xc = x1 + dpar * (x2 - x1);
-      yc = y1 + dpar * (y2 - y1);
-    }
-  }
-  // Choose (x2,y2) as starting point if closer to (u,v)
-  else {
+bool viewRegion::InRange(double val, double a, double b, double tolerance) {
+	double max = std::max(a, b);
+	double min = std::min(a, b);
+	if (IsInf(val))
+		return max == val || min == val;
+	return val + tolerance >= min && val - tolerance <= max;
+}
 
-    // Compute the component of the line from (x2,y2) to (u,v)
-    //  along the line from (x2,y2) to (x1,y1)
-    double dpar = ((u - x2) * (x1 - x2) + (v - y2) * (y1 - y2)) /
-                  ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-
-    // Determine the point on the line to which to compare (u,v)
-    if (dpar < 0.0) {
-      xc = x2;
-      yc = y2;
-    } else if (dpar > 1.0) {
-      xc = x1;
-      yc = y1;
-    } else {
-      xc = x2 + dpar * (x1 - x2);
-      yc = y2 + dpar * (y1 - y2);
-    }
-  }
-
-  // Compare the calculated point to (u,v)
-  if (std::abs(u - xc) < xtol && std::abs(v - yc) < ytol) return true;
-
-  return false;
+bool viewRegion::RangesIntersect(double x1, double x2, double x3, double x4, double tolerance, double &p) {
+	double r1 = std::min(x1, x2);
+	double r2 = std::max(x1, x2);
+	double r3 = std::min(x3, x4);
+	double r4 = std::max(x3, x4);
+	double comp1 = IsInf(r1) ? r1 : r1 - tolerance;
+	double comp2 = IsInf(r2) ? r2 : r2 + tolerance;
+	double comp3 = IsInf(r3) ? r3 : r3 - tolerance;
+	double comp4 = IsInf(r4) ? r4 : r4 + tolerance;
+	if (comp3 <= r2 && r2 <= comp4) {
+		p = r2;
+		return true;
+	}
+	if (comp1 <= r3 && r3 <= comp2) {
+		p = r3;
+		return true;
+	}
+	return false;
 }
 
 //namespace ParameterPile

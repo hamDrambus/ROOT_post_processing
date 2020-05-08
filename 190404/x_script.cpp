@@ -1,4 +1,8 @@
 {
+if (true) {
+	x_y_regions = {12.7, -0.3, 28.3, 9.9, 50.7, 19.2, 79.3, 45.7, 249.9, 164};
+	cut_x_y_right(x_y_regions, true, "1");
+}
 if (false) {
 	int offset = -2;
 	cut_x_y_lower(25, 0 + offset, 48, 18+ offset, true, "1");
@@ -18,7 +22,7 @@ if (false) {
 		cut_A_S_upper(0.0, 0.09, 1.6, 0.09, display, channel, "rem_S>0.09");
 	}
 }
-if (true) {
+if (false) {
 	bool calibrate = false;
 	unsigned int method = 1;
 	analysis_history(calibrate, method); //20
