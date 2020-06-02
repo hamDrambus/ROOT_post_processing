@@ -88,6 +88,8 @@ namespace SignalOperations
 	double find_trigger_v2(std::deque<peak_processed> &peaks, double time_window, bool use_Npes);
 	double find_trigger_v3(std::deque<peak_processed> &peaks, double time_window, bool use_Npes);
 	double find_trigger_S_v2(std::deque<peak_processed> &peaks, double time_window);
+	double get_likelihood(std::deque<peak_processed> &peaks, DataVector& pulse_shape, double offset, int trigger_type);
+	double find_trigger_by_fit(std::deque<peak_processed> &peaks, DataVector& pulse_shape, int trigger_type, double first_scan_dt, double target_precision);
 };
 
 #endif

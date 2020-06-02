@@ -119,6 +119,22 @@ std::string strtoken(std::string &in, std::string break_symbs)
 	return out;
 }
 
+double fast_pown(double val, unsigned int n)
+{
+	if (0==val)
+		return val;
+	double result = 1;
+	while (true) {
+		if (n & 1)
+			result *= val;
+		n >>= 1;
+		if (!n)
+			break;
+		val *= val;
+	}
+	return result;
+}
+
 void open_output_file(std::string name, std::ofstream &str, std::ios_base::openmode _mode)
 {
 	ensure_file(name);
@@ -963,13 +979,13 @@ bool viewRegion::IsInPolygon(double x, double y, const std::vector<double>& px, 
 	if (xtol <= 0) xtol = 1.0e-10;
 	if (ytol <= 0) ytol = 1.0e-10;
 	// If we have essentially one x value, check to see if y is in range.
-	if (std::abs(px_max - px_min) < xtol) {
+	if (std::abs(px_max - px_min) < xtol && px_max == px_true_max && px_min == px_true_min) {
 		edge = ((y + ytol) > px_true_min && (y - ytol) < py_true_max &&
 				std::abs(px_max + px_min + 2 * px_average  - 2 * x) < xtol);
 		return edge;
 	}
 	// If we have essentially one y value, check to see if x is in range.
-	if (std::abs(py_max - py_min) < ytol) {
+	if (std::abs(py_max - py_min) < ytol  && py_max == py_true_max && py_min == py_true_min) {
 		edge = ((x + xtol) > px_true_min && (x - xtol) < px_true_max &&
 				std::abs(py_max + py_min + 2 * py_average- 2 * y) < ytol);
 		return edge;
@@ -986,35 +1002,64 @@ bool viewRegion::IsInPolygon(double x, double y, const std::vector<double>& px, 
 		double xc = 0., yc = 0.;
 		int cross_type = LinesCrossed(x, y, DBL_MAX, y, px[i % pN], py[i % pN], px[(i + 1) % pN], py[(i + 1) % pN], xc, yc);
 		if (cross_type) {
-			if (2 == cross_type && !IsInf(xc) && !IsInf(yc))
-				nXcross_right += 2; //account for collinear intersection
-			else
+			if (1 == cross_type) {
 				nXcross_right += 1;
+			} else {
+				if (xc == px[(i + 1) % pN] && yc == py[(i + 1) % pN]) {
+					if ((yc - py[i])*(py[(i + 2) % pN] - yc) > 0)
+						nXcross_right += 1;
+				} else {
+					if (xc != px[i] || yc != py[i])
+						nXcross_right += 1;
+				}
+			}
 		}
 		cross_type = LinesCrossed(x, y, -DBL_MAX, y, px[i % pN], py[i % pN], px[(i + 1) % pN], py[(i + 1) % pN], xc, yc);
 		if (cross_type) {
-			if (2 == cross_type && !IsInf(xc) && !IsInf(yc))
-				nXcross_left += 2; //account for collinear intersection
-			else
+			if (1 == cross_type) {
 				nXcross_left += 1;
+			} else {
+				if (xc == px[(i + 1) % pN] && yc == py[(i + 1) % pN]) {
+					if ((yc - py[i])*(py[(i + 2) % pN] - yc) > 0)
+						nXcross_left += 1;
+				} else {
+					if (xc != px[i] || yc != py[i])
+						nXcross_left += 1;
+				}
+			}
 		}
 		cross_type = LinesCrossed(x, y, x, DBL_MAX, px[i % pN], py[i % pN], px[(i + 1) % pN], py[(i + 1) % pN], xc, yc);
 		if (cross_type) {
-			if (2 == cross_type && !IsInf(xc) && !IsInf(yc))
-				nYcross_up += 2; //account for collinear intersection
-			else
+			if (1 == cross_type) {
 				nYcross_up += 1;
+			} else {
+				if (xc == px[(i + 1) % pN] && yc == py[(i + 1) % pN]) {
+					if ((xc - px[i])*(px[(i + 2) % pN] - xc) > 0)
+						nYcross_up += 1;
+				} else {
+					if (xc != px[i] || yc != py[i])
+						nYcross_up += 1;
+				}
+			}
 		}
 		cross_type = LinesCrossed(x, y, x, -DBL_MAX, px[i % pN], py[i % pN], px[(i + 1) % pN], py[(i + 1) % pN], xc, yc);
 		if (cross_type) {
-			if (2 == cross_type && !IsInf(xc) && !IsInf(yc))
-				nYcross_down += 2; //account for collinear intersection
-			else
+			if (1 == cross_type) {
 				nYcross_down += 1;
+			} else {
+				if (xc == px[(i + 1) % pN] && yc == py[(i + 1) % pN]) {
+					if ((xc - px[i])*(px[(i + 2) % pN] - xc) > 0)
+						nYcross_down += 1;
+				} else {
+					if (xc != px[i] || yc != py[i])
+						nYcross_down += 1;
+				}
+			}
 		}
 	}
 	// Point is inside for an odd, nonzero number of crossings.
-	return (nYcross_up % 2)||(nYcross_down % 2)||(nXcross_left % 2)||(nXcross_right % 2);
+	return ((nYcross_up + nYcross_down + nXcross_left + nXcross_right) >=2) &&
+			((nYcross_up % 2)||(nYcross_down % 2)||(nXcross_left % 2)||(nXcross_right % 2));
 }
 
 //

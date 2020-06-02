@@ -1,4 +1,8 @@
 #include "HistogramSetups.h"
+#include "StateData.h"
+
+class StateData;
+class TriggerData;
 
 HistogramSetups::HistogramSetups(const std::deque<int>& channels) :
 	filled_hist(false), fitted(false), x_max(boost::none), y_max(boost::none),
@@ -9,10 +13,69 @@ HistogramSetups::HistogramSetups(const std::deque<int>& channels) :
 	x_mean(boost::none), y_mean(boost::none), x_drawn_mean(boost::none),
 	y_drawn_mean(boost::none), x_variance(boost::none), x_drawn_variance(boost::none),
 	y_variance(boost::none), y_drawn_variance(boost::none), is_valid_fit_function(false),
-	use_default_setups(true), N_bins(0), N_gauss(0), use_fit(false), time_window(3)
+	use_default_setups(true), N_bins(0), N_gauss(0), use_fit(false), extra_data(NULL)
 {
 	for (std::size_t ind = 0, ind_end_ = channels.size(); ind != ind_end_; ++ind)
 		active_channels.push(channels[ind], true);
+}
+
+HistogramSetups::HistogramSetups(const HistogramSetups& setups)
+{
+	hist_cuts = setups.hist_cuts;
+	active_channels = setups.active_channels;
+	N_bins = setups.N_bins;
+	x_zoom = setups.x_zoom;
+	y_zoom = setups.y_zoom;
+	is_zoomed = setups.is_zoomed;
+	//Fit info:
+	N_gauss = setups.N_gauss;
+	par_val = setups.par_val;
+	par_left_limits = setups.par_left_limits;
+	par_right_limits = setups.par_right_limits;
+	use_fit = setups.use_fit;
+	//Following values represent status, not input parameters
+	fitted = setups.fitted;
+	x_axis_title = setups.x_axis_title;
+	y_axis_title = setups.y_axis_title;
+	is_valid_fit_function = setups.is_valid_fit_function;
+	use_default_setups = setups.use_default_setups;
+
+	//1st tier parameters of distribution: (stored in order to minimize calls of LoopThroughData to recalculate them)
+	num_of_runs = setups.num_of_runs;
+	num_of_fills = setups.num_of_fills;
+	num_of_drawn_fills = setups.num_of_drawn_fills;
+	stat_weight = setups.stat_weight;
+	stat_drawn_weight = setups.stat_drawn_weight;
+	x_lims = setups.x_lims;
+	y_lims = setups.y_lims;
+	x_drawn_lims = setups.x_drawn_lims;
+	y_drawn_lims = setups.y_drawn_lims;
+	x_mean = setups.x_mean;
+	y_mean = setups.y_mean;
+	x_drawn_mean = setups.x_drawn_mean;
+	y_drawn_mean = setups.y_drawn_mean;
+	//2nd tier parameters (require 2 calls to LoopThroughData)
+	x_max = setups.x_max;
+	y_max = setups.y_max; //Bin with maximum value y. Require filled histogram
+	x_drawn_max = setups.x_drawn_max;
+	y_drawn_max = setups.y_drawn_max;
+	x_variance = setups.x_variance;
+	x_drawn_variance = setups.x_drawn_variance;
+	y_variance = setups.y_variance;
+	y_drawn_variance = setups.y_drawn_variance;
+
+	filled_hist = setups.filled_hist; //1st call is to determine default N bins, x-y range, etc.
+
+	if (setups.extra_data)
+		extra_data = setups.extra_data->Clone();
+	else
+		extra_data = NULL;
+}
+
+HistogramSetups::~HistogramSetups()
+{
+	if (extra_data)
+		delete extra_data;
 }
 
 std::deque<EventCut>* CanvasSetups::get_run_cuts (int exp_ind)

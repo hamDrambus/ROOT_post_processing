@@ -185,23 +185,23 @@ void do_fit(bool is_on) //always updates visuals
 	post_processor->do_fit(is_on);
 }
 
-void set_trigger_shaping(double val) //in microseconds
+/*void set_trigger_shaping(double val) //in microseconds
 {
 	if (NULL == g_data) {
 		status();
 		return;
 	}
 	post_processor->set_time_window(val);
-}
+}*/
 
-double get_trigger_shaping(void) //in microseconds
+/*double get_trigger_shaping(void) //in microseconds
 {
 	if (NULL == g_data) {
 		status();
 		return 0;
 	}
 	return post_processor->get_time_window();
-}
+}*/
 
 void unset_trigger_offsets(void)
 {
@@ -707,6 +707,7 @@ FunctionWrapper* create_vertical_lines_cut(double left, double right) //do not c
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
 	case AStates::PMT_trigger_bS:
+	case AStates::PMT_trigger_fit:
 	case AStates::Correlation:
 	case AStates::CorrelationAll:
 	{
@@ -856,6 +857,7 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
 	case AStates::PMT_trigger_bS:
+	case AStates::PMT_trigger_fit:
 	{
 		picker->SetFunction( [](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -1000,6 +1002,7 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
 	case AStates::PMT_trigger_bS:
+	case AStates::PMT_trigger_fit:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -1143,6 +1146,7 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
 	case AStates::PMT_trigger_bS:
+	case AStates::PMT_trigger_fit:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -1344,6 +1348,7 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
 	case AStates::PMT_trigger_bS:
+	case AStates::PMT_trigger_fit:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			//{A_min, A0, S0, A1, S1, A_max}
@@ -1454,6 +1459,7 @@ FunctionWrapper* create_A_S_vertical_cut(std::vector<double> region, bool upper,
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
 	case AStates::PMT_trigger_bS:
+	case AStates::PMT_trigger_fit:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			//{A0, S0, A1, S1}
@@ -1564,6 +1570,7 @@ FunctionWrapper* create_A_S_horizontal_cut(std::vector<double> region, bool righ
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
 	case AStates::PMT_trigger_bS:
+	case AStates::PMT_trigger_fit:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			//{A0, S0, A1, S1}
@@ -1871,69 +1878,30 @@ void remcut_A_S_right(int channel, std::string _name)
 }
 
 //region is arbitrary {X0, Y0, X1, Y1, ... XN, YN} line
-FunctionWrapper* create_x_y_cut(std::vector<double> region, unsigned int cut_type) //do not call from the CINT
+FunctionWrapper* create_x_y_polygon_cut(std::vector<double> region, unsigned int cut_type) //do not call from the CINT
 {
 	AStates::Type type = post_processor->current_type;
 	if (type == AStates::Correlation_x)
 		type = post_processor->_x_corr;
 	if (type == AStates::Correlation_y)
 		type = post_processor->_y_corr;
-	if (post_processor->isTH1Dhist(type) || (region.size() % 2 !=0) || region.size() < 4) {
+	if (post_processor->isTH1Dhist(type) || (region.size() % 2 !=0) || region.size() < 6) {
 		return NULL;
 	}
 	struct temp_data {
 		std::vector<double> reg_x, reg_y;
-		bool horizontal;
-		bool upper_left;
 		bool select;
 	};
 	std::size_t size = region.size();
 	temp_data * st_data = new temp_data;
-	st_data->horizontal = cut_type & XY_cut_type::Horizontal;
-	st_data->upper_left = cut_type & XY_cut_type::UpperLeft;
 	st_data->select = cut_type & XY_cut_type::Inclusive;
-	//Add line going to the infinity before first point
-	if (st_data->horizontal && st_data->upper_left) {
-		st_data->reg_x.push_back(-DBL_MAX);
-		st_data->reg_y.push_back(region[1]);
-	}
-	if (st_data->horizontal && !st_data->upper_left) {
-		st_data->reg_x.push_back(DBL_MAX);
-		st_data->reg_y.push_back(region[1]);
-	}
-	if (!st_data->horizontal && st_data->upper_left) {
-		st_data->reg_x.push_back(region[0]);
-		st_data->reg_y.push_back(DBL_MAX);
-	}
-	if (!st_data->horizontal && !st_data->upper_left) {
-		st_data->reg_x.push_back(region[0]);
-		st_data->reg_y.push_back(-DBL_MAX);
-	}
 	for (std::size_t i = 0; i != size; ++i)
 		if (i % 2)
 			st_data->reg_y.push_back(region[i]);
 		else
 			st_data->reg_x.push_back(region[i]);
-	//Add line going to the infinity after last point
-	if (st_data->horizontal && st_data->upper_left) {
-		st_data->reg_x.push_back(-DBL_MAX);
-		st_data->reg_y.push_back(region[size-1]);
-	}
-	if (st_data->horizontal && !st_data->upper_left) {
-		st_data->reg_x.push_back(DBL_MAX);
-		st_data->reg_y.push_back(region[size-1]);
-	}
-	if (!st_data->horizontal && st_data->upper_left) {
-		st_data->reg_x.push_back(region[size-2]);
-		st_data->reg_y.push_back(DBL_MAX);
-	}
-	if (!st_data->horizontal && !st_data->upper_left) {
-		st_data->reg_x.push_back(region[size-2]);
-		st_data->reg_y.push_back(-DBL_MAX);
-	}
 	FunctionWrapper *picker = new FunctionWrapper(st_data);
 	picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
-		//{X0, Y0, X1, Y1}
 		temp_data* d = ((temp_data*)data);
 		bool edge = false;
 		bool inside = viewRegion::IsInPolygon(vals[0], vals[1], d->reg_x, d->reg_y, edge);
@@ -1943,10 +1911,10 @@ FunctionWrapper* create_x_y_cut(std::vector<double> region, unsigned int cut_typ
 	picker->SetDrawFunction([](TCanvas *can, void* data) {
 		if (NULL == can || NULL == data)
 			return false;
-		//{X0, Y0, X1, Y1}
 		temp_data* d = ((temp_data*)data);
 		viewRegion region(can->GetUxmin(), can->GetUymin(), can->GetUxmax(), can->GetUymax());
 		region.set_polyline(d->reg_x, d->reg_y);
+		region.polyline_push(d->reg_x[0], d->reg_y[0]);
 		TPolyLine *line = region.get_clipped_polyline();
 		line->SetLineColor(kRed);
 		line->Draw("same");
@@ -1955,6 +1923,30 @@ FunctionWrapper* create_x_y_cut(std::vector<double> region, unsigned int cut_typ
 	return picker;
 }
 
+void cut_x_y_poly(std::vector<double> region, bool drawn, std::string _name)
+{
+	if (NULL == g_data) {
+		status();
+		return;
+	}
+	FunctionWrapper *picker = create_x_y_polygon_cut(region, 0);
+	if (NULL == picker) {
+		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
+		return;
+	}
+	if (post_processor->isComposite(post_processor->current_type))
+		post_processor->add_hist_cut(picker, _name, -1, !drawn);
+	else {
+		if (post_processor->isMultichannel(post_processor->current_type)) {
+			for (int chi=0, ch=0; post_processor->loop_channels(post_processor->current_type, ch, chi);)
+				post_processor->add_hist_cut(picker, _name, ch, !drawn);
+		} else {
+			post_processor->add_hist_cut(picker, _name, !drawn);
+		}
+	}
+	if (!post_processor->isMultichannel(post_processor->current_type))
+		update();
+}
 
 void cut_x_y_upper(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name)
 {
@@ -1968,27 +1960,17 @@ void cut_x_y_upper(double X_min, double Y_min, double X_max, double Y_max, bool 
 
 void cut_x_y_upper(std::vector<double> region, bool drawn, std::string _name)
 {
-	if (NULL == g_data) {
-		status();
+	std::size_t sz = region.size();
+	if (sz < 4) {
+		std::cout<<"Error:cut_x_y_upper: invalid region"<<std::endl;
 		return;
 	}
-	FunctionWrapper *picker = create_x_y_cut(region, XY_cut_type::UpperLeft|XY_cut_type::Inclusive);
-	if (NULL == picker) {
-		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
-		return;
-	}
-	if (post_processor->isComposite(post_processor->current_type))
-		post_processor->add_hist_cut(picker, _name, -1, false);
-	else {
-		if (post_processor->isMultichannel(post_processor->current_type)) {
-			for (int chi=0, ch=0; post_processor->loop_channels(post_processor->current_type, ch, chi);)
-				post_processor->add_hist_cut(picker, _name, ch, false);
-		} else {
-			post_processor->add_hist_cut(picker, _name, false);
-		}
-	}
-	if (!post_processor->isMultichannel(post_processor->current_type))
-		update();
+	double x1 = region[0], x2 = region[sz-2];
+	region.insert(region.begin(), DBL_MAX);
+	region.insert(region.begin(), x1);
+	region.push_back(x2);
+	region.push_back(DBL_MAX);
+ 	cut_x_y_poly(region, drawn, _name);
 }
 
 void cut_x_y_lower(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name)
@@ -2003,27 +1985,17 @@ void cut_x_y_lower(double X_min, double Y_min, double X_max, double Y_max, bool 
 
 void cut_x_y_lower(std::vector<double> region, bool drawn, std::string _name)
 {
-	if (NULL == g_data) {
-		status();
+	std::size_t sz = region.size();
+	if (sz < 4) {
+		std::cout<<"Error:cut_x_y_lower: invalid region"<<std::endl;
 		return;
 	}
-	FunctionWrapper *picker = create_x_y_cut(region, 0);
-	if (NULL == picker) {
-		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
-		return;
-	}
-	if (post_processor->isComposite(post_processor->current_type))
-		post_processor->add_hist_cut(picker, _name, -1, false);
-	else {
-		if (post_processor->isMultichannel(post_processor->current_type)) {
-			for (int chi=0, ch=0; post_processor->loop_channels(post_processor->current_type, ch, chi);)
-				post_processor->add_hist_cut(picker, _name, ch, false);
-		} else {
-			post_processor->add_hist_cut(picker, _name, false);
-		}
-	}
-	if (!post_processor->isMultichannel(post_processor->current_type))
-		update();
+	double x1 = region[0], x2 = region[sz-2];
+	region.insert(region.begin(), -DBL_MAX);
+	region.insert(region.begin(), x1);
+	region.push_back(x2);
+	region.push_back(-DBL_MAX);
+	cut_x_y_poly(region, drawn, _name);
 }
 
 void cut_x_y_left(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name)
@@ -2038,27 +2010,17 @@ void cut_x_y_left(double X_min, double Y_min, double X_max, double Y_max, bool d
 
 void cut_x_y_left(std::vector<double> region, bool drawn, std::string _name)
 {
-	if (NULL == g_data) {
-		status();
+	std::size_t sz = region.size();
+	if (sz < 4) {
+		std::cout<<"Error:cut_x_y_left: invalid region"<<std::endl;
 		return;
 	}
-	FunctionWrapper *picker = create_x_y_cut(region, XY_cut_type::Horizontal|XY_cut_type::UpperLeft);
-	if (NULL == picker) {
-		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
-		return;
-	}
-	if (post_processor->isComposite(post_processor->current_type))
-		post_processor->add_hist_cut(picker, _name, -1, false);
-	else {
-		if (post_processor->isMultichannel(post_processor->current_type)) {
-			for (int chi=0, ch=0; post_processor->loop_channels(post_processor->current_type, ch, chi);)
-				post_processor->add_hist_cut(picker, _name, ch, false);
-		} else {
-			post_processor->add_hist_cut(picker, _name, false);
-		}
-	}
-	if (!post_processor->isMultichannel(post_processor->current_type))
-		update();
+	double y1 = region[1], y2 = region[sz-1];
+	region.insert(region.begin(), y1);
+	region.insert(region.begin(), -DBL_MAX);
+	region.push_back(-DBL_MAX);
+	region.push_back(y2);
+	cut_x_y_poly(region, drawn, _name);
 }
 
 void cut_x_y_right(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name)
@@ -2073,23 +2035,38 @@ void cut_x_y_right(double X_min, double Y_min, double X_max, double Y_max, bool 
 
 void cut_x_y_right(std::vector<double> region, bool drawn, std::string _name)
 {
+	std::size_t sz = region.size();
+	if (sz < 4) {
+		std::cout<<"Error:cut_x_y_right: invalid region"<<std::endl;
+		return;
+	}
+	double y1 = region[1], y2 = region[sz-1];
+	region.insert(region.begin(), y1);
+	region.insert(region.begin(), DBL_MAX);
+	region.push_back(DBL_MAX);
+	region.push_back(y2);
+	cut_x_y_poly(region, drawn, _name);
+}
+
+void cut_x_y_poly_select(std::vector<double> region, bool drawn, std::string _name)
+{
 	if (NULL == g_data) {
 		status();
 		return;
 	}
-	FunctionWrapper *picker = create_x_y_cut(region, XY_cut_type::Horizontal);
+	FunctionWrapper *picker = create_x_y_polygon_cut(region, XY_cut_type::Inclusive);
 	if (NULL == picker) {
 		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
 		return;
 	}
 	if (post_processor->isComposite(post_processor->current_type))
-		post_processor->add_hist_cut(picker, _name, -1, false);
+		post_processor->add_hist_cut(picker, _name, -1, !drawn);
 	else {
 		if (post_processor->isMultichannel(post_processor->current_type)) {
 			for (int chi=0, ch=0; post_processor->loop_channels(post_processor->current_type, ch, chi);)
-				post_processor->add_hist_cut(picker, _name, ch, false);
+				post_processor->add_hist_cut(picker, _name, ch, !drawn);
 		} else {
-			post_processor->add_hist_cut(picker, _name, false);
+			post_processor->add_hist_cut(picker, _name, !drawn);
 		}
 	}
 	if (!post_processor->isMultichannel(post_processor->current_type))
@@ -2108,27 +2085,17 @@ void cut_x_y_upper_select(double X_min, double Y_min, double X_max, double Y_max
 
 void cut_x_y_upper_select(std::vector<double> region, bool drawn, std::string _name)
 {
-	if (NULL == g_data) {
-		status();
+	std::size_t sz = region.size();
+	if (sz < 4) {
+		std::cout<<"Error:cut_x_y_upper_select: invalid region"<<std::endl;
 		return;
 	}
-	FunctionWrapper *picker = create_x_y_cut(region, XY_cut_type::UpperLeft|XY_cut_type::Inclusive);
-	if (NULL == picker) {
-		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
-		return;
-	}
-	if (post_processor->isComposite(post_processor->current_type))
-		post_processor->add_hist_cut(picker, _name, -1, false);
-	else {
-		if (post_processor->isMultichannel(post_processor->current_type)) {
-			for (int chi=0, ch=0; post_processor->loop_channels(post_processor->current_type, ch, chi);)
-				post_processor->add_hist_cut(picker, _name, ch, false);
-		} else {
-			post_processor->add_hist_cut(picker, _name, false);
-		}
-	}
-	if (!post_processor->isMultichannel(post_processor->current_type))
-		update();
+	double x1 = region[0], x2 = region[sz-2];
+	region.insert(region.begin(), DBL_MAX);
+	region.insert(region.begin(), x1);
+	region.push_back(x2);
+	region.push_back(DBL_MAX);
+	cut_x_y_poly_select(region, drawn, _name);
 }
 
 void cut_x_y_lower_select(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name)
@@ -2143,27 +2110,17 @@ void cut_x_y_lower_select(double X_min, double Y_min, double X_max, double Y_max
 
 void cut_x_y_lower_select(std::vector<double> region, bool drawn, std::string _name)
 {
-	if (NULL == g_data) {
-		status();
+	std::size_t sz = region.size();
+	if (sz < 4) {
+		std::cout<<"Error:cut_x_y_lower_select: invalid region"<<std::endl;
 		return;
 	}
-	FunctionWrapper *picker = create_x_y_cut(region, XY_cut_type::Inclusive);
-	if (NULL == picker) {
-		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
-		return;
-	}
-	if (post_processor->isComposite(post_processor->current_type))
-		post_processor->add_hist_cut(picker, _name, -1, false);
-	else {
-		if (post_processor->isMultichannel(post_processor->current_type)) {
-			for (int chi=0, ch=0; post_processor->loop_channels(post_processor->current_type, ch, chi);)
-				post_processor->add_hist_cut(picker, _name, ch, false);
-		} else {
-			post_processor->add_hist_cut(picker, _name, false);
-		}
-	}
-	if (!post_processor->isMultichannel(post_processor->current_type))
-		update();
+	double x1 = region[0], x2 = region[sz-2];
+	region.insert(region.begin(), -DBL_MAX);
+	region.insert(region.begin(), x1);
+	region.push_back(x2);
+	region.push_back(-DBL_MAX);
+	cut_x_y_poly_select(region, drawn, _name);
 }
 
 void cut_x_y_left_select(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name)
@@ -2178,27 +2135,17 @@ void cut_x_y_left_select(double X_min, double Y_min, double X_max, double Y_max,
 
 void cut_x_y_left_select(std::vector<double> region, bool drawn, std::string _name)
 {
-	if (NULL == g_data) {
-		status();
+	std::size_t sz = region.size();
+	if (sz < 4) {
+		std::cout<<"Error:cut_x_y_left_select: invalid region"<<std::endl;
 		return;
 	}
-	FunctionWrapper *picker = create_x_y_cut(region, XY_cut_type::Horizontal|XY_cut_type::UpperLeft|XY_cut_type::Inclusive);
-	if (NULL == picker) {
-		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
-		return;
-	}
-	if (post_processor->isComposite(post_processor->current_type))
-		post_processor->add_hist_cut(picker, _name, -1, false);
-	else {
-		if (post_processor->isMultichannel(post_processor->current_type)) {
-			for (int chi=0, ch=0; post_processor->loop_channels(post_processor->current_type, ch, chi);)
-				post_processor->add_hist_cut(picker, _name, ch, false);
-		} else {
-			post_processor->add_hist_cut(picker, _name, false);
-		}
-	}
-	if (!post_processor->isMultichannel(post_processor->current_type))
-		update();
+	double y1 = region[1], y2 = region[sz-1];
+	region.insert(region.begin(), y1);
+	region.insert(region.begin(), -DBL_MAX);
+	region.push_back(-DBL_MAX);
+	region.push_back(y2);
+	cut_x_y_poly_select(region, drawn, _name);
 }
 
 void cut_x_y_right_select(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name)
@@ -2213,27 +2160,17 @@ void cut_x_y_right_select(double X_min, double Y_min, double X_max, double Y_max
 
 void cut_x_y_right_select(std::vector<double> region, bool drawn, std::string _name)
 {
-	if (NULL == g_data) {
-		status();
+	std::size_t sz = region.size();
+	if (sz < 4) {
+		std::cout<<"Error:cut_x_y_right_select: invalid region"<<std::endl;
 		return;
 	}
-	FunctionWrapper *picker = create_x_y_cut(region, XY_cut_type::Horizontal|XY_cut_type::Inclusive);
-	if (NULL == picker) {
-		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
-		return;
-	}
-	if (post_processor->isComposite(post_processor->current_type))
-		post_processor->add_hist_cut(picker, _name, -1, false);
-	else {
-		if (post_processor->isMultichannel(post_processor->current_type)) {
-			for (int chi=0, ch=0; post_processor->loop_channels(post_processor->current_type, ch, chi);)
-				post_processor->add_hist_cut(picker, _name, ch, false);
-		} else {
-			post_processor->add_hist_cut(picker, _name, false);
-		}
-	}
-	if (!post_processor->isMultichannel(post_processor->current_type))
-		update();
+	double y1 = region[1], y2 = region[sz-1];
+	region.insert(region.begin(), y1);
+	region.insert(region.begin(), DBL_MAX);
+	region.push_back(DBL_MAX);
+	region.push_back(y2);
+	cut_x_y_poly_select(region, drawn, _name);
 }
 
 void remcut_A_S_fast_PMT(int channel, std::string _name)
@@ -2251,6 +2188,48 @@ void remcut_A_S_fast_PMT(int channel, std::string _name)
 	}
 	std::string name = ((_name == "") ? "_A_S_fastPMT_" : _name);
 	post_processor->remove_hist_cut(name, channel);
+	if (!post_processor->isMultichannel(post_processor->current_type))
+		update();
+}
+
+
+FunctionWrapper* create_run_selection_cut(int max_index) //do not call from the CINT
+{
+	struct temp_data {
+		int max_index;
+	};
+	temp_data * st_data = new temp_data;
+	st_data->max_index = max_index;
+	FunctionWrapper *picker = new FunctionWrapper(st_data);
+	picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
+		temp_data* d = ((temp_data*)data);
+		return run < d->max_index;
+	});
+	return picker;
+}
+
+void cut_runs(int max_index, std::string _name)
+{
+	if (NULL == g_data) {
+		status();
+		return;
+	}
+	FunctionWrapper *picker = create_run_selection_cut(max_index);
+	if (NULL == picker) {
+		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
+		return;
+	}
+	std::string name = ((_name == "") ? "_run_selection_" : _name);
+	if (post_processor->isComposite(post_processor->current_type))
+		post_processor->add_hist_cut(picker, name, -1, true);
+	else {
+		if (post_processor->isMultichannel(post_processor->current_type)) {
+			for (int chi=0, ch=0; post_processor->loop_channels(post_processor->current_type, ch, chi);)
+				post_processor->add_hist_cut(picker, name, ch, true);
+		} else {
+			post_processor->add_hist_cut(picker, name, true);
+		}
+	}
 	if (!post_processor->isMultichannel(post_processor->current_type))
 		update();
 }

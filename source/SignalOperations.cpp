@@ -2939,4 +2939,63 @@ namespace SignalOperations {
 		}
 		return max_t;
 	}
+
+	//returns log likelihood - faster to compute and not overflows
+	double get_likelihood(std::deque<peak_processed> &peaks, DataVector& pulse_shape, double offset, int trigger_type)
+	{
+		//enum TriggerType : int {tbNpeaks = 0, tbNpe = 1, tbS = 2}; //tb = trigger by
+		double ret = 1.0;
+		for (auto pk = peaks.begin(), pk_end_ = peaks.end(); pk!=pk_end_; ++pk) {
+			if (trigger_type == 2 && pk->S<=0)
+				continue;
+			if (trigger_type == 1 && pk->Npe<=0)
+				continue;
+			double res = pulse_shape(pk->t - offset);
+			res = (DBL_MAX == res || res < 0 ? 0 : std::log(res));
+			if (trigger_type == 2)
+				res *= pk->S;
+			if (trigger_type == 1)
+				res *= pk->Npe;
+			ret += res;
+		}
+		return ret;
+	}
+
+	//Too costly to actually find max by gradient descend (+ local maximums problem), so simple brute-force approach is used.
+	double find_trigger_by_fit(std::deque<peak_processed> &peaks, DataVector& pulse_shape, int trigger_type, double first_scan_dt, double target_precision)
+	{
+		first_scan_dt = std::fabs(first_scan_dt);
+		target_precision = std::fabs(target_precision);
+		std::size_t sz = pulse_shape.size();
+		double range = pulse_shape.getX(sz-1) - pulse_shape.getX(0);
+
+		//First, find rough maximum with precision first_scan_dt
+		int N1 = (int)(2*range/first_scan_dt) + 1;
+		double rough_like = 0;
+		int i_max = -1;
+		for (int i = 0; i < N1; ++i) {
+			double offset = -range + i*first_scan_dt;
+			double like = get_likelihood(peaks, pulse_shape, offset, trigger_type);
+			if (like > rough_like) {
+				rough_like = like;
+				i_max = i;
+			}
+		}
+		//Second, find more precise maximum with precision target_precision in the neighbourhood of rough maximum
+		int N2 = (int)(2*first_scan_dt/target_precision) + 1;
+		double result_like = 0;
+		double rough_offset = (i_max < 0 ? 0 : -range + i_max*first_scan_dt);
+		i_max = -1;
+		for (int i = 0; i < N2; ++i) {
+			double offset = rough_offset - first_scan_dt + i*target_precision;
+			double like = get_likelihood(peaks, pulse_shape, offset, trigger_type);
+			if (like > result_like) {
+				result_like = like;
+				i_max = i;
+			}
+		}
+
+		return (i_max < 0 ? 0 : rough_offset - first_scan_dt + i_max*target_precision);
+	}
+
 };

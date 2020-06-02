@@ -2,9 +2,9 @@
 #define POST_PROCESSOR_H
 
 #include "SignalOperations.h"
-#include "AnalysisStates.h"
 #include "AllExperimentsResults.h"
 #include "GraphicOutputManager.h"
+#include "AnalysisStates.h"
 #include "HistogramSetups.h"
 #include "CalibrationInfo.h"
 
@@ -17,24 +17,26 @@
 //6) std::string AnalysisStates::type_name(Type type) const;
 //7) AnalysisStates::isTH1Dhist(Type::type) const;
 //8) AnalysisStates::isVirtual(Type::type) const;
-//9) Bool_t AStates::isTrigger(Type type) const;
 
-//10) void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int channel, Type type);
-//11) bool PostProcessor::set_correlation_filler(FunctionWrapper* operation, Type type);
-//12) void PostProcessor::print_hist(std::string path);
-//13) bool PostProcessor::update(void);
-//14) void PostProcessor::update_physical(void)
-//15) void PostProcessor::default_hist_setups(HistogramSetups*);
+//9) Corresponding StateData.h if necessary (initialized in PostProcessor::default_hist_setups(HistogramSetups*))
+//10) StateData::IsForState_virt for each class derived from StateData including StateData itself
 
-//15) 2nd tier methods in main:
+//11) void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int channel, Type type);
+//12) bool PostProcessor::set_correlation_filler(FunctionWrapper* operation, Type type);
+//13) void PostProcessor::print_hist(std::string path);
+//14) bool PostProcessor::update(void);
+//15) void PostProcessor::update_physical(void)
+//16) void PostProcessor::default_hist_setups(HistogramSetups*);
+
+//17) 2nd tier methods in main:
 //	FunctionWrapper* create_vertical_lines_cut(double left, double right)
 //	FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region)
 //	FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region)
 //	FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region)
 //	FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region)
 //	FunctionWrapper* create_A_S_upper_cut(std::vector<double> region)
-//	FunctionWrapper* create_x_y_vertical_cut(std::vector<double> region, bool right, bool select)
-//	FunctionWrapper* create_x_y_horizontal_cut(std::vector<double> region, bool right, bool select)
+//	FunctionWrapper* create_x_y_cut(std::vector<double> region, unsigned int cut_type)
+
 
 class PostProcessor : public CanvasSetups {
 public:
@@ -73,7 +75,6 @@ protected:
 	virtual Bool_t CorrelationXChange(int exp_index, int to_ch, Type to_type, int from_ch, Type from_type);
 	virtual Bool_t CorrelationYChange(int exp_index, int to_ch, Type to_type, int from_ch, Type from_type);
 	
-	virtual bool Invalidate(unsigned int label);
 
 	std::size_t numOfRuns (void);
 	std::pair<double, double> hist_x_limits(bool consider_displayed_cuts = false); //considering cuts
@@ -85,6 +86,7 @@ protected:
 
 	std::string hist_name();
 	void print_hist(std::string path, bool png_only); //use "" for default path
+	virtual bool Invalidate(unsigned int label);
 public:
 	void LoopThroughData(std::vector<Operation> &operations, int channel, Type type);
 
@@ -134,8 +136,8 @@ public:
 	bool set_Y_title(std::string text);
 
 	//Trigger adjustment related:
-	bool set_time_window(double val);
-	double get_time_window(void) const;
+	//bool set_time_window(double val);
+	//double get_time_window(void) const;
 	bool unset_trigger_offsets(void);
 	bool set_trigger_offsets(double extra_offset); //uses trigger type histogram only
 
@@ -144,6 +146,9 @@ public:
 	void set_parameter_limits(int index, double left, double right);
 
 	void status(Bool_t full);
+public:
+	friend class StateData;
+	friend class TriggerData;
 };
 
 #endif

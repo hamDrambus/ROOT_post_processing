@@ -139,7 +139,7 @@ public:
 	void push_back(double x, double y);
 
 	//save/load full state except cache from file
-	void read(std::ifstream& str);
+	void read(std::ifstream& str, bool must_have_header = true);
 	void write(std::string fname, std::string comment = "") const;
 	void write(std::ofstream& str, std::string comment = "") const;
 

@@ -72,7 +72,7 @@ double average(TH1D *hist, double from, double to) {
 
 void SetParLimits(TF1* f, int n, double lower, double upper) {
 	if (lower!=upper)
-		f->SetParLimits(n, lower, upper);
+		f->SetParLimits(n, std::min(lower, upper), std::max(lower, upper));
 	else
 		f->FixParameter(n, lower);
 }
@@ -1267,14 +1267,15 @@ define->fit_option = def_fit_option;
 	std::vector<std::string> tau1, tau2, frsS, frsL;
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {
 		std::string emp = "";
+		std::string unit = " #mus";
 		if (pulses[hh].tau1.empty() || pulses[hh].tau1 == "--")
 			tau1.push_back(emp);
 		else
-			tau1.push_back("#tau_{S}=" + pulses[hh].tau1 + (print_errors ? "#pm" + pulses[hh].tau1_err : emp));
+			tau1.push_back("#tau_{S}=" + pulses[hh].tau1 + (print_errors ? "#pm" + pulses[hh].tau1_err : unit));
 		if (pulses[hh].tau2.empty() || pulses[hh].tau2 == "--")
 			tau2.push_back("");
 		else
-			tau2.push_back("#tau_{L}=" + pulses[hh].tau2  + (print_errors ? "#pm" + pulses[hh].tau2_err : emp));
+			tau2.push_back("#tau_{L}=" + pulses[hh].tau2  + (print_errors ? "#pm" + pulses[hh].tau2_err : unit));
 		if (pulses[hh].Fr1.empty() || pulses[hh].Fr1 == "--")
 			frsS.push_back("");
 		else
@@ -1301,7 +1302,7 @@ define->fit_option = def_fit_option;
 		}
 	} else {
 		std::vector<std::string> no_title;
-		std::vector<std::string> Slow_title = {"Slow component", "contribution:"};
+		std::vector<std::string> Slow_title = {"Slow component", "Contribution:"};
 		std::vector<std::string> Long_title;// = {"Long"};
 		add_text(36, 0.15, no_title, tau1, palette_major);
 		add_text(46, 0.15, Slow_title, frsS, palette_major);

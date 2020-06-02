@@ -253,7 +253,7 @@ void DataVector::push_back(double x, double y)//faster version not checking that
 	xys.push_back(std::pair<double, double>(x, y));
 }
 
-void DataVector::read(std::ifstream& str) //DONE: add try/catch for handling stoi and stod
+void DataVector::read(std::ifstream& str, bool must_have_header) //DONE: add try/catch for handling stoi and stod
 {
 	clear();
 	std::string line, word;
@@ -269,10 +269,28 @@ void DataVector::read(std::ifstream& str) //DONE: add try/catch for handling sto
 				std::size_t ival;
 				bool is_set_right;
 				bool is_set_left;
-				if (line.size() < 2)
+				if (line.size() < 2 && must_have_header)
 					throw std::runtime_error("Header line has wrong format (too small, does not start with \"//\")");
-				if ((line[0] != '/') || (line[1] != '/'))
+				if (((line[0] != '/') || (line[1] != '/')) && must_have_header)
 					throw std::runtime_error("Header line has wrong format (does not start with \"//\")");
+				if (!must_have_header && (line.size() < 2 || line[0] != '/' || line[1] != '/')) { //not comment and we don't have to have header
+					try {
+						word = strtoken(line, "\t ");
+						double x = boost::lexical_cast<double>(word);
+						word = strtoken(line, "\t ");
+						double val = boost::lexical_cast<double>(word);
+						insert(x, val);
+					}
+					catch (boost::bad_lexical_cast &e) {
+						continue;
+					}
+					catch (std::exception &e) {
+						std::cerr << "DataVector::read: Unforeseen exception on line " << line_n << std::endl;
+						std::cerr << e.what() << std::endl;
+						return;
+					}
+					continue;
+				}
 				line.erase(line.begin(), line.begin() + 2);
 				word = strtoken(line, "\t ");
 				++word_n;
@@ -321,22 +339,26 @@ void DataVector::read(std::ifstream& str) //DONE: add try/catch for handling sto
 				continue;
 			}
 			catch (boost::bad_lexical_cast &e) {
-				std::cerr << "DataVector::read: Error on line " << line_n << ". Can't convert word #" << word_n << " \"" << word << "\" to numerical value" << std::endl;
-				std::cerr << e.what() << std::endl;
-				std::cerr << "DataVector::read: bad header" << std::endl;
-				use_rightmost(false);
-				use_leftmost(false);
-				unset_out_value();
-				return;
+				if (must_have_header) {
+					std::cerr << "DataVector::read: Error on line " << line_n << ". Can't convert word #" << word_n << " \"" << word << "\" to numerical value" << std::endl;
+					std::cerr << e.what() << std::endl;
+					std::cerr << "DataVector::read: bad header" << std::endl;
+					use_rightmost(false);
+					use_leftmost(false);
+					unset_out_value();
+					return;
+				}
 			}
 			catch (std::exception &e) {
-				std::cerr << "DataVector::read: Unforeseen exception on line " << line_n << " word #" << word_n << ":" << std::endl;
-				std::cerr << e.what() << std::endl;
-				std::cerr << "DataVector::read: bad header" << std::endl;
-				use_rightmost(false);
-				use_leftmost(false);
-				unset_out_value();
-				return;
+				if (must_have_header) {
+					std::cerr << "DataVector::read: Unforeseen exception on line " << line_n << " word #" << word_n << ":" << std::endl;
+					std::cerr << e.what() << std::endl;
+					std::cerr << "DataVector::read: bad header" << std::endl;
+					use_rightmost(false);
+					use_leftmost(false);
+					unset_out_value();
+					return;
+				}
 			}
 		}
 		if (line.size() >= 2) //Ignore simple c style comment

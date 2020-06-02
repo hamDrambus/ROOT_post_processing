@@ -4,11 +4,16 @@
 #include "GlobalParameters.h"
 #include "EventCut.h"
 
+class StateData;
+class TriggerData;
+
 class HistogramSetups //just helper class, has no functionality in itself
 //part of defaults are set in PostProcessor. Default invalidate is in the constructor
 {
 public:
 	HistogramSetups(const std::deque<int>& channels);
+	HistogramSetups(const HistogramSetups& setups);
+	~HistogramSetups();
 	std::deque<EventCut> hist_cuts;
 	channel_info<bool> active_channels;
 	int N_bins;
@@ -25,7 +30,7 @@ public:
 	std::string x_axis_title, y_axis_title;
 	Bool_t is_valid_fit_function;
 	Bool_t use_default_setups;
-	double time_window; //for trigger adjustment algorithm
+	StateData* extra_data; //for example parameters for trigger adjustment algorithm
 
 #ifndef __ROOTCLING__
 	//1st tier parameters of distribution: (stored in order to minimize calls of LoopThroughData to recalculate them)
@@ -104,6 +109,9 @@ public:
 	CanvasSetups(std::deque<int> &mppc_channsels_, std::deque<int> &pmt_channsels_, std::deque<std::string>& experiments_);
 	void next_canvas(void);
 	void previous_canvas(void);
+public:
+	friend class StateData;
+	friend class TriggerData;
 };
 
 #endif

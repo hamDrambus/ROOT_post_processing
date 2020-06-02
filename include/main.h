@@ -22,9 +22,12 @@
 * 	Maybe and render function for EventCut
 * DONE: work out which commands exactly will be needed to obtain signal forms
 *	and optimize interface based on that.
+* TODO: some of the cuts' code is redundant (can be implemented via more general viewRegion::IsInPolygon method)
+*
 */
 //DONE: new interface:
 //+//
+//2020.05.09 UPD: part of interface is now in StateData.h (setters/getters related to specific settings of AState)
 enum XY_cut_type : unsigned int {Horizontal = 0x1, UpperLeft = 0x2, Inclusive = 0x4}; //e.g. 0b111 = 7 = cut_x_y_upper_select, 0b000 = cut_x_y_right
 
 void Initialize(bool pars_in_script = true);
@@ -44,8 +47,8 @@ void set_parameter_val(int index, double val);
 void set_parameter_limits(int index, double left, double right);
 void do_fit(bool is_on);	//always updates visuals
 
-void set_trigger_shaping(double val); //in microseconds
-double get_trigger_shaping(void); //in microseconds
+//void set_trigger_shaping(double val); //in microseconds
+//double get_trigger_shaping(void); //in microseconds
 void unset_trigger_offsets(void);
 void set_trigger_offsets(double extra_offset); //uses trigger type histogram only. extra_offset is in microseconds
 
@@ -151,6 +154,8 @@ void cut_A_S_right(double A_min, double S_min, double A_max, double S_max, bool 
 void cut_A_S_right(std::vector<double> region, bool drawn, int channel = -1, std::string _name = "");
 void remcut_A_S_right(int channel = -1, std::string _name = "");
 
+void cut_x_y_poly(std::vector<double> region, bool drawn, std::string _name);
+
 void cut_x_y_upper(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name = "");
 void cut_x_y_upper(std::vector<double> region, bool drawn, std::string _name = "");
 
@@ -163,6 +168,8 @@ void cut_x_y_left(std::vector<double> region, bool drawn, std::string _name = ""
 void cut_x_y_right(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name = "");
 void cut_x_y_right(std::vector<double> region, bool drawn, std::string _name = "");
 
+void cut_x_y_poly_select(std::vector<double> region, bool drawn, std::string _name);
+
 void cut_x_y_upper_select(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name = "");
 void cut_x_y_upper_select(std::vector<double> region, bool drawn, std::string _name = "");
 
@@ -174,6 +181,8 @@ void cut_x_y_left_select(std::vector<double> region, bool drawn, std::string _na
 
 void cut_x_y_right_select(double X_min, double Y_min, double X_max, double Y_max, bool drawn, std::string _name = "");
 void cut_x_y_right_select(std::vector<double> region, bool drawn, std::string _name = "");
+
+void cut_runs(int max_index, std::string _name = "");
 
 #ifdef _COMPLIE_MAIN_
 int main(int argc, char* argv[]) {

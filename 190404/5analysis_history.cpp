@@ -462,22 +462,17 @@ if (channel==59) {
 
 }
 
-void analysis_history(bool calibrate, unsigned int method = 0) {
-//Created on 04.05.2020
-//method = 0 - use fast PMTs for trigger_v2 (byNpe for large fields/byNpeaks for low) with
-//optimal dt determined as
-//dt_trigger_optimal[us] = 0.3923 + 0.9728*Tdrift(18mm)[us] (for previous analysis)
-//method = 1 - same as 0 but not using trigger adjustment (raw signals, but with same event selection as 0)
-data_output_path = "190404/results_v4/";
+void analysis_history(bool calibrate, unsigned int iteration = 0) {
+//Created on 2020.05.11
+//Depends on save_forms.cpp (requires .L)
+//iteration = 0 - no trigger adjustment.
+//iteration > 0 - use fast PMTs for trigger_fit (byNpe for large fields/byNpeaks for low) with
+//experimental pulse-shape determined from previous iteration
+data_output_path = "190404/results_v5/";
 calibration_file = data_output_path + "190404_calibration.dat";
 post_processor->calibr_info.Load(calibration_file);
-trigger_version = TriggerVersion::trigger_v2;
-if (method==1)
-	data_output_path = "190404/results_v1/";
-if (method>1) {
-	std::cout<<"There is no method > 1, quitting"<<std::endl;
-	return;
-}
+std::string iter_str = int_to_str((std::size_t)iteration, 2);
+
 std::map<std::string, std::pair<double, double> > S2_times;
 S2_times["190404_Cd_20kV_850V_46V_th250mV_0"] = std::pair<double, double> (25, 40);
 S2_times["190404_Cd_20kV_850V_46V_th250mV"] = std::pair<double, double> (25, 40);
@@ -779,21 +774,17 @@ auto first_run_entry = experiment_runs.find(exp);
 if (first_run_entry != experiment_runs.end())
     first_run = first_run_entry->second;
 else {
-    std::cout<<"Could not find starting run index for '"<<exp<<"'! Will print invalid event indexes."<<std::endl;
+    std::cout<<"Error: Could not find starting run index for '"<<exp<<"'! Will print invalid event indexes."<<std::endl;
     first_run = -10000;
 }
 
 if ((exp == "190404_Cd_20kV_850V_46V_th250mV" || exp == "190404_Cd_20kV_850V_46V_th250mV_0")) {
-	double dt_shaping = 0.3923 + 0.9728*drift_time_from_kV(experiment_fields[exp], 1.8);
-	std::string dt = "dt="+dbl_to_str(dt_shaping, 1)+"us";
-	std::string DT = "dt="+dbl_to_str(dt_shaping, 1)+"#mus"; //ROOT supports greek letters
 	std::string cuts = "no_cuts";
 	std::string zoomx = "Npe" + dbl_to_str(160-d_S2_start, 0);
 	std::string zoomy = "Npe" + dbl_to_str(d_S2_finish-d_S2_start, 0);
-	double trigger_at = 32;
 	int no = 0; //picture number
 	std::string Num = int_to_str(++no, 2); //="01"
-	std::string FOLDER = data_output_path + folder + "/";
+	std::string FOLDER = data_output_path + folder + "/iteration_" + iter_str + "/";
 
 	//Set AStates::PMT_Npe_sum and AStates::PMT_sum_N cuts for future correlations
 	ty(AStates::PMT_Npe_sum);
@@ -818,41 +809,33 @@ if ((exp == "190404_Cd_20kV_850V_46V_th250mV" || exp == "190404_Cd_20kV_850V_46V
 	saveaspng(FOLDER + Num+"_fastPMTs_Npeaks_"+cuts);
 	Num = int_to_str(++no, 2);
 
-	ty(AStates::PMT_trigger_bNpeaks); //May have poor results because of merged and >1phe peaks
-	off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
-	noise_cut(8, 0, PMT_state, 0);
-	noise_cut(9, 0, PMT_state, 0);
-	noise_cut(10, 0, PMT_state, 0);
-	noise_cut(11, 0, PMT_state, 0);
-	set_trigger_shaping(dt_shaping);
-	set_zoom(20, 40);
-	set_bins(300);
-	saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
-	Num = int_to_str(++no, 2);
+	if (iteration > 0) {
+		std::string PREV_FOLDER = data_output_path + folder + "/iteration_" + int_to_str((std::size_t)(iteration - 1), 2) + "/";
+		ty(AStates::PMT_trigger_fit); //May have poor results because of merged and >1phe peaks
+		off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
+		noise_cut(8, 0, PMT_state, 0);
+		noise_cut(9, 0, PMT_state, 0);
+		noise_cut(10, 0, PMT_state, 0);
+		noise_cut(11, 0, PMT_state, 0);
+		set_zoom(-20, 20);
+		set_bins(300);
+		TriggerFitData::SetTriggerType(TriggerFitData::tbNpeaks);
+		TriggerFitData::SetTriggerFirstScant(1.6);
+		TriggerFitData::SetTriggerPrecision(0.1);
+		TriggerFitData::SetPulseShape(PREV_FOLDER + "A_4PMT_fast_by_S.dat");
+		saveaspng(FOLDER + Num+"_fastPMTs_Npeaks_trigger_"+cuts+"_zoom");
+		Num = int_to_str(++no, 2);
 
-	ty(AStates::PMT_trigger_bS); //May have poor results because it gives preference to single channel (to PMT with largest gain)
-	off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
-	noise_cut(8, 0, PMT_state, 0);
-	noise_cut(9, 0, PMT_state, 0);
-	noise_cut(10, 0, PMT_state, 0);
-	noise_cut(11, 0, PMT_state, 0);
-	set_trigger_shaping(dt_shaping);
-	set_zoom(20, 40);
-	set_bins(300);
-	saveaspng(FOLDER + Num+"_fastPMTs_Strigger_"+cuts+"_"+dt+"_zoom");
-	Num = int_to_str(++no, 2);
+		TriggerFitData::SetTriggerType(TriggerFitData::tbS);
+		update();
+		saveaspng(FOLDER + Num+"_fastPMTs_S_trigger_"+cuts+"_zoom");
+		Num = int_to_str(++no, 2);
 
-	ty(AStates::PMT_trigger_bNpe); //May have poor results because fast PMTs have bad calibration precision
-	off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
-	noise_cut(8, 0, PMT_state, 0);
-	noise_cut(9, 0, PMT_state, 0);
-	noise_cut(10, 0, PMT_state, 0);
-	noise_cut(11, 0, PMT_state, 0);
-	set_trigger_shaping(dt_shaping);
-	set_zoom(20, 40);
-	set_bins(300);
-	saveaspng(FOLDER + Num+"_slowPMTs_trigger_"+cuts+"_"+dt+"_zoom");
-	Num = int_to_str(++no, 2);
+		TriggerFitData::SetTriggerType(TriggerFitData::tbNpe);
+		update();
+		saveaspng(FOLDER + Num+"_fastPMTs_Npe_trigger_"+cuts+"_zoom");
+		Num = int_to_str(++no, 2);
+	}
 
 set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	ty(AStates::Correlation_y);
@@ -882,46 +865,20 @@ set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1"); remcut(-1, "2"); remcut(-1, "3"); remcut(-1, "4");
 	
-	//Pic for paper:
-	ty(AStates::PMT_Npe_sum);
-	draw_limits(25, 67);
-	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
-	Num = int_to_str(++no, 2);
-	//end pic for paper
+	if (iteration > 0) {
+	ty(AStates::PMT_trigger_fit);
+		draw_limits(-3, 2);
+		saveaspng(FOLDER + Num+"_fastPMTs_Npe_trigger_"+cuts+"_zoom");
+		set_as_run_cut("good_trigger"); cuts += "+" + Num;
+		set_trigger_offsets(0.0);
+		print_rejected_events(FOLDER + Num + "_rejected_events.txt", first_run);
+		remcut(-1, "1"); remcut(-1, "2"); remcut(-1, "3"); remcut(-1, "4"); remcut(-1, "5");  remcut(-1, "6");
+		Num = int_to_str(++no, 2);
 
-set_corr(AStates::PMT_trigger_bNpeaks, AStates::PMT_trigger_bNpe, -1, -1);
-	ty(AStates::Correlation);
-	set_zoom(20, 45, 20, 45);
-	set_bins(600);
-	cut_x_y_right(33, 0, 33, 160, true, "1");
-	cut_x_y_upper(0, 33, 160, 33, true, "2");
-	cut_x_y_left(24.13, 0, 24.13, 160, true, "3");
-	cut_x_y_lower(0, 24.04, 160, 24.04, true, "4");
-	cut_x_y_right(24.58, 22.32, 40.38, 37.97, true, "5");
-	cut_x_y_left(22.20, 24.24, 38.54, 41.69, true, "6");
-	update();
-	set_titles("t by fastPMTs by N peaks " + DT, "t by fastPMTs by Npe" + DT);
-	set_as_run_cut("good_trigger"); cuts += "+" + Num;
-	saveaspng(FOLDER + Num+"_fastPMTs_Npe_Npeaks_trigger_"+cuts+"_"+dt+"_zoom");
-	print_rejected_events(FOLDER + Num + "_rejected_events.txt", first_run);
-	remcut(-1, "1"); remcut(-1, "2"); remcut(-1, "3"); remcut(-1, "4"); remcut(-1, "5");  remcut(-1, "6");
-	Num = int_to_str(++no, 2);
-
-ty(AStates::PMT_trigger_bNpe);
-	saveaspng(FOLDER + Num+"_fastPMTs_Npetrigger_"+cuts+"_"+dt+"_zoom");
-	if (0==method) {
-		set_trigger_offsets(trigger_at);
-		cuts += "+" + Num;
+		//TriggerFitData::SetTriggerType(TriggerFitData::tbS);
+		//saveaspng(FOLDER + Num+"_fastPMTs_S_trigger_"+cuts+"_zoom");
+		//Num = int_to_str(++no, 2);
 	}
-	Num = int_to_str(++no, 2);
-
-ty(AStates::PMT_trigger_bNpeaks);
-	saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
-	Num = int_to_str(++no, 2);
-
-ty(AStates::PMT_trigger_bS);
-	saveaspng(FOLDER + Num+"_fastPMTs_Strigger_"+cuts+"_"+dt+"_zoom");
-	Num = int_to_str(++no, 2);
 
 ty(AStates::PMT_sum_N);
 	time_zoom_fPMTs(d_S2_start, d_S2_finish);
@@ -973,8 +930,12 @@ ty(AStates::PMT_Npe_sum);
 save_forms(FOLDER + "forms_cosmic/", false, PMT_state, SiPM_state);
 	unset_as_run_cut("En_spec");
 	cuts.erase(cuts.end()-3, cuts.end());
+
+	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_4PMT_fast_by_S", 800, 3);//from save_forms.cpp. For next iteration trigger fit
+	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_SiPMs_by_Npe", 800, 5);//from save_forms.cpp. For next iteration trigger fit
 }
 
+/*
 if (exp == "190404_Cd_18kV_850V_46V_th230mV") {
 	double dt_shaping = 0.3923 + 0.9728*drift_time_from_kV(experiment_fields[exp], 1.8);
 	std::string dt = "dt="+dbl_to_str(dt_shaping, 1)+"us";
@@ -1016,7 +977,7 @@ if (exp == "190404_Cd_18kV_850V_46V_th230mV") {
 	noise_cut(9, 0, PMT_state, 0);
 	noise_cut(10, 0, PMT_state, 0);
 	noise_cut(11, 0, PMT_state, 0);
-	set_trigger_shaping(dt_shaping);
+	TriggerData::SetShaping(dt_shaping);
 	set_zoom(20, 40);
 	set_bins(300);
 	saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
@@ -1028,7 +989,7 @@ if (exp == "190404_Cd_18kV_850V_46V_th230mV") {
 	noise_cut(9, 0, PMT_state, 0);
 	noise_cut(10, 0, PMT_state, 0);
 	noise_cut(11, 0, PMT_state, 0);
-	set_trigger_shaping(dt_shaping);
+	TriggerData::SetShaping(dt_shaping);
 	set_zoom(20, 40);
 	set_bins(300);
 	saveaspng(FOLDER + Num+"_fastPMTs_Strigger_"+cuts+"_"+dt+"_zoom");
@@ -1040,7 +1001,7 @@ if (exp == "190404_Cd_18kV_850V_46V_th230mV") {
 	noise_cut(9, 0, PMT_state, 0);
 	noise_cut(10, 0, PMT_state, 0);
 	noise_cut(11, 0, PMT_state, 0);
-	set_trigger_shaping(dt_shaping);
+	TriggerData::SetShaping(dt_shaping);
 	set_zoom(20, 40);
 	set_bins(300);
 	saveaspng(FOLDER + Num+"_slowPMTs_trigger_"+cuts+"_"+dt+"_zoom");
@@ -1202,7 +1163,7 @@ if (exp == "190404_Cd_16kV_850V_46V_th210mV") {
 	noise_cut(9, 0, PMT_state, 0);
 	noise_cut(10, 0, PMT_state, 0);
 	noise_cut(11, 0, PMT_state, 0);
-	set_trigger_shaping(dt_shaping);
+	TriggerData::SetShaping(dt_shaping);
 	set_zoom(20, 40);
 	set_bins(300);
 	saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
@@ -1214,7 +1175,7 @@ if (exp == "190404_Cd_16kV_850V_46V_th210mV") {
 	noise_cut(9, 0, PMT_state, 0);
 	noise_cut(10, 0, PMT_state, 0);
 	noise_cut(11, 0, PMT_state, 0);
-	set_trigger_shaping(dt_shaping);
+	TriggerData::SetShaping(dt_shaping);
 	set_zoom(20, 40);
 	set_bins(300);
 	saveaspng(FOLDER + Num+"_fastPMTs_Strigger_"+cuts+"_"+dt+"_zoom");
@@ -1226,7 +1187,7 @@ if (exp == "190404_Cd_16kV_850V_46V_th210mV") {
 	noise_cut(9, 0, PMT_state, 0);
 	noise_cut(10, 0, PMT_state, 0);
 	noise_cut(11, 0, PMT_state, 0);
-	set_trigger_shaping(dt_shaping);
+	TriggerData::SetShaping(dt_shaping);
 	set_zoom(20, 40);
 	set_bins(300);
 	saveaspng(FOLDER + Num+"_slowPMTs_trigger_"+cuts+"_"+dt+"_zoom");
@@ -1387,7 +1348,7 @@ if (exp == "190404_Cd_14kV_850V_46V_th200mV") {
 	noise_cut(9, 0, PMT_state, 0);
 	noise_cut(10, 0, PMT_state, 0);
 	noise_cut(11, 0, PMT_state, 0);
-	set_trigger_shaping(dt_shaping);
+	TriggerData::SetShaping(dt_shaping);
 	set_zoom(20, 40);
 	set_bins(300);
 	saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
@@ -1399,7 +1360,7 @@ if (exp == "190404_Cd_14kV_850V_46V_th200mV") {
 	noise_cut(9, 0, PMT_state, 0);
 	noise_cut(10, 0, PMT_state, 0);
 	noise_cut(11, 0, PMT_state, 0);
-	set_trigger_shaping(dt_shaping);
+	TriggerData::SetShaping(dt_shaping);
 	set_zoom(20, 40);
 	set_bins(300);
 	saveaspng(FOLDER + Num+"_fastPMTs_Strigger_"+cuts+"_"+dt+"_zoom");
@@ -1411,7 +1372,7 @@ if (exp == "190404_Cd_14kV_850V_46V_th200mV") {
 	noise_cut(9, 0, PMT_state, 0);
 	noise_cut(10, 0, PMT_state, 0);
 	noise_cut(11, 0, PMT_state, 0);
-	set_trigger_shaping(dt_shaping);
+	TriggerData::SetShaping(dt_shaping);
 	set_zoom(20, 40);
 	set_bins(300);
 	saveaspng(FOLDER + Num+"_slowPMTs_trigger_"+cuts+"_"+dt+"_zoom");
@@ -1572,7 +1533,7 @@ if (exp == "190404_Cd_12kV_850V_46V_th160mV") {
 	noise_cut(9, 0, PMT_state, 0);
 	noise_cut(10, 0, PMT_state, 0);
 	noise_cut(11, 0, PMT_state, 0);
-	set_trigger_shaping(dt_shaping);
+	TriggerData::SetShaping(dt_shaping);
 	set_zoom(20, 40);
 	set_bins(300);
 	saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
@@ -1584,7 +1545,7 @@ if (exp == "190404_Cd_12kV_850V_46V_th160mV") {
 	noise_cut(9, 0, PMT_state, 0);
 	noise_cut(10, 0, PMT_state, 0);
 	noise_cut(11, 0, PMT_state, 0);
-	set_trigger_shaping(dt_shaping);
+	TriggerData::SetShaping(dt_shaping);
 	set_zoom(20, 40);
 	set_bins(300);
 	saveaspng(FOLDER + Num+"_fastPMTs_Strigger_"+cuts+"_"+dt+"_zoom");
@@ -1596,7 +1557,7 @@ if (exp == "190404_Cd_12kV_850V_46V_th160mV") {
 	noise_cut(9, 0, PMT_state, 0);
 	noise_cut(10, 0, PMT_state, 0);
 	noise_cut(11, 0, PMT_state, 0);
-	set_trigger_shaping(dt_shaping);
+	TriggerData::SetShaping(dt_shaping);
 	set_zoom(20, 40);
 	set_bins(300);
 	saveaspng(FOLDER + Num+"_slowPMTs_trigger_"+cuts+"_"+dt+"_zoom");
@@ -1702,18 +1663,14 @@ save_forms(FOLDER + "forms_cosmic/", false, PMT_state, SiPM_state);
 	unset_as_run_cut("En_spec");
 	cuts.erase(cuts.end()-3, cuts.end());
 }
-
+*/
 if (exp == "190404_Cd_10kV_850V_46V_th150mV") {
-	double dt_shaping = 0.3923 + 0.9728*drift_time_from_kV(experiment_fields[exp], 1.8);
-	std::string dt = "dt="+dbl_to_str(dt_shaping, 1)+"us";
-	std::string DT = "dt="+dbl_to_str(dt_shaping, 1)+"#mus"; //ROOT supports greek letters
 	std::string cuts = "no_cuts";
 	std::string zoomx = "Npe" + dbl_to_str(160-d_S2_start, 0);
 	std::string zoomy = "Npe" + dbl_to_str(d_S2_finish-d_S2_start, 0);
-	double trigger_at = 32;
 	int no = 0; //picture number
 	std::string Num = int_to_str(++no, 2); //="01"
-	std::string FOLDER = data_output_path + folder + "/";
+	std::string FOLDER = data_output_path + folder + "/iteration_" + iter_str + "/";
 
 	//Set AStates::PMT_Npe_sum and AStates::PMT_sum_N cuts for future correlations
 	ty(AStates::PMT_Npe_sum);
@@ -1738,41 +1695,33 @@ if (exp == "190404_Cd_10kV_850V_46V_th150mV") {
 	saveaspng(FOLDER + Num+"_fastPMTs_Npeaks_"+cuts);
 	Num = int_to_str(++no, 2);
 
-	ty(AStates::PMT_trigger_bNpeaks); //May have poor results because of merged and >1phe peaks
-	off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
-	noise_cut(8, 0, PMT_state, 0);
-	noise_cut(9, 0, PMT_state, 0);
-	noise_cut(10, 0, PMT_state, 0);
-	noise_cut(11, 0, PMT_state, 0);
-	set_trigger_shaping(dt_shaping);
-	set_zoom(20, 40);
-	set_bins(300);
-	saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
-	Num = int_to_str(++no, 2);
+	if (iteration > 0) {
+		std::string PREV_FOLDER = data_output_path + folder + "/iteration_" + int_to_str((std::size_t)(iteration - 1), 2) + "/";
+		ty(AStates::PMT_trigger_fit); //May have poor results because of merged and >1phe peaks
+		off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
+		noise_cut(8, 0, PMT_state, 0);
+		noise_cut(9, 0, PMT_state, 0);
+		noise_cut(10, 0, PMT_state, 0);
+		noise_cut(11, 0, PMT_state, 0);
+		set_zoom(-20, 20);
+		set_bins(300);
+		TriggerFitData::SetTriggerType(TriggerFitData::tbNpeaks);
+		TriggerFitData::SetTriggerFirstScant(1.6);
+		TriggerFitData::SetTriggerPrecision(0.1);
+		TriggerFitData::SetPulseShape(PREV_FOLDER + "A_4PMT_fast_by_S.dat");
+		saveaspng(FOLDER + Num+"_fastPMTs_Npeaks_trigger_"+cuts+"_zoom");
+		Num = int_to_str(++no, 2);
 
-	ty(AStates::PMT_trigger_bS); //May have poor results because it gives preference to single channel (to PMT with largest gain)
-	off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
-	noise_cut(8, 0, PMT_state, 0);
-	noise_cut(9, 0, PMT_state, 0);
-	noise_cut(10, 0, PMT_state, 0);
-	noise_cut(11, 0, PMT_state, 0);
-	set_trigger_shaping(dt_shaping);
-	set_zoom(20, 40);
-	set_bins(300);
-	saveaspng(FOLDER + Num+"_fastPMTs_Strigger_"+cuts+"_"+dt+"_zoom");
-	Num = int_to_str(++no, 2);
+		TriggerFitData::SetTriggerType(TriggerFitData::tbS);
+		update();
+		saveaspng(FOLDER + Num+"_fastPMTs_S_trigger_"+cuts+"_zoom");
+		Num = int_to_str(++no, 2);
 
-	ty(AStates::PMT_trigger_bNpe); //May have poor results because fast PMTs have bad calibration precision
-	off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
-	noise_cut(8, 0, PMT_state, 0);
-	noise_cut(9, 0, PMT_state, 0);
-	noise_cut(10, 0, PMT_state, 0);
-	noise_cut(11, 0, PMT_state, 0);
-	set_trigger_shaping(dt_shaping);
-	set_zoom(20, 40);
-	set_bins(300);
-	saveaspng(FOLDER + Num+"_slowPMTs_trigger_"+cuts+"_"+dt+"_zoom");
-	Num = int_to_str(++no, 2);
+		TriggerFitData::SetTriggerType(TriggerFitData::tbNpe);
+		update();
+		saveaspng(FOLDER + Num+"_fastPMTs_Npe_trigger_"+cuts+"_zoom");
+		Num = int_to_str(++no, 2);
+	}
 
 set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	ty(AStates::Correlation_y);
@@ -1788,38 +1737,20 @@ set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1");
 	
-set_corr(AStates::PMT_trigger_bNpeaks, AStates::PMT_trigger_bNpe, -1, -1);
-	ty(AStates::Correlation);
-	set_zoom(20, 45, 20, 45);
-	set_bins(600);
-	cut_x_y_right(31, 0, 31, 160, true, "1");
-	cut_x_y_upper(0, 31, 160, 31, true, "2");
-	cut_x_y_left(23.70, 0, 23.70, 160, true, "3");
-	cut_x_y_lower(0, 23.70, 160, 23.70, true, "4");
-	cut_x_y_right(22.83, 22.25, 38.36, 37.97, true, "5");
-	cut_x_y_left(21.26, 23.04, 37.42, 40.30, true, "6");
-	update();
-	set_titles("t by fastPMTs by N peaks " + DT, "t by fastPMTs by Npe" + DT);
-	set_as_run_cut("good_trigger"); cuts += "+" + Num;
-	saveaspng(FOLDER + Num+"_fastPMTs_Npe_Npeaks_trigger_"+cuts+"_"+dt+"_zoom");
-	print_rejected_events(FOLDER + Num + "_rejected_events.txt", first_run);
-	remcut(-1, "1"); remcut(-1, "2"); remcut(-1, "3"); remcut(-1, "4"); remcut(-1, "5");  remcut(-1, "6");
-	Num = int_to_str(++no, 2);
+	if (iteration > 0) {
+	ty(AStates::PMT_trigger_fit);
+		draw_limits(-4, 3);
+		saveaspng(FOLDER + Num+"_fastPMTs_Npe_trigger_"+cuts+"_zoom");
+		set_as_run_cut("good_trigger"); cuts += "+" + Num;
+		set_trigger_offsets(0.0);
+		print_rejected_events(FOLDER + Num + "_rejected_events.txt", first_run);
+		remcut(-1, "1"); remcut(-1, "2"); remcut(-1, "3"); remcut(-1, "4"); remcut(-1, "5");  remcut(-1, "6");
+		Num = int_to_str(++no, 2);
 
-ty(AStates::PMT_trigger_bNpe);
-	saveaspng(FOLDER + Num+"_fastPMTs_Npetrigger_"+cuts+"_"+dt+"_zoom");
-	if (0==method) {
-		set_trigger_offsets(trigger_at); cuts += "+" + Num;
+		//TriggerFitData::SetTriggerType(TriggerFitData::tbS);
+		//saveaspng(FOLDER + Num+"_fastPMTs_S_trigger_"+cuts+"_zoom");
+		//Num = int_to_str(++no, 2);
 	}
-	Num = int_to_str(++no, 2);
-
-ty(AStates::PMT_trigger_bNpeaks);
-	saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
-	Num = int_to_str(++no, 2);
-
-ty(AStates::PMT_trigger_bS);
-	saveaspng(FOLDER + Num+"_fastPMTs_Strigger_"+cuts+"_"+dt+"_zoom");
-	Num = int_to_str(++no, 2);
 
 ty(AStates::PMT_sum_N);
 	time_zoom_fPMTs(d_S2_start, d_S2_finish);
@@ -1860,19 +1791,18 @@ ty(AStates::PMT_Npe_sum);
 save_forms(FOLDER + "forms_cosmic/", false, PMT_state, SiPM_state);
 	unset_as_run_cut("En_spec");
 	cuts.erase(cuts.end()-3, cuts.end());
+
+	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_4PMT_fast_by_S", 600, 3);//from save_forms.cpp. For next iteration trigger fit
+	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_SiPMs_by_Npe", 600, 5);//from save_forms.cpp. For next iteration trigger fit
 }
 
 if (exp == "190404_Cd_8kV_850V_46V_th140mV") {
-	double dt_shaping = 0.3923 + 0.9728*drift_time_from_kV(experiment_fields[exp], 1.8);
-	std::string dt = "dt="+dbl_to_str(dt_shaping, 1)+"us";
-	std::string DT = "dt="+dbl_to_str(dt_shaping, 1)+"#mus"; //ROOT supports greek letters
 	std::string cuts = "no_cuts";
 	std::string zoomx = "Npe" + dbl_to_str(160-d_S2_start, 0);
 	std::string zoomy = "Npe" + dbl_to_str(d_S2_finish-d_S2_start, 0);
-	double trigger_at = 32;
 	int no = 0; //picture number
 	std::string Num = int_to_str(++no, 2); //="01"
-	std::string FOLDER = data_output_path + folder + "/";
+	std::string FOLDER = data_output_path + folder + "/iteration_" + iter_str + "/";
 
 	//Set AStates::PMT_Npe_sum and AStates::PMT_sum_N cuts for future correlations
 	ty(AStates::PMT_Npe_sum);
@@ -1897,41 +1827,33 @@ if (exp == "190404_Cd_8kV_850V_46V_th140mV") {
 	saveaspng(FOLDER + Num+"_fastPMTs_Npeaks_"+cuts);
 	Num = int_to_str(++no, 2);
 
-	ty(AStates::PMT_trigger_bNpeaks); //May have poor results because of merged and >1phe peaks
-	off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
-	noise_cut(8, 0, PMT_state, 0);
-	noise_cut(9, 0, PMT_state, 0);
-	noise_cut(10, 0, PMT_state, 0);
-	noise_cut(11, 0, PMT_state, 0);
-	set_trigger_shaping(dt_shaping);
-	set_zoom(20, 40);
-	set_bins(300);
-	saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
-	Num = int_to_str(++no, 2);
+	if (iteration > 0) {
+		std::string PREV_FOLDER = data_output_path + folder + "/iteration_" + int_to_str((std::size_t)(iteration - 1), 2) + "/";
+		ty(AStates::PMT_trigger_fit); //May have poor results because of merged and >1phe peaks
+		off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
+		noise_cut(8, 0, PMT_state, 0);
+		noise_cut(9, 0, PMT_state, 0);
+		noise_cut(10, 0, PMT_state, 0);
+		noise_cut(11, 0, PMT_state, 0);
+		set_zoom(-20, 20);
+		set_bins(300);
+		TriggerFitData::SetTriggerType(TriggerFitData::tbNpeaks);
+		TriggerFitData::SetTriggerFirstScant(1.6);
+		TriggerFitData::SetTriggerPrecision(0.1);
+		TriggerFitData::SetPulseShape(PREV_FOLDER + "A_4PMT_fast_by_S.dat");
+		saveaspng(FOLDER + Num+"_fastPMTs_Npeaks_trigger_"+cuts+"_zoom");
+		Num = int_to_str(++no, 2);
 
-	ty(AStates::PMT_trigger_bS); //May have poor results because it gives preference to single channel (to PMT with largest gain)
-	off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
-	noise_cut(8, 0, PMT_state, 0);
-	noise_cut(9, 0, PMT_state, 0);
-	noise_cut(10, 0, PMT_state, 0);
-	noise_cut(11, 0, PMT_state, 0);
-	set_trigger_shaping(dt_shaping);
-	set_zoom(20, 40);
-	set_bins(300);
-	saveaspng(FOLDER + Num+"_fastPMTs_Strigger_"+cuts+"_"+dt+"_zoom");
-	Num = int_to_str(++no, 2);
+		TriggerFitData::SetTriggerType(TriggerFitData::tbS);
+		update();
+		saveaspng(FOLDER + Num+"_fastPMTs_S_trigger_"+cuts+"_zoom");
+		Num = int_to_str(++no, 2);
 
-	ty(AStates::PMT_trigger_bNpe); //May have poor results because fast PMTs have bad calibration precision
-	off_ch(12); off_ch(13); off_ch(14); off_ch(15); off_ch(16);
-	noise_cut(8, 0, PMT_state, 0);
-	noise_cut(9, 0, PMT_state, 0);
-	noise_cut(10, 0, PMT_state, 0);
-	noise_cut(11, 0, PMT_state, 0);
-	set_trigger_shaping(dt_shaping);
-	set_zoom(20, 40);
-	set_bins(300);
-	saveaspng(FOLDER + Num+"_slowPMTs_trigger_"+cuts+"_"+dt+"_zoom");
-	Num = int_to_str(++no, 2);
+		TriggerFitData::SetTriggerType(TriggerFitData::tbNpe);
+		update();
+		saveaspng(FOLDER + Num+"_fastPMTs_Npe_trigger_"+cuts+"_zoom");
+		Num = int_to_str(++no, 2);
+	}
 
 set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	ty(AStates::Correlation_y);
@@ -1946,39 +1868,21 @@ set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	set_as_run_cut("good_sPMTs_ZxZy");	cuts = "cuts_"+Num;
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1");
-	
-set_corr(AStates::PMT_trigger_bNpeaks, AStates::PMT_trigger_bNpe, -1, -1);
-	ty(AStates::Correlation);
-	set_zoom(20, 45, 20, 45);
-	set_bins(600);
-	cut_x_y_right(31, 0, 31, 160, true, "1");
-	cut_x_y_upper(0, 31, 160, 31, true, "2");
-	cut_x_y_left(23.70, 0, 23.70, 160, true, "3");
-	cut_x_y_lower(0, 23.70, 160, 23.70, true, "4");
-	cut_x_y_right(22.83, 22.25, 38.36, 37.97, true, "5");
-	cut_x_y_left(21.26, 23.04, 37.42, 40.30, true, "6");
-	update();
-	set_titles("t by fastPMTs by N peaks " + DT, "t by fastPMTs by Npe" + DT);
-	set_as_run_cut("good_trigger"); cuts += "+" + Num;
-	saveaspng(FOLDER + Num+"_fastPMTs_Npe_Npeaks_trigger_"+cuts+"_"+dt+"_zoom");
-	print_rejected_events(FOLDER + Num + "_rejected_events.txt", first_run);
-	remcut(-1, "1"); remcut(-1, "2"); remcut(-1, "3"); remcut(-1, "4"); remcut(-1, "5");  remcut(-1, "6");
-	Num = int_to_str(++no, 2);
 
-ty(AStates::PMT_trigger_bNpe);
-	saveaspng(FOLDER + Num+"_fastPMTs_Npetrigger_"+cuts+"_"+dt+"_zoom");
-	if (0==method) {
-		set_trigger_offsets(trigger_at); cuts += "+" + Num;
+	if (iteration > 0) {
+	ty(AStates::PMT_trigger_fit);
+		draw_limits(-4, 3);
+		saveaspng(FOLDER + Num+"_fastPMTs_Npe_trigger_"+cuts+"_zoom");
+		set_as_run_cut("good_trigger"); cuts += "+" + Num;
+		set_trigger_offsets(0.0);
+		print_rejected_events(FOLDER + Num + "_rejected_events.txt", first_run);
+		remcut(-1, "1"); remcut(-1, "2"); remcut(-1, "3"); remcut(-1, "4"); remcut(-1, "5");  remcut(-1, "6");
+		Num = int_to_str(++no, 2);
+
+		//TriggerFitData::SetTriggerType(TriggerFitData::tbS);
+		//saveaspng(FOLDER + Num+"_fastPMTs_S_trigger_"+cuts+"_zoom");
+		//Num = int_to_str(++no, 2);
 	}
-	Num = int_to_str(++no, 2);
-
-ty(AStates::PMT_trigger_bNpeaks);
-	saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
-	Num = int_to_str(++no, 2);
-
-ty(AStates::PMT_trigger_bS);
-	saveaspng(FOLDER + Num+"_fastPMTs_Strigger_"+cuts+"_"+dt+"_zoom");
-	Num = int_to_str(++no, 2);
 
 ty(AStates::PMT_sum_N);
 	time_zoom_fPMTs(d_S2_start, d_S2_finish);
@@ -2019,6 +1923,10 @@ ty(AStates::PMT_Npe_sum);
 save_forms(FOLDER + "forms_cosmic/", false, PMT_state, SiPM_state);
 	unset_as_run_cut("En_spec");
 	cuts.erase(cuts.end()-3, cuts.end());
+
+	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_4PMT_fast_by_S", 600, 3);//from save_forms.cpp. For next iteration trigger fit
+	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_SiPMs_by_Npe", 600, 5);//from save_forms.cpp. For next iteration trigger fit
 }
+
 //END OF FORMS
 } 
