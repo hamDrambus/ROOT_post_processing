@@ -273,8 +273,8 @@ int vcompare_forms (void) {
 	std::string def_fit_option = "NRE";
 	bool combined = true;
 	bool Cd_peak = true;
-	int Nbins = 1800;
-	bool linear = 1;
+	int Nbins = 600;
+	bool linear = 0;
 
 	bool fit_bad_forms = true;
 	bool subtact_baseline = true;
@@ -667,7 +667,7 @@ define->renormalize = true;
 define->max_time = 29.6;
 define->slow_fit_t = PAIR(31.0, 160);
 define->long_fit_t = PAIR(31.0, 160);
-define->baseline_bound = PAIR(1e-5, 1e-4);
+define->baseline_bound = PAIR(1e-5, 9e-4);
 define->raise_tau_bound = PAIR(1.6, 1.6);
 define->slow_ampl_bound = PAIR(1e-3, 1);
 define->slow_tau_bound = PAIR(1, 10);
@@ -1017,12 +1017,14 @@ define->do_fit = fit_bad_forms;
 define->fit_option = def_fit_option;
 
 
-	std::vector<pulse_shape> pulses = {(combined ? SiPM_20kV_no_trigger : SiPM_20kV_no_trigger_v2)};
+	//std::vector<pulse_shape> pulses = {(combined ? SiPM_20kV_no_trigger : SiPM_20kV_no_trigger_v2)};
+	std::vector<pulse_shape> pulses = {(combined ? PMT4_20kV_no_trigger : PMT4_20kV_no_trigger_v2)};
 
 	std::vector<Color_t> palette_major = {kBlack, kRed, kBlue, kGreen, kYellow + 2, kMagenta, kOrange + 7};
 	std::vector<Color_t> palette_minor = {kGray + 1, kRed-3, kAzure + 6, kGreen -2, kMagenta+3, kOrange - 7, kOrange + 6};
 	//adsf - for fast Crtl + F
-	std::string framename = std::string("Results for SiPM-matrix (no WLS in setup), ")+(Cd_peak ? "" : "< ")+"88 keV #gamma ^{109}Cd";// + " " + Tds[0] + " Td";
+	//std::string framename = std::string("Results for 4PMT (no WLS in setup), ")+(Cd_peak ? "" : "< ")+"82 keV #gamma ^{109}Cd";// + " " + Tds[0] + " Td";
+	std::string framename = std::string("\\hbox{Результаты для ФЭУ (без ТФБ), ")+(Cd_peak ? "" : "< ")+"82 кэВ }\\gamma \\hbox{ от }^{109}\\hbox{Cd}";// + " " + Tds[0] + " Td";
 
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {
 		std::string hist_name = "hist" + std::to_string(hh);
@@ -1070,8 +1072,10 @@ define->fit_option = def_fit_option;
 	//legend->SetHeader("");
 	legend->SetMargin(0.25);
 	TH2F* frame = new TH2F("frame", framename.c_str(), 500, time_left, time_right, 500, linear ? 0 : y_min, max_val);
-	frame->GetXaxis()->SetTitle("Time [#mus]");
-	frame->GetYaxis()->SetTitle("PE peak counts");
+	//frame->GetXaxis()->SetTitle("Time [#mus]");
+	//frame->GetYaxis()->SetTitle("PE peak counts");
+	frame->GetXaxis()->SetTitle("\\hbox{Время, мкс}");
+	frame->GetYaxis()->SetTitle("\\hbox{Число фотоэлектронов}");
 	frame->Draw();
 
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {
@@ -1086,7 +1090,7 @@ define->fit_option = def_fit_option;
 		pulses[hh].hist->Draw("hist Lsame");
   }
 
-	int precision1 = 2, precision2 = 0, precision3 = 2, precision4 = 2;
+	int precision1 = 1, precision2 = 0, precision3 = 2, precision4 = 2;
 	int line_width = 3;
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {
 		pulses[hh].total_integral = 0;
@@ -1267,38 +1271,45 @@ define->fit_option = def_fit_option;
 	std::vector<std::string> tau1, tau2, frsS, frsL;
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {
 		std::string emp = "";
-		std::string unit = " #mus";
+		//std::string unit = " #mus";
+		std::string unit = "\\hbox{ мкс}";
 		if (pulses[hh].tau1.empty() || pulses[hh].tau1 == "--")
 			tau1.push_back(emp);
 		else
-			tau1.push_back("#tau_{S}=" + pulses[hh].tau1 + (print_errors ? "#pm" + pulses[hh].tau1_err : unit));
+			//tau1.push_back("#tau_{S}=" + pulses[hh].tau1 + (print_errors ? "#pm" + pulses[hh].tau1_err : unit));
+			tau1.push_back("{\\it{\\tau_{S}}} = " + pulses[hh].tau1 + (print_errors ? "#pm" + pulses[hh].tau1_err : unit));
 		if (pulses[hh].tau2.empty() || pulses[hh].tau2 == "--")
 			tau2.push_back("");
 		else
-			tau2.push_back("#tau_{L}=" + pulses[hh].tau2  + (print_errors ? "#pm" + pulses[hh].tau2_err : unit));
+			//tau2.push_back("#tau_{L}=" + pulses[hh].tau2  + (print_errors ? "#pm" + pulses[hh].tau2_err : unit));
+			tau2.push_back("{\\it{\\tau_{L}}} = " + pulses[hh].tau2  + (print_errors ? "#pm" + pulses[hh].tau2_err : unit));
 		if (pulses[hh].Fr1.empty() || pulses[hh].Fr1 == "--")
 			frsS.push_back("");
 		else
-			frsS.push_back(pulses[hh].Fr1 + (print_errors ? "#pm" + pulses[hh].err1 : emp));
+			//frsS.push_back(pulses[hh].Fr1 + (print_errors ? "#pm" + pulses[hh].err1 : emp));
+			frsS.push_back(std::string("\\hbox{") + pulses[hh].Fr1 + (print_errors ? "#pm" + pulses[hh].err1 : emp) + "}");
 		if (pulses[hh].Fr2.empty() || pulses[hh].Fr2 == "--")
 			frsL.push_back("");
 		else
-			frsL.push_back(pulses[hh].Fr2 + (print_errors ? "#pm" + pulses[hh].err2 : emp));
+			//frsL.push_back(pulses[hh].Fr2 + (print_errors ? "#pm" + pulses[hh].err2 : emp));
+			frsL.push_back(std::string("\\hbox{") + pulses[hh].Fr2 + (print_errors ? "#pm" + pulses[hh].err2 : emp) + "}");
 	}
 	if (!linear) {
 		std::vector<std::string> no_title;
-		std::vector<std::string> Slow_title = {"Contribution:", "Slow"};
-		std::vector<std::string> Long_title = {"Long"};
+		//std::vector<std::string> Slow_title = {"Contribution:", "Slow"};
+		//std::vector<std::string> Long_title = {"Long"};
+		std::vector<std::string> Slow_title = {"\\hbox{Вклад:}", "\\hbox{Медленной}"};
+		std::vector<std::string> Long_title = {"\\hbox{Длинной}"};
 		if (print_errors) {
 			add_text(45.8, 0.04, no_title, tau1, palette_major);
 			add_text(75, 0.007, Slow_title, frsS, palette_major);
 			add_text(101, 0.007, Long_title, frsL, palette_major);
 			add_text(130, 0.007, no_title, tau2, palette_major);
 		} else {
-			add_text(45.8, 0.04, no_title, tau1, palette_major);
+			add_text(43, 0.05, no_title, tau1, palette_major);
 			add_text(68, 0.008, Slow_title, frsS, palette_major);
-			add_text(85, 0.008, Long_title, frsL, palette_major);
-			add_text(120, 0.008, no_title, tau2, palette_major);
+			add_text(98, 0.008, Long_title, frsL, palette_major);
+			add_text(125, 0.008, no_title, tau2, palette_major);
 		}
 	} else {
 		std::vector<std::string> no_title;
@@ -1311,7 +1322,8 @@ define->fit_option = def_fit_option;
 	}
 
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh)
-		legend->AddEntry(pulses[hh].hist, (std::string("E/N = ") + pulses[hh].Td + " Td, " + pulses[hh].device).c_str(), "l");
+		//legend->AddEntry(pulses[hh].hist, (std::string("E/N = ") + pulses[hh].Td + " Td, " + pulses[hh].device).c_str(), "l");
+		legend->AddEntry(pulses[hh].hist, (std::string("{\\it{E/N}} = ") + pulses[hh].Td + "\\hbox{ Тд, ФЭУ}").c_str(), "l");
 
 	frame->Draw("sameaxis");
 	legend->Draw("same");

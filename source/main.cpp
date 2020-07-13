@@ -653,6 +653,7 @@ FunctionWrapper* create_vertical_lines_cut(double left, double right) //do not c
 	case AStates::MPPC_coord:
 	case AStates::MPPC_coord_x:
 	case AStates::MPPC_Npe_sum:
+	case AStates::MPPC_N_sum:
 	case AStates::PMT_sum_N:
 	case AStates::PMT_Npe_sum:
 	{
@@ -840,7 +841,6 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::PMT_As:
 	case AStates::PMT_A_S:
 	case AStates::PMT_S2_S:
-	case AStates::PMT_sum_N:
 	case AStates::PMT_tbS:
 	case AStates::PMT_tbN:
 	case AStates::MPPC_t_S:
@@ -853,7 +853,9 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::MPPC_tbS:
 	case AStates::MPPC_tbN:
 	case AStates::MPPC_Npe_sum:
+	case AStates::MPPC_N_sum:
 	case AStates::PMT_Npe_sum:
+	case AStates::PMT_sum_N:
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
 	case AStates::PMT_trigger_bS:
@@ -985,7 +987,6 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 	case AStates::PMT_As:
 	case AStates::PMT_A_S:
 	case AStates::PMT_S2_S:
-	case AStates::PMT_sum_N:
 	case AStates::PMT_tbS:
 	case AStates::PMT_tbN:
 	case AStates::MPPC_t_S:
@@ -998,7 +999,9 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 	case AStates::MPPC_tbS:
 	case AStates::MPPC_tbN:
 	case AStates::MPPC_Npe_sum:
+	case AStates::MPPC_N_sum:
 	case AStates::PMT_Npe_sum:
+	case AStates::PMT_sum_N:
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
 	case AStates::PMT_trigger_bS:
@@ -1129,7 +1132,6 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::PMT_As:
 	case AStates::PMT_A_S:
 	case AStates::PMT_S2_S:
-	case AStates::PMT_sum_N:
 	case AStates::PMT_tbS:
 	case AStates::PMT_tbN:
 	case AStates::MPPC_t_S:
@@ -1142,7 +1144,9 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::MPPC_tbS:
 	case AStates::MPPC_tbN:
 	case AStates::MPPC_Npe_sum:
+	case AStates::MPPC_N_sum:
 	case AStates::PMT_Npe_sum:
+	case AStates::PMT_sum_N:
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
 	case AStates::PMT_trigger_bS:
@@ -1331,7 +1335,6 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 	case AStates::PMT_As:
 	case AStates::PMT_A_S:
 	case AStates::PMT_S2_S:
-	case AStates::PMT_sum_N:
 	case AStates::PMT_tbS:
 	case AStates::PMT_tbN:
 	case AStates::MPPC_t_S:
@@ -1344,7 +1347,9 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 	case AStates::MPPC_tbS:
 	case AStates::MPPC_tbN:
 	case AStates::MPPC_Npe_sum:
+	case AStates::MPPC_N_sum:
 	case AStates::PMT_Npe_sum:
+	case AStates::PMT_sum_N:
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
 	case AStates::PMT_trigger_bS:
@@ -1442,7 +1447,6 @@ FunctionWrapper* create_A_S_vertical_cut(std::vector<double> region, bool upper,
 	case AStates::PMT_As:
 	case AStates::PMT_A_S:
 	case AStates::PMT_S2_S:
-	case AStates::PMT_sum_N:
 	case AStates::PMT_tbS:
 	case AStates::PMT_tbN:
 	case AStates::MPPC_t_S:
@@ -1455,7 +1459,9 @@ FunctionWrapper* create_A_S_vertical_cut(std::vector<double> region, bool upper,
 	case AStates::MPPC_tbS:
 	case AStates::MPPC_tbN:
 	case AStates::MPPC_Npe_sum:
+	case AStates::MPPC_N_sum:
 	case AStates::PMT_Npe_sum:
+	case AStates::PMT_sum_N:
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
 	case AStates::PMT_trigger_bS:
@@ -1553,7 +1559,6 @@ FunctionWrapper* create_A_S_horizontal_cut(std::vector<double> region, bool righ
 	case AStates::PMT_As:
 	case AStates::PMT_A_S:
 	case AStates::PMT_S2_S:
-	case AStates::PMT_sum_N:
 	case AStates::PMT_tbS:
 	case AStates::PMT_tbN:
 	case AStates::MPPC_t_S:
@@ -1566,7 +1571,9 @@ FunctionWrapper* create_A_S_horizontal_cut(std::vector<double> region, bool righ
 	case AStates::MPPC_tbS:
 	case AStates::MPPC_tbN:
 	case AStates::MPPC_Npe_sum:
+	case AStates::MPPC_N_sum:
 	case AStates::PMT_Npe_sum:
+	case AStates::PMT_sum_N:
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
 	case AStates::PMT_trigger_bS:

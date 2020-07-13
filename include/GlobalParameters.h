@@ -68,6 +68,7 @@ extern PostProcessor* post_processor;
 
 	double gasE_from_kV (double kV, double gasAr_layer); //gasAr_layer is in [cm], returns E in gaseous Ar in [V/cm]
 	double Td_from_E (double E); //E is in [V/cm]
+	double E_from_Td(double Td); //E is in [V/cm]
 	double Vdr_from_E (double E); //E is in [V/cm], returns drift velocity in gaseous Ar in [cm/s]
 	double Vdr_from_kV (double kV, double gasAr_layer); //LAr_layer is in [cm], returns drift velocity in gaseous Ar in [cm/s]
 	double drift_time_from_kV(double kV, double gasAr_layer); //gasAr_layer is in [cm], returns drift time in gaseous Ar in [microseconds]

@@ -217,9 +217,9 @@ struct pulse_shape {
 int ncompare_forms (void) {
     gStyle->SetStatY(0.9);
     gStyle->SetStatX(0.9);
-    int DEF_W = 1300, DEF_H = 700; //adsf - for fast Ctrl+F
+    int DEF_W = 1300, DEF_H = 700; //qewr - for fast Ctrl+F
 	std::string def_fit_option = "NRE";
-	bool fit_bad_forms = false;
+	bool fit_bad_forms = true;
 	pulse_shape* define = NULL;
 
 	pulse_shape SiPM_20kV_trigger;
@@ -1620,8 +1620,11 @@ define->fit_option = def_fit_option;
 	//std::vector<pulse_shape> pulses = {PMT4_20kV_no_trigger_left_slope, PMT4_18kV_no_trigger_left_slope, PMT4_16kV_no_trigger_left_slope, PMT4_14kV_no_trigger_left_slope, PMT4_12kV_no_trigger_left_slope, PMT4_10kV_no_trigger_left_slope, PMT4_8kV_no_trigger_left_slope};
 	//std::vector<pulse_shape> pulses = {PMT4_20kV_no_trigger_v2_left_slope, PMT4_18kV_no_trigger_v2_left_slope, PMT4_16kV_no_trigger_v2_left_slope, PMT4_14kV_no_trigger_v2_left_slope, PMT4_12kV_no_trigger_v2_left_slope, PMT4_10kV_no_trigger_v2_left_slope, PMT4_8kV_no_trigger_v2_left_slope};
 
+	std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger, SiPM_18kV_no_trigger, SiPM_16kV_no_trigger, SiPM_14kV_no_trigger, SiPM_12kV_no_trigger};
+	//std::vector<pulse_shape> pulses = {PMT4_20kV_no_trigger, PMT4_18kV_no_trigger, PMT4_16kV_no_trigger, PMT4_14kV_no_trigger, PMT4_12kV_no_trigger};
+
 	//for paper:
-	std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger, SiPM_18kV_no_trigger, SiPM_14kV_no_trigger, SiPM_10kV_no_trigger};
+	//std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger, SiPM_18kV_no_trigger, SiPM_14kV_no_trigger, SiPM_10kV_no_trigger};
 	//std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger_v2, SiPM_18kV_no_trigger_v2, SiPM_14kV_no_trigger_v2, SiPM_10kV_no_trigger_v2};
 	//std::vector<pulse_shape> pulses = {PMT4_20kV_no_trigger, PMT4_18kV_no_trigger, PMT4_14kV_no_trigger, PMT4_10kV_no_trigger};
 	//std::vector<pulse_shape> pulses = {PMT4_20kV_no_trigger_v2, PMT4_18kV_no_trigger_v2, PMT4_14kV_no_trigger_v2, PMT4_10kV_no_trigger_v2};
@@ -1629,15 +1632,15 @@ define->fit_option = def_fit_option;
 	std::vector<Color_t> palette_minor = {kGray + 1, kRed-3, kAzure + 6, kGreen -2, kMagenta+3, kOrange - 7, kOrange + 6};
 	int contribution_est_method = 2; //0 - use fit of slow/long components at fast component range;
 	//1 - use constant with amplitude from fit; 2 - use linear function rising up to amplitude from fit;
-	int Nbins = 1800;
+	int Nbins = 600;
 	bool center_pulses = false;
 	bool print_errors = false;
 	double time_pretrigger_left = 7, time_pretrigger_right = 20;
 	double time_left = 0, time_right = 160;//us
 	double max_val = 0;
 	double trigger_at = 32;
-	bool linear = true;
-	//qewr - for fast Crtl + F
+	bool linear = false;
+	//adsf - for fast Crtl + F
 	std::string framename = std::string("Results for SiPM-matrix (no WLS), 82 keV #gamma ^{109}Cd");// + " " + Tds[0] + " Td";
 
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {
@@ -1686,7 +1689,7 @@ define->fit_option = def_fit_option;
 		pulses[hh].hist->SetLineWidth(2);
 		pulses[hh].hist->SetLineColor(palette_major[hh]);
 		pulses[hh].hist->Draw("hist Lsame");
-    }
+  }
 
 	int precision1 = 2, precision2 = 0, precision3 = 2, precision4 = 2;
 	int line_width = 3;

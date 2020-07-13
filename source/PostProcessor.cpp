@@ -4,7 +4,7 @@
 PostProcessor::PostProcessor(AllExperimentsResults* _data) : 
 CanvasSetups(_data->mppc_channels,_data->pmt_channels, _data->exp_area.experiments), calibr_info(this, calibration_file)
 {
-	if (!isValid()){
+	if (!isValid()) {
 		std::cout << "Wrong input data: no channels or experiments from AnalysisManager" << std::endl;
 		return;
 	}
@@ -14,7 +14,7 @@ CanvasSetups(_data->mppc_channels,_data->pmt_channels, _data->exp_area.experimen
 		avr_Double_I.push_back(std::deque<double>());
 		PMT3_avr_S2_S.push_back(-1);
 		PMT1_avr_S2_S.push_back(-1);
-		for (auto ch = data->mppc_channels.begin(); ch != data->mppc_channels.end(); ++ch){
+		for (auto ch = data->mppc_channels.begin(); ch != data->mppc_channels.end(); ++ch) {
 			avr_S2_S.back().push_back(-1);
 			avr_Double_I.back().push_back(-1);
 		}
@@ -88,7 +88,9 @@ void PostProcessor::print_hist(std::string path, bool png_only)
 	}
 	case MPPC_coord_x:
 	case MPPC_Npe_sum:
+	case MPPC_N_sum:
 	case PMT_Npe_sum:
+	case PMT_sum_N:
 	{
 		writer_to_file->SetFunction([](std::vector<double> &pars, int run, void* data) {
 			((temp_data*)data)->str->write((char*)&pars[((temp_data*)data)->ch_size], sizeof(double));
@@ -179,14 +181,6 @@ void PostProcessor::print_hist(std::string path, bool png_only)
 		writer_to_file->SetFunction([](std::vector<double>& pars, int run, void* data) {
 			((temp_data*)data)->str->write((char*)&pars[0], sizeof(double));
 			((temp_data*)data)->str->write((char*)&pars[1], sizeof(double));
-			return true;
-		});
-		break;
-	}
-	case PMT_sum_N:
-	{
-		writer_to_file->SetFunction([](std::vector<double>& pars, int run, void* data) {
-			((temp_data*)data)->str->write((char*)&pars[((temp_data*)data)->ch_size], sizeof(double));
 			return true;
 		});
 		break;
@@ -1050,10 +1044,13 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 		break;
 	}
 	case Type::MPPC_Npe_sum:
+	case Type::MPPC_N_sum:
 	case Type::PMT_Npe_sum:
+	case Type::PMT_sum_N:
 	{
+		bool use_Npe = (type == Type::MPPC_Npe_sum || type == Type::PMT_Npe_sum);
 		bool ignore_no_run_cut = true;
-		for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
+		for (std::size_t o = 0, o_end_ = operations.size(); o != o_end_; ++o) {
 			if (!operations[o].apply_run_cuts) {
 				ignore_no_run_cut = false;
 				break;
@@ -1114,9 +1111,10 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 							}
 					}
 					if (!failed_hist_cut)
-						S2 += cut_data[0];
+						S2 += use_Npe ? cut_data[0] : 1.0;
+
 				}
-				S2 = (s1pe > 0 ? S2/s1pe : 0);
+				S2 = (use_Npe ? (s1pe > 0 ? S2/s1pe : 0) : S2);
 				Npes[chan_ind] = std::round(S2);
 				Npes[channels->size()] += Npes[chan_ind];
 			}
@@ -1399,96 +1397,6 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 		current_exp_index = actual_current_exp;
 		break;
 	}
-	case Type::PMT_sum_N:
-	{
-		//channel->run->peak_itself:
-		std::deque<std::deque<std::deque<peak> > > *peaks = NULL;
-		std::deque<int> *channels = NULL;
-		if (isPMTtype(type)) {
-			channels = &PMT_channels;
-			peaks = &(data->pmt_peaks[current_exp_index]);
-		} else {
-			channels = &MPPC_channels;
-			peaks = &(data->mppc_peaks[current_exp_index]);
-		}
-		int run_size = (*peaks)[0].size();
-		std::vector<double> cut_data(5);
-		for (auto run = 0; run != run_size; ++run) {
-			std::vector<double>  Ns(channels->size()+1, 0);
-			bool failed_run_cut = false;
-			for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
-				if (kFALSE == cut->GetAccept(run)) {
-					failed_run_cut = true;
-					break;
-				}
-
-			for (int chan_ind=0, _ch_ind_end_= channels->size(); chan_ind<_ch_ind_end_; ++chan_ind) {
-				if (NULL != setups) {
-					bool *active = setups->active_channels.info((*channels)[chan_ind]);
-					if (NULL == active)
-						continue;
-					if (!(*active))
-						continue;
-				}
-				std::size_t N = 0;
-				for (int pk = 0, pk_end = (*peaks)[chan_ind][run].size(); pk != pk_end; ++pk) {
-					bool failed_hist_cut = false; //normal cuts
-					cut_data[0] = (*peaks)[chan_ind][run][pk].S;
-					cut_data[1] = (*peaks)[chan_ind][run][pk].A;
-					cut_data[2] = (*peaks)[chan_ind][run][pk].left + data->trigger_offset[current_exp_index][run];
-					cut_data[3] = (*peaks)[chan_ind][run][pk].right + data->trigger_offset[current_exp_index][run];
-					cut_data[4] =
-#ifdef PEAK_AVR_TIME
-							(*peaks)[chan_ind][run][pk].t + data->trigger_offset[current_exp_index][run];
-#else
-							0.5*(cut_data[3]+cut_data[2]);
-#endif
-					for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
-						if (cut->GetChannel()==(*channels)[chan_ind] && cut->GetAffectingHistogram() && !failed_hist_cut)
-							if (kFALSE == (*cut)(cut_data, run)) { //more expensive than GetAffectingHistogram
-								failed_hist_cut = true;
-								break;
-							}
-					}
-					if (!failed_hist_cut)
-						N += 1;
-				}
-				Ns[chan_ind] = N;
-				Ns[channels->size()]+=Ns[chan_ind];
-			}
-			bool failed_hist_phys = false, failed_hist = false, failed_phys = false;
-			for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut)
-				if (-1 == cut->GetChannel()) {
-					if (!failed_hist_phys)
-						if (kFALSE == (*cut)(Ns, run))
-							failed_hist_phys = true;
-					if (!failed_hist && cut->GetAffectingHistogram())
-						if (kFALSE == (*cut)(Ns, run))
-							failed_hist = true;
-					if (!failed_phys && !cut->GetAffectingHistogram())
-						if (kFALSE == (*cut)(Ns, run))
-							failed_phys = true;
-				}
-			for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
-				if (operations[o].apply_run_cuts && failed_run_cut)
-					continue;
-				if (operations[o].apply_hist_cuts && !operations[o].apply_phys_cuts) {
-					if (!failed_hist) (*operations[o].operation)(Ns, run);
-					continue;
-				}
-				if (!operations[o].apply_hist_cuts && operations[o].apply_phys_cuts) {
-					if (!failed_phys) (*operations[o].operation)(Ns, run);
-					continue;
-				}
-				if (operations[o].apply_hist_cuts && operations[o].apply_phys_cuts) {
-					if (!failed_hist_phys) (*operations[o].operation)(Ns, run);
-					continue;
-				}
-				(*operations[o].operation)(Ns, run);
-			}
-		}
-		break;
-	}
 	}
 }
 
@@ -1513,6 +1421,7 @@ bool PostProcessor::set_correlation_filler(FunctionWrapper* operation, Type type
 		break;
 	}
 	case Type::MPPC_Npe_sum:
+	case Type::MPPC_N_sum:
 	case Type::MPPC_coord_x:
 	case Type::PMT_sum_N:
 	case Type::PMT_Npe_sum:
@@ -1783,6 +1692,7 @@ bool PostProcessor::update(void)
 		break;
 	}
 	case Type::MPPC_Npe_sum:
+	case Type::MPPC_N_sum:
 	case Type::MPPC_coord_x:
 	case Type::PMT_sum_N:
 	case Type::PMT_Npe_sum:

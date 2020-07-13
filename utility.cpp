@@ -113,7 +113,8 @@ int utility (void) {
 	double min_V0 = 7;
 	bool linear = true;
   double error_factor = 2.0;
-	std::string framename = "Data without WLS: EL gap thickness measurement";
+	//std::string framename = "Data without WLS: EL gap thickness measurement";
+  std::string framename = "\\hbox{Данные без ТФБ: измерение толщины ЭЛ зазора}";
 
 	std::vector<double> kVs, Ts, errors, PMT_Ts, PMT_Errs;
 
@@ -158,13 +159,13 @@ int utility (void) {
 	time_Xmm2->SetParNames("gas Ar L", "time factor", "offset");
 	time_Xmm2->SetParLimits(0, 0.5, 2.2);
 	time_Xmm2->FixParameter(1, 1);
-  time_Xmm2->FixParameter(2, 0);
+	time_Xmm2->FixParameter(2, 0);
 	time_Xmm2->SetLineColor(palette_major[0]);
 	if (SiPMs_data)
 		SiPMs_data->Fit(time_Xmm2, "NREF");
 
-	std::string gap_width_SiPMs = dbl_to_str(10*time_Xmm2->GetParameter(0), 2);//in mm
-	std::string gap_width_SiPMs_error = dbl_to_str(10*time_Xmm2->GetParError(0), 2);//in mm
+	std::string gap_width_SiPMs = dbl_to_str(10*time_Xmm2->GetParameter(0), 1);//in mm
+	std::string gap_width_SiPMs_error = dbl_to_str(10*time_Xmm2->GetParError(0), 1);//in mm
 
 	max_val = std::max(time_Xmm2->Eval(min_V0), max_val);
 	max_val = std::max(time_18mm->Eval(min_V0), max_val);
@@ -184,8 +185,10 @@ int utility (void) {
 	//legend->SetHeader("");
 	legend->SetMargin(0.25);
 	TH2F* frame = new TH2F( "frame", framename.c_str(), 500, min_V0, 21, 500, 0, max_val);
-	frame->GetXaxis()->SetTitle("V_{0} [kV]");
-	frame->GetYaxis()->SetTitle("T_{drift} [#mus]");
+	//frame->GetXaxis()->SetTitle("V_{0} [kV]");
+	//frame->GetYaxis()->SetTitle("T_{drift} [#mus]");
+	frame->GetXaxis()->SetTitle("\\it{V_{0}},\\hbox{ кВ}");
+	frame->GetYaxis()->SetTitle("\\hbox{Время дрейфа, мкс}");
 	frame->Draw();
 
 	if (SiPMs_data)
@@ -197,12 +200,15 @@ int utility (void) {
 		time_Xmm2->Draw("same");
 
 	if (SiPMs_data)
-		legend->AddEntry(SiPMs_data, (std::string("SiPM-matrix fast component FWHM")).c_str(), "p");
-  if (PMTs_data)
+		//legend->AddEntry(SiPMs_data, (std::string("SiPM-matrix fast component FWHM")).c_str(), "p");
+		legend->AddEntry(SiPMs_data, (std::string("\\hbox{Длительность быстрой компоненты для матрицы Si-ФЭУ}")).c_str(), "p");
+	if (PMTs_data)
 		legend->AddEntry(PMTs_data, (std::string("4PMT fast component FWHM")).c_str(), "p");
-	legend->AddEntry(time_18mm, (std::string("T_{drift} for 18 mm gap")).c_str(), "l");
+	//legend->AddEntry(time_18mm, (std::string("T_{drift} for 18 mm gap")).c_str(), "l");
+	legend->AddEntry(time_18mm, (std::string("\\hbox{Время дрейфа для 18 мм зазора}")).c_str(), "l");
 	if (SiPMs_data)
-		legend->AddEntry(time_Xmm2, (std::string("Best fit (EL gap thickness="+ gap_width_SiPMs +"#pm" + gap_width_SiPMs_error + " mm)")).c_str(), "l");
+		//legend->AddEntry(time_Xmm2, (std::string("Best fit (EL gap thickness="+ gap_width_SiPMs +"#pm" + gap_width_SiPMs_error + " mm)")).c_str(), "l");
+		legend->AddEntry(time_Xmm2, (std::string("\\hbox{Аппроксимация (толщина ЭЛ зазора = "+ gap_width_SiPMs +" }\\pm\\hbox{ " + gap_width_SiPMs_error + " мм)}")).c_str(), "l");
 
 	frame->Draw("sameaxis");
 	legend->Draw("same");

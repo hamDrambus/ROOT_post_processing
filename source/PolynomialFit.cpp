@@ -184,7 +184,7 @@ std::vector<double> PolynomialFit::operator ()(const std::vector<double> &xs, co
 //=========================================================
 
 DataVector::DataVector(std::size_t fit_order, std::size_t N_used_) :
-	fitter(fit_order), use_left(false), use_right(false)
+	fitter(fit_order), use_left(false), use_right(false), is_left_value(false), is_right_value(false)
 {
 	setNused(N_used_);
 }
@@ -215,15 +215,17 @@ void DataVector::initialize(std::vector<double> &xx, std::vector<double> &yy, st
 
 void DataVector::set_leftmost(double val) {
 	left_value = val;
+	is_left_value = true;
 }
 void DataVector::unset_leftmost(void) {
-	left_value = boost::none;
+	is_left_value = false;
 }
 void DataVector::set_rightmost(double val) {
 	right_value = val;
+	is_right_value = true;
 }
 void DataVector::unset_rightmost(void) {
-	right_value = boost::none;
+	is_right_value = false;
 }
 
 void DataVector::insert(double x, double y) //do not disrupt order
@@ -325,17 +327,21 @@ void DataVector::read(std::ifstream& str, bool must_have_header) //DONE: add try
 				word = strtoken(line, "\t ");
 				++word_n;
 				dval = boost::lexical_cast<double>(word);
-				if (is_set_left)
+				if (is_set_left) {
 					left_value = dval;
+					is_left_value = true;
+				}
 				else
-					left_value = boost::none;
+					is_left_value = false;
 				word = strtoken(line, "\t ");
 				++word_n;
 				dval = boost::lexical_cast<double>(word);
-				if (is_set_right)
+				if (is_set_right) {
 					right_value = dval;
+					is_right_value = true;
+				}
 				else
-					right_value = boost::none;
+					is_right_value = false;
 				continue;
 			}
 			catch (boost::bad_lexical_cast &e) {
@@ -397,8 +403,8 @@ void DataVector::write(std::ofstream& str, std::string comment) const
 		<< "\t" << boost::lexical_cast<std::string>(N_used)
 		<< "\t" << (use_left ? 1 : 0) << "\t" << (use_right ? 1 : 0)
 		<< "\t" << (left_value ? 1 : 0) << "\t" << (right_value ? 1 : 0)
-		<< "\t" << boost::lexical_cast<std::string>(left_value ? *left_value : 0)
-		<< "\t" << boost::lexical_cast<std::string>(right_value ? *right_value : 0) << std::endl;
+		<< "\t" << boost::lexical_cast<std::string>(is_left_value ? left_value : 0)
+		<< "\t" << boost::lexical_cast<std::string>(is_right_value ? right_value : 0) << std::endl;
 	if (!comment.empty())
 		str << "//" << comment << std::endl;
 	for (std::size_t i = 0, i_end_ = xys.size(); i != i_end_; ++i) {
@@ -414,14 +420,14 @@ double DataVector::operator()(double X_point, boost::optional<double> x0) const
 	if (X_point < xys.front().first) {
 		if (use_left)
 			return xys.front().second; //TODO: maybe add scaling
-		if (left_value)
-			return *left_value;
+		if (is_left_value)
+			return left_value;
 	}
 	if (X_point > xys.back().first) {
 		if (use_right)
 			return xys.back().second;
-		if (right_value)
-			return *right_value;
+		if (is_right_value)
+			return right_value;
 	}
 	boost::optional<std::pair<std::size_t, std::size_t>> indices = getX_indices(X_point);
 	if (boost::none == indices)
@@ -559,3 +565,228 @@ double DataVector::polynomial_value(double x, double x0, const std::vector<doubl
 		out_ += coefs[o_O] * pow(x - x0, o_O);
 	return out_;
 }
+
+
+
+void Transformation2D::calculate_matrix(void)
+{
+	if (!isValid())
+		return;
+
+	double in_u0 = uvs[0].first, in_v0 = uvs[0].second;
+	double in_x0 = xys[0].first, in_y0 = xys[0].second;//It is bad to set x0 to some fixed value (e.g. 0) because
+	//interpolating too far from it will result in unstable results due to limited precision.
+	//Ideally x0 should be set to the point at which we interpolate the data.
+	std::size_t N_points = xys.size();
+
+	//Least Square Fit - solving
+	//(1 x1 y1 x1^2 x1*y1 y1^2) (c0)   (u1, u2, u3, ... uN)
+	//(1 x2 y2 x2^2 x2*y2 y2^2) (c1) =
+	//( ...                   ) (..)
+	//(1 xN yN xN^2 xN*yN yN^2) (c5)
+	//for c_i. For (x, y)->u, (x, y)->v, (u, v)->x & (u, v)->y
+	uBLAS::matrix<double> mat_xy(N_points, 6);
+	for (int row = 0, row_end_ = mat_xy.size1(); row < row_end_; ++row) {
+		mat_xy(row, 0) = 1; //c0
+		mat_xy(row, 1) = xys[row].first - in_x0; //c1*x
+		mat_xy(row, 2) = xys[row].second - in_y0; //c2*y
+		mat_xy(row, 3) = pow(xys[row].first - in_x0, 2); //c3*x*x
+		mat_xy(row, 4) = (xys[row].first - in_x0) * (xys[row].second - in_y0); //c4*x*y
+		mat_xy(row, 5) = pow(xys[row].second - in_y0, 2); //c5*y*y
+	}
+	uBLAS::matrix<double> mat_uv(N_points, 6);
+	for (int row = 0, row_end_ = mat_uv.size1(); row < row_end_; ++row) {
+		mat_uv(row, 0) = 1; //c0
+		mat_uv(row, 1) = uvs[row].first - in_u0; //c1*u
+		mat_uv(row, 2) = uvs[row].second - in_v0; //c2*v
+		mat_uv(row, 3) = pow(uvs[row].first - in_u0, 2); //c3*u*u
+		mat_uv(row, 4) = (uvs[row].first - in_u0) * (uvs[row].second - in_v0); //c4*u*v
+		mat_uv(row, 5) = pow(uvs[row].second - in_v0, 2); //c5*v*v
+	}
+	uBLAS::vector<double> U(N_points), V(N_points), X(N_points), Y(N_points);
+	for (int row = 0; row < N_points; ++row) {
+		U[row] = uvs[row].first;
+		V[row] = uvs[row].second;
+		X[row] = xys[row].first;
+		Y[row] = xys[row].second;
+	}
+	//Solve the equation mat^T*mat*C = mat^T*{U, V, X, Y} for C via LU decomposition (mat is generally not diagonal)
+	X = uBLAS::prod(uBLAS::trans(mat_uv), X);
+	Y = uBLAS::prod(uBLAS::trans(mat_uv), Y);
+	U = uBLAS::prod(uBLAS::trans(mat_xy), U);
+	V = uBLAS::prod(uBLAS::trans(mat_xy), V);
+	mat_uv = uBLAS::prod(uBLAS::trans(mat_uv), mat_uv);
+	mat_xy = uBLAS::prod(uBLAS::trans(mat_xy), mat_xy);
+	int res_xy = uBLAS::lu_factorize(mat_xy);
+	if (res_xy != 0) {
+		u_coefficients.clear();
+		v_coefficients.clear();
+	} else {
+		uBLAS::inplace_solve(mat_xy, U, uBLAS::unit_lower_tag());
+		uBLAS::inplace_solve(mat_xy, U, uBLAS::upper_tag());
+		u_coefficients.resize(U.size());
+		std::copy(U.begin(), U.end(), u_coefficients.begin());
+		uBLAS::inplace_solve(mat_xy, V, uBLAS::unit_lower_tag());
+		uBLAS::inplace_solve(mat_xy, V, uBLAS::upper_tag());
+		v_coefficients.resize(V.size());
+		std::copy(V.begin(), V.end(), v_coefficients.begin());
+	}
+	int res_uv = uBLAS::lu_factorize(mat_uv);
+	if (res_uv != 0) {
+		x_coefficients.clear();
+		y_coefficients.clear();
+	} else {
+		uBLAS::inplace_solve(mat_uv, X, uBLAS::unit_lower_tag());
+		uBLAS::inplace_solve(mat_uv, X, uBLAS::upper_tag());
+		x_coefficients.resize(X.size());
+		std::copy(X.begin(), X.end(), x_coefficients.begin());
+		uBLAS::inplace_solve(mat_uv, Y, uBLAS::unit_lower_tag());
+		uBLAS::inplace_solve(mat_uv, Y, uBLAS::upper_tag());
+		y_coefficients.resize(Y.size());
+		std::copy(Y.begin(), Y.end(), y_coefficients.begin());
+	}
+}
+
+Transformation2D::Transformation2D()
+{}
+
+Transformation2D::Transformation2D(std::vector<double> &xx, std::vector<double> &yy, std::vector<double> &uu, std::vector<double> &vv)
+{
+	initialize(xx, yy, uu, vv);
+}
+
+Transformation2D::~Transformation2D()
+{}
+
+void Transformation2D::initialize(std::vector<double> &xx, std::vector<double> &yy, std::vector<double> &uu, std::vector<double> &vv)
+{
+	if (xx.size()!=yy.size()) {
+		std::cout<<"Transformation2D::initialize: Error: x-y data size mismatch!"<<std::endl;
+	} else {
+		std::size_t i_end_ = xx.size();
+		xys.resize(i_end_);
+		for (std::size_t i = 0; i != i_end_; ++i)
+			xys[i] = std::pair<double, double>(xx[i], yy[i]);
+	}
+	if (uu.size()!=vv.size()) {
+		std::cout<<"Transformation2D::initialize: Error: u-v data size mismatch!"<<std::endl;
+	} else {
+		std::size_t i_end_ = uu.size();
+		uvs.resize(i_end_);
+		for (std::size_t i = 0; i != i_end_; ++i)
+			uvs[i] = std::pair<double, double>(uu[i], vv[i]);
+	}
+	if (xys.size() != uvs.size()) {
+		std::cout<<"Transformation2D::initialize: Warning: xy-uv data size mismatch!"<<std::endl;
+	}
+	calculate_matrix();
+}
+
+//Checks for duplicates
+void Transformation2D::insert(double x, double y, double u, double v)
+{
+	std::size_t sz_xy = xys.size(), sz_uv = uvs.size();
+	std::size_t duplicate_xy = sz_xy, duplicate_uv = sz_uv;
+	for (std::size_t i = 0; i!=sz_xy; ++i) {
+		if (xys[i].first == x && xys[i].second == y) {
+			duplicate_xy = i;
+			break;
+		}
+	}
+	for (std::size_t i = 0; i!=sz_uv; ++i) {
+		if (uvs[i].first == u && uvs[i].second == v) {
+			duplicate_uv = i;
+			break;
+		}
+	}
+	if (duplicate_xy != sz_xy && duplicate_uv != sz_uv) {
+		if (duplicate_xy != duplicate_uv)
+			std::cout<<"Transformation2D::insert: Warning: same u-v corresponds to 2 different x-y points!"<<std::endl;
+		else
+			return;
+	}
+	if (duplicate_xy != sz_xy) {
+		if (duplicate_xy >= sz_uv) { //There is no (u, v) corresponding to existing (x, y), so we push one to the uvs.
+			std::pair<double, double> temp = xys[sz_uv];
+			xys[sz_uv] = xys[duplicate_xy];
+			xys[duplicate_xy] = temp;
+			uvs.push_back(std::pair<double, double>(u, v));
+		} else {//Update(u, v) corresponding to existing (x, y).
+			uvs[duplicate_xy] = std::pair<double, double>(u, v);
+		}
+		calculate_matrix();
+		return;
+	}
+	if (duplicate_uv != sz_uv) {
+		if (duplicate_uv >= sz_xy) { //There is no (x, y) corresponding to existing (u, v), so we push one to the xys.
+			std::pair<double, double> temp = uvs[sz_xy];
+			uvs[sz_xy] = uvs[duplicate_uv];
+			uvs[duplicate_uv] = temp;
+			xys.push_back(std::pair<double, double>(x, y));
+		} else {//Update(x, y) corresponding to existing (u, v).
+			xys[duplicate_uv] = std::pair<double, double>(x, y);
+		}
+		calculate_matrix();
+		return;
+	}
+	xys.push_back(std::pair<double, double>(x, y));
+	uvs.push_back(std::pair<double, double>(u, v));
+	calculate_matrix();
+}
+
+void Transformation2D::push_back(double x, double y, double u, double v)
+{
+	xys.push_back(std::pair<double, double>(x, y));
+	uvs.push_back(std::pair<double, double>(u, v));
+	calculate_matrix();
+}
+
+//returns DBL_MAX if invalid
+double Transformation2D::evalX(double u, double v) const
+{
+	if (!isValid() || x_coefficients.size() < 6)
+		return DBL_MAX;
+	double in_u0 = uvs[0].first, in_v0 = uvs[0].second;
+	u -= in_u0;
+	v -= in_v0;
+	double out = x_coefficients[0] + x_coefficients[1] * u + x_coefficients[2] * v +
+			x_coefficients[3] * u * u + x_coefficients[4] * u * v + x_coefficients[5] * v * v;
+	return out;
+}
+//returns DBL_MAX if invalid
+double Transformation2D::evalY(double u, double v) const
+{
+	if (!isValid() || y_coefficients.size() < 6)
+		return DBL_MAX;
+	double in_u0 = uvs[0].first, in_v0 = uvs[0].second;
+	u -= in_u0;
+	v -= in_v0;
+	double out = y_coefficients[0] + y_coefficients[1] * u + y_coefficients[2] * v +
+			y_coefficients[3] * u * u + y_coefficients[4] * u * v + y_coefficients[5] * v * v;
+	return out;
+}
+//returns DBL_MAX if invalid
+double Transformation2D::evalU(double x, double y) const
+{
+	if (!isValid() || u_coefficients.size() < 6)
+		return DBL_MAX;
+	double in_x0 = xys[0].first, in_y0 = xys[0].second;
+	x -= in_x0;
+	y -= in_y0;
+	double out = u_coefficients[0] + u_coefficients[1] * x + u_coefficients[2] * y +
+			u_coefficients[3] * x * x + u_coefficients[4] * x * y + u_coefficients[5] * y * y;
+	return out;
+}
+//returns DBL_MAX if invalid
+double Transformation2D::evalV(double x, double y) const
+{
+	if (!isValid() || v_coefficients.size() < 6)
+		return DBL_MAX;
+	double in_x0 = xys[0].first, in_y0 = xys[0].second;
+	x -= in_x0;
+	y -= in_y0;
+	double out = v_coefficients[0] + v_coefficients[1] * x + v_coefficients[2] * y +
+			v_coefficients[3] * x * x + v_coefficients[4] * x * y + v_coefficients[5] * y * y;
+	return out;
+}
+

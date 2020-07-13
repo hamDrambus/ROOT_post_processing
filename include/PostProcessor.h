@@ -34,8 +34,8 @@
 //	FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region)
 //	FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region)
 //	FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region)
-//	FunctionWrapper* create_A_S_upper_cut(std::vector<double> region)
-//	FunctionWrapper* create_x_y_cut(std::vector<double> region, unsigned int cut_type)
+//	FunctionWrapper* create_A_S_vertical_cut(std::vector<double> region, bool upper, bool select)
+//	FunctionWrapper* create_A_S_horizontal_cut(std::vector<double> region, bool right, bool select)
 
 
 class PostProcessor : public CanvasSetups {

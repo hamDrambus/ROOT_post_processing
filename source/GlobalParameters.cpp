@@ -1252,6 +1252,12 @@ bool viewRegion::RangesIntersect(double x1, double x2, double x3, double x4, dou
 		return E / N / Td_is_Vcm2;
 	}
 
+	double E_from_Td(double Td) //E is in [V/cm]
+	{
+		double N = 1e-6*P / (T*bolzmann_SI); //in cm^-3
+		return Td * N * Td_is_Vcm2;
+	}
+
 	double Vdr_from_E (double E) //E is in [V/cm], returns drift velocity in gaseous Ar in [cm/s]
 	{
 		double Td = Td_from_E(E);
