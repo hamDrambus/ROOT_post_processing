@@ -673,6 +673,7 @@ FunctionWrapper* create_vertical_lines_cut(double left, double right) //do not c
 	case AStates::MPPC_tbN:
 	case AStates::PMT_tbS:
 	case AStates::PMT_tbN:
+	case AStates::PMT_tbNpe:
 	case AStates::MPPC_tbS_sum:
 	case AStates::MPPC_tbN_sum:
 	case AStates::MPPC_t_S:
@@ -843,6 +844,7 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::PMT_S2_S:
 	case AStates::PMT_tbS:
 	case AStates::PMT_tbN:
+	case AStates::PMT_tbNpe:
 	case AStates::MPPC_t_S:
 	case AStates::MPPC_A_S:
 	case AStates::MPPC_S2:
@@ -989,6 +991,7 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 	case AStates::PMT_S2_S:
 	case AStates::PMT_tbS:
 	case AStates::PMT_tbN:
+	case AStates::PMT_tbNpe:
 	case AStates::MPPC_t_S:
 	case AStates::MPPC_A_S:
 	case AStates::MPPC_S2:
@@ -1134,6 +1137,7 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::PMT_S2_S:
 	case AStates::PMT_tbS:
 	case AStates::PMT_tbN:
+	case AStates::PMT_tbNpe:
 	case AStates::MPPC_t_S:
 	case AStates::MPPC_A_S:
 	case AStates::MPPC_S2:
@@ -1337,6 +1341,7 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 	case AStates::PMT_S2_S:
 	case AStates::PMT_tbS:
 	case AStates::PMT_tbN:
+	case AStates::PMT_tbNpe:
 	case AStates::MPPC_t_S:
 	case AStates::MPPC_A_S:
 	case AStates::MPPC_S2:
@@ -1449,6 +1454,7 @@ FunctionWrapper* create_A_S_vertical_cut(std::vector<double> region, bool upper,
 	case AStates::PMT_S2_S:
 	case AStates::PMT_tbS:
 	case AStates::PMT_tbN:
+	case AStates::PMT_tbNpe:
 	case AStates::MPPC_t_S:
 	case AStates::MPPC_A_S:
 	case AStates::MPPC_S2:
@@ -1561,6 +1567,7 @@ FunctionWrapper* create_A_S_horizontal_cut(std::vector<double> region, bool righ
 	case AStates::PMT_S2_S:
 	case AStates::PMT_tbS:
 	case AStates::PMT_tbN:
+	case AStates::PMT_tbNpe:
 	case AStates::MPPC_t_S:
 	case AStates::MPPC_A_S:
 	case AStates::MPPC_S2:

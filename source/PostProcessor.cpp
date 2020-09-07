@@ -119,10 +119,11 @@ void PostProcessor::print_hist(std::string path, bool png_only)
 	}
 	case MPPC_tbN:
 	case PMT_tbN:
+	case PMT_tbNpe:
 	case MPPC_tbN_sum:
 	{
 		writer_to_file->SetFunction([](std::vector<double>& pars, int run, void* data) {
-			double weight = pars[5] >= 0 ? pars[5] : 1;
+			double weight = pars[5] >= 0 ? pars[5] : 0;
 			((temp_data*)data)->str->write((char*)&pars[4], sizeof(double));
 			((temp_data*)data)->str->write((char*)&weight, sizeof(double));
 			return true;
@@ -384,7 +385,9 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 	case Type::PMT_As:
 	case Type::PMT_tbS:
 	case Type::PMT_tbN:
+	case Type::PMT_tbNpe:
 	{
+		bool use_Npe = !(type == Type::MPPC_tbN || type == Type::PMT_tbN);
 		std::deque<std::deque<std::deque<peak> > > *peaks = NULL;
 		if (isPMTtype(type)) {
 			peaks = &(data->pmt_peaks[current_exp_index]);
@@ -414,7 +417,7 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 #else
 							0.5*(cut_data[3]+cut_data[2]);
 #endif
-				cut_data[5] = s1pe > 0 ? std::round(cut_data[0]/s1pe) : -1;
+				cut_data[5] =  use_Npe ? (s1pe > 0 ? std::round(cut_data[0]/s1pe) : -1) : 1;
 				for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
 					if (cut->GetAffectingHistogram() && !failed_hist_cut)
 						if (kFALSE == (*cut)(cut_data, run)) //more expensive than GetAffectingHistogram
@@ -837,7 +840,7 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 					failed_run_cut = true;
 					break;
 				}
-			double S2;
+			double S2 = 0;
 			for (int pk = 0, pk_end = data->pmt_peaks[current_exp_index][ch_ind][run].size(); pk != pk_end; ++pk) {
 				bool failed_hist_cut = false; //normal cuts
 				cut_data[0] = data->pmt_peaks[current_exp_index][ch_ind][run][pk].S;
@@ -861,7 +864,6 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 				if (!failed_hist_cut)
 					S2 += cut_data[0];
 			}
-			S2 /= (s1pe > 0 ? s1pe : 1.0);
 			cut_data[0] = S2;//1st parameter cut must be applied only if the rest 4 parameters are -2. -1 is reserved for invalid peaks
 			cut_data[1] = -2;
 			cut_data[2] = -2;
@@ -1778,26 +1780,27 @@ bool PostProcessor::update(void)
 		break;
 	}
 	case Type::PMT_tbN:
+	case Type::PMT_tbNpe:
 	case Type::MPPC_tbN:
 	case Type::MPPC_tbN_sum:
 	{
 		drawn_mean_taker.SetFunction(
 		mean_taker.SetFunction([](std::vector<double>& pars, int run, void* data) {
-			double weight = pars[5] >= 0 ? pars[5] : 1; //pars[5] is < 0 when there is no calibration. In that case assume that all peaks are 1 photoelectron
+			double weight = pars[5] >= 0 ? pars[5] : 0; //pars[5] is < 0 when there is no calibration. In that case ignore input to avoid confusion
 			(((mean_variance_data_*)data)->mean_x) += weight*pars[4];
 			(((mean_variance_data_*)data)->stat_weight) += weight;
 			return true;
 		}));
 		drawn_variance_taker.SetFunction(
 		variance_taker.SetFunction([](std::vector<double>& pars, int run, void* data) {
-			double weight = pars[5] >= 0 ? pars[5] : 1;
+			double weight = pars[5] >= 0 ? pars[5] : 0;
 			double meanX = ((mean_variance_data_*)data)->mean_x;
 			(((mean_variance_data_*)data)->variance_x) += weight*(pars[4] - meanX) * (pars[4] - meanX);
 			return true;
 		}));
 		drawn_limits_finder.SetFunction(
 		limits_finder.SetFunction([](std::vector<double>& pars, int run, void* data) {
-			int weight = pars[5] >= 0 ? pars[5] : 1;
+			int weight = pars[5] >= 0 ? pars[5] : 0;
 			if (0!=weight) {
 				std::pair<double,double>* p = &((limits_data_*)data)->x_mm;
 				p->first = std::min(p->first, pars[4]);

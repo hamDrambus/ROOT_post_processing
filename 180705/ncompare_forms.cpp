@@ -141,8 +141,11 @@ void add_text(double x, double y, std::vector<std::string> title, std::vector<st
 		TH2F* frame = (TH2F*)gDirectory->FindObject("frame");
 		if (NULL==frame)
 			return;
-		offset = std::log(frame->GetYaxis()->GetXmax()/frame->GetYaxis()->GetXmin())/5.75;
-		//std::cout<<"Size="<<entries.size()<<", offset = "<<offset<<std::endl;
+		//offset at 1e-5 - 1 is std::log(1e5)/5.75;
+		double off_at_1e5 = std::log(1e5)/5.75;
+		off_at_1e5 = std::log(off_at_1e5)/std::log(1e5);
+		offset = std::exp(std::log(frame->GetYaxis()->GetXmax()/frame->GetYaxis()->GetXmin()) * off_at_1e5);
+		std::cout<<"Size="<<entries.size()<<", offset = "<<offset<<std::endl;
 		for (int hh = 0, hh_end_ = title.size(); hh!=hh_end_; ++hh) {
 			auto *txtfr0 = new TLatex (x, y*std::pow(offset, hh_end_ - hh - 1 + entries.size()), title[hh].c_str());
 			txtfr0->SetTextAlign(12); txtfr0->SetTextSize(0.05);
@@ -222,6 +225,7 @@ int ncompare_forms (void) {
 	pulse_shape* define = NULL;
 
 	bool PMT_by_S = true;
+	bool fit_bad_forms = false;
 
 	pulse_shape SiPM_20kV_no_trigger;
 	define = &SiPM_20kV_no_trigger;
@@ -1325,7 +1329,7 @@ define->slow_tau_bound = PAIR(1, 10);
 define->long_ampl_bound = PAIR(3e-4, 1e-1);
 define->long_tau_bound = PAIR(30, 200);
 define->simultaneous_fit = true;
-define->do_fit = true;
+define->do_fit = fit_bad_forms;
 define->fit_option = def_fit_option;
 
 	pulse_shape PMT3_WLS_8kV_no_trigger;
@@ -1350,7 +1354,7 @@ define->slow_tau_bound = PAIR(1, 10);
 define->long_ampl_bound = PAIR(3e-4, 1e-1);
 define->long_tau_bound = PAIR(30, 200);
 define->simultaneous_fit = true;
-define->do_fit = true;
+define->do_fit = fit_bad_forms;
 define->fit_option = def_fit_option;
 
 pulse_shape PMT3_WLS_20kV_trivial;
@@ -2627,21 +2631,23 @@ define->fit_option = def_fit_option;
 	//std::vector<pulse_shape> pulses = {PMT3_WLS_20kV_no_trigger, PMT3_WLS_18kV_no_trigger, PMT3_WLS_14kV_no_trigger, PMT3_WLS_10kV_no_trigger};
 	//std::vector<pulse_shape> pulses = {PMT3_WLS_20kV_no_trigger_v2, PMT3_WLS_18kV_no_trigger_v2, PMT3_WLS_14kV_no_trigger_v2, PMT3_WLS_10kV_no_trigger_v2};
 
-	std::vector<pulse_shape> pulses = {PMT3_WLS_20kV_trivial, PMT3_WLS_18kV_trivial, PMT3_WLS_14kV_trivial, PMT3_WLS_10kV_trivial};
+	std::vector<pulse_shape> pulses = {PMT3_WLS_20kV_no_trigger, PMT3_WLS_18kV_no_trigger, PMT3_WLS_16kV_no_trigger, PMT3_WLS_14kV_no_trigger,
+			PMT3_WLS_12kV_no_trigger, PMT3_WLS_10kV_no_trigger, PMT3_WLS_8kV_no_trigger};
+	//std::vector<pulse_shape> pulses = {PMT3_WLS_20kV_trivial, PMT3_WLS_18kV_trivial, PMT3_WLS_14kV_trivial, PMT3_WLS_10kV_trivial};
 	std::vector<Color_t> palette_major = {kBlack, kRed, kBlue, kGreen, kYellow + 2, kMagenta, kOrange + 7};
 	std::vector<Color_t> palette_minor = {kGray + 2, kMagenta, kAzure + 10, kGreen -2, kMagenta+3, kOrange - 7, kOrange + 6};
 	int contribution_est_method = 2; //0 - use fit of slow/long components at fast component range;
 	//1 - use constant with amplitude from fit; 2 - use linear function rising up to amplitude from fit;
-	int Nbins = 600;
+	int Nbins = 200;
 	bool center_pulses = false;
 	bool print_errors = false;
-    double time_pretrigger_left = 7, time_pretrigger_right = 20;
-    double time_left = 0, time_right = 160;//us
-    double max_val = 0;
+	double time_pretrigger_left = 7, time_pretrigger_right = 20;
+	double time_left = 0, time_right = 160;//us
+	double max_val = 0;
 	double trigger_at = 32;
 	bool linear = false;
 	//qewr - for fast Ctrl+F
-	std::string framename = std::string("Results for 3PMT+WLS simplest algorithm, 88 keV #gamma ^{209}Cd");// + " " + Tds[0] + " Td";
+	std::string framename = std::string("Results for 3PMT+WLS, 82 keV #gamma ^{109}Cd");// + " " + Tds[0] + " Td";
 
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {
 		std::string hist_name = "hist" + std::to_string(hh);
@@ -2682,8 +2688,8 @@ define->fit_option = def_fit_option;
 	//legend->SetHeader("");
 	legend->SetMargin(0.25);
 	TH2F* frame = new TH2F("frame", framename.c_str(), 500, time_left, time_right, 500, linear ? 0 : 1e-5, max_val);
-	frame->GetXaxis()->SetTitle("t [#mus]");
-	frame->GetYaxis()->SetTitle("Pulse-height [arb.]");
+	frame->GetXaxis()->SetTitle("Time [#mus]");
+	frame->GetYaxis()->SetTitle("PE peak counts");
 	frame->Draw();
 
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {
@@ -2870,10 +2876,10 @@ define->fit_option = def_fit_option;
 			add_text(101, 0.007, Long_title, frsL, palette_major);
 			add_text(130, 0.007, no_title, tau2, palette_major);
 		} else {
-			add_text(54, 0.017, no_title, tau1, palette_major);
-			add_text(75, 0.001, Slow_title, frsS, palette_major);
-			add_text(91, 0.001, Long_title, frsL, palette_major);
-			add_text(111, 0.001, no_title, tau2, palette_major);
+			add_text(46.8, 0.017, no_title, tau1, palette_major);
+			add_text(68, 0.001, Slow_title, frsS, palette_major);
+			add_text(85, 0.001, Long_title, frsL, palette_major);
+			add_text(103, 0.001, no_title, tau2, palette_major);
 		}
 	} else {
 		std::vector<std::string> no_title;

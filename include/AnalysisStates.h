@@ -11,7 +11,7 @@ public:
 		MPPC_tbS_sum /*time distribution with weights as peak area S*/,
 		MPPC_tbN_sum /*time distribution with weights as peak Npe*/, MPPC_coord, MPPC_coord_x, MPPC_coord_y, MPPC_Npe_sum, MPPC_N_sum, MPPC_S2,
 		Correlation_x, Correlation_y /*these two are mask (virtual) types*/, Correlation /*uses Correlation_x/y*/,CorrelationAll,
-		PMT_S2_S, PMT_Npe_sum, PMT_S2_int, PMT_Ss, PMT_As, PMT_t_S, PMT_A_S, PMT_tbS, PMT_tbN, PMT_sum_N, PMT_trigger_fit, PMT_trigger_bNpe,
+		PMT_S2_S, PMT_Npe_sum, PMT_S2_int, PMT_Ss, PMT_As, PMT_t_S, PMT_A_S, PMT_tbS, PMT_tbN, PMT_tbNpe, PMT_sum_N, PMT_trigger_fit, PMT_trigger_bNpe,
 		PMT_trigger_bNpeaks, PMT_trigger_bS};
 protected:
 	const Type _first_state;

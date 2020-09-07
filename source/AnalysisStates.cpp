@@ -295,8 +295,8 @@ Bool_t AStates::isPMTtype(Type type) const
 	if (type == Correlation)
 		return isPMTtype(_x_corr)&&isPMTtype(_y_corr);
 	return (type == PMT_S2_S || PMT_Npe_sum==type || PMT_S2_int==type || type == PMT_Ss || type == PMT_As || type == PMT_t_S
-			|| PMT_A_S == type || type == PMT_tbS || PMT_tbN == type || PMT_sum_N == type || type == PMT_trigger_bNpe || type==PMT_trigger_bNpeaks
-			|| type == PMT_trigger_bS || type == PMT_trigger_fit);
+			|| PMT_A_S == type || type == PMT_tbS || PMT_tbN == type || PMT_tbNpe== type || PMT_sum_N == type
+			|| type == PMT_trigger_bNpe || type==PMT_trigger_bNpeaks|| type == PMT_trigger_bS || type == PMT_trigger_fit);
 }
 
 Bool_t AStates::isPerRun(Type type) const
@@ -630,6 +630,10 @@ std::string AStates::type_name(Type type) const
 		break;
 	}
 	case Type::PMT_tbN: {
+		name += "signal_form_by_Npeaks";
+		break;
+	}
+	case Type::PMT_tbNpe: {
 		name += "signal_form_by_Npe";
 		break;
 	}

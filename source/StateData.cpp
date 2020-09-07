@@ -43,6 +43,7 @@ bool StateData::IsForState_virt(CanvasSetups *state, int channel, AStates::Type 
 	case AStates::PMT_A_S:
 	case AStates::PMT_tbS:
 	case AStates::PMT_tbN:
+	case AStates::PMT_tbNpe:
 	case AStates::PMT_sum_N:
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
@@ -156,6 +157,7 @@ bool TriggerData::IsForState_virt(CanvasSetups *state, int channel, AStates::Typ
 		case AStates::PMT_A_S:
 		case AStates::PMT_tbS:
 		case AStates::PMT_tbN:
+		case AStates::PMT_tbNpe:
 		case AStates::PMT_sum_N:
 		case AStates::Correlation:
 		case AStates::CorrelationAll:
@@ -279,6 +281,7 @@ bool TriggerFitData::IsForState_virt(CanvasSetups *state, int channel, AStates::
 		case AStates::PMT_A_S:
 		case AStates::PMT_tbS:
 		case AStates::PMT_tbN:
+		case AStates::PMT_tbNpe:
 		case AStates::PMT_sum_N:
 		case AStates::Correlation:
 		case AStates::CorrelationAll:
