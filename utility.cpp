@@ -180,7 +180,7 @@ int utility (void) {
 	c_->SetGrid();
 	c_->SetTicks();
 	c_->ToggleEventStatus();
-    c_->ToggleToolBar();
+	c_->ToggleToolBar();
 	TLegend *legend = new TLegend(0.55, 0.65, 0.9, 0.9);
 	//legend->SetHeader("");
 	legend->SetMargin(0.25);

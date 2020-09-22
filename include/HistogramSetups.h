@@ -78,7 +78,6 @@ protected:
 
 	std::deque<EventCut>* get_run_cuts (int exp_ind);
 
-	HistogramSetups* get_hist_setups(void) const;
 	HistogramSetups* get_hist_setups(int exp_ind, int channel, Type type) const;
 	bool set_hist_setups(HistogramSetups* setups, int exp_ind, int channel, Type type); //Creates copy!
 	TCanvas *get_current_canvas (void);
@@ -107,6 +106,7 @@ protected:
 public:
 	virtual ~CanvasSetups();
 	CanvasSetups(std::deque<int> &mppc_channsels_, std::deque<int> &pmt_channsels_, std::deque<std::string>& experiments_);
+	HistogramSetups* get_hist_setups(void) const;
 	void next_canvas(void);
 	void previous_canvas(void);
 public:

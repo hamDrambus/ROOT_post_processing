@@ -154,6 +154,61 @@ void save_forms (std::string path, bool N_only, int PMT_condition, int SiPM_cond
 	}
 }
 
+//Calculate S1 and S2 amplitudes for each calibrated channel
+//Assumes that noise cuts and event selection are already done!
+//Times must be in correct order (t1>t0)!
+//Changes ty(AStates::PMT_Npe_sum) and ty(AStates::MPPC_Npe_sum) channels and time constraints!
+void print_amplitudes(std::string file, double bkg_t0, double bkg_t1, double S1_t0, double S1_t1, double S2_t0, double S2_t1) {
+	std::ofstream str;
+	open_output_file(file, str, std::ios_base::trunc);
+	if (!str.is_open())
+		return;
+	str<<"//channel\tbkg("<<dbl_to_str(bkg_t0, 1)<<"-"<<dbl_to_str(bkg_t1, 1)<<"us)\tS1("<<dbl_to_str(S1_t0, 1)<<"-"<<dbl_to_str(S1_t1, 1)
+			<<"us)\tS2("<<dbl_to_str(S2_t0, 1)<<"-"<<dbl_to_str(S2_t1, 1)<<"us)\tS1-bkg\tS2-bkg (all in photoelectrons)"<<std::endl;
+	for (std::size_t chi = 0, chi_end_ = calib_channels.size(); chi!=chi_end_; ++chi) {
+		double bkg_Npe = 0, S1_Npe = 0, S2_Npe = 0;
+		int channel = calib_channels[chi];
+		std::string ch_str = int_to_str(channel);
+		if (channel>=32) {
+			if (getIndex(post_processor->MPPC_channels, channel)<0)
+				continue;
+			ty(AStates::MPPC_Npe_sum);
+		} else {
+			if (getIndex(post_processor->PMT_channels, channel)<0)
+				continue;
+			ty(AStates::PMT_Npe_sum);
+		}
+		ch(channel);
+		cut_t(bkg_t0, bkg_t1, false, channel); update();
+		bkg_Npe = get_mean();
+		cut_t(S1_t0, S1_t1, false, channel); update();
+		S1_Npe = get_mean();
+		cut_t(S2_t0, S2_t1, false, channel); update();
+		S2_Npe = get_mean();
+		str<<channel<<"\t"<<bkg_Npe<<"\t"<<S1_Npe<<"\t"<<S2_Npe<<"\t"<<S1_Npe - bkg_Npe*(S1_t1-S1_t0)/(bkg_t1-bkg_t0)
+				<<"\t"<<S2_Npe - bkg_Npe*(S2_t1-S2_t0)/(bkg_t1-bkg_t0)<<std::endl;
+	}
+	double bkg_Npe = 0, S1_Npe = 0, S2_Npe = 0;
+	ty(AStates::MPPC_Npe_sum);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		on_ch(chan);
+		cut_t(bkg_t0, bkg_t1, false, chan);
+	}
+	update();
+	bkg_Npe = get_mean();
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich)
+		cut_t(S1_t0, S1_t1, false, post_processor->MPPC_channels[ich]);
+	update();
+	S1_Npe = get_mean();
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich)
+		cut_t(S2_t0, S2_t1, false, post_processor->MPPC_channels[ich]);
+	update();
+	S2_Npe = get_mean();
+	str<<"SiPMs"<<"\t"<<bkg_Npe<<"\t"<<S1_Npe<<"\t"<<S2_Npe<<"\t"<<S1_Npe - bkg_Npe*(S1_t1-S1_t0)/(bkg_t1-bkg_t0)
+			<<"\t"<<S2_Npe - bkg_Npe*(S2_t1-S2_t0)/(bkg_t1-bkg_t0)<<std::endl;
+}
+
 //Even if it is hard to read the whole analysis because of it, it is better to move all A-S cuts for PMT in one
 //place. These cuts are used multiple times: during calibration - for A-S histogram and for Ss, the parameters are
 //selected at that stage at 20kV; during Npe plots (for Cd peak selection, which is required during signal forms) and during
@@ -822,9 +877,16 @@ if (exp == "200213_Pu_20kV_850V_46V_12dB_th100mV" || exp == "200213_Pu_20kV_850V
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, 0, SiPM_state, false);
-		cut_t(d_S2_start, 160, false, chan);
+		cut_t(0, d_S2_start, false, chan);
 	}
 	set_bins(0, 100);
+	draw_limits(0, 5);
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_w_0-"+S2_start+"us_"+cuts);
+	set_as_run_cut("good_SiPMs_pre-trigger"); cuts = Num;
+	Num = int_to_str(++no, 2);
+
+	time_zoom_SiPMs(d_S2_start, 160);
+	unset_draw_limits();
 	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+cuts);
 	Num = int_to_str(++no, 2);
 
@@ -855,7 +917,7 @@ set_corr(AStates::MPPC_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
 	update();
 	set_titles("N_{pe} t#in["+S2_start+", 160] #mus", "N_{pe} t#in["+S2_start+", "+S2_finish+"] #mus");
 	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us");
-	set_as_run_cut("good_SiPMs_ZxZy");	cuts = Num;
+	set_as_run_cut("good_SiPMs_ZxZy");	cuts += "+" + Num;
 	print_rejected_events(FOLDER + Num + "_rejected_events.txt", first_run);
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1");
@@ -899,25 +961,6 @@ save_forms(FOLDER + form_n, FOLDER + form_n + "A_s4PMT_by_Npe", 800, 8);
 	unset_as_run_cut("En_spec");
 	cuts.erase(cuts.end()-3, cuts.end());
 
-form_n = "forms_Alpha_peak/";
-ty(AStates::MPPC_Npe_sum);
-	draw_limits(6, 21);
-	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+cuts+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
-	set_as_run_cut("En_spec");	cuts += "+" + Num;
-	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
-	Num = int_to_str(++no, 2);
-
-ty(AStates::PMT_Npe_sum);
-	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
-	Num = int_to_str(++no, 2);
-
-save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
-save_forms(FOLDER + form_n, FOLDER + form_n + "A_4PMT_fast_by_S", 800, 3);
-save_forms(FOLDER + form_n, FOLDER + form_n + "A_SiPMs_by_Npe", 800, 5);
-save_forms(FOLDER + form_n, FOLDER + form_n + "A_s4PMT_by_Npe", 800, 8);
-	unset_as_run_cut("En_spec");
-	cuts.erase(cuts.end()-3, cuts.end());
-
 form_n = "forms_cosmic/";
 ty(AStates::MPPC_Npe_sum);
 	draw_limits(28, 45);
@@ -936,6 +979,27 @@ save_forms(FOLDER + form_n, FOLDER + form_n + "A_SiPMs_by_Npe", 800, 5);
 save_forms(FOLDER + form_n, FOLDER + form_n + "A_s4PMT_by_Npe", 800, 8);
 	unset_as_run_cut("En_spec");
 	cuts.erase(cuts.end()-3, cuts.end());
+
+form_n = "forms_Alpha_peak/";
+ty(AStates::MPPC_Npe_sum);
+	draw_limits(6, 21);
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+cuts+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
+	set_as_run_cut("En_spec");	cuts += "+" + Num;
+	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
+	Num = int_to_str(++no, 2);
+
+ty(AStates::PMT_Npe_sum);
+	saveaspng(FOLDER + Num + "_slowPMTs_Npe_"+cuts);
+	Num = int_to_str(++no, 2);
+
+save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
+save_forms(FOLDER + form_n, FOLDER + form_n + "A_4PMT_fast_by_S", 800, 3);
+save_forms(FOLDER + form_n, FOLDER + form_n + "A_SiPMs_by_Npe", 800, 5);
+save_forms(FOLDER + form_n, FOLDER + form_n + "A_s4PMT_by_Npe", 800, 8);
+print_amplitudes(FOLDER + form_n + "Amplitudes.txt", 9, 19, 4, 8, d_S2_start, 160); //(t0,t1) for bkg, S1, S2. Changes ty(AStates::PMT_Npe_sum) and ty(AStates::MPPC_Npe_sum)!
+	unset_as_run_cut("En_spec");
+	cuts.erase(cuts.end()-3, cuts.end());
+
 }
 //END OF FORMS
 }

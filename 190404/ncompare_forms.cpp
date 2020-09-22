@@ -141,8 +141,11 @@ void add_text(double x, double y, std::vector<std::string> title, std::vector<st
 		TH2F* frame = (TH2F*)gDirectory->FindObject("frame");
 		if (NULL==frame)
 			return;
-		offset = std::log(frame->GetYaxis()->GetXmax()/frame->GetYaxis()->GetXmin())/5.75;
-		//std::cout<<"Size="<<entries.size()<<", offset = "<<offset<<std::endl;
+		//offset at 1e-5 - 1 is std::log(1e5)/5.75;
+		double off_at_1e5 = std::log(1e5)/5.75;
+		off_at_1e5 = std::log(off_at_1e5)/std::log(1e5);
+		offset = std::exp(std::log(frame->GetYaxis()->GetXmax()/frame->GetYaxis()->GetXmin()) * off_at_1e5);
+		std::cout<<"Size="<<entries.size()<<", offset = "<<offset<<std::endl;
 		for (int hh = 0, hh_end_ = title.size(); hh!=hh_end_; ++hh) {
 			auto *txtfr0 = new TLatex (x, y*std::pow(offset, hh_end_ - hh - 1 + entries.size()), title[hh].c_str());
 			txtfr0->SetTextAlign(12); txtfr0->SetTextSize(0.05);
@@ -1681,6 +1684,12 @@ define->fit_option = def_fit_option;
 	//legend->SetHeader("");
 	legend->SetMargin(0.25);
 	TH2F* frame = new TH2F("frame", framename.c_str(), 500, time_left, time_right, 500, linear ? 0 : 1e-4, max_val);
+	//=====================================
+	if (!linear)
+		frame->GetXaxis()->SetRangeUser(20, 80);
+	else
+		frame->GetXaxis()->SetRangeUser(10, 80);
+	//=====================================
 	frame->GetXaxis()->SetTitle("Time [#mus]");
 	frame->GetYaxis()->SetTitle("PE peak count");
 	frame->Draw();
@@ -1875,10 +1884,10 @@ define->fit_option = def_fit_option;
 			add_text(101, 0.007, Long_title, frsL, palette_major);
 			add_text(130, 0.007, no_title, tau2, palette_major);
 		} else {
-			add_text(45.8, 0.04, no_title, tau1, palette_major);
-			add_text(68, 0.008, Slow_title, frsS, palette_major);
-			add_text(85, 0.008, Long_title, frsL, palette_major);
-			add_text(103, 0.008, no_title, tau2, palette_major);
+			add_text(50, 0.01, no_title, tau1, palette_major);
+			add_text(60, 0.008, Slow_title, frsS, palette_major);
+			add_text(67, 0.008, Long_title, frsL, palette_major);
+			add_text(72, 0.008, no_title, tau2, palette_major);
 		}
 	} else {
 		std::vector<std::string> no_title;

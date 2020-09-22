@@ -184,6 +184,8 @@ void cut_x_y_right_select(std::vector<double> region, bool drawn, std::string _n
 
 void cut_runs(int max_index, std::string _name = "");
 
+double get_mean(void); //x mean (ignores drawn cuts)
+
 #ifdef _COMPLIE_MAIN_
 int main(int argc, char* argv[]) {
 	TestSignalGenerator("test/");

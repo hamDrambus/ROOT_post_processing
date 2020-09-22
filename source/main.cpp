@@ -2248,3 +2248,20 @@ void cut_runs(int max_index, std::string _name)
 		update();
 }
 
+double get_mean(void)
+{
+	if (NULL == g_data) {
+		status();
+		return -DBL_MAX;
+	}
+	HistogramSetups *setups = post_processor->get_hist_setups();
+	if (NULL==setups) {
+		std::cout<<"get_mean: Error: NULL setups"<<std::endl;
+		return -DBL_MAX;
+	}
+	if (setups->x_mean) {
+		return *setups->x_mean;
+	}
+	return -DBL_MAX;
+}
+
