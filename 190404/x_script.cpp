@@ -13,19 +13,21 @@ if (false) {
 	update();
 }
 if (false) {
-	int channel = 11;
-	bool display = false;
-	int aggressiveness = 1;
-	cut_A_S_upper(0.00362, 0.000112, 0.009, 0.000238, display, channel, "rem_smallA_largeS");
-	if (aggressiveness == 1) {
-		cut_A_S_upper(0.53, 0, 2, 0, display, channel, "rem_A>0.53");
-		cut_A_S_upper(0.0, 0.09, 1.6, 0.09, display, channel, "rem_S>0.09");
-	}
+	// nch(); set_zoom(0, 0.08, 0, 0.012); set_bins(500);
+	int channel = 59;
+	bool display = true;
+	int aggressiveness = 2;
+	x_y_regions = {0.0193, 0.0193, 0.00150, 0.08, 0.00795, 1e3};
+	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+	if (aggressiveness>=1)//select only 1 photoelectron for calibration
+		cut_A_S_upper(0.0412, 0.0001, 1, 0.0001, display, channel, "2pe");
+	if (aggressiveness>=2)//remove afterimpulses
+		cut_A_S_upper(0.0193, 0.00241, 0.0412, 0.0057, display, channel, "2pe_merged");
 }
-if (false) {
+if (true) {
 	bool calibrate = false;
 	unsigned int method = 1;
-	analysis_history(calibrate, method); //20
+	analysis_history(calibrate, method); //20, 46V
 	nex();
 	analysis_history(calibrate, method); //20
 	nex();
@@ -41,8 +43,22 @@ if (false) {
 	nex();
 	analysis_history(calibrate, method);	//8
 	nex();
+	analysis_history(calibrate, method); //20, 48V
+	nex();
+	analysis_history(calibrate, method); //18
+	nex();
+	analysis_history(calibrate, method); //16
+	nex();
+	analysis_history(calibrate, method); //14
+	nex();
+	analysis_history(calibrate, method); //12
+	nex();
+	analysis_history(calibrate, method);	//10
+	nex();
+	analysis_history(calibrate, method);	//8
+	nex();
 }
-if (true) { //to study cuts on 4PMT Npe t=[25, 40] vs t=[25, 160]
+if (false) { //to study cuts on 4PMT Npe t=[25, 40] vs t=[25, 160]
 	//setups are for 20kV, 5analysis_states.cpp (launch analysis_states(0, 0) before this code)
 	std::string exp = post_processor->experiments[post_processor->current_exp_index];
 	int first_run;
@@ -119,4 +135,4 @@ if (true) { //to study cuts on 4PMT Npe t=[25, 40] vs t=[25, 160]
 	saveaspng(FOLDER + "all_cuts");
 	remcut(-1, "1"); remcut(-1, "2"); remcut(-1, "3"); remcut(-1, "4"); remcut(-1, "5"); remcut(-1, "6");
 }
-} 
+}

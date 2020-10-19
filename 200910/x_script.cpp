@@ -27,20 +27,20 @@ if (false) {
 	cut_x_y_lower(120, 70+ offset, 300, 190+ offset, true, "5");
 	update();
 }
-if (false) {
-	int channel = 44;
+if (true) {
+	int channel = 32;
 	bool display = true;
-	int aggressiveness = 1;
-	cut_A_S_lower(0.0105, 0.0011, 0.03, 0.0, display, channel, "small_A-S_noise");
-	x_y_regions = {0.0105, 0.0105, 0.0006, 0.06, 0.00580, 1e3};
+	int aggressiveness = 2;
+	cut_A_S_lower(0.0105, 0.00118, 0.05, 0.0, display, channel, "small_A-S_noise");
+	x_y_regions = {0.0105, 0.0123, 0.0, 0.06, 0.0046, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
 	cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
-		cut_A_S_upper(0.0221, 0.0001, 1, 0.0001, display, channel, "2pe");
+		cut_A_S_upper(0.0273, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
-		cut_A_S_upper(0.0105, 0.00145, 0.0221, 0.0033, display, channel, "2pe_merged");
+		cut_A_S_upper(0.0105, 0.00162, 0.0273, 0.00337, display, channel, "2pe_merged");
 }
-if (true) {
+if (false) {
 	bool calibrate = false;
 	unsigned int iteration = 0;
 	analysis_history(calibrate, iteration); //20

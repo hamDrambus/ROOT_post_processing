@@ -32,6 +32,7 @@ public:
 	Bool_t use_default_setups;
 	StateData* extra_data; //for example parameters for trigger adjustment algorithm
 
+	bool logscale_x, logscale_y, logscale_z;
 #ifndef __ROOTCLING__
 	//1st tier parameters of distribution: (stored in order to minimize calls of LoopThroughData to recalculate them)
 	boost::optional<std::size_t> num_of_runs;
@@ -80,7 +81,6 @@ protected:
 
 	HistogramSetups* get_hist_setups(int exp_ind, int channel, Type type) const;
 	bool set_hist_setups(HistogramSetups* setups, int exp_ind, int channel, Type type); //Creates copy!
-	TCanvas *get_current_canvas (void);
 
 	TF1 *get_current_fit_function(void);
 	bool set_fit_function(TF1* func);	//Creates copy!
@@ -90,12 +90,16 @@ protected:
 	bool set_hist1 (TH1D * hist);		//Creates copy!
 	TH2D *get_current_hist2 (void);
 	bool set_hist2 (TH2D * hist); 		//Creates copy!
+	TCanvas *get_current_canvas (void);
 
 	std::pair<double, double> get_current_x_zoom(void);
 	std::pair<double, double> get_current_y_zoom(void);
 	std::pair<bool, bool> is_zoomed(void);
 	bool set_zoom(std::pair<double, double> x_z, std::pair<double, double> y_z);
 	bool unset_zoom(void);
+	void set_log_x(bool is_log);
+	void set_log_y(bool is_log);
+	void set_log_z(bool is_log);
 
 	Bool_t StateChange(int to_ch, int to_exp, Type to_type, int from_ch, int from_exp, Type from_type);
 	virtual Bool_t StateChange(int to_ch, int to_exp, Type to_type, std::size_t to_canvas, int from_ch, int from_exp, Type from_type, std::size_t from_canvas);

@@ -294,7 +294,7 @@ Bool_t AStates::isPMTtype(Type type) const
 		return isPMTtype(_y_corr);
 	if (type == Correlation)
 		return isPMTtype(_x_corr)&&isPMTtype(_y_corr);
-	return (type == PMT_S2_S || PMT_Npe_sum==type || PMT_S2_int==type || type == PMT_Ss || type == PMT_As || type == PMT_t_S
+	return (type == PMT_S2_S || PMT_Npe_sum==type || PMT_S_sum==type || PMT_S2_int==type || type == PMT_Ss || type == PMT_As || type == PMT_t_S
 			|| PMT_A_S == type || type == PMT_tbS || PMT_tbN == type || PMT_tbNpe== type || PMT_sum_N == type
 			|| type == PMT_trigger_bNpe || type==PMT_trigger_bNpeaks|| type == PMT_trigger_bS || type == PMT_trigger_fit);
 }
@@ -303,7 +303,7 @@ Bool_t AStates::isPerRun(Type type) const
 {
 	return type==MPPC_Double_I || type==MPPC_coord|| type==MPPC_coord_x|| type==MPPC_coord_y|| type==MPPC_Npe_sum||type==MPPC_N_sum||
 			type==MPPC_S2 || type == Correlation_x|| type == Correlation_y|| type==Correlation|| type==CorrelationAll||
-			type== PMT_S2_S|| type== PMT_S2_int ||type==PMT_Npe_sum ||type==PMT_sum_N || type==PMT_trigger_bNpe ||
+			type== PMT_S2_S|| type== PMT_S2_int ||type==PMT_Npe_sum ||type==PMT_S_sum ||type==PMT_sum_N || type==PMT_trigger_bNpe ||
 			type==PMT_trigger_bNpeaks || type==PMT_trigger_bS || type == PMT_trigger_fit;
 }
 
@@ -314,7 +314,7 @@ Bool_t AStates::isMultichannel(Type type) const
 	if (type == Correlation_y)
 		return isMultichannel(_y_corr);
 	return (type == MPPC_tbS_sum) || type == MPPC_tbN_sum || type==MPPC_coord || type==MPPC_coord_x || type==MPPC_coord_y || type==MPPC_Npe_sum || type==MPPC_N_sum
-			|| type==Correlation || type==CorrelationAll || type==PMT_sum_N || type==PMT_Npe_sum || type==PMT_trigger_bNpe || type==PMT_trigger_bNpeaks
+			|| type==Correlation || type==CorrelationAll || type==PMT_sum_N || type==PMT_Npe_sum || type==PMT_S_sum || type==PMT_trigger_bNpe || type==PMT_trigger_bNpeaks
 			|| type==PMT_trigger_bS || type == PMT_trigger_fit;
 }
 
@@ -330,8 +330,8 @@ bool AStates::isComposite (Type type) const
 		return isComposite(_x_corr);
 	if (type == Correlation_y)
 		return isComposite(_y_corr);
-	return ((type == MPPC_coord) || (type == MPPC_coord_x)||(type== MPPC_coord_y)||(type==Correlation)||(type==CorrelationAll)
-			||(type==MPPC_Npe_sum)||type==MPPC_N_sum||(type==MPPC_S2)||(type==PMT_S2_S)||(type==PMT_sum_N)||(type==PMT_Npe_sum)||type==PMT_trigger_bNpe
+	return (type == MPPC_coord ||type == MPPC_coord_x ||type== MPPC_coord_y ||type==Correlation ||type==CorrelationAll
+			|| type==MPPC_Npe_sum ||type==MPPC_N_sum ||type==MPPC_S2 ||type==PMT_S2_S ||type==PMT_sum_N ||type==PMT_Npe_sum ||type==PMT_S_sum||type==PMT_trigger_bNpe
 			|| type == PMT_trigger_bNpeaks || type==PMT_trigger_bS || type == PMT_trigger_fit);
 }
 
@@ -595,6 +595,10 @@ std::string AStates::type_name(Type type) const
 	}
 	case Type::PMT_Npe_sum:{
 		name += "Npe_sum";
+		break;
+	}
+	case Type::PMT_S_sum:{
+		name += "S_sum";
 		break;
 	}
 	case Type::PMT_S2_int: {

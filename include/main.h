@@ -22,7 +22,7 @@
 * 	Maybe and render function for EventCut
 * DONE: work out which commands exactly will be needed to obtain signal forms
 *	and optimize interface based on that.
-* TODO: some of the cuts' code is redundant (can be implemented via more general viewRegion::IsInPolygon method)
+* DONE: some of the cuts' code is redundant (can be implemented via more general viewRegion::IsInPolygon method)
 *
 */
 //DONE: new interface:
@@ -109,6 +109,13 @@ void draw_limits(double left, double right);	//2 tier method
 void set_limits(double left, double right);		//2 tier method
 void unset_limits(void);						//2 tier method
 void unset_draw_limits(void);					//2 tier method
+
+void set_log_x(void);
+void set_log_y(void);
+void set_log_z(void);
+void unset_log_x(void);
+void unset_log_y(void);
+void unset_log_z(void);
 
 void cut_S_t_rect_exclude(double t_min, double t_max, double S_min, double S_max, bool drawn, int channel = -1, std::string name = "");
 void cut_S_t_rect_exclude(std::vector<double> region, bool drawn, int channel = -1, std::string name = ""); //region is {t_min0, t_max0, S_min0, S_max0, t_min1, t_max1 ...}

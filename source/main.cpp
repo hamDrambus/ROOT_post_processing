@@ -656,6 +656,7 @@ FunctionWrapper* create_vertical_lines_cut(double left, double right) //do not c
 	case AStates::MPPC_N_sum:
 	case AStates::PMT_sum_N:
 	case AStates::PMT_Npe_sum:
+	case AStates::PMT_S_sum:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			return ((vals[((temp_data*)data)->ch_size] <= ((temp_data*)data)->mm.second) && (vals[((temp_data*)data)->ch_size] >= ((temp_data*)data)->mm.first));
@@ -728,7 +729,7 @@ FunctionWrapper* create_vertical_lines_cut(double left, double right) //do not c
 			line1->SetX1(data->mm.first);
 			line1->SetX2(data->mm.first);
 			line1->SetY1(can->GetUymin());
-			line1->SetY2(can->GetUymax());
+			line1->SetY2(can->GetLogy() ? std::pow(10.0, can->GetUymax()) : can->GetUymax());
 			line1->SetLineColor(kRed);
 			line1->Draw("same");
 		}
@@ -737,7 +738,7 @@ FunctionWrapper* create_vertical_lines_cut(double left, double right) //do not c
 			line2->SetX1(data->mm.second);
 			line2->SetX2(data->mm.second);
 			line2->SetY1(can->GetUymin());
-			line2->SetY2(can->GetUymax());
+			line2->SetY2(can->GetLogy() ? std::pow(10.0, can->GetUymax()) : can->GetUymax());
 			line2->SetLineColor(kRed);
 			line2->Draw("same");
 		}
@@ -816,6 +817,55 @@ void unset_draw_limits(void) //2 tier method
 	update();
 }
 
+void set_log_x(void)
+{
+	if (NULL == g_data) {
+		status();
+		return;
+	}
+	post_processor->set_log_x(true);
+}
+void set_log_y(void)
+{
+	if (NULL == g_data) {
+		status();
+		return;
+	}
+	post_processor->set_log_y(true);
+}
+void set_log_z(void)
+{
+	if (NULL == g_data) {
+		status();
+		return;
+	}
+	post_processor->set_log_z(true);
+}
+void unset_log_x(void)
+{
+	if (NULL == g_data) {
+		status();
+		return;
+	}
+	post_processor->set_log_x(false);
+}
+void unset_log_y(void)
+{
+	if (NULL == g_data) {
+		status();
+		return;
+	}
+	post_processor->set_log_y(false);
+}
+void unset_log_z(void)
+{
+	if (NULL == g_data) {
+		status();
+		return;
+	}
+	post_processor->set_log_z(false);
+}
+
 //region is {t_min0, t_max0, S_min0, S_max0, t_min1, t_max1 ...}
 FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do not call from the CINT
 {	
@@ -857,6 +907,7 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::MPPC_Npe_sum:
 	case AStates::MPPC_N_sum:
 	case AStates::PMT_Npe_sum:
+	case AStates::PMT_S_sum:
 	case AStates::PMT_sum_N:
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
@@ -892,7 +943,9 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 		if (NULL==can || NULL==Data)
 			return false;
 		temp_data* da = (temp_data*) Data;
-		viewRegion region(can->GetUxmin(), can->GetUymin(), can->GetUxmax(), can->GetUymax());
+		viewRegion region(can->GetUxmin(), can->GetUymin(),
+			can->GetLogx() ? std::pow(10.0, can->GetUxmax()) : can->GetUxmax(),
+			can->GetLogy() ? std::pow(10.0, can->GetUymax()) : can->GetUymax());
 		for (int i = 0, _end_ = da->reg.size() / 4; i != _end_; ++i) {
 			region.clear_polyline();
 			region.polyline_push(da->reg[4 * i + 0], da->reg[4 * i + 2]);
@@ -1004,6 +1057,7 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 	case AStates::MPPC_Npe_sum:
 	case AStates::MPPC_N_sum:
 	case AStates::PMT_Npe_sum:
+	case AStates::PMT_S_sum:
 	case AStates::PMT_sum_N:
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
@@ -1039,7 +1093,9 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 		if (NULL == can || NULL == Data)
 			return false;
 		temp_data* da = (temp_data*)Data;
-		viewRegion region(can->GetUxmin(), can->GetUymin(), can->GetUxmax(), can->GetUymax());
+		viewRegion region(can->GetUxmin(), can->GetUymin(),
+			can->GetLogx() ? std::pow(10.0, can->GetUxmax()) : can->GetUxmax(),
+			can->GetLogy() ? std::pow(10.0, can->GetUymax()) : can->GetUymax());
 		for (int i = 0, _end_ = da->reg.size() / 4; i != _end_; ++i) {
 			region.clear_polyline();
 			region.polyline_push(da->reg[4 * i + 0], da->reg[4 * i + 2]);
@@ -1150,6 +1206,7 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::MPPC_Npe_sum:
 	case AStates::MPPC_N_sum:
 	case AStates::PMT_Npe_sum:
+	case AStates::PMT_S_sum:
 	case AStates::PMT_sum_N:
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
@@ -1185,7 +1242,9 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 		if (NULL == can || NULL == Data)
 			return false;
 		temp_data* da = (temp_data*)Data;
-		viewRegion region(can->GetUxmin(), can->GetUymin(), can->GetUxmax(), can->GetUymax());
+		viewRegion region(can->GetUxmin(), can->GetUymin(),
+			can->GetLogx() ? std::pow(10.0, can->GetUxmax()) : can->GetUxmax(),
+			can->GetLogy() ? std::pow(10.0, can->GetUymax()) : can->GetUymax());
 		for (int i = 0, _end_ = da->reg.size() / 4; i != _end_; ++i) {
 			region.clear_polyline();
 			region.polyline_push(da->reg[4 * i + 0], da->reg[4 * i + 2]);
@@ -1354,6 +1413,7 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 	case AStates::MPPC_Npe_sum:
 	case AStates::MPPC_N_sum:
 	case AStates::PMT_Npe_sum:
+	case AStates::PMT_S_sum:
 	case AStates::PMT_sum_N:
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
@@ -1409,7 +1469,9 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 		double A_max = reg[5];
 		double S_intersect_A_min = S0 + (S1 - S0)*(A_min - A0) / (A1 - A0);
 		double S_intersect_A_max = S0 + (S1 - S0)*(A_max - A0) / (A1 - A0);
-		viewRegion region(can->GetUxmin(), can->GetUymin(), can->GetUxmax(), can->GetUymax());
+		viewRegion region(can->GetUxmin(), can->GetUymin(),
+			can->GetLogx() ? std::pow(10.0, can->GetUxmax()) : can->GetUxmax(),
+			can->GetLogy() ? std::pow(10.0, can->GetUymax()) : can->GetUymax());
 		region.polyline_push(A_min, DBL_MAX);
 		region.polyline_push(A_min, S_intersect_A_min);
 		region.polyline_push(A_max, S_intersect_A_max);
@@ -1467,6 +1529,7 @@ FunctionWrapper* create_A_S_vertical_cut(std::vector<double> region, bool upper,
 	case AStates::MPPC_Npe_sum:
 	case AStates::MPPC_N_sum:
 	case AStates::PMT_Npe_sum:
+	case AStates::PMT_S_sum:
 	case AStates::PMT_sum_N:
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
@@ -1522,7 +1585,9 @@ FunctionWrapper* create_A_S_vertical_cut(std::vector<double> region, bool upper,
 		double S1 = reg[3];
 		double S_intersect_A_min = S0;
 		double S_intersect_A_max = S1;
-		viewRegion region(can->GetUxmin(), can->GetUymin(), can->GetUxmax(), can->GetUymax());
+		viewRegion region(can->GetUxmin(), can->GetUymin(),
+			can->GetLogx() ? std::pow(10.0, can->GetUxmax()) : can->GetUxmax(),
+			can->GetLogy() ? std::pow(10.0, can->GetUymax()) : can->GetUymax());
 		region.polyline_push(A0, upper ? DBL_MAX : -DBL_MAX);
 		region.polyline_push(A0, S_intersect_A_min);
 		region.polyline_push(A1, S_intersect_A_max);
@@ -1580,6 +1645,7 @@ FunctionWrapper* create_A_S_horizontal_cut(std::vector<double> region, bool righ
 	case AStates::MPPC_Npe_sum:
 	case AStates::MPPC_N_sum:
 	case AStates::PMT_Npe_sum:
+	case AStates::PMT_S_sum:
 	case AStates::PMT_sum_N:
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
@@ -1636,7 +1702,9 @@ FunctionWrapper* create_A_S_horizontal_cut(std::vector<double> region, bool righ
 		double S1 = reg[3];
 		double S_intersect_A_min = S0;
 		double S_intersect_A_max = S1;
-		viewRegion region(can->GetUxmin(), can->GetUymin(), can->GetUxmax(), can->GetUymax());
+		viewRegion region(can->GetUxmin(), can->GetUymin(),
+			can->GetLogx() ? std::pow(10.0, can->GetUxmax()) : can->GetUxmax(),
+			can->GetLogy() ? std::pow(10.0, can->GetUymax()) : can->GetUymax());
 		region.polyline_push(right ? DBL_MAX : -DBL_MAX, S_intersect_A_min);
 		region.polyline_push(A0, S_intersect_A_min);
 		region.polyline_push(A1, S_intersect_A_max);
@@ -1647,7 +1715,6 @@ FunctionWrapper* create_A_S_horizontal_cut(std::vector<double> region, bool righ
 		return true;
 	});
 }
-
 
 //region is {A_min, A0, S0, A1, S1, A_max}, draw it for clarification, e.g.:
 //ch(7); add_S_t_fast_PMT(region, true); //- will display cuts with red lines
@@ -1926,7 +1993,9 @@ FunctionWrapper* create_x_y_polygon_cut(std::vector<double> region, unsigned int
 		if (NULL == can || NULL == data)
 			return false;
 		temp_data* d = ((temp_data*)data);
-		viewRegion region(can->GetUxmin(), can->GetUymin(), can->GetUxmax(), can->GetUymax());
+		viewRegion region(can->GetUxmin(), can->GetUymin(),
+			can->GetLogx() ? std::pow(10.0, can->GetUxmax()) : can->GetUxmax(),
+			can->GetLogy() ? std::pow(10.0, can->GetUymax()) : can->GetUymax());
 		region.set_polyline(d->reg_x, d->reg_y);
 		region.polyline_push(d->reg_x[0], d->reg_y[0]);
 		TPolyLine *line = region.get_clipped_polyline();

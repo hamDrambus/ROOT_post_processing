@@ -22,7 +22,7 @@ void central_SiPMs(bool on) {
 	if (on) {
 		on_ch(50); on_ch(51); on_ch(36);
 		on_ch(53); on_ch(38); on_ch(39);
-		on_ch(40); on_ch(41); on_ch(56);	
+		on_ch(40); on_ch(41); on_ch(56);
 	} else {
 		off_ch(50); off_ch(51); off_ch(36);
 		off_ch(53); off_ch(38); off_ch(39);
@@ -46,7 +46,7 @@ void save_forms (std::string path, bool N_only, int PMT_condition, int SiPM_cond
 	central_SiPMs(false);
 	update();
 	saveas(path + "SiPMs_edge_form_by_Npe");
-	
+
 	ty(AStates::PMT_tbN);
 	ch(8);
 	noise_cut(8, 1, PMT_condition, false);
@@ -136,7 +136,7 @@ void save_forms (std::string path, bool N_only, int PMT_condition, int SiPM_cond
 
 //Even it is hard to read the whole analysis because of it, it is better to move all A-S cuts for PMT in one
 //place. These cuts are used multiple times: during calibration - for A-S histogram and for Ss, the parameters are
-//selected at that stage at 20kV; during Npe plots (for Cd peak selection, which is required during signal forms) and during 
+//selected at that stage at 20kV; during Npe plots (for Cd peak selection, which is required during signal forms) and during
 //plotting PMT signal forms themselves. Without this function changing cut parameters would have to take place in several places
 //which is very error-prone. Besides, it is easier to re-use this file for other analyzes.
 void noise_cut(int channel, int aggressiveness, int device_condition, bool display) {
@@ -155,7 +155,7 @@ if (channel==15) {
 	if (aggressiveness == 1) {
         cut_A_S_upper(1.4, 0, 2, 0, display, channel, "rem_A>1.4");
 		cut_A_S_upper(0.0, 5.0, 1.6, 5.5, display, channel, "rem_S>~5.0");
-    }  
+    }
 }
 if (channel==14) {
 	cut_A_S_upper(0.013, 0.0073, 0.026, 0.0089, display, channel, "rem_smallA_largeS");
@@ -220,7 +220,7 @@ if (channel==32) {
     cut_A_S_lower(0.011, 0.0011, 0.023, 0.0, display, channel, "small_A-S_noise");
 	x_y_regions = {0.011, 0.011, 0.00065, 0.06, 0.00535, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-	cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");  
+	cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.0250, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -230,7 +230,7 @@ if (channel==33) {
 	cut_A_S_lower(0.008, 0.00115, 0.0175, 0.0, display, channel, "small_A-S_noise");
 	x_y_regions = {0.008, 0.008, 0.000528, 0.06, 0.00538, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-	cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");  
+	cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.0205, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -240,7 +240,7 @@ if (channel==34) {
 	cut_A_S_lower(0.0115, 0.00150, 0.027, 0.0, display, channel, "small_A-S_noise");
 	x_y_regions = {0.0115, 0.0115, 0.00071, 0.06, 0.00562, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-	cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");  
+	cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.0280, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -250,7 +250,7 @@ if (channel==35) {
 	cut_A_S_lower(0.0115, 0.0013, 0.0287, 0.0, display, channel, "small_A-S_noise");
 	x_y_regions = {0.0115, 0.0115, 0.000740, 0.06, 0.0057, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-	cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04"); 
+	cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.027, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -270,7 +270,7 @@ if (channel==37) {
 	cut_A_S_lower(0.0095, 0.00111, 0.030, 0.0, display, channel, "small_A-S_noise");
 	x_y_regions = {0.0095, 0.0095, 0.00058, 0.06, 0.00583, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-	cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");  
+	cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.0224, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -320,7 +320,7 @@ if (channel==42) {
 	cut_A_S_lower(0.0115, 0.00125, 0.024, 0.0, display, channel, "small_A-S_noise");
 	x_y_regions = {0.0115, 0.0115, 0.00077, 0.06, 0.00558, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-	cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04"); 
+	cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.0255, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -333,7 +333,7 @@ if (channel==44) {
 	cut_A_S_lower(0.01, 0.00112, 0.028, 0.0, display, channel, "small_A-S_noise");
 	x_y_regions = {0.01, 0.01, 0.000640, 0.06, 0.00577, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-	cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04"); 
+	cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.0225, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -525,7 +525,7 @@ if (S2_times_entry != S2_times.end()) {
     nex();
     continue;
 }
-for (std::size_t chi = 0, chi_end_ = calib_channels.size(); calibrate && chi!=chi_end_; ++chi) { 
+for (std::size_t chi = 0, chi_end_ = calib_channels.size(); calibrate && chi!=chi_end_; ++chi) {
 int channel = calib_channels[chi];
 std::string ch_str = int_to_str(channel);
 //parameters set by Cd_20kV_850V_46V, but valid for all fields.
@@ -541,7 +541,7 @@ ty(AStates::MPPC_A_S);
 ty(AStates::MPPC_Ss);
     set_zoom(0, 0.025);
     set_bins(800);
-    saveas(data_output_path + folder +"/calibration/"+ch_str+"_Ss");    
+    saveas(data_output_path + folder +"/calibration/"+ch_str+"_Ss");
     noise_cut(channel, 1, SiPM_state, false);
     draw_limits(0.0005, 0.012);
     set_use_mean(); //overwrites old info from calibration file!
@@ -558,7 +558,7 @@ ty(AStates::PMT_A_S);
     saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S");
     set_zoom(0, 0.5, 0, 0.1);
     saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom");
-	cut_A_S_left(0.0, 0.023, 0.044, 0.0, false, channel, "temp"); //Removes small noise for better display 
+	cut_A_S_left(0.0, 0.023, 0.044, 0.0, false, channel, "temp"); //Removes small noise for better display
 	set_bins(100);
     saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom2");
 ty(AStates::PMT_Ss);
@@ -583,7 +583,7 @@ ty(AStates::PMT_A_S);
     saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S");
     set_zoom(0, 0.5, 0, 0.1);
     saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom");
-	cut_A_S_left(0.0, 0.02, 0.04, 0.0, false, channel, "temp"); //Removes small noise for better display 
+	cut_A_S_left(0.0, 0.02, 0.04, 0.0, false, channel, "temp"); //Removes small noise for better display
 	set_bins(100);
     saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom2");
 ty(AStates::PMT_Ss);
@@ -608,7 +608,7 @@ ty(AStates::PMT_A_S);
     saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S");
     set_zoom(0, 0.5, 0, 0.1);
     saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom");
-	cut_A_S_left(0.0, 0.022, 0.04, 0.0, false, channel, "temp"); //Removes small noise for better display 
+	cut_A_S_left(0.0, 0.022, 0.04, 0.0, false, channel, "temp"); //Removes small noise for better display
 	set_bins(120);
     saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom2");
 ty(AStates::PMT_Ss);
@@ -633,7 +633,7 @@ ty(AStates::PMT_A_S);
     saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S");
     set_zoom(0, 0.5, 0, 0.1);
     saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom");
-	cut_A_S_left(0.0, 0.018, 0.032, 0.0, false, channel, "temp"); //Removes small noise for better display 
+	cut_A_S_left(0.0, 0.018, 0.032, 0.0, false, channel, "temp"); //Removes small noise for better display
 	set_bins(100);
     saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom2");
 ty(AStates::PMT_Ss);
@@ -883,7 +883,7 @@ set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	set_as_run_cut("good_sPMTs_ZxZy2");	cuts += "+" + Num;
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1"); remcut(-1, "2"); remcut(-1, "3"); remcut(-1, "4");
-	
+
 	//Pic for paper:
 	ty(AStates::PMT_Npe_sum);
 	draw_limits(25, 67);
@@ -1077,7 +1077,7 @@ set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	set_as_run_cut("good_sPMTs_ZxZy2");	cuts = "cuts_"+Num;
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1"); remcut(-1, "2"); remcut(-1, "3"); remcut(-1, "4");
-	
+
 set_corr(AStates::PMT_trigger_bNpeaks, AStates::PMT_trigger_bNpe, -1, -1);
 	ty(AStates::Correlation);
 	set_zoom(20, 45, 20, 45);
@@ -1262,7 +1262,7 @@ set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	set_as_run_cut("good_sPMTs_ZxZy2");	cuts = "cuts_"+Num;
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1"); remcut(-1, "2"); remcut(-1, "3");
-	
+
 set_corr(AStates::PMT_trigger_bNpeaks, AStates::PMT_trigger_bNpe, -1, -1);
 	ty(AStates::Correlation);
 	set_zoom(20, 45, 20, 45);
@@ -1447,7 +1447,7 @@ set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	set_as_run_cut("good_sPMTs_ZxZy2");	cuts = "cuts_"+Num;
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1"); remcut(-1, "2"); remcut(-1, "3");
-	
+
 set_corr(AStates::PMT_trigger_bNpeaks, AStates::PMT_trigger_bNpe, -1, -1);
 	ty(AStates::Correlation);
 	set_zoom(20, 45, 20, 45);
@@ -1630,7 +1630,7 @@ set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	set_as_run_cut("good_sPMTs_ZxZy2");	cuts = "cuts_"+Num;
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1");
-	
+
 set_corr(AStates::PMT_trigger_bNpeaks, AStates::PMT_trigger_bNpe, -1, -1);
 	ty(AStates::Correlation);
 	set_zoom(20, 45, 20, 45);
@@ -1789,7 +1789,7 @@ set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	set_as_run_cut("good_sPMTs_ZxZy");	cuts = "cuts_"+Num;
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1");
-	
+
 set_corr(AStates::PMT_trigger_bNpeaks, AStates::PMT_trigger_bNpe, -1, -1);
 	ty(AStates::Correlation);
 	set_zoom(20, 45, 20, 45);
@@ -1948,7 +1948,7 @@ set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	set_as_run_cut("good_sPMTs_ZxZy");	cuts = "cuts_"+Num;
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1");
-	
+
 set_corr(AStates::PMT_trigger_bNpeaks, AStates::PMT_trigger_bNpe, -1, -1);
 	ty(AStates::Correlation);
 	set_zoom(20, 45, 20, 45);
@@ -2023,4 +2023,4 @@ save_forms(FOLDER + "forms_cosmic/", false, PMT_state, SiPM_state);
 	cuts.erase(cuts.end()-3, cuts.end());
 }
 //END OF FORMS
-} 
+}

@@ -13,7 +13,8 @@ HistogramSetups::HistogramSetups(const std::deque<int>& channels) :
 	x_mean(boost::none), y_mean(boost::none), x_drawn_mean(boost::none),
 	y_drawn_mean(boost::none), x_variance(boost::none), x_drawn_variance(boost::none),
 	y_variance(boost::none), y_drawn_variance(boost::none), is_valid_fit_function(false),
-	use_default_setups(true), N_bins(0), N_gauss(0), use_fit(false), extra_data(NULL)
+	use_default_setups(true), N_bins(0), N_gauss(0), use_fit(false), extra_data(NULL),
+	logscale_x(false), logscale_y(false), logscale_z(false)
 {
 	for (std::size_t ind = 0, ind_end_ = channels.size(); ind != ind_end_; ++ind)
 		active_channels.push(channels[ind], true);
@@ -39,6 +40,10 @@ HistogramSetups::HistogramSetups(const HistogramSetups& setups)
 	y_axis_title = setups.y_axis_title;
 	is_valid_fit_function = setups.is_valid_fit_function;
 	use_default_setups = setups.use_default_setups;
+
+	logscale_x = setups.logscale_x;
+	logscale_y = setups.logscale_y;
+	logscale_z = setups.logscale_z;
 
 	//1st tier parameters of distribution: (stored in order to minimize calls of LoopThroughData to recalculate them)
 	num_of_runs = setups.num_of_runs;
@@ -483,6 +488,30 @@ bool CanvasSetups::unset_zoom(void)
 	if (invalidate)
 		Invalidate(invHistogram);
 	return true;
+}
+
+void CanvasSetups::set_log_x(bool is_log)
+{
+	HistogramSetups* curr_hist = get_hist_setups();
+	if (NULL==curr_hist)
+		return;
+	curr_hist->logscale_x=is_log;
+}
+void CanvasSetups::set_log_y(bool is_log)
+{
+	HistogramSetups* curr_hist = get_hist_setups();
+	if (NULL==curr_hist)
+		return;
+	bool invalidate = curr_hist->logscale_y!=is_log;
+	curr_hist->logscale_y=is_log;
+}
+void CanvasSetups::set_log_z(bool is_log)
+{
+	HistogramSetups* curr_hist = get_hist_setups();
+	if (NULL==curr_hist)
+		return;
+	bool invalidate = curr_hist->logscale_z!=is_log;
+	curr_hist->logscale_z=is_log;
 }
 
 //public (interfaces)

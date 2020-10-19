@@ -299,7 +299,7 @@ int ncompare_forms (void) {
 #endif //FAST_FIGURES_MODE
 
 	bool do_fit = true;
-	bool fit_bad_forms = true;
+	bool fit_bad_forms = false;
 	bool subtact_baseline = true;
 	bool center_pulses = false;
 	bool center_at_S1 = false;
@@ -310,6 +310,7 @@ int ncompare_forms (void) {
 	double max_val = 0;
 	double trigger_at = center_at_S1 ? 50 : 90;
 	double y_min = 1e-4;
+	Nbins *= (time_right - time_left)/160.0;
 
 	pulse_shape* define = NULL, *copy = NULL;
 	pulse_shape SiPM_20kV_no_trigger;
@@ -793,11 +794,11 @@ define->subtract_baseline = subtact_baseline;
 define->renormalize = true;
 define->slow_fit_t = PAIR(97.0, 160);
 define->long_fit_t = PAIR(97.0, 160);
-define->baseline_bound = PAIR(1e-5, 5e-4);
+define->baseline_bound = PAIR(1e-6, 3e-4);
 define->slow_ampl_bound = PAIR(1e-3, 1);
 define->slow_tau_bound = PAIR(2, 10);
 define->long_ampl_bound = PAIR(3e-4, 5e-1);
-define->long_tau_bound = PAIR(20, 200);
+define->long_tau_bound = PAIR(30, 200);
 define->simultaneous_fit = true;
 define->do_fit = do_fit;
 define->fit_option = def_fit_option;
@@ -1187,8 +1188,8 @@ define->fit_option = def_fit_option;
 #else //FAST_FIGURES_MODE
 	//std::vector<pulse_shape> pulses = {PMT4_6kV_no_trigger_v2};
 
-	//std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger, SiPM_18kV_no_trigger, SiPM_16kV_no_trigger, SiPM_14kV_no_trigger, SiPM_12kV_no_trigger};
-	std::vector<pulse_shape> pulses = {PMT4_20kV_no_trigger, PMT4_18kV_no_trigger, PMT4_16kV_no_trigger, PMT4_14kV_no_trigger, PMT4_12kV_no_trigger};
+	//std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger, SiPM_18kV_no_trigger, SiPM_16kV_no_trigger, SiPM_14kV_no_trigger, SiPM_12kV_no_trigger, SiPM_10kV_no_trigger, SiPM_8kV_no_trigger};
+	std::vector<pulse_shape> pulses = {PMT4_20kV_no_trigger, PMT4_18kV_no_trigger, PMT4_16kV_no_trigger, PMT4_14kV_no_trigger, PMT4_12kV_no_trigger, PMT4_10kV_no_trigger, PMT4_8kV_no_trigger};
 
 	//std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger, SiPM_18kV_no_trigger, SiPM_16kV_no_trigger, SiPM_14kV_no_trigger};
 	//std::vector<pulse_shape> pulses = {SiPM_12kV_no_trigger, SiPM_10kV_no_trigger, SiPM_8kV_no_trigger, SiPM_6kV_no_trigger};
@@ -1261,7 +1262,7 @@ define->fit_option = def_fit_option;
 	frame->GetXaxis()->SetTitle("Time [#mus]");
 	//=====================================
 	if (!linear)
-		frame->GetXaxis()->SetRangeUser(60, 160);
+		frame->GetXaxis()->SetRangeUser(0, 160);
 	else
 		frame->GetXaxis()->SetRangeUser(85, 125);
 	//=====================================
@@ -1494,20 +1495,20 @@ define->fit_option = def_fit_option;
 	}
 	if (!linear) {
 		std::vector<std::string> no_title;
-		//std::vector<std::string> Slow_title = {"Contribution:", "Slow"};
-		//std::vector<std::string> Long_title = {"Long"};
-		std::vector<std::string> Slow_title = {"Slow component", "contribution:"};
-		std::vector<std::string> Long_title;
-		if (print_errors) {
+		std::vector<std::string> Slow_title = {"Contribution:", "Slow"};
+		std::vector<std::string> Long_title = {"Long"};
+		//std::vector<std::string> Slow_title = {"Slow component", "contribution:"};
+		//std::vector<std::string> Long_title;
+		if (print_errors) { //zcxv - for fast Crtl+F
 			add_text(65, 0.025, no_title, tau1, palette_major);
 			add_text(112, 0.025, Slow_title, frsS, palette_major);
 			add_text(128, 0.025, Long_title, frsL, palette_major);
 			add_text(144, 0.025, no_title, tau2, palette_major);
 		} else {
-			add_text(108, 0.025, no_title, tau1, palette_major);
+			add_text(67, 0.01, no_title, tau1, palette_major);
 			add_text(117, 0.015, Slow_title, frsS, palette_major);
-			add_text(160, 0.015, Long_title, frsL, palette_major);
-			add_text(160, 0.015, no_title, tau2, palette_major);
+			add_text(129, 0.015, Long_title, frsL, palette_major);
+			add_text(142, 0.015, no_title, tau2, palette_major);
 		}
 	} else {
 		std::vector<std::string> no_title;

@@ -567,7 +567,7 @@ if (channel==59) {
 }
 
 void analysis_history(bool calibrate, unsigned int iteration = 0) {
-//Created on 2020.06.05
+//Created on 2020.09.14
 //iteration = 0 - no trigger adjustment.
 //iteration > 0 - use fast PMTs for trigger_fit (byNpe for large fields/byNpeaks for low) with
 //experimental pulse-shape determined from previous iteration

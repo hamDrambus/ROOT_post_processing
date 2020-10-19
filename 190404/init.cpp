@@ -14,8 +14,8 @@
   }
   if (name_scheme_version == name_scheme_v2) {
     data_prefix_path = "../Data/190404/results_v2/";
-    calibration_file = "190404/results_v4/190404_calibration.dat";
-    data_output_path = "190404/results_v4/";
+    calibration_file = "190404/results_v6/190404_calibration.dat";
+    data_output_path = "190404/results_v6/";
     DATA_MPPC_VERSION = "SiPM";
     DATA_PMT_VERSION = "PMT";
   }
@@ -43,7 +43,15 @@
   exp_area.experiments.push_back("190404_Cd_12kV_850V_46V_th160mV");
   exp_area.experiments.push_back("190404_Cd_10kV_850V_46V_th150mV");
   exp_area.experiments.push_back("190404_Cd_8kV_850V_46V_th140mV");
-  
+
+  exp_area.experiments.push_back("190404_Cd_20kV_850V_48V_th230mV");
+  exp_area.experiments.push_back("190404_Cd_18kV_850V_48V_th210mV");
+  exp_area.experiments.push_back("190404_Cd_16kV_850V_48V_th200mV");
+  exp_area.experiments.push_back("190404_Cd_14kV_850V_48V_th160mV");
+  exp_area.experiments.push_back("190404_Cd_12kV_850V_48V_th150mV");
+  exp_area.experiments.push_back("190404_Cd_10kV_850V_48V_th150mV");
+  exp_area.experiments.push_back("190404_Cd_8kV_850V_48V_th140mV");
+
   PMT_V.clear();
   MPPC_V.clear();
   channel_info<dB_info> atten0;
@@ -52,10 +60,15 @@
   atten0.push(14, dB_info(12));
   atten0.push(15, dB_info(12));
   dBs.clear();
-  for (auto i = exp_area.experiments.begin(), i_end_ = exp_area.experiments.end(); i != i_end_; ++i) {
+  for (auto i = exp_area.experiments.begin(), i_end_ = exp_area.experiments.begin()+8; i != i_end_; ++i) {
 	  PMT_V[*i] = 850;
-      dBs[*i] = atten0;
+	  dBs[*i] = atten0;
 	  MPPC_V[*i] = 46;
+  }
+  for (auto i = exp_area.experiments.begin()+8, i_end_ = exp_area.experiments.end(); i != i_end_; ++i) {
+	  PMT_V[*i] = 850;
+	  dBs[*i] = atten0;
+	  MPPC_V[*i] = 48;
   }
 
   experiment_fields.clear();
@@ -68,6 +81,14 @@
   experiment_fields["190404_Cd_10kV_850V_46V_th150mV"] = 10;
   experiment_fields["190404_Cd_8kV_850V_46V_th140mV"] = 8;
 
+  experiment_fields["190404_Cd_20kV_850V_48V_th230mV"] = 20;
+  experiment_fields["190404_Cd_18kV_850V_48V_th210mV"] = 18;
+  experiment_fields["190404_Cd_16kV_850V_48V_th200mV"] = 16;
+  experiment_fields["190404_Cd_14kV_850V_48V_th160mV"] = 14;
+  experiment_fields["190404_Cd_12kV_850V_48V_th150mV"] = 12;
+  experiment_fields["190404_Cd_10kV_850V_48V_th150mV"] = 10;
+  experiment_fields["190404_Cd_8kV_850V_48V_th140mV"] = 8;
+
   std::map<std::string, int> experiment_runs; //required for printing accpeted/rejected events
   experiment_runs["190404_Cd_20kV_850V_46V_th250mV_0"] = 1;
   experiment_runs["190404_Cd_20kV_850V_46V_th250mV"] = 33;
@@ -78,7 +99,15 @@
   experiment_runs["190404_Cd_10kV_850V_46V_th150mV"] = 172;
   experiment_runs["190404_Cd_8kV_850V_46V_th140mV"] = 199;
 
-   
+  experiment_runs["190404_Cd_20kV_850V_48V_th230mV"] = 229;
+  experiment_runs["190404_Cd_18kV_850V_48V_th210mV"] = 252;
+  experiment_runs["190404_Cd_16kV_850V_48V_th200mV"] = 273;
+  experiment_runs["190404_Cd_14kV_850V_48V_th160mV"] = 295;
+  experiment_runs["190404_Cd_12kV_850V_48V_th150mV"] = 318;
+  experiment_runs["190404_Cd_10kV_850V_48V_th150mV"] = 339;
+  experiment_runs["190404_Cd_8kV_850V_48V_th140mV"] = 362;
+
+
   if (areas_to_draw.empty())
 	areas_to_draw.push_back(experiment_area());
   areas_to_draw.back().channels.erase();

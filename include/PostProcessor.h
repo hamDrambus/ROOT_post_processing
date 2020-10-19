@@ -132,6 +132,9 @@ public:
 	void set_zoom_y (double yl, double yr);
 	void set_zoom (double xl, double xr, double yl, double yr);
 	void unset_zoom(bool do_update = true);
+	void set_log_x(bool is_log);
+	void set_log_y(bool is_log);
+	void set_log_z(bool is_log);
 	bool set_X_title(std::string text);
 	bool set_Y_title(std::string text);
 

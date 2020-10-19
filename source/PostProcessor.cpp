@@ -90,6 +90,7 @@ void PostProcessor::print_hist(std::string path, bool png_only)
 	case MPPC_Npe_sum:
 	case MPPC_N_sum:
 	case PMT_Npe_sum:
+	case PMT_S_sum:
 	case PMT_sum_N:
 	{
 		writer_to_file->SetFunction([](std::vector<double> &pars, int run, void* data) {
@@ -1048,9 +1049,11 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 	case Type::MPPC_Npe_sum:
 	case Type::MPPC_N_sum:
 	case Type::PMT_Npe_sum:
+	case Type::PMT_S_sum:
 	case Type::PMT_sum_N:
 	{
 		bool use_Npe = (type == Type::MPPC_Npe_sum || type == Type::PMT_Npe_sum);
+		bool use_Npeaks = (type == Type::MPPC_N_sum || type == Type::PMT_sum_N);
 		bool ignore_no_run_cut = true;
 		for (std::size_t o = 0, o_end_ = operations.size(); o != o_end_; ++o) {
 			if (!operations[o].apply_run_cuts) {
@@ -1113,11 +1116,11 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 							}
 					}
 					if (!failed_hist_cut)
-						S2 += use_Npe ? cut_data[0] : 1.0;
+						S2 += use_Npeaks ? 1.0 : cut_data[0];
 
 				}
 				S2 = (use_Npe ? (s1pe > 0 ? S2/s1pe : 0) : S2);
-				Npes[chan_ind] = std::round(S2);
+				Npes[chan_ind] = ((use_Npe || use_Npeaks ) ? std::round(S2) : S2);
 				Npes[channels->size()] += Npes[chan_ind];
 			}
 			bool failed_hist_phys = false, failed_hist = false, failed_phys = false;
@@ -1170,11 +1173,11 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 		data_x.vals = &(vals_x[0]);
 		data_x.ch_size = isPMTtype(_x_corr) ? PMT_channels.size() : MPPC_channels.size();
 		data_y.vals = &(vals_y[0]);
-		data_y.ch_size = isPMTtype(_x_corr) ? PMT_channels.size() : MPPC_channels.size();
+		data_y.ch_size = isPMTtype(_y_corr) ? PMT_channels.size() : MPPC_channels.size();
 		data_x_nrc.vals = &(vals_x[1]);
 		data_x_nrc.ch_size = isPMTtype(_x_corr) ? PMT_channels.size() : MPPC_channels.size();
 		data_y_nrc.vals = &(vals_y[1]);
-		data_y_nrc.ch_size = isPMTtype(_x_corr) ? PMT_channels.size() : MPPC_channels.size();
+		data_y_nrc.ch_size = isPMTtype(_y_corr) ? PMT_channels.size() : MPPC_channels.size();
 		FunctionWrapper* X_filler = new FunctionWrapper(&data_x);
 		FunctionWrapper* Y_filler = new FunctionWrapper(&data_y);
 		FunctionWrapper* X_filler_nrc = new FunctionWrapper(&data_x_nrc);
@@ -1427,6 +1430,7 @@ bool PostProcessor::set_correlation_filler(FunctionWrapper* operation, Type type
 	case Type::MPPC_coord_x:
 	case Type::PMT_sum_N:
 	case Type::PMT_Npe_sum:
+	case Type::PMT_S_sum:
 	{
 		operation->SetFunction([](std::vector<double>& pars, int run, void* data) {
 			(*((correlation_data*)data)->vals)[run] = pars[((correlation_data*)data)->ch_size];
@@ -1698,6 +1702,7 @@ bool PostProcessor::update(void)
 	case Type::MPPC_coord_x:
 	case Type::PMT_sum_N:
 	case Type::PMT_Npe_sum:
+	case Type::PMT_S_sum:
 	{
 		drawn_mean_taker.SetFunction(
 		mean_taker.SetFunction([](std::vector<double>& pars, int run, void* data) {
@@ -2101,6 +2106,10 @@ bool PostProcessor::update(void)
 				cut->Draw(canvas);
 		}
 		canvas->Update();
+		TVirtualPad* pad = canvas->cd();
+		pad->SetLogx(setups->logscale_x ? 1 : 0);
+		pad->SetLogy(setups->logscale_y ? 1 : 0);
+		pad->SetLogz(setups->logscale_z ? 1 : 0);
 	}
 
 	update_physical();
@@ -3051,6 +3060,22 @@ bool PostProcessor::set_Y_title(std::string text)
 	curr_hist->y_axis_title = text;
 	update();
 	return true;
+}
+
+void PostProcessor::set_log_x(bool is_log)
+{
+	CanvasSetups::set_log_x(is_log);
+	update();
+}
+void PostProcessor::set_log_y(bool is_log)
+{
+	CanvasSetups::set_log_y(is_log);
+	update();
+}
+void PostProcessor::set_log_z(bool is_log)
+{
+	CanvasSetups::set_log_z(is_log);
+	update();
 }
 
 bool PostProcessor::unset_trigger_offsets(void)
