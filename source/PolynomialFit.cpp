@@ -255,6 +255,25 @@ void DataVector::push_back(double x, double y)//faster version not checking that
 	xys.push_back(std::pair<double, double>(x, y));
 }
 
+void DataVector::renormalize(double area)
+{
+	double X_prev = xys.front().first;
+	double Y_prev = 0;
+	double integral = 0;
+	for (long int i = 0, i_end_ = xys.size(); i != i_end_; ++i) {
+		double X = xys[i].first;
+		double Y = xys[i].second;
+		if (i != 0)
+			integral += 0.5*(Y + Y_prev)*(X - X_prev);//Integral
+		else
+			integral = 0;
+		X_prev = X;
+		Y_prev = Y;
+	}
+	for (long int i = 0, i_end_ = xys.size(); i != i_end_; ++i)
+		xys[i].second *= area/integral;
+}
+
 void DataVector::read(std::ifstream& str, bool must_have_header) //DONE: add try/catch for handling stoi and stod
 {
 	clear();

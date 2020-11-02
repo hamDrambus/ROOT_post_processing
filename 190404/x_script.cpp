@@ -25,6 +25,20 @@ if (false) {
 		cut_A_S_upper(0.0193, 0.00241, 0.0412, 0.0057, display, channel, "2pe_merged");
 }
 if (true) {
+	unsigned int max_iter = 6;
+	for (int i = 0; i!=(max_iter+1); ++i)
+		analysis_history(false, i);
+}
+if (false) {
+	unsigned int max_iter = 6;
+	unsigned int exps = post_processor->experiments.size();
+	for (int e = 0; e!=exps; ++e) {
+		for (int i = 0; i!=(max_iter+1); ++i)
+			analysis_history(false, i);
+		nex();
+	}
+}
+if (false) {
 	bool calibrate = false;
 	unsigned int method = 1;
 	analysis_history(calibrate, method); //20, 46V

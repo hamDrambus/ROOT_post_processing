@@ -139,6 +139,8 @@ public:
 	void insert(double x, double y);
 	void push_back(double x, double y);
 
+	void renormalize(double area = 1.0);
+
 	//save/load full state except cache from file
 	void read(std::ifstream& str, bool must_have_header = true);
 	void write(std::string fname, std::string comment = "") const;

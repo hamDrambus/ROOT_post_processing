@@ -711,6 +711,9 @@ FunctionWrapper* create_vertical_lines_cut(double left, double right) //do not c
 	case AStates::PMT_trigger_bNpeaks:
 	case AStates::PMT_trigger_bS:
 	case AStates::PMT_trigger_fit:
+	case AStates::PMT_trigger_fit_chi2:
+	case AStates::MPPC_trigger_fit:
+	case AStates::MPPC_trigger_fit_chi2:
 	case AStates::Correlation:
 	case AStates::CorrelationAll:
 	{
@@ -913,6 +916,9 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::PMT_trigger_bNpeaks:
 	case AStates::PMT_trigger_bS:
 	case AStates::PMT_trigger_fit:
+	case AStates::PMT_trigger_fit_chi2:
+	case AStates::MPPC_trigger_fit:
+	case AStates::MPPC_trigger_fit_chi2:
 	{
 		picker->SetFunction( [](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -1063,6 +1069,9 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 	case AStates::PMT_trigger_bNpeaks:
 	case AStates::PMT_trigger_bS:
 	case AStates::PMT_trigger_fit:
+	case AStates::PMT_trigger_fit_chi2:
+	case AStates::MPPC_trigger_fit:
+	case AStates::MPPC_trigger_fit_chi2:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -1212,6 +1221,9 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::PMT_trigger_bNpeaks:
 	case AStates::PMT_trigger_bS:
 	case AStates::PMT_trigger_fit:
+	case AStates::PMT_trigger_fit_chi2:
+	case AStates::MPPC_trigger_fit:
+	case AStates::MPPC_trigger_fit_chi2:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -1419,6 +1431,9 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 	case AStates::PMT_trigger_bNpeaks:
 	case AStates::PMT_trigger_bS:
 	case AStates::PMT_trigger_fit:
+	case AStates::PMT_trigger_fit_chi2:
+	case AStates::MPPC_trigger_fit:
+	case AStates::MPPC_trigger_fit_chi2:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			//{A_min, A0, S0, A1, S1, A_max}
@@ -1535,6 +1550,9 @@ FunctionWrapper* create_A_S_vertical_cut(std::vector<double> region, bool upper,
 	case AStates::PMT_trigger_bNpeaks:
 	case AStates::PMT_trigger_bS:
 	case AStates::PMT_trigger_fit:
+	case AStates::PMT_trigger_fit_chi2:
+	case AStates::MPPC_trigger_fit:
+	case AStates::MPPC_trigger_fit_chi2:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			//{A0, S0, A1, S1}
@@ -1651,6 +1669,9 @@ FunctionWrapper* create_A_S_horizontal_cut(std::vector<double> region, bool righ
 	case AStates::PMT_trigger_bNpeaks:
 	case AStates::PMT_trigger_bS:
 	case AStates::PMT_trigger_fit:
+	case AStates::PMT_trigger_fit_chi2:
+	case AStates::MPPC_trigger_fit:
+	case AStates::MPPC_trigger_fit_chi2:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			//{A0, S0, A1, S1}

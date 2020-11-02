@@ -14,9 +14,9 @@
 //3) AnalysisStates::isPerRun(Type type) const;
 //4) AnalysisStates::isPMTtype(Type::type) const;
 //5) AnalysisStates::isComposite(Type::type) const;
-//6) std::string AnalysisStates::type_name(Type type) const;
-//7) AnalysisStates::isTH1Dhist(Type::type) const;
-//8) AnalysisStates::isVirtual(Type::type) const;
+//6) AnalysisStates::isTH1Dhist(Type::type) const;
+//7) AnalysisStates::isVirtual(Type::type) const;
+//8) std::string AnalysisStates::type_name(Type type) const;
 
 //9) Corresponding StateData.h if necessary (initialized in PostProcessor::default_hist_setups(HistogramSetups*))
 //10) StateData::IsForState_virt for each class derived from StateData including StateData itself
@@ -27,8 +27,9 @@
 //14) bool PostProcessor::update(void);
 //15) void PostProcessor::update_physical(void)
 //16) void PostProcessor::default_hist_setups(HistogramSetups*);
+//17) bool PostProcessor::set_trigger_offsets(double extra_offset);
 
-//17) 2nd tier methods in main:
+//18) 2nd tier methods in main:
 //	FunctionWrapper* create_vertical_lines_cut(double left, double right)
 //	FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region)
 //	FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region)

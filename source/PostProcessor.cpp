@@ -161,6 +161,9 @@ void PostProcessor::print_hist(std::string path, bool png_only)
 	case PMT_trigger_bNpeaks:
 	case PMT_trigger_bS:
 	case PMT_trigger_fit:
+	case PMT_trigger_fit_chi2:
+	case MPPC_trigger_fit:
+	case MPPC_trigger_fit_chi2:
 	{
 		writer_to_file->SetFunction([](std::vector<double>& pars, int run, void* data) {
 			((temp_data*)data)->str->write((char*)&pars[0], sizeof(double));
@@ -576,8 +579,12 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 		break;
 	}
 	case Type::PMT_trigger_fit:
+	case Type::PMT_trigger_fit_chi2:
+	case Type::MPPC_trigger_fit:
+	case Type::MPPC_trigger_fit_chi2:
 	{
 		bool ignore_no_run_cut = true;
+		bool is_chi2 = (type == Type::PMT_trigger_fit_chi2 || type == Type::MPPC_trigger_fit_chi2);
 		for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
 			if (!operations[o].apply_run_cuts) {
 				ignore_no_run_cut = false;
@@ -608,6 +615,7 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 			//cuts on peaks (low level cuts) are always applied (those affecting histogram only)
 			std::deque<peak_processed> accepted_peaks;
 			std::vector<double> trigger_offset(1, 0);
+			std::vector<double> chi2_value(1, 0);
 			bool failed_run_cut = false;
 			for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
 				if (kFALSE == cut->GetAccept(run)) {
@@ -655,21 +663,23 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 			if (trigger_data->IsValid()) {
 				trigger_offset[0] = SignalOperations::find_trigger_by_fit(accepted_peaks, trigger_data->exp_pulse_shape,
 						(int) trigger_data->trigger_type, trigger_data->scan_dt, trigger_data->t0_precision);
+				chi2_value[0] = SignalOperations::get_likelihood(accepted_peaks, trigger_data->exp_pulse_shape, (int)trigger_data->trigger_type, trigger_offset[0]);
 			} else {
 				trigger_offset[0] = 0;
+				chi2_value[0] = DBL_MAX;
 			}
 
 			bool failed_hist_phys = false, failed_hist = false, failed_phys = false;
 			for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut)
 				if (-1 == cut->GetChannel()) {
 					if (!failed_hist_phys)
-						if (kFALSE == (*cut)(trigger_offset, run))
+						if (kFALSE == (*cut)(is_chi2 ? chi2_value : trigger_offset, run))
 							failed_hist_phys = true;
 					if (!failed_hist && cut->GetAffectingHistogram())
-						if (kFALSE == (*cut)(trigger_offset, run))
+						if (kFALSE == (*cut)(is_chi2 ? chi2_value : trigger_offset, run))
 							failed_hist = true;
 					if (!failed_phys && !cut->GetAffectingHistogram())
-						if (kFALSE == (*cut)(trigger_offset, run))
+						if (kFALSE == (*cut)(is_chi2 ? chi2_value : trigger_offset, run))
 							failed_phys = true;
 				}
 			for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
@@ -677,18 +687,18 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 					continue;
 				if (operations[o].apply_hist_cuts && !operations[o].apply_phys_cuts) {
 					if (!failed_hist)
-						(*operations[o].operation)(trigger_offset, run);
+						(*operations[o].operation)(is_chi2 ? chi2_value : trigger_offset, run);
 					continue;
 				}
 				if (!operations[o].apply_hist_cuts && operations[o].apply_phys_cuts) {
-					if (!failed_phys) (*operations[o].operation)(trigger_offset, run);
+					if (!failed_phys) (*operations[o].operation)(is_chi2 ? chi2_value : trigger_offset, run);
 					continue;
 				}
 				if (operations[o].apply_hist_cuts && operations[o].apply_phys_cuts) {
-					if (!failed_hist_phys) (*operations[o].operation)(trigger_offset, run);
+					if (!failed_hist_phys) (*operations[o].operation)(is_chi2 ? chi2_value : trigger_offset, run);
 					continue;
 				}
-				(*operations[o].operation)(trigger_offset, run);
+				(*operations[o].operation)(is_chi2 ? chi2_value : trigger_offset, run);
 			}
 		}
 		break;
@@ -1418,6 +1428,9 @@ bool PostProcessor::set_correlation_filler(FunctionWrapper* operation, Type type
 	case Type::PMT_trigger_bNpeaks:
 	case Type::PMT_trigger_bS:
 	case Type::PMT_trigger_fit:
+	case Type::PMT_trigger_fit_chi2:
+	case Type::MPPC_trigger_fit:
+	case Type::MPPC_trigger_fit_chi2:
 	{
 		operation->SetFunction([](std::vector<double>& pars, int run, void* data) {
 			(*((correlation_data*)data)->vals)[run] = pars[0];
@@ -1540,6 +1553,9 @@ bool PostProcessor::update(void)
 	case Type::PMT_trigger_bNpeaks:
 	case Type::PMT_trigger_bS:
 	case Type::PMT_trigger_fit:
+	case Type::PMT_trigger_fit_chi2:
+	case Type::MPPC_trigger_fit:
+	case Type::MPPC_trigger_fit_chi2:
 	{
 		drawn_mean_taker.SetFunction(
 		mean_taker.SetFunction([](std::vector<double>& pars, int run, void* data) {
@@ -2300,6 +2316,7 @@ void PostProcessor::saveAs(std::string path, bool png_only)
 void PostProcessor::clear(void)	//clear cuts for current histogram. Run cuts derived from it are not touched
 {
 	HistogramSetups def_setups(channel_list(current_type));
+	unset_trigger_offsets();
 	default_hist_setups(&def_setups);
 	set_hist_setups(&def_setups, current_exp_index, current_channel, current_type); //Creates copy!
 	update();
@@ -2319,10 +2336,20 @@ void PostProcessor::clearAll(void) //clear everything, return to initial state (
 			}
 		}
 	}
+	for (std::size_t c =0, c_end_ = RunCuts.size(); c!=c_end_; ++c) {
+		for (std::size_t exp = 0, exp_end_ = RunCuts[c].size(); exp != exp_end_; ++exp) {
+			RunCuts[c][exp].clear();
+		}
+	}
+	for (std::size_t exp = 0, exp_end_ = data->trigger_offset.size(); exp != exp_end_; ++exp) {
+		for (auto ev = data->trigger_offset[exp].begin(), ev_end_ = data->trigger_offset[exp].end(); ev != ev_end_; ++ev)
+			(*ev) = 0;
+	}
 	for (std::size_t c = 0, c_end_=canvases.size(); c!=c_end_ ; ++c) {
 		canvases[c]->Clear();
 		canvases[c]->Update();
 	}
+	StateChange(current_channel, current_exp_index, current_type, canvas_ind, current_channel, current_exp_index, current_type, canvas_ind); //To create HistogramSetups as at the start of the program
 	update();
 }
 
@@ -3091,7 +3118,8 @@ bool PostProcessor::set_trigger_offsets(double extra_offset) //uses trigger type
 		std::cout << "Wrong input data: no channels or experiments from AnalysisManager" << std::endl;
 		return false;
 	}
-	if (!TriggerData::IsForState(this) && !TriggerFitData::IsForState(this) ) {
+	if ((!TriggerData::IsForState(this) && !TriggerFitData::IsForState(this))
+			|| (current_type==Type::MPPC_trigger_fit_chi2 || current_type==Type::PMT_trigger_fit_chi2)) {
 		std::cerr << "PostProcessor::set_trigger_offsets:Error: Can't calculate trigger adjustment for not trigger type histogram (" << type_name(current_type) << ")" << std::endl;
 		return false;
 	}

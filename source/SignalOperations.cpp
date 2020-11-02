@@ -2940,25 +2940,40 @@ namespace SignalOperations {
 		return max_t;
 	}
 
-	//returns log likelihood - faster to compute and not overflows
+	//Returns log likelihood(fit)/likelihood(uniform model) - faster to compute and not overflows
+	//Return value is distributed as chi square with n=1. This value can be used to test goodness of fit
+	//regardless of number of photoelectrons (?). Refer to "The likelihood ratio test".
 	double get_likelihood(std::deque<peak_processed> &peaks, DataVector& pulse_shape, double offset, int trigger_type)
 	{
 		//enum TriggerType : int {tbNpeaks = 0, tbNpe = 1, tbS = 2}; //tb = trigger by
-		double ret = 1.0;
+		double ret = 0.0, ret2 = 0.0;
+		double length = pulse_shape.getX(pulse_shape.size()-1) - pulse_shape.getX(0);
+		double max_prob = -DBL_MAX;
+		for (std::size_t i = 0, i_end_ = pulse_shape.size(); i!=i_end_; ++i)
+			max_prob = std::max(max_prob, pulse_shape.getY(i));
+		if (max_prob <= 0 || DBL_MAX==max_prob)
+			max_prob = 1/length;
 		for (auto pk = peaks.begin(), pk_end_ = peaks.end(); pk!=pk_end_; ++pk) {
 			if (trigger_type == 2 && pk->S<=0)
 				continue;
 			if (trigger_type == 1 && pk->Npe<=0)
 				continue;
 			double res = pulse_shape(pk->t - offset);
-			res = (DBL_MAX == res || res < 0 ? 0 : std::log(res));
-			if (trigger_type == 2)
+			double res2 = std::log(max_prob);
+			if (res <= 0 || DBL_MAX == res)
+				continue;
+			if (trigger_type == 2) {
 				res *= pk->S;
-			if (trigger_type == 1)
+				res2 *= pk->S;
+			}
+			if (trigger_type == 1) {
 				res *= pk->Npe;
+				res2 *= pk->Npe;
+			}
 			ret += res;
+			ret2 += res2;
 		}
-		return ret;
+		return ret - ret2; //likelihood ratio of pulse-shape fit and uniform peak distribution.
 	}
 
 	//Too costly to actually find max by gradient descend (+ local maximums problem), so simple brute-force approach is used.
@@ -2981,13 +2996,13 @@ namespace SignalOperations {
 				i_max = i;
 			}
 		}
-		//Second, find more precise maximum with precision target_precision in the neighbourhood of rough maximum
-		int N2 = (int)(2*first_scan_dt/target_precision) + 1;
+		//Second, find more precise maximum with precision target_precision in the neighborhood of rough maximum
+		int N2 = (int)(4*first_scan_dt/target_precision) + 1;
 		double result_like = 0;
 		double rough_offset = (i_max < 0 ? 0 : -range + i_max*first_scan_dt);
 		i_max = -1;
 		for (int i = 0; i < N2; ++i) {
-			double offset = rough_offset - first_scan_dt + i*target_precision;
+			double offset = rough_offset - 2*first_scan_dt + i*target_precision;
 			double like = get_likelihood(peaks, pulse_shape, offset, trigger_type);
 			if (like > result_like) {
 				result_like = like;
@@ -2995,7 +3010,7 @@ namespace SignalOperations {
 			}
 		}
 
-		return (i_max < 0 ? 0 : rough_offset - first_scan_dt + i_max*target_precision);
+		return (i_max < 0 ? 0 : rough_offset - 2*first_scan_dt + i_max*target_precision);
 	}
 
 };

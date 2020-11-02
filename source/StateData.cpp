@@ -50,6 +50,9 @@ bool StateData::IsForState_virt(CanvasSetups *state, int channel, AStates::Type 
 	case AStates::PMT_trigger_bNpeaks:
 	case AStates::PMT_trigger_bS:
 	case AStates::PMT_trigger_fit:
+	case AStates::PMT_trigger_fit_chi2:
+	case AStates::MPPC_trigger_fit:
+	case AStates::MPPC_trigger_fit_chi2:
 		return true;
 	default: {
 		std::cout<<"Error: StateData::IsForState_virt is not implemented for type "<<state->type_name(type)<<std::endl;
@@ -164,6 +167,9 @@ bool TriggerData::IsForState_virt(CanvasSetups *state, int channel, AStates::Typ
 		case AStates::Correlation:
 		case AStates::CorrelationAll:
 		case AStates::PMT_trigger_fit:
+		case AStates::PMT_trigger_fit_chi2:
+		case AStates::MPPC_trigger_fit:
+		case AStates::MPPC_trigger_fit_chi2:
 			return false;
 		case AStates::Correlation_x: {
 			return (state->_x_corr == AStates::PMT_trigger_bNpe) || (state->_x_corr == AStates::PMT_trigger_bNpeaks)
@@ -293,12 +299,17 @@ bool TriggerFitData::IsForState_virt(CanvasSetups *state, int channel, AStates::
 		case AStates::PMT_trigger_bS:
 			return false;
 		case AStates::Correlation_x: {
-			return (state->_x_corr == AStates::PMT_trigger_fit);
+			return (state->_x_corr == AStates::PMT_trigger_fit || state->_x_corr == AStates::PMT_trigger_fit_chi2
+					|| state->_x_corr == AStates::MPPC_trigger_fit || state->_x_corr == AStates::MPPC_trigger_fit_chi2);
 		}
 		case AStates::Correlation_y:{
-			return (state->_y_corr == AStates::PMT_trigger_fit);
+			return (state->_y_corr == AStates::PMT_trigger_fit || state->_y_corr == AStates::PMT_trigger_fit_chi2
+					|| state->_y_corr == AStates::MPPC_trigger_fit || state->_y_corr == AStates::MPPC_trigger_fit_chi2);
 		}
 		case AStates::PMT_trigger_fit:
+		case AStates::PMT_trigger_fit_chi2:
+		case AStates::MPPC_trigger_fit:
+		case AStates::MPPC_trigger_fit_chi2:
 			return true;
 		default: {
 			std::cout<<"Error: TriggerFitData::IsForState_virt is not implemented for type "<<state->type_name(type)<<std::endl;
@@ -392,6 +403,7 @@ void TriggerFitData::SetPulseShape(std::string fname)
 	data->exp_pulse_shape.set_out_value(0.0); //amplitude is 0 outside defined x domain
 	data->exp_pulse_shape.setNused(2); //linear extrapolation
 	data->exp_pulse_shape.setOrder(1);
+	data->exp_pulse_shape.renormalize();
 	DataChanged();
 }
 
