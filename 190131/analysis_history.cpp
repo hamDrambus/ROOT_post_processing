@@ -378,7 +378,7 @@ set_corr(AStates::PMT_sum_N, AStates::PMT_sum_N, -1, -1);
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	noise_cut(7, 0, false);
 	set_zoom(20, 90);
 	set_bins(800);
@@ -494,7 +494,7 @@ set_corr(AStates::PMT_sum_N, AStates::PMT_sum_N, -1, -1);
 		ty(AStates::PMT_sum_N);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMTs_Npeaks");
 		
-		ty(AStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbNpe_sum);
 		set_bins(400);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_form_by_Npe");
 
@@ -614,7 +614,7 @@ set_corr(AStates::PMT_sum_N, AStates::PMT_sum_N, -1, -1);
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	noise_cut(7, 0, false);
 	set_zoom(20, 90);
 	set_bins(800);
@@ -730,7 +730,7 @@ set_corr(AStates::PMT_sum_N, AStates::PMT_sum_N, -1, -1);
 		ty(AStates::PMT_sum_N);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMTs_Npeaks");
 		
-		ty(AStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbNpe_sum);
 		set_bins(400);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_form_by_Npe");
 
@@ -848,7 +848,7 @@ set_corr(AStates::PMT_sum_N, AStates::PMT_sum_N, -1, -1);
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	noise_cut(7, 0, false);
 	set_zoom(20, 90);
 	set_bins(800);
@@ -967,7 +967,7 @@ set_corr(AStates::PMT_sum_N, AStates::PMT_sum_N, -1, -1);
 		ty(AStates::PMT_sum_N);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMTs_Npeaks");
 		
-		ty(AStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbNpe_sum);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_form_by_Npe");
 
 		ty(AStates::PMT_tbN);

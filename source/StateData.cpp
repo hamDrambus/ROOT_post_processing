@@ -23,6 +23,7 @@ bool StateData::IsForState_virt(CanvasSetups *state, int channel, AStates::Type 
 	case AStates::MPPC_tbS:
 	case AStates::MPPC_tbN:
 	case AStates::MPPC_tbS_sum:
+	case AStates::MPPC_tbNpe_sum:
 	case AStates::MPPC_tbN_sum:
 	case AStates::MPPC_coord:
 	case AStates::MPPC_coord_x:
@@ -145,6 +146,7 @@ bool TriggerData::IsForState_virt(CanvasSetups *state, int channel, AStates::Typ
 		case AStates::MPPC_tbS:
 		case AStates::MPPC_tbN:
 		case AStates::MPPC_tbS_sum:
+		case AStates::MPPC_tbNpe_sum:
 		case AStates::MPPC_tbN_sum:
 		case AStates::MPPC_coord:
 		case AStates::MPPC_coord_x:
@@ -273,6 +275,7 @@ bool TriggerFitData::IsForState_virt(CanvasSetups *state, int channel, AStates::
 		case AStates::MPPC_tbS:
 		case AStates::MPPC_tbN:
 		case AStates::MPPC_tbS_sum:
+		case AStates::MPPC_tbNpe_sum:
 		case AStates::MPPC_tbN_sum:
 		case AStates::MPPC_coord:
 		case AStates::MPPC_coord_x:

@@ -53,7 +53,7 @@ void PostProcessor::print_hist(std::string path, bool png_only)
 		device = (isPMTtype(current_type) ? "PMT" : "MPPC");
 	}
 	if (name_scheme_version == name_scheme_v2) {
-		device = (isPMTtype(current_type) ? DATA_PMT_VERSION: DATA_MPPC_VERSION);
+		device = (isPMTtype(current_type) ? DATA_PMT_VERSION : DATA_MPPC_VERSION);
 	}
 	if (name=="") {
 		if (isMultichannel(type)) {
@@ -121,6 +121,7 @@ void PostProcessor::print_hist(std::string path, bool png_only)
 	case MPPC_tbN:
 	case PMT_tbN:
 	case PMT_tbNpe:
+	case MPPC_tbNpe_sum:
 	case MPPC_tbN_sum:
 	{
 		writer_to_file->SetFunction([](std::vector<double>& pars, int run, void* data) {
@@ -304,6 +305,7 @@ MPPC_t_start	time		------		------		------		------		------
 MPPC_t_both		time		------		------		------		------		------
 MPPC_t_final	time		------		------		------		------		------
 MPPC_tbS_sum	peak.S		peak.A		peak.left	peak.right	peak.t		Npe
+MPPC_tbNpe_sum	peak.S		peak.A		peak.left	peak.right	peak.t		Npe
 MPPC_tbN_sum	peak.S		peak.A		peak.left	peak.right	peak.t		Npe
 MPPC_S2																					//composite: cuts for peaks and then derived parameter. Data is derived within loop.
 	1st level:	peak.S		peak.A		peak.left	peak.right	peak.t		Npe			//cuts with corresponding channel, no need to check ==-2
@@ -704,8 +706,10 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 		break;
 	}
 	case Type::MPPC_tbS_sum:
+	case Type::MPPC_tbNpe_sum:
 	case Type::MPPC_tbN_sum:
 	{
+		bool use_Npe = !(type == Type::MPPC_tbN_sum);
 		int run_size = data->mppc_peaks[current_exp_index][0].size();
 		std::vector<double> cut_data(6);
 		for (auto run = 0; run != run_size; ++run) {
@@ -737,7 +741,7 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 #else
 							0.5*(cut_data[3]+cut_data[2]);
 #endif
-					cut_data[5] = s1pe > 0 ? std::round(cut_data[0]/s1pe) : -1;
+					cut_data[5] =  use_Npe ? (s1pe > 0 ? std::round(cut_data[0]/s1pe) : -1) : 1;
 					for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
 						if (cut->GetChannel()==MPPC_channels[chan_ind] && cut->GetAffectingHistogram() && !failed_hist_cut)
 							if (kFALSE == (*cut)(cut_data, run)) //more expensive than GetAffectingHistogram
@@ -1803,6 +1807,7 @@ bool PostProcessor::update(void)
 	case Type::PMT_tbN:
 	case Type::PMT_tbNpe:
 	case Type::MPPC_tbN:
+	case Type::MPPC_tbNpe_sum:
 	case Type::MPPC_tbN_sum:
 	{
 		drawn_mean_taker.SetFunction(
@@ -2600,7 +2605,7 @@ void PostProcessor::update_physical(void)
 	}
 	case Type::PMT_tbN:
 	case Type::MPPC_tbN:
-	case Type::MPPC_tbN_sum:
+	case Type::MPPC_tbNpe_sum:
 	{
 		/*
 		LoopThroughData(operations, current_channel, current_type);

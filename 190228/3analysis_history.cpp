@@ -17,7 +17,7 @@ void time_zoom_sPMTs (double f_time, double to_time) {
 
 void save_forms (std::string path, bool N_only)
 {
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	noise_cut(7, 0, false);
 	set_zoom(20, 90);
 	set_bins(1000);

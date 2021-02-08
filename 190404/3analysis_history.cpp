@@ -32,7 +32,7 @@ void central_SiPMs(bool on) {
 
 void save_forms (std::string path, bool N_only)
 {
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	central_SiPMs(true);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];

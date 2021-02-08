@@ -322,7 +322,7 @@ if (exp == "190307_Cd_20kV_850V_46V_coll6mm_th430mV" && forms && 0==method) {
 	update();
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	noise_cut(7, 0, false);
 	set_zoom(20, 90);
 	set_bins(800);
@@ -411,7 +411,7 @@ if (exp == "190307_Cd_20kV_850V_46V_coll6mm_th430mV" && forms && 0==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
     set_bins(400);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_Npe");
 	ty(AStates::MPPC_tbS_sum);
@@ -461,7 +461,7 @@ if (exp == "190307_Cd_20kV_850V_46V_coll6mm_th430mV" && forms && 0==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_Npe");
 	ty(AStates::MPPC_tbS_sum);
     saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_S");
@@ -509,7 +509,7 @@ if (exp == "190307_Cd_20kV_850V_46V_coll6mm_th430mV" && forms && 0==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_Npe");
 	ty(AStates::MPPC_tbS_sum);
     saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_S");
@@ -557,7 +557,7 @@ if (exp == "190307_Cd_20kV_850V_46V_coll6mm_th430mV" && forms && 0==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_Npe");
 	ty(AStates::MPPC_tbS_sum);
     saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_S");
@@ -630,7 +630,7 @@ if (exp == "190307_Bkg_20kV_850V_46V_coll6mm_th430mV" && forms && 0==method) {
 	update();
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	noise_cut(7, 0, false);
 	set_zoom(20, 90);
 	set_bins(800);
@@ -682,7 +682,7 @@ if (exp == "190307_Bkg_20kV_850V_46V_coll6mm_th430mV" && forms && 0==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
     set_bins(400);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_Npe");
 
@@ -716,7 +716,7 @@ if (exp == "190307_Bkg_20kV_850V_46V_coll6mm_th430mV" && forms && 0==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_Npe");
 
 	ty(AStates::PMT_tbN);
@@ -749,7 +749,7 @@ if (exp == "190307_Bkg_20kV_850V_46V_coll6mm_th430mV" && forms && 0==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_Npe");
 
 	ty(AStates::PMT_tbN);
@@ -782,7 +782,7 @@ if (exp == "190307_Bkg_20kV_850V_46V_coll6mm_th430mV" && forms && 0==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_Npe");
 
 	ty(AStates::PMT_tbN);
@@ -841,7 +841,7 @@ if (exp == "190307_Cd_20kV_850V_46V_coll6mm_th430mV" && forms && 1==method) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	noise_cut(7, 0, false);
 	set_zoom(20, 90);
 	set_bins(800);
@@ -899,7 +899,7 @@ if (exp == "190307_Cd_20kV_850V_46V_coll6mm_th430mV" && forms && 1==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
     set_bins(400);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_form_by_Npe");
 	ty(AStates::MPPC_tbS_sum);
@@ -935,7 +935,7 @@ if (exp == "190307_Cd_20kV_850V_46V_coll6mm_th430mV" && forms && 1==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_form_by_Npe");
 	ty(AStates::MPPC_tbS_sum);
     saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_form_by_S");
@@ -970,7 +970,7 @@ if (exp == "190307_Cd_20kV_850V_46V_coll6mm_th430mV" && forms && 1==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_form_by_Npe");
 	ty(AStates::MPPC_tbS_sum);
     saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_form_by_S");
@@ -1005,7 +1005,7 @@ if (exp == "190307_Cd_20kV_850V_46V_coll6mm_th430mV" && forms && 1==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_form_by_Npe");
 	ty(AStates::MPPC_tbS_sum);
     saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_form_by_S");
@@ -1065,7 +1065,7 @@ if (exp == "190307_Cd_18kV_850V_46V_coll6mm_th430mV" && forms && 0==method) {
 	update();
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	noise_cut(7, 0, false);
 	set_zoom(20, 90);
 	set_bins(800);
@@ -1117,7 +1117,7 @@ if (exp == "190307_Cd_18kV_850V_46V_coll6mm_th430mV" && forms && 0==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
     set_bins(400);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_Npe");
 
@@ -1150,7 +1150,7 @@ if (exp == "190307_Cd_18kV_850V_46V_coll6mm_th430mV" && forms && 0==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_Npe");
 
 	ty(AStates::PMT_tbN);
@@ -1182,7 +1182,7 @@ if (exp == "190307_Cd_18kV_850V_46V_coll6mm_th430mV" && forms && 0==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_Npe");
 
 	ty(AStates::PMT_tbN);
@@ -1214,7 +1214,7 @@ if (exp == "190307_Cd_18kV_850V_46V_coll6mm_th430mV" && forms && 0==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_Npe");
 
 	ty(AStates::PMT_tbN);
@@ -1271,7 +1271,7 @@ if (exp == "190307_Cd_16kV_850V_46V_coll6mm_th400mV" && forms && 0==method) {
 	update();
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	noise_cut(7, 0, false);
 	set_zoom(20, 90);
 	set_bins(800);
@@ -1323,7 +1323,7 @@ if (exp == "190307_Cd_16kV_850V_46V_coll6mm_th400mV" && forms && 0==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
     set_bins(400);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_Npe");
 
@@ -1356,7 +1356,7 @@ if (exp == "190307_Cd_16kV_850V_46V_coll6mm_th400mV" && forms && 0==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_Npe");
 
 	ty(AStates::PMT_tbN);
@@ -1388,7 +1388,7 @@ if (exp == "190307_Cd_16kV_850V_46V_coll6mm_th400mV" && forms && 0==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_Npe");
 
 	ty(AStates::PMT_tbN);
@@ -1420,7 +1420,7 @@ if (exp == "190307_Cd_16kV_850V_46V_coll6mm_th400mV" && forms && 0==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_Npe");
 
 	ty(AStates::PMT_tbN);
@@ -1477,7 +1477,7 @@ if (exp == "190307_Cd_14kV_850V_46V_coll6mm_th350mV" && forms && 0==method) {
 	update();
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	noise_cut(7, 0, false);
 	set_zoom(20, 90);
 	set_bins(800);
@@ -1566,7 +1566,7 @@ if (exp == "190307_Cd_14kV_850V_46V_coll6mm_th350mV" && forms && 0==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
     set_bins(400);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_Npe");
 	ty(AStates::MPPC_tbS_sum);
@@ -1616,7 +1616,7 @@ if (exp == "190307_Cd_14kV_850V_46V_coll6mm_th350mV" && forms && 0==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_Npe");
 	ty(AStates::MPPC_tbS_sum);
     saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_S");
@@ -1664,7 +1664,7 @@ if (exp == "190307_Cd_14kV_850V_46V_coll6mm_th350mV" && forms && 0==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_Npe");
 	ty(AStates::MPPC_tbS_sum);
     saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_S");
@@ -1712,7 +1712,7 @@ if (exp == "190307_Cd_14kV_850V_46V_coll6mm_th350mV" && forms && 0==method) {
     ty(AStates::PMT_sum_N);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/fastPMTs_Npeaks");
 	
-    ty(AStates::MPPC_tbN_sum);
+    ty(AStates::MPPC_tbNpe_sum);
 	saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_Npe");
 	ty(AStates::MPPC_tbS_sum);
     saveas(data_output_path + folder + "/forms"+npe_cut+"/SiPM38_form_by_S");
@@ -1797,7 +1797,7 @@ if (exp == "190307_Cd_20kV_850V_46V_coll6mm_th430mV" && forms && 2==method) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	noise_cut(7, 0, false);
 	set_zoom(20, 90);
 	set_bins(800);
@@ -1899,7 +1899,7 @@ if (exp == "190307_Cd_20kV_850V_46V_coll6mm_th430mV" && forms && 2==method) {
 		ty(AStates::PMT_sum_N);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMTs_Npeaks");
 		
-		ty(AStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbNpe_sum);
 		set_bins(400);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_form_by_Npe");
 		ty(AStates::MPPC_tbS_sum);
@@ -1973,7 +1973,7 @@ if (exp == "190307_Bkg_20kV_850V_46V_coll6mm_th430mV" && forms && 2==method) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	noise_cut(7, 0, false);
 	set_zoom(20, 90);
 	set_bins(800);
@@ -2075,7 +2075,7 @@ if (exp == "190307_Bkg_20kV_850V_46V_coll6mm_th430mV" && forms && 2==method) {
 		ty(AStates::PMT_sum_N);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMTs_Npeaks");
 		
-		ty(AStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbNpe_sum);
 		set_bins(400);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_form_by_Npe");
 		ty(AStates::MPPC_tbS_sum);
@@ -2150,7 +2150,7 @@ if (exp == "190307_Cd_18kV_850V_46V_coll6mm_th430mV" && forms && 2==method) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	noise_cut(7, 0, false);
 	set_zoom(20, 90);
 	set_bins(800);
@@ -2252,7 +2252,7 @@ if (exp == "190307_Cd_18kV_850V_46V_coll6mm_th430mV" && forms && 2==method) {
 		ty(AStates::PMT_sum_N);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMTs_Npeaks");
 		
-		ty(AStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbNpe_sum);
 		set_bins(400);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_form_by_Npe");
 		ty(AStates::MPPC_tbS_sum);
@@ -2327,7 +2327,7 @@ if (exp == "190307_Cd_16kV_850V_46V_coll6mm_th400mV" && forms && 2==method) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	noise_cut(7, 0, false);
 	set_zoom(20, 90);
 	set_bins(800);
@@ -2427,7 +2427,7 @@ if (exp == "190307_Cd_16kV_850V_46V_coll6mm_th400mV" && forms && 2==method) {
 		ty(AStates::PMT_sum_N);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMTs_Npeaks");
 		
-		ty(AStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbNpe_sum);
 		set_bins(400);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_form_by_Npe");
 		ty(AStates::MPPC_tbS_sum);
@@ -2503,7 +2503,7 @@ if (exp == "190307_Cd_14kV_850V_46V_coll6mm_th350mV" && forms && 2==method) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	noise_cut(7, 0, false);
 	set_zoom(20, 90);
 	set_bins(800);
@@ -2603,7 +2603,7 @@ if (exp == "190307_Cd_14kV_850V_46V_coll6mm_th350mV" && forms && 2==method) {
 		ty(AStates::PMT_sum_N);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMTs_Npeaks");
 		
-		ty(AStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbNpe_sum);
 		set_bins(400);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPM38_form_by_Npe");
 		ty(AStates::MPPC_tbS_sum);

@@ -676,6 +676,7 @@ FunctionWrapper* create_vertical_lines_cut(double left, double right) //do not c
 	case AStates::PMT_tbN:
 	case AStates::PMT_tbNpe:
 	case AStates::MPPC_tbS_sum:
+	case AStates::MPPC_tbNpe_sum:
 	case AStates::MPPC_tbN_sum:
 	case AStates::MPPC_t_S:
 	case AStates::PMT_t_S:
@@ -904,6 +905,7 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::MPPC_Ss:
 	case AStates::MPPC_As:
 	case AStates::MPPC_tbS_sum:
+	case AStates::MPPC_tbNpe_sum:
 	case AStates::MPPC_tbN_sum:
 	case AStates::MPPC_tbS:
 	case AStates::MPPC_tbN:
@@ -1057,6 +1059,7 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 	case AStates::MPPC_Ss:
 	case AStates::MPPC_As:
 	case AStates::MPPC_tbS_sum:
+	case AStates::MPPC_tbNpe_sum:
 	case AStates::MPPC_tbN_sum:
 	case AStates::MPPC_tbS:
 	case AStates::MPPC_tbN:
@@ -1209,6 +1212,7 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::MPPC_Ss:
 	case AStates::MPPC_As:
 	case AStates::MPPC_tbS_sum:
+	case AStates::MPPC_tbNpe_sum:
 	case AStates::MPPC_tbN_sum:
 	case AStates::MPPC_tbS:
 	case AStates::MPPC_tbN:
@@ -1419,6 +1423,7 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 	case AStates::MPPC_Ss:
 	case AStates::MPPC_As:
 	case AStates::MPPC_tbS_sum:
+	case AStates::MPPC_tbNpe_sum:
 	case AStates::MPPC_tbN_sum:
 	case AStates::MPPC_tbS:
 	case AStates::MPPC_tbN:
@@ -1538,6 +1543,7 @@ FunctionWrapper* create_A_S_vertical_cut(std::vector<double> region, bool upper,
 	case AStates::MPPC_Ss:
 	case AStates::MPPC_As:
 	case AStates::MPPC_tbS_sum:
+	case AStates::MPPC_tbNpe_sum:
 	case AStates::MPPC_tbN_sum:
 	case AStates::MPPC_tbS:
 	case AStates::MPPC_tbN:
@@ -1657,6 +1663,7 @@ FunctionWrapper* create_A_S_horizontal_cut(std::vector<double> region, bool righ
 	case AStates::MPPC_Ss:
 	case AStates::MPPC_As:
 	case AStates::MPPC_tbS_sum:
+	case AStates::MPPC_tbNpe_sum:
 	case AStates::MPPC_tbN_sum:
 	case AStates::MPPC_tbS:
 	case AStates::MPPC_tbN:

@@ -763,7 +763,7 @@ if (exp == "190404_Cd_20kV_850V_46V_th250mV" && method == 0 && forms) {
 	update();
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/SiPMs_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, 0, false);
@@ -852,7 +852,7 @@ if (exp == "190404_Cd_20kV_850V_46V_th250mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(400);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 	ty(AStates::MPPC_tbS_sum);
@@ -895,7 +895,7 @@ if (exp == "190404_Cd_20kV_850V_46V_th250mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 	ty(AStates::MPPC_tbS_sum);
@@ -938,7 +938,7 @@ if (exp == "190404_Cd_20kV_850V_46V_th250mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 	ty(AStates::MPPC_tbS_sum);
@@ -981,7 +981,7 @@ if (exp == "190404_Cd_20kV_850V_46V_th250mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 	ty(AStates::MPPC_tbS_sum);
@@ -1024,7 +1024,7 @@ if (exp == "190404_Cd_20kV_850V_46V_th250mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 	
@@ -1054,7 +1054,7 @@ if (exp == "190404_Cd_20kV_850V_46V_th250mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 	
@@ -1084,7 +1084,7 @@ if (exp == "190404_Cd_20kV_850V_46V_th250mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 	
@@ -1114,7 +1114,7 @@ if (exp == "190404_Cd_20kV_850V_46V_th250mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 	
@@ -1144,7 +1144,7 @@ if (exp == "190404_Cd_20kV_850V_46V_th250mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 	
@@ -1174,7 +1174,7 @@ if (exp == "190404_Cd_20kV_850V_46V_th250mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 	
@@ -1241,7 +1241,7 @@ if (exp == "190404_Cd_20kV_850V_46V_th250mV" && method == 1 && forms) {
 	update();
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/SiPMs_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, 1, false);
@@ -1329,7 +1329,7 @@ if (exp == "190404_Cd_20kV_850V_46V_th250mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(400);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 	ty(AStates::MPPC_tbS_sum);
@@ -1372,7 +1372,7 @@ if (exp == "190404_Cd_20kV_850V_46V_th250mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 	ty(AStates::MPPC_tbS_sum);
@@ -1415,7 +1415,7 @@ if (exp == "190404_Cd_20kV_850V_46V_th250mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 	ty(AStates::MPPC_tbS_sum);
@@ -1458,7 +1458,7 @@ if (exp == "190404_Cd_20kV_850V_46V_th250mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 	ty(AStates::MPPC_tbS_sum);
@@ -1539,7 +1539,7 @@ if (exp == "190404_Cd_18kV_850V_46V_th230mV" && method == 0 && forms) {
 	update();
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/SiPMs_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, 0, false);
@@ -1599,7 +1599,7 @@ if (exp == "190404_Cd_18kV_850V_46V_th230mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(400);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -1630,7 +1630,7 @@ if (exp == "190404_Cd_18kV_850V_46V_th230mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -1661,7 +1661,7 @@ if (exp == "190404_Cd_18kV_850V_46V_th230mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -1692,7 +1692,7 @@ if (exp == "190404_Cd_18kV_850V_46V_th230mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -1760,7 +1760,7 @@ if (exp == "190404_Cd_18kV_850V_46V_th230mV" && method == 1 && forms) {
 	update();
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/SiPMs_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, 1, false);
@@ -1820,7 +1820,7 @@ if (exp == "190404_Cd_18kV_850V_46V_th230mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(400);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -1851,7 +1851,7 @@ if (exp == "190404_Cd_18kV_850V_46V_th230mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -1882,7 +1882,7 @@ if (exp == "190404_Cd_18kV_850V_46V_th230mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -1913,7 +1913,7 @@ if (exp == "190404_Cd_18kV_850V_46V_th230mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -1980,7 +1980,7 @@ if (exp == "190404_Cd_16kV_850V_46V_th210mV" && method == 0 && forms) {
 	update();
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/SiPMs_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, 0, false);
@@ -2040,7 +2040,7 @@ if (exp == "190404_Cd_16kV_850V_46V_th210mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(400);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -2071,7 +2071,7 @@ if (exp == "190404_Cd_16kV_850V_46V_th210mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -2102,7 +2102,7 @@ if (exp == "190404_Cd_16kV_850V_46V_th210mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -2133,7 +2133,7 @@ if (exp == "190404_Cd_16kV_850V_46V_th210mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -2201,7 +2201,7 @@ if (exp == "190404_Cd_16kV_850V_46V_th210mV" && method == 1 && forms) {
 	update();
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+"/SiPMs_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, 1, false);
@@ -2261,7 +2261,7 @@ if (exp == "190404_Cd_16kV_850V_46V_th210mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(400);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -2292,7 +2292,7 @@ if (exp == "190404_Cd_16kV_850V_46V_th210mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -2323,7 +2323,7 @@ if (exp == "190404_Cd_16kV_850V_46V_th210mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -2354,7 +2354,7 @@ if (exp == "190404_Cd_16kV_850V_46V_th210mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -2421,7 +2421,7 @@ if (exp == "190404_Cd_14kV_850V_46V_th200mV" && method == 0 && forms) {
 	update();
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, 0, false);
@@ -2481,7 +2481,7 @@ if (exp == "190404_Cd_14kV_850V_46V_th200mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(400);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -2512,7 +2512,7 @@ if (exp == "190404_Cd_14kV_850V_46V_th200mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -2543,7 +2543,7 @@ if (exp == "190404_Cd_14kV_850V_46V_th200mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -2574,7 +2574,7 @@ if (exp == "190404_Cd_14kV_850V_46V_th200mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -2642,7 +2642,7 @@ if (exp == "190404_Cd_14kV_850V_46V_th200mV" && method == 1 && forms) {
 	update();
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, 1, false);
@@ -2702,7 +2702,7 @@ if (exp == "190404_Cd_14kV_850V_46V_th200mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(400);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -2733,7 +2733,7 @@ if (exp == "190404_Cd_14kV_850V_46V_th200mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -2764,7 +2764,7 @@ if (exp == "190404_Cd_14kV_850V_46V_th200mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -2795,7 +2795,7 @@ if (exp == "190404_Cd_14kV_850V_46V_th200mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -2863,7 +2863,7 @@ if (exp == "190404_Cd_12kV_850V_46V_th160mV" && method == 0 && forms) {
 	update();
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, aggressive_PMT_cuts, false);
@@ -2923,7 +2923,7 @@ if (exp == "190404_Cd_12kV_850V_46V_th160mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(400);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -2954,7 +2954,7 @@ if (exp == "190404_Cd_12kV_850V_46V_th160mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -2985,7 +2985,7 @@ if (exp == "190404_Cd_12kV_850V_46V_th160mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -3016,7 +3016,7 @@ if (exp == "190404_Cd_12kV_850V_46V_th160mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -3085,7 +3085,7 @@ if (exp == "190404_Cd_12kV_850V_46V_th160mV" && method == 1 && forms) {
 	update();
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, aggressive_PMT_cuts, false);
@@ -3145,7 +3145,7 @@ if (exp == "190404_Cd_12kV_850V_46V_th160mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(400);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -3176,7 +3176,7 @@ if (exp == "190404_Cd_12kV_850V_46V_th160mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -3207,7 +3207,7 @@ if (exp == "190404_Cd_12kV_850V_46V_th160mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -3238,7 +3238,7 @@ if (exp == "190404_Cd_12kV_850V_46V_th160mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -3306,7 +3306,7 @@ if (exp == "190404_Cd_10kV_850V_46V_th150mV" && method == 0 && forms) {
 	update();
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, aggressive_PMT_cuts, false);
@@ -3366,7 +3366,7 @@ if (exp == "190404_Cd_10kV_850V_46V_th150mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(400);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -3397,7 +3397,7 @@ if (exp == "190404_Cd_10kV_850V_46V_th150mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -3428,7 +3428,7 @@ if (exp == "190404_Cd_10kV_850V_46V_th150mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -3459,7 +3459,7 @@ if (exp == "190404_Cd_10kV_850V_46V_th150mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -3528,7 +3528,7 @@ if (exp == "190404_Cd_10kV_850V_46V_th150mV" && method == 1 && forms) {
 	update();
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, aggressive_PMT_cuts, false);
@@ -3588,7 +3588,7 @@ if (exp == "190404_Cd_10kV_850V_46V_th150mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(400);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -3619,7 +3619,7 @@ if (exp == "190404_Cd_10kV_850V_46V_th150mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -3650,7 +3650,7 @@ if (exp == "190404_Cd_10kV_850V_46V_th150mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -3681,7 +3681,7 @@ if (exp == "190404_Cd_10kV_850V_46V_th150mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -3749,7 +3749,7 @@ if (exp == "190404_Cd_8kV_850V_46V_th140mV" && method == 0 && forms) {
 	update();
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, aggressive_PMT_cuts, false);
@@ -3809,7 +3809,7 @@ if (exp == "190404_Cd_8kV_850V_46V_th140mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(400);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -3840,7 +3840,7 @@ if (exp == "190404_Cd_8kV_850V_46V_th140mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -3871,7 +3871,7 @@ if (exp == "190404_Cd_8kV_850V_46V_th140mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -3902,7 +3902,7 @@ if (exp == "190404_Cd_8kV_850V_46V_th140mV" && method == 0 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -3971,7 +3971,7 @@ if (exp == "190404_Cd_8kV_850V_46V_th140mV" && method == 1 && forms) {
 	update();
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, aggressive_PMT_cuts, false);
@@ -4031,7 +4031,7 @@ if (exp == "190404_Cd_8kV_850V_46V_th140mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(400);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -4062,7 +4062,7 @@ if (exp == "190404_Cd_8kV_850V_46V_th140mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -4093,7 +4093,7 @@ if (exp == "190404_Cd_8kV_850V_46V_th140mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -4124,7 +4124,7 @@ if (exp == "190404_Cd_8kV_850V_46V_th140mV" && method == 1 && forms) {
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/slowPMTs_Npe");
 	set_as_run_cut(npe_cut);
 
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	set_bins(600);
 	saveas(std::string("190404/results/") + folder + "/forms"+aggr+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -4206,7 +4206,7 @@ if (exp == "190404_Cd_20kV_850V_46V_th250mV" && forms && 2==method) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, 2, false);
@@ -4319,7 +4319,7 @@ if (exp == "190404_Cd_20kV_850V_46V_th250mV" && forms && 2==method) {
 		ty(AStates::PMT_sum_N);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMTs_Npeaks");
 		
-		ty(AStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbNpe_sum);
 		set_bins(600);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -4402,7 +4402,7 @@ if (exp == "190404_Cd_18kV_850V_46V_th230mV" && forms && 2==method) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, 2, false);
@@ -4515,7 +4515,7 @@ if (exp == "190404_Cd_18kV_850V_46V_th230mV" && forms && 2==method) {
 		ty(AStates::PMT_sum_N);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMTs_Npeaks");
 		
-		ty(AStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbNpe_sum);
 		set_bins(600);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -4598,7 +4598,7 @@ if (exp == "190404_Cd_16kV_850V_46V_th210mV" && forms && 2==method) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, 2, false);
@@ -4711,7 +4711,7 @@ if (exp == "190404_Cd_16kV_850V_46V_th210mV" && forms && 2==method) {
 		ty(AStates::PMT_sum_N);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMTs_Npeaks");
 		
-		ty(AStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbNpe_sum);
 		set_bins(600);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -4794,7 +4794,7 @@ if (exp == "190404_Cd_14kV_850V_46V_th200mV" && forms && 2==method) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, 2, false);
@@ -4907,7 +4907,7 @@ if (exp == "190404_Cd_14kV_850V_46V_th200mV" && forms && 2==method) {
 		ty(AStates::PMT_sum_N);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMTs_Npeaks");
 		
-		ty(AStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbNpe_sum);
 		set_bins(600);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -4990,7 +4990,7 @@ if (exp == "190404_Cd_12kV_850V_46V_th160mV" && forms && 2==method) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, 2, false);
@@ -5103,7 +5103,7 @@ if (exp == "190404_Cd_12kV_850V_46V_th160mV" && forms && 2==method) {
 		ty(AStates::PMT_sum_N);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMTs_Npeaks");
 		
-		ty(AStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbNpe_sum);
 		set_bins(600);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -5186,7 +5186,7 @@ if (exp == "190404_Cd_10kV_850V_46V_th150mV" && forms && 2==method) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, 2, false);
@@ -5299,7 +5299,7 @@ if (exp == "190404_Cd_10kV_850V_46V_th150mV" && forms && 2==method) {
 		ty(AStates::PMT_sum_N);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMTs_Npeaks");
 		
-		ty(AStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbNpe_sum);
 		set_bins(600);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_form_by_Npe");
 
@@ -5382,7 +5382,7 @@ if (exp == "190404_Cd_8kV_850V_46V_th140mV" && forms && 2==method) {
 	update();
 	saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_Npe");
 	
-	ty(AStates::MPPC_tbN_sum);
+	ty(AStates::MPPC_tbNpe_sum);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, 2, false);
@@ -5495,7 +5495,7 @@ if (exp == "190404_Cd_8kV_850V_46V_th140mV" && forms && 2==method) {
 		ty(AStates::PMT_sum_N);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/fastPMTs_Npeaks");
 		
-		ty(AStates::MPPC_tbN_sum);
+		ty(AStates::MPPC_tbNpe_sum);
 		set_bins(600);
 		saveas(data_output_path + folder + "/forms"+meth+npe_cut+"/SiPMs_form_by_Npe");
 

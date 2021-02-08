@@ -314,7 +314,7 @@ Bool_t AStates::isMultichannel(Type type) const
 		return isMultichannel(_x_corr);
 	if (type == Correlation_y)
 		return isMultichannel(_y_corr);
-	return (type == MPPC_tbS_sum) || type == MPPC_tbN_sum || type==MPPC_coord || type==MPPC_coord_x || type==MPPC_coord_y || type==MPPC_Npe_sum || type==MPPC_N_sum
+	return (type == MPPC_tbS_sum) || type == MPPC_tbNpe_sum || type == MPPC_tbN_sum || type==MPPC_coord || type==MPPC_coord_x || type==MPPC_coord_y || type==MPPC_Npe_sum || type==MPPC_N_sum
 			|| type==Correlation || type==CorrelationAll || type==PMT_sum_N || type==PMT_Npe_sum || type==PMT_S_sum || type==PMT_trigger_bNpe || type==PMT_trigger_bNpeaks
 			|| type==PMT_trigger_fit || type==PMT_trigger_bS || type == PMT_trigger_fit_chi2 || type == MPPC_trigger_fit || type == MPPC_trigger_fit_chi2;
 }
@@ -553,8 +553,12 @@ std::string AStates::type_name(Type type) const
 		name += "form_by_S";
 		break;
 	}
-	case Type::MPPC_tbN_sum:{
+	case Type::MPPC_tbNpe_sum:{
 		name += "form_by_Npe";
+		break;
+	}
+	case Type::MPPC_tbN_sum:{
+		name += "form_by_Npeaks";
 		break;
 	}
 	case Type::MPPC_coord: {

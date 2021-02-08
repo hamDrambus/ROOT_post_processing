@@ -55,7 +55,21 @@ void save_forms (std::string path, bool N_only, int PMT_condition, int SiPM_cond
 {
 	double zoom_l = 0, zoom_r = 160;
 	std::size_t Nbins = 1600;
+
 	ty(AStates::MPPC_tbN_sum);
+	central_SiPMs(true);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, 0, SiPM_condition, false);
+	}
+	set_zoom(zoom_l, zoom_r);	set_log_y();
+	set_bins(Nbins);
+	saveas(path + "SiPMs_form_by_Npeaks");
+	central_SiPMs(false);
+	update();
+	saveas(path + "SiPMs_edge_form_by_Npeaks");
+
+	ty(AStates::MPPC_tbNpe_sum);
 	central_SiPMs(true);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
@@ -133,6 +147,19 @@ void save_forms (std::string path, bool N_only, int PMT_condition, int SiPM_cond
 	saveas(path + "15_form_by_Npe");
 
 	if (!N_only) {
+		ty(AStates::MPPC_tbS_sum);
+		central_SiPMs(true);
+		for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+			int chan = post_processor->MPPC_channels[ich];
+			noise_cut(chan, 0, SiPM_condition, false);
+		}
+		set_zoom(zoom_l, zoom_r);	set_log_y();
+		set_bins(Nbins);
+		saveas(path + "SiPMs_form_by_S");
+		central_SiPMs(false);
+		update();
+		saveas(path + "SiPMs_edge_form_by_S");
+
 		ty(AStates::PMT_tbS);
 		ch(8);
 		noise_cut(8, 1, PMT_condition, false);
