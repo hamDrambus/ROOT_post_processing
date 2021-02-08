@@ -10,7 +10,7 @@ if (false) {
 		cut_A_S_upper(0.0, 0.015, 1.6, 0.015, display, channel, "rem_S>0.015");
 	}
 }
-if (true) {
+if (false) {
 	unsigned int max_iter = 5;
 	for (int i = 1; i!=(max_iter+1); ++i)
 		analysis_history(false, i);
@@ -24,20 +24,26 @@ if (false) {
 		nex();
 	}
 }
-if (false) {
+if (true) {
 	bool calibrate = false;
 	unsigned int method = 0;
-	analysis_history(calibrate, method); //20
+	analysis_history(calibrate, method); //16.3
 	nex();
-	analysis_history(calibrate, method); //18
+	analysis_history(calibrate, method); //14.6
 	nex();
-	analysis_history(calibrate, method); //16
+	analysis_history(calibrate, method); //13.0
 	nex();
-	analysis_history(calibrate, method); //14
+	analysis_history(calibrate, method); //11.4
 	nex();
-	analysis_history(calibrate, method); //12
+	analysis_history(calibrate, method); //10.6
 	nex();
-	analysis_history(calibrate, method); //10
+	analysis_history(calibrate, method); //9.7
+	nex();
+	analysis_history(calibrate, method); //8.9
+	nex();
+	analysis_history(calibrate, method); //8.1
+	nex();
+	analysis_history(calibrate, method); //6.5
 	nex();
 }
 }

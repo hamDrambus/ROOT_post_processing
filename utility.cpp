@@ -114,15 +114,15 @@ int utility (void) {
 	bool linear = true;
   double error_factor = 2.0;
 	//std::string framename = "Data without WLS: EL gap thickness measurement";
-  std::string framename = "\\hbox{Данные без ТФБ: измерение толщины ЭЛ зазора}";
+  std::string framename = "\\hbox{Данные без ТФБ: измерение толщины ЭЛ зазора 2020.10.15}";
 
 	std::vector<double> kVs, Ts, errors, PMT_Ts, PMT_Errs;
 
-	load_column_data("190404/190404_FWHMs.txt", kVs, 0);
-	load_column_data("190404/190404_FWHMs.txt", PMT_Ts, 3);
-	load_column_data("190404/190404_FWHMs.txt", PMT_Errs, 5);
-  load_column_data("190404/190404_FWHMs.txt", Ts, 9);
-	load_column_data("190404/190404_FWHMs.txt", errors, 10);
+	load_column_data("201015/201015_FWHMs.txt", kVs, 0);
+	load_column_data("201015/201015_FWHMs.txt", PMT_Ts, 0);
+	load_column_data("201015/201015_FWHMs.txt", PMT_Errs, 0);
+  load_column_data("201015/201015_FWHMs.txt", Ts, 3);
+	load_column_data("201015/201015_FWHMs.txt", errors, 4);
   for (std::size_t i=0, i_end_=errors.size(); i!=i_end_; ++i)
     errors[i] *= error_factor;
 	TGraphErrors* SiPMs_data = CreateGraph(kVs, Ts, errors);
@@ -149,7 +149,7 @@ int utility (void) {
 
 	TF1* time_18mm = new TF1("func1", drift_time_as_f_kV, 2, 22, 3);
 	time_18mm->SetParNames("gas Ar L", "time factor", "offset");
-	time_18mm->FixParameter(0, 1.8);
+	time_18mm->FixParameter(0, 1.3);
 	time_18mm->FixParameter(1, 1.0);
   time_18mm->FixParameter(2, 0);
 	time_18mm->SetLineColor(palette_major[0]);
@@ -159,7 +159,7 @@ int utility (void) {
 	time_Xmm2->SetParNames("gas Ar L", "time factor", "offset");
 	time_Xmm2->SetParLimits(0, 0.5, 2.2);
 	time_Xmm2->FixParameter(1, 1);
-	time_Xmm2->FixParameter(2, 0);
+	time_Xmm2->SetParLimits(2, 0, 0.5);
 	time_Xmm2->SetLineColor(palette_major[0]);
 	if (SiPMs_data)
 		SiPMs_data->Fit(time_Xmm2, "NREF");
@@ -205,7 +205,7 @@ int utility (void) {
 	if (PMTs_data)
 		legend->AddEntry(PMTs_data, (std::string("4PMT fast component FWHM")).c_str(), "p");
 	//legend->AddEntry(time_18mm, (std::string("T_{drift} for 18 mm gap")).c_str(), "l");
-	legend->AddEntry(time_18mm, (std::string("\\hbox{Время дрейфа для 18 мм зазора}")).c_str(), "l");
+	legend->AddEntry(time_18mm, (std::string("\\hbox{Время дрейфа для 13 мм зазора}")).c_str(), "l");
 	if (SiPMs_data)
 		//legend->AddEntry(time_Xmm2, (std::string("Best fit (EL gap thickness="+ gap_width_SiPMs +"#pm" + gap_width_SiPMs_error + " mm)")).c_str(), "l");
 		legend->AddEntry(time_Xmm2, (std::string("\\hbox{Аппроксимация (толщина ЭЛ зазора = "+ gap_width_SiPMs +" }\\pm\\hbox{ " + gap_width_SiPMs_error + " мм)}")).c_str(), "l");

@@ -859,44 +859,61 @@ if (exp == "190404_Cd_20kV_850V_46V_th250mV" || exp == "190404_Cd_20kV_850V_46V_
 	if (iteration > 0) {
 		std::string PREV_FOLDER = data_output_path + folder + "/iteration_" + int_to_str((std::size_t)(iteration - 1), 2) + "/";
 		if (1 == iteration) {
-			ty(AStates::MPPC_trigger_fit_chi2); //May have poor results because of merged and >1phe peaks
-			for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
-				int chan = post_processor->MPPC_channels[ich];
-				noise_cut(chan, 0, SiPM_state, false);
-			}
-			set_zoom(-10, 600);
+			ty(AStates::PMT_trigger_fit_chi2); //May have poor results because of merged and >1phe peaks
+			fast_PMTs_only();
+			noise_cut(8, 0, PMT_state, 0);
+			noise_cut(9, 0, PMT_state, 0);
+			noise_cut(10, 0, PMT_state, 0);
+			noise_cut(11, 0, PMT_state, 0);
+			set_zoom(-100, 200);
 			set_bins(300);
 			TriggerFitData::SetTriggerType(TriggerFitData::tbNpe);
 			TriggerFitData::SetTriggerFirstScant(1.6);
 			TriggerFitData::SetTriggerPrecision(0.2);
-			//TriggerFitData::SetPulseShape(PREV_FOLDER + "A_4PMT_fast_by_Npe.dat");
-			TriggerFitData::SetPulseShape(PREV_FOLDER + "A_SiPMs_by_Npe.dat");
-			saveaspng(FOLDER + Num + "_SiPMs_Npe_trigger_chi2_"+cuts_str(cuts));
+			TriggerFitData::SetPulseShape(PREV_FOLDER + "A_4PMT_fast_by_Npe.dat");
+			//TriggerFitData::SetPulseShape(PREV_FOLDER + "A_SiPMs_by_Npe.dat");
+			saveaspng(FOLDER + Num + "_fastPMTs_Npe_trigger_chi2_"+cuts_str(cuts));
 			Num = int_to_str(++no, 2);
 
-			set_corr(AStates::MPPC_Npe_sum, AStates::MPPC_trigger_fit_chi2, -1, -1);
+			set_corr(AStates::PMT_Npe_sum, AStates::PMT_trigger_fit_chi2, -1, -1);
 			ty(AStates::Correlation);
-			set_zoom(0, 300, 0, 300);
+			set_zoom(0, 300, -100, 200);
 			set_bins(300);
-			set_titles("N_{pe} t#in["+S2_start+", 160] #mus", "SiPMs shape fit chi2");
-			saveaspng(FOLDER + Num + "_SiPMs_Npe_vs_chi2_"+cuts_str(cuts));
+			set_titles("N_{pe} t#in["+S2_start+", 160] #mus", "PMTs shape fit chi2");
+			x_y_regions = {30, -9.3, 42, -3.0};
+			cut_x_y_lower_select(x_y_regions, true, "1");
+			update();
+			saveaspng(FOLDER + Num + "_fastPMTs_Npe_vs_chi2_"+cuts_str(cuts));
+			set_as_run_cut("chi2");
+			print_accepted_events(FOLDER + Num + "_events.txt", first_run);
+			unset_as_run_cut("chi2"); remcut(-1, "1");
+			Num = int_to_str(++no, 2);
+
+			x_y_regions = {54, 12.2, 65.0, 33};
+			cut_x_y_lower_select(x_y_regions, true, "1");
+			update();
+			saveaspng(FOLDER + Num + "_fastPMTs_Npe_vs_chi2_"+cuts_str(cuts));
+			set_as_run_cut("chi2");
+			print_accepted_events(FOLDER + Num + "_events.txt", first_run);
+			unset_as_run_cut("chi2"); remcut(-1, "1");
 			Num = int_to_str(++no, 2);
 		}
 
-		ty(AStates::MPPC_trigger_fit); //May have poor results because of merged and >1phe peaks
-		for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
-			int chan = post_processor->MPPC_channels[ich];
-			noise_cut(chan, 0, SiPM_state, false);
-		}
+		ty(AStates::PMT_trigger_fit); //May have poor results because of merged and >1phe peaks
+		fast_PMTs_only();
+		noise_cut(8, 0, PMT_state, 0);
+		noise_cut(9, 0, PMT_state, 0);
+		noise_cut(10, 0, PMT_state, 0);
+		noise_cut(11, 0, PMT_state, 0);
 		set_zoom(-20, 20);
 		set_bins(300);
 		TriggerFitData::SetTriggerType(TriggerFitData::tbNpe);
 		TriggerFitData::SetTriggerFirstScant(1.6);
 		TriggerFitData::SetTriggerPrecision(0.2);
-		//TriggerFitData::SetPulseShape(PREV_FOLDER + "A_4PMT_fast_by_Npe.dat");
-		TriggerFitData::SetPulseShape(PREV_FOLDER + "A_SiPMs_by_Npe.dat");
-		draw_limits(-4, 3);
-		saveaspng(FOLDER + Num + "_SiPMs_Npe_trigger_"+cuts_str(cuts)+"_zoom");
+		TriggerFitData::SetPulseShape(PREV_FOLDER + "A_4PMT_fast_by_Npe.dat");
+		//TriggerFitData::SetPulseShape(PREV_FOLDER + "A_SiPMs_by_Npe.dat");
+		draw_limits(-3, 4);
+		saveaspng(FOLDER + Num + "_fast_PMTs_Npe_trigger_"+cuts_str(cuts)+"_zoom");
 		set_as_run_cut("good_trigger"); cuts.push_back(Num);
 		set_trigger_offsets(0.0);
 		Num = int_to_str(++no, 2);
@@ -954,7 +971,7 @@ ty(AStates::PMT_Npe_sum);
 	unset_as_run_cut("En_spec");
 	cuts.pop_back();
 
-	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_4PMT_fast_by_Npe", 600, 2); //For next iteration trigger fit
+	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_4PMT_fast_by_Npe", 1200, 2); //For next iteration trigger fit
 	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_SiPMs_by_Npe", 800, 5); //For next iteration trigger fit
 }
 if (exp == "190404_Cd_18kV_850V_46V_th230mV" || exp == "190404_Cd_18kV_850V_48V_th210mV") {
@@ -1039,9 +1056,9 @@ if (exp == "190404_Cd_18kV_850V_46V_th230mV" || exp == "190404_Cd_18kV_850V_48V_
 		set_bins(300);
 		TriggerFitData::SetTriggerType(TriggerFitData::tbNpe);
 		TriggerFitData::SetTriggerFirstScant(1.6);
-		TriggerFitData::SetTriggerPrecision(0.05);
+		TriggerFitData::SetTriggerPrecision(0.2);
 		TriggerFitData::SetPulseShape(PREV_FOLDER + "A_4PMT_fast_by_Npe.dat");
-		draw_limits(-5, 4);
+		draw_limits(-4, 4);
 		saveaspng(FOLDER + Num + "_fastPMTs_Npe_trigger_"+cuts_str(cuts)+"_zoom");
 		set_as_run_cut("good_trigger"); cuts.push_back(Num);
 		set_trigger_offsets(0.0);
@@ -1100,7 +1117,7 @@ ty(AStates::PMT_Npe_sum);
 	unset_as_run_cut("En_spec");
 	cuts.pop_back();
 
-	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_4PMT_fast_by_Npe", 800, 2); //For next iteration trigger fit
+	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_4PMT_fast_by_Npe", 1200, 2); //For next iteration trigger fit
 	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_SiPMs_by_Npe", 800, 5); //For next iteration trigger fit
 }
 if (exp == "190404_Cd_16kV_850V_46V_th210mV" || exp == "190404_Cd_16kV_850V_48V_th200mV") {
@@ -1185,7 +1202,7 @@ if (exp == "190404_Cd_16kV_850V_46V_th210mV" || exp == "190404_Cd_16kV_850V_48V_
 		set_bins(300);
 		TriggerFitData::SetTriggerType(TriggerFitData::tbNpe);
 		TriggerFitData::SetTriggerFirstScant(1.6);
-		TriggerFitData::SetTriggerPrecision(0.05);
+		TriggerFitData::SetTriggerPrecision(0.2);
 		TriggerFitData::SetPulseShape(PREV_FOLDER + "A_4PMT_fast_by_Npe.dat");
 		draw_limits(-5, 4);
 		saveaspng(FOLDER + Num + "_fastPMTs_Npe_trigger_"+cuts_str(cuts)+"_zoom");
@@ -1246,7 +1263,7 @@ ty(AStates::PMT_Npe_sum);
 	unset_as_run_cut("En_spec");
 	cuts.pop_back();
 
-	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_4PMT_fast_by_Npe", 800, 2); //For next iteration trigger fit
+	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_4PMT_fast_by_Npe", 1200, 2); //For next iteration trigger fit
 	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_SiPMs_by_Npe", 800, 5); //For next iteration trigger fit
 }
 if (exp == "190404_Cd_14kV_850V_46V_th200mV" || exp == "190404_Cd_14kV_850V_48V_th160mV") {
@@ -1331,7 +1348,7 @@ if (exp == "190404_Cd_14kV_850V_46V_th200mV" || exp == "190404_Cd_14kV_850V_48V_
 		set_bins(300);
 		TriggerFitData::SetTriggerType(TriggerFitData::tbNpe);
 		TriggerFitData::SetTriggerFirstScant(1.6);
-		TriggerFitData::SetTriggerPrecision(0.05);
+		TriggerFitData::SetTriggerPrecision(0.2);
 		TriggerFitData::SetPulseShape(PREV_FOLDER + "A_4PMT_fast_by_Npe.dat");
 		draw_limits(-5, 4);
 		saveaspng(FOLDER + Num + "_fastPMTs_Npe_trigger_"+cuts_str(cuts)+"_zoom");
@@ -1392,7 +1409,7 @@ ty(AStates::PMT_Npe_sum);
 	unset_as_run_cut("En_spec");
 	cuts.pop_back();
 
-	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_4PMT_fast_by_Npe", 800, 2); //For next iteration trigger fit
+	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_4PMT_fast_by_Npe", 1000, 2); //For next iteration trigger fit
 	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_SiPMs_by_Npe", 800, 5); //For next iteration trigger fit
 }
 if (exp == "190404_Cd_12kV_850V_46V_th160mV" || exp == "190404_Cd_12kV_850V_48V_th150mV") {
@@ -1477,7 +1494,7 @@ if (exp == "190404_Cd_12kV_850V_46V_th160mV" || exp == "190404_Cd_12kV_850V_48V_
 		set_bins(300);
 		TriggerFitData::SetTriggerType(TriggerFitData::tbNpe);
 		TriggerFitData::SetTriggerFirstScant(1.6);
-		TriggerFitData::SetTriggerPrecision(0.05);
+		TriggerFitData::SetTriggerPrecision(0.2);
 		TriggerFitData::SetPulseShape(PREV_FOLDER + "A_4PMT_fast_by_Npe.dat");
 		draw_limits(-5, 4);
 		saveaspng(FOLDER + Num + "_fastPMTs_Npe_trigger_"+cuts_str(cuts)+"_zoom");
@@ -1538,7 +1555,7 @@ ty(AStates::PMT_Npe_sum);
 	unset_as_run_cut("En_spec");
 	cuts.pop_back();
 
-	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_4PMT_fast_by_Npe", 600, 2); //For next iteration trigger fit
+	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_4PMT_fast_by_Npe", 1000, 2); //For next iteration trigger fit
 	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_SiPMs_by_Npe", 600, 5); //For next iteration trigger fit
 }
 if (exp == "190404_Cd_10kV_850V_46V_th150mV" || exp == "190404_Cd_10kV_850V_48V_th150mV") {
@@ -1623,7 +1640,7 @@ if (exp == "190404_Cd_10kV_850V_46V_th150mV" || exp == "190404_Cd_10kV_850V_48V_
 		set_bins(300);
 		TriggerFitData::SetTriggerType(TriggerFitData::tbNpe);
 		TriggerFitData::SetTriggerFirstScant(1.6);
-		TriggerFitData::SetTriggerPrecision(0.05);
+		TriggerFitData::SetTriggerPrecision(0.2);
 		TriggerFitData::SetPulseShape(PREV_FOLDER + "A_4PMT_fast_by_Npe.dat");
 		draw_limits(-5, 4);
 		saveaspng(FOLDER + Num + "_fastPMTs_Npe_trigger_"+cuts_str(cuts)+"_zoom");
@@ -1684,7 +1701,7 @@ ty(AStates::PMT_Npe_sum);
 	unset_as_run_cut("En_spec");
 	cuts.pop_back();
 
-	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_4PMT_fast_by_Npe", 600, 2); //For next iteration trigger fit
+	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_4PMT_fast_by_Npe", 1000, 2); //For next iteration trigger fit
 	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_SiPMs_by_Npe", 600, 5); //For next iteration trigger fit
 }
 if (exp == "190404_Cd_8kV_850V_46V_th140mV" || exp == "190404_Cd_8kV_850V_48V_th140mV") {
@@ -1770,7 +1787,7 @@ if (exp == "190404_Cd_8kV_850V_46V_th140mV" || exp == "190404_Cd_8kV_850V_48V_th
 			set_bins(160);
 			TriggerFitData::SetTriggerType(TriggerFitData::tbNpe);
 			TriggerFitData::SetTriggerFirstScant(1.6);
-			TriggerFitData::SetTriggerPrecision(0.05);
+			TriggerFitData::SetTriggerPrecision(0.2);
 			TriggerFitData::SetPulseShape(PREV_FOLDER + "A_4PMT_fast_by_Npe.dat");
 			saveaspng(FOLDER + Num + "_fastPMTs_Npe_trigger_chi2_"+cuts_str(cuts));
 			Num = int_to_str(++no, 2);
@@ -1870,7 +1887,7 @@ ty(AStates::PMT_Npe_sum);
 	unset_as_run_cut("En_spec");
 	cuts.pop_back();
 
-	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_4PMT_fast_by_Npe", 400, 2); //For next iteration trigger fit
+	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_4PMT_fast_by_Npe", 1000, 2); //For next iteration trigger fit
 	save_forms(FOLDER + "forms_Cd_peak/", FOLDER + "A_SiPMs_by_Npe", 600, 5); //For next iteration trigger fit
 }
 }

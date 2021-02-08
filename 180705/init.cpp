@@ -41,7 +41,7 @@
   exp_area.experiments.push_back("180705_Cd_10kV_800V_6bB_48V");
   exp_area.experiments.push_back("180705_Cd_9kV_800V_0bB_48V");
   exp_area.experiments.push_back("180705_Cd_8kV_800V_0bB_48V");
-  
+
   PMT_V.clear();
   MPPC_V.clear();
   for (auto i = exp_area.experiments.begin(), i_end_ = exp_area.experiments.end(); i != i_end_; ++i) {
@@ -59,7 +59,7 @@
   dBs["180705_Cd_16kV_800V_12bB_48V"] = atten0;
   dBs["180705_Cd_14kV_800V_12bB_48V"] = atten0;
   dBs["180705_Cd_13kV_800V_12bB_48V"] = atten0;
-  dBs["180705_Cd_12kV_800V_6bB_48V"] = atten0;
+  dBs["180705_Cd_12kV_800V_6bB_48V"] = atten1;
   dBs["180705_Cd_12kV_800V_6bB_48V"] = atten1;
   dBs["180705_Cd_11kV_800V_6bB_48V"] = atten1;
   dBs["180705_Cd_10kV_800V_6bB_48V"] = atten1;
@@ -88,7 +88,7 @@
   experiment_runs["180705_Cd_10kV_800V_6bB_48V"] = 259;
   experiment_runs["180705_Cd_9kV_800V_0bB_48V"] = 270;
   experiment_runs["180705_Cd_8kV_800V_0bB_48V"] = 281;
- 
+
   if (areas_to_draw.empty())
 	areas_to_draw.push_back(experiment_area());
   areas_to_draw.back().channels.erase();

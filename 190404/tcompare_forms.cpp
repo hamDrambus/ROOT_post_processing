@@ -1,7 +1,7 @@
-//Created on 2020.10.22
+//Created on 2020.10.06
 #define PAIR std::pair<double, double>
 
-//When on, ncompare_forms is called with parameters to analyze pulse-shape and save it
+//When on, y6compare_forms is called with parameters to analyze pulse-shape and save it
 //to specified location automatically.
 //#define FAST_FIGURES_MODE
 
@@ -274,23 +274,24 @@ void draw_slow_component(TF1* fit_f, pulse_shape& shape)
 
 #ifdef FAST_FIGURES_MODE
 //y6compare_forms("20", "lin", "peak", 1800, "NLWRE", "comb");
-int ncompare_forms (std::string in_kV, std::string in_is_linear, std::string in_is_Cd_peak,
+int tcompare_forms (std::string in_kV, std::string in_is_linear, std::string in_is_Cd_peak,
 	 	int in_Nbins, std::string in_def_fit_option, std::string in_is_combined) {
 		std::cout<<"FAST_FIGURES_MODE"<<std::endl;
 #else //FAST_FIGURES_MODE
-int ncompare_forms (void) {
+int tcompare_forms (void) {
 		std::cout<<"COMPARISON_MODE"<<std::endl;
 #endif //FAST_FIGURES_MODE
 	gStyle->SetStatY(0.9);
 	gStyle->SetStatX(0.9);
 	int DEF_W = 1300, DEF_H = 700; //qewr - for fast Ctrl+F
 
-	std::string def_fit_option = "NRE";
+	std::string def_fit_option = "NLWRE";
 	bool combined = true;
-	bool Cd_peak = false;
-	int Nbins = 100;
+	bool Cd_peak = true;
+	int Nbins = 1000;
 	bool linear = 0;
 	bool PMTs = true;
+	bool Cd_peak_v2 = false; //if true uses forms_Cd_peak_v2 or forms_Cd_left_v2 selection;
 #ifdef FAST_FIGURES_MODE
 	linear = (in_is_linear == "lin");
 	Cd_peak = (in_is_Cd_peak != "slope");
@@ -307,501 +308,1016 @@ int ncompare_forms (void) {
 	bool center_pulses = false;
 	bool center_at_S1 = false; //Not used
 	bool normalize_by_S1 = false; //Not used
-	bool print_errors = false;
-	double time_pretrigger_left = 2, time_pretrigger_right = 18;
+	bool print_errors = true;
+	double time_pretrigger_left = 1, time_pretrigger_right = 12;
 	double time_left = 0, time_right = 160;//us
 	double max_val = 0;
-	double trigger_at = center_at_S1 ? 0 : 32; //Not used
+	double trigger_at = center_at_S1 ? 40 : 76; //Not used
 	double y_min = 1e-4;
 
 	pulse_shape* define = NULL, *copy = NULL;
 
 	pulse_shape SiPM_20kV_no_trigger;
 	define = &SiPM_20kV_no_trigger;
-define->folder = std::string("201015/results_v5/Pu_46V_20kV_850V/") + (Cd_peak ? "forms_Alpha_peak/" : "forms_Alpha_left/");
-define->fnames = {"SiPMs_form_by_Npe.hdata"};
+define->folder = "190404/results_v6/";
+define->fnames.push_back(std::string("Cd_48V_20kV_850V/") +
+		(Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/")) +
+		"SiPMs_form_by_Npe.hdata");
+define->fnames.push_back(std::string("Cd_46V_20kV_850V_0/") +
+		(Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/")) +
+		"SiPMs_form_by_Npe.hdata");
+define->fnames.push_back(std::string("Cd_46V_20kV_850V/") +
+		(Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/")) +
+		"SiPMs_form_by_Npe.hdata");
 define->Td = "8.5";
 define->device = "SiPM-matrix";
-define->fast_t_center = 28.8;
-define->fast_t = PAIR(23, 30.4);
+define->fast_t_center = 28.9;
+define->fast_t = PAIR(25, 30.8);
 define->S1_t_center = 0;
 define->S1_t = PAIR(0, 0);
 define->scale = 1;
 define->subtract_baseline = subtact_baseline;
 define->renormalize = true;
-define->slow_fit_t = PAIR(32.0, 159);
-define->long_fit_t = PAIR(32.0, 159);
+define->slow_fit_t = PAIR(31.3, 159);
+define->long_fit_t = PAIR(31.3, 159);
 define->baseline_bound = PAIR(1e-6, 2e-4);
 define->slow_ampl_bound = PAIR(1e-3, 1);
 define->slow_tau_bound = PAIR(2.5, 10);
 define->long_ampl_bound = PAIR(3e-4, 1e-1);
-define->long_tau_bound = PAIR(20, 200);
+define->long_tau_bound = PAIR(30, 200);
+define->simultaneous_fit = true;
+define->do_fit = do_fit;
+define->fit_option = def_fit_option;
+
+	pulse_shape SiPM_20kV_48V_no_trigger;
+	define = &SiPM_20kV_48V_no_trigger;
+	copy = &SiPM_20kV_no_trigger;
+define->folder = "190404/results_v6/Cd_48V_20kV_850V/";
+define->folder += Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/");
+define->fnames = {"SiPMs_form_by_Npe.hdata"};
+define->Td = "8.5";
+define->device = "SiPM-matrix, 48 V";
+define->fast_t_center = copy->fast_t_center;
+define->fast_t = copy->fast_t;
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = copy->slow_fit_t;
+define->long_fit_t = copy->long_fit_t;
+define->baseline_bound = PAIR(1e-6, 2e-4);
+define->slow_ampl_bound = PAIR(1e-3, 1);
+define->slow_tau_bound = PAIR(2.5, 10);
+define->long_ampl_bound = PAIR(3e-4, 1e-1);
+define->long_tau_bound = PAIR(30, 200);
+define->simultaneous_fit = true;
+define->do_fit = do_fit;
+define->fit_option = def_fit_option;
+
+	pulse_shape SiPM_20kV_46V_no_trigger;
+	define = &SiPM_20kV_46V_no_trigger;
+	copy = &SiPM_20kV_no_trigger;
+define->folder = "190404/results_v6/Cd_46V_20kV_850V/";
+define->folder += Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/");
+define->fnames = {"SiPMs_form_by_Npe.hdata"};
+define->Td = "8.5";
+define->device = "SiPM-matrix, 46 V";
+define->fast_t_center = copy->fast_t_center;
+define->fast_t = copy->fast_t;
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = copy->slow_fit_t;
+define->long_fit_t = copy->long_fit_t;
+define->baseline_bound = PAIR(1e-6, 2e-4);
+define->slow_ampl_bound = PAIR(1e-3, 1);
+define->slow_tau_bound = PAIR(2.5, 10);
+define->long_ampl_bound = PAIR(3e-4, 1e-1);
+define->long_tau_bound = PAIR(30, 200);
 define->simultaneous_fit = true;
 define->do_fit = do_fit;
 define->fit_option = def_fit_option;
 
 	pulse_shape SiPM_18kV_no_trigger;
 	define = &SiPM_18kV_no_trigger;
-define->folder = std::string("201015/results_v5/Pu_46V_18kV_850V/") + (Cd_peak ? "forms_Alpha_peak/" : "forms_Alpha_left/");
-define->fnames = {"SiPMs_form_by_Npe.hdata"};
+define->folder = "190404/results_v6/";
+define->fnames.push_back(std::string("Cd_48V_18kV_850V/") +
+		(Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/")) +
+		"SiPMs_form_by_Npe.hdata");
+define->fnames.push_back(std::string("Cd_46V_18kV_850V/") +
+		(Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/")) +
+		"SiPMs_form_by_Npe.hdata");
 define->Td = "7.6";
 define->device = "SiPM-matrix";
-define->fast_t_center = 28.8;
-define->fast_t = PAIR(23, 30.6);
+define->fast_t_center = 28.9;
+define->fast_t = PAIR(24, 31.0);
 define->S1_t_center = 0;
 define->S1_t = PAIR(0, 0);
 define->scale = 1;
 define->subtract_baseline = subtact_baseline;
 define->renormalize = true;
-define->slow_fit_t = PAIR(32.6, 159);
-define->long_fit_t = PAIR(32.6, 159);
+define->slow_fit_t = PAIR(31.2, 159);
+define->long_fit_t = PAIR(31.2, 159);
 define->baseline_bound = PAIR(1e-6, 2e-4);
 define->slow_ampl_bound = PAIR(1e-3, 1);
 define->slow_tau_bound = PAIR(2.5, 10);
 define->long_ampl_bound = PAIR(3e-4, 1e-1);
-define->long_tau_bound = PAIR(20, 200);
+define->long_tau_bound = PAIR(30, 200);
+define->simultaneous_fit = true;
+define->do_fit = do_fit;
+define->fit_option = def_fit_option;
+
+	pulse_shape SiPM_18kV_48V_no_trigger;
+	define = &SiPM_18kV_48V_no_trigger;
+	copy = &SiPM_18kV_no_trigger;
+define->folder = "190404/results_v6/Cd_48V_18kV_850V/";
+define->folder += Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/");
+define->fnames = {"SiPMs_form_by_Npe.hdata"};
+define->Td = "7.6";
+define->device = "SiPM-matrix, 48 V";
+define->fast_t_center = copy->fast_t_center;
+define->fast_t = copy->fast_t;
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = copy->slow_fit_t;
+define->long_fit_t = copy->long_fit_t;
+define->baseline_bound = PAIR(1e-6, 2e-4);
+define->slow_ampl_bound = PAIR(1e-3, 1);
+define->slow_tau_bound = PAIR(2.5, 10);
+define->long_ampl_bound = PAIR(3e-4, 1e-1);
+define->long_tau_bound = PAIR(30, 200);
+define->simultaneous_fit = true;
+define->do_fit = do_fit;
+define->fit_option = def_fit_option;
+
+	pulse_shape SiPM_18kV_46V_no_trigger;
+	define = &SiPM_18kV_46V_no_trigger;
+	copy = &SiPM_18kV_no_trigger;
+define->folder = "190404/results_v6/Cd_46V_18kV_850V/";
+define->folder += Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/");
+define->fnames = {"SiPMs_form_by_Npe.hdata"};
+define->Td = "7.6";
+define->device = "SiPM-matrix, 46 V";
+define->fast_t_center = copy->fast_t_center;
+define->fast_t = copy->fast_t;
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = copy->slow_fit_t;
+define->long_fit_t = copy->long_fit_t;
+define->baseline_bound = PAIR(1e-6, 2e-4);
+define->slow_ampl_bound = PAIR(1e-3, 1);
+define->slow_tau_bound = PAIR(2.5, 10);
+define->long_ampl_bound = PAIR(3e-4, 1e-1);
+define->long_tau_bound = PAIR(30, 200);
 define->simultaneous_fit = true;
 define->do_fit = do_fit;
 define->fit_option = def_fit_option;
 
 	pulse_shape SiPM_16kV_no_trigger;
 	define = &SiPM_16kV_no_trigger;
-define->folder = std::string("201015/results_v5/Pu_46V_16kV_850V/") + (Cd_peak ? "forms_Alpha_peak/" : "forms_Alpha_left/");
-define->fnames = {"SiPMs_form_by_Npe.hdata"};
+define->folder = "190404/results_v6/";
+define->fnames.push_back(std::string("Cd_48V_16kV_850V/") +
+		(Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/")) +
+		"SiPMs_form_by_Npe.hdata");
+define->fnames.push_back(std::string("Cd_46V_16kV_850V/") +
+		(Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/")) +
+		"SiPMs_form_by_Npe.hdata");
 define->Td = "6.8";
 define->device = "SiPM-matrix";
-define->fast_t_center = 28.8;
-define->fast_t = PAIR(23, 30.6);
+define->fast_t_center = 29.1;
+define->fast_t = PAIR(24, 31.4);
 define->S1_t_center = 0;
 define->S1_t = PAIR(0, 0);
 define->scale = 1;
 define->subtract_baseline = subtact_baseline;
 define->renormalize = true;
-define->slow_fit_t = PAIR(32.6, 159);
-define->long_fit_t = PAIR(32.6, 159);
-define->baseline_bound = PAIR(1e-6, 2e-4);
+define->slow_fit_t = PAIR(31.6, 156);
+define->long_fit_t = PAIR(31.6, 156);
+define->baseline_bound = PAIR(1e-6, 8e-5);
 define->slow_ampl_bound = PAIR(1e-3, 1);
 define->slow_tau_bound = PAIR(2.5, 10);
 define->long_ampl_bound = PAIR(3e-4, 1e-1);
-define->long_tau_bound = PAIR(20, 200);
+define->long_tau_bound = PAIR(30, 200);
+define->simultaneous_fit = true;
+define->do_fit = do_fit;
+define->fit_option = def_fit_option;
+
+	pulse_shape SiPM_16kV_48V_no_trigger;
+	define = &SiPM_16kV_48V_no_trigger;
+	copy = &SiPM_16kV_no_trigger;
+define->folder = "190404/results_v6/Cd_48V_16kV_850V/";
+define->folder += Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/");
+define->fnames = {"SiPMs_form_by_Npe.hdata"};
+define->Td = "6.8";
+define->device = "SiPM-matrix, 48 V";
+define->fast_t_center = copy->fast_t_center;
+define->fast_t = copy->fast_t;
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = copy->slow_fit_t;
+define->long_fit_t = copy->long_fit_t;
+define->baseline_bound = PAIR(1e-6, 1.2e-4);
+define->slow_ampl_bound = PAIR(1e-3, 1);
+define->slow_tau_bound = PAIR(2.5, 10);
+define->long_ampl_bound = PAIR(3e-4, 1e-1);
+define->long_tau_bound = PAIR(30, 200);
+define->simultaneous_fit = true;
+define->do_fit = do_fit;
+define->fit_option = def_fit_option;
+
+	pulse_shape SiPM_16kV_46V_no_trigger;
+	define = &SiPM_16kV_46V_no_trigger;
+	copy = &SiPM_16kV_no_trigger;
+define->folder = "190404/results_v6/Cd_46V_16kV_850V/";
+define->folder += Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/");
+define->fnames = {"SiPMs_form_by_Npe.hdata"};
+define->Td = "6.8";
+define->device = "SiPM-matrix, 46 V";
+define->fast_t_center = copy->fast_t_center;
+define->fast_t = copy->fast_t;
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = copy->slow_fit_t;
+define->long_fit_t = copy->long_fit_t;
+define->baseline_bound = PAIR(1e-6, 1.2e-4);
+define->slow_ampl_bound = PAIR(1e-3, 1);
+define->slow_tau_bound = PAIR(2.5, 10);
+define->long_ampl_bound = PAIR(3e-4, 1e-1);
+define->long_tau_bound = PAIR(30, 200);
 define->simultaneous_fit = true;
 define->do_fit = do_fit;
 define->fit_option = def_fit_option;
 
 	pulse_shape SiPM_14kV_no_trigger;
 	define = &SiPM_14kV_no_trigger;
-define->folder = std::string("201015/results_v5/Pu_46V_14kV_850V/") + (Cd_peak ? "forms_Alpha_peak/" : "forms_Alpha_left/");
-define->fnames = {"SiPMs_form_by_Npe.hdata"};
+define->folder = "190404/results_v6/";
+define->fnames.push_back(std::string("Cd_48V_14kV_850V/") +
+		(Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/")) +
+		"SiPMs_form_by_Npe.hdata");
+define->fnames.push_back(std::string("Cd_46V_14kV_850V/") +
+		(Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/")) +
+		"SiPMs_form_by_Npe.hdata");
 define->Td = "5.9";
 define->device = "SiPM-matrix";
-define->fast_t_center = 28.9;
-define->fast_t = PAIR(23, 30.8);
+define->fast_t_center = 29.4;
+define->fast_t = PAIR(24, 31.9);
 define->S1_t_center = 0;
 define->S1_t = PAIR(0, 0);
 define->scale = 1;
 define->subtract_baseline = subtact_baseline;
 define->renormalize = true;
-define->slow_fit_t = PAIR(32.9, 159);
-define->long_fit_t = PAIR(32.9, 159);
-define->baseline_bound = PAIR(1e-6, 1e-4);
+define->slow_fit_t = PAIR(32.5, 155);
+define->long_fit_t = PAIR(32.5, 155);
+define->baseline_bound = PAIR(1e-6, 1e-6);
 define->slow_ampl_bound = PAIR(1e-3, 1);
 define->slow_tau_bound = PAIR(2.5, 10);
-define->long_ampl_bound = PAIR(3e-4, 6e-3);
+define->long_ampl_bound = PAIR(3e-4, 1e-1);
 define->long_tau_bound = PAIR(20, 200);
+define->simultaneous_fit = true;
+define->do_fit = do_fit;
+define->fit_option = def_fit_option;
+
+	pulse_shape SiPM_14kV_48V_no_trigger;
+	define = &SiPM_14kV_48V_no_trigger;
+	copy = &SiPM_14kV_no_trigger;
+define->folder = "190404/results_v6/Cd_48V_14kV_850V/";
+define->folder += Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/");
+define->fnames = {"SiPMs_form_by_Npe.hdata"};
+define->Td = "5.9";
+define->device = "SiPM-matrix, 48 V";
+define->fast_t_center = copy->fast_t_center;
+define->fast_t = copy->fast_t;
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = copy->slow_fit_t;
+define->long_fit_t = copy->long_fit_t;
+define->baseline_bound = PAIR(1e-6, 3e-5);
+define->slow_ampl_bound = PAIR(1e-3, 1);
+define->slow_tau_bound = PAIR(2.5, 10);
+define->long_ampl_bound = PAIR(3e-4, 1e-1);
+define->long_tau_bound = PAIR(13, 200);
+define->simultaneous_fit = true;
+define->do_fit = do_fit;
+define->fit_option = def_fit_option;
+
+	pulse_shape SiPM_14kV_46V_no_trigger;
+	define = &SiPM_14kV_46V_no_trigger;
+	copy = &SiPM_14kV_no_trigger;
+define->folder = "190404/results_v6/Cd_46V_14kV_850V/";
+define->folder += Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/");
+define->fnames = {"SiPMs_form_by_Npe.hdata"};
+define->Td = "5.9";
+define->device = "SiPM-matrix, 46 V";
+define->fast_t_center = copy->fast_t_center;
+define->fast_t = copy->fast_t;
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = copy->slow_fit_t;
+define->long_fit_t = copy->long_fit_t;
+define->baseline_bound = PAIR(1e-6, 3e-5);
+define->slow_ampl_bound = PAIR(1e-3, 1);
+define->slow_tau_bound = PAIR(2.5, 10);
+define->long_ampl_bound = PAIR(3e-4, 1e-1);
+define->long_tau_bound = PAIR(13, 200);
 define->simultaneous_fit = true;
 define->do_fit = do_fit;
 define->fit_option = def_fit_option;
 
 	pulse_shape SiPM_12kV_no_trigger;
 	define = &SiPM_12kV_no_trigger;
-define->folder = std::string("201015/results_v5/Pu_46V_12kV_850V/") + (Cd_peak ? "forms_Alpha_peak/" : "forms_Alpha_left/");
-define->fnames = {"SiPMs_form_by_Npe.hdata"};
+define->folder = "190404/results_v6/";
+define->fnames.push_back(std::string("Cd_48V_12kV_850V/") +
+		(Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/")) +
+		"SiPMs_form_by_Npe.hdata");
+define->fnames.push_back(std::string("Cd_46V_12kV_850V/") +
+		(Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/")) +
+		"SiPMs_form_by_Npe.hdata");
 define->Td = "5.1";
 define->device = "SiPM-matrix";
-define->fast_t_center = 28.9;
-define->fast_t = PAIR(23, 31.0);
+define->fast_t_center = 29.4;
+define->fast_t = PAIR(23, 32.5);
 define->S1_t_center = 0;
 define->S1_t = PAIR(0, 0);
 define->scale = 1;
 define->subtract_baseline = subtact_baseline;
 define->renormalize = true;
-define->slow_fit_t = PAIR(31.3, 157);
-define->long_fit_t = PAIR(31.3, 157);
-define->baseline_bound = PAIR(1e-6, 8e-5);
+define->slow_fit_t = PAIR(32.9, 45);
+define->long_fit_t = PAIR(0, 0);
+define->baseline_bound = PAIR(1e-6, 5e-5);
 define->slow_ampl_bound = PAIR(1e-3, 1);
 define->slow_tau_bound = PAIR(2.5, 10);
-define->long_ampl_bound = PAIR(3e-4, 0.005);
-define->long_tau_bound = PAIR(20, 200);
+define->long_ampl_bound = PAIR(3e-4, 1e-1);
+define->long_tau_bound = PAIR(13, 200);
+define->simultaneous_fit = true;
+define->do_fit = do_fit;
+define->fit_option = def_fit_option;
+
+	pulse_shape SiPM_12kV_48V_no_trigger;
+	define = &SiPM_12kV_48V_no_trigger;
+	copy = &SiPM_12kV_no_trigger;
+define->folder = "190404/results_v6/Cd_48V_12kV_850V/";
+define->folder += Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/");
+define->fnames = {"SiPMs_form_by_Npe.hdata"};
+define->Td = "5.1";
+define->device = "SiPM-matrix, 48 V";
+define->fast_t_center = copy->fast_t_center;
+define->fast_t = copy->fast_t;
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = copy->slow_fit_t;
+define->long_fit_t = copy->long_fit_t;
+define->baseline_bound = PAIR(1e-6, 5e-5);
+define->slow_ampl_bound = PAIR(1e-3, 1);
+define->slow_tau_bound = PAIR(2.5, 10);
+define->long_ampl_bound = PAIR(3e-4, 1e-1);
+define->long_tau_bound = PAIR(13, 200);
+define->simultaneous_fit = true;
+define->do_fit = do_fit;
+define->fit_option = def_fit_option;
+
+	pulse_shape SiPM_12kV_46V_no_trigger;
+	define = &SiPM_12kV_46V_no_trigger;
+	copy = &SiPM_12kV_no_trigger;
+define->folder = "190404/results_v6/Cd_46V_12kV_850V/";
+define->folder += Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/");
+define->fnames = {"SiPMs_form_by_Npe.hdata"};
+define->Td = "5.1";
+define->device = "SiPM-matrix, 46 V";
+define->fast_t_center = copy->fast_t_center;
+define->fast_t = copy->fast_t;
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = copy->slow_fit_t;
+define->long_fit_t = copy->long_fit_t;
+define->baseline_bound = PAIR(1e-6, 5e-5);
+define->slow_ampl_bound = PAIR(1e-3, 1);
+define->slow_tau_bound = PAIR(2.5, 10);
+define->long_ampl_bound = PAIR(3e-4, 1e-1);
+define->long_tau_bound = PAIR(13, 200);
 define->simultaneous_fit = true;
 define->do_fit = do_fit;
 define->fit_option = def_fit_option;
 
 	pulse_shape SiPM_10kV_no_trigger;
 	define = &SiPM_10kV_no_trigger;
-define->folder = std::string("201015/results_v5/Pu_46V_10kV_850V/") + (Cd_peak ? "forms_Alpha_peak/" : "forms_Alpha_left/");
-define->fnames = {"SiPMs_form_by_Npe.hdata"};
+define->folder = "190404/results_v6/";
+define->fnames.push_back(std::string("Cd_48V_10kV_850V/") +
+		(Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/")) +
+		"SiPMs_form_by_Npe.hdata");
+define->fnames.push_back(std::string("Cd_46V_10kV_850V/") +
+		(Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/")) +
+		"SiPMs_form_by_Npe.hdata");
 define->Td = "4.2";
 define->device = "SiPM-matrix";
-define->fast_t_center = 28.9;
-define->fast_t = PAIR(23, 31.6);
+define->fast_t_center = 29.4;
+define->fast_t = PAIR(23, 33.3);
 define->S1_t_center = 0;
 define->S1_t = PAIR(0, 0);
 define->scale = 1;
 define->subtract_baseline = subtact_baseline;
 define->renormalize = true;
-define->slow_fit_t = PAIR(32.0, 157);
-define->long_fit_t = PAIR(32.0, 157);
-define->baseline_bound = PAIR(1e-6, 1.5e-5);
+define->slow_fit_t = PAIR(33.5, 46);
+define->long_fit_t = PAIR(0, 0);
+define->baseline_bound = PAIR(1e-6, 5e-5);
 define->slow_ampl_bound = PAIR(1e-3, 1);
 define->slow_tau_bound = PAIR(2.5, 10);
-define->long_ampl_bound = PAIR(3e-4, 0.0013);
-define->long_tau_bound = PAIR(15, 200);
+define->long_ampl_bound = PAIR(3e-4, 1e-1);
+define->long_tau_bound = PAIR(13, 200);
 define->simultaneous_fit = true;
-define->do_fit = do_fit;
+define->do_fit = do_fit && fit_bad_forms;
+define->fit_option = def_fit_option;
+
+	pulse_shape SiPM_10kV_48V_no_trigger;
+	define = &SiPM_10kV_48V_no_trigger;
+	copy = &SiPM_10kV_no_trigger;
+define->folder = "190404/results_v6/Cd_48V_10kV_850V/";
+define->folder += Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/");
+define->fnames = {"SiPMs_form_by_Npe.hdata"};
+define->Td = "4.2";
+define->device = "SiPM-matrix, 48 V";
+define->fast_t_center = copy->fast_t_center;
+define->fast_t = copy->fast_t;
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = copy->slow_fit_t;
+define->long_fit_t = copy->long_fit_t;
+define->baseline_bound = PAIR(1e-6, 5e-5);
+define->slow_ampl_bound = PAIR(1e-3, 1);
+define->slow_tau_bound = PAIR(2.5, 10);
+define->long_ampl_bound = PAIR(3e-4, 1e-1);
+define->long_tau_bound = PAIR(13, 200);
+define->simultaneous_fit = true;
+define->do_fit = do_fit && fit_bad_forms;
+define->fit_option = def_fit_option;
+
+	pulse_shape SiPM_10kV_46V_no_trigger;
+	define = &SiPM_10kV_46V_no_trigger;
+	copy = &SiPM_10kV_no_trigger;
+define->folder = "190404/results_v6/Cd_46V_10kV_850V/";
+define->folder += Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/");
+define->fnames = {"SiPMs_form_by_Npe.hdata"};
+define->Td = "4.2";
+define->device = "SiPM-matrix, 46 V";
+define->fast_t_center = copy->fast_t_center;
+define->fast_t = copy->fast_t;
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = copy->slow_fit_t;
+define->long_fit_t = copy->long_fit_t;
+define->baseline_bound = PAIR(1e-6, 5e-5);
+define->slow_ampl_bound = PAIR(1e-3, 1);
+define->slow_tau_bound = PAIR(2.5, 10);
+define->long_ampl_bound = PAIR(3e-4, 1e-1);
+define->long_tau_bound = PAIR(13, 200);
+define->simultaneous_fit = true;
+define->do_fit = do_fit && fit_bad_forms;
+define->fit_option = def_fit_option;
+
+	pulse_shape SiPM_08kV_no_trigger;
+	define = &SiPM_08kV_no_trigger;
+define->folder = "190404/results_v6/";
+define->fnames.push_back(std::string("Cd_48V_08kV_850V/") +
+		(Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/")) +
+		"SiPMs_form_by_Npe.hdata");
+define->fnames.push_back(std::string("Cd_46V_08kV_850V/") +
+		(Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/")) +
+		"SiPMs_form_by_Npe.hdata");
+define->Td = "3.4";
+define->device = "SiPM-matrix";
+define->fast_t_center = 29.4;
+define->fast_t = PAIR(22, 33.5);
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = PAIR(33.5, 57);
+define->long_fit_t = PAIR(0, 0);
+define->baseline_bound = PAIR(1e-6, 5e-5);
+define->slow_ampl_bound = PAIR(1e-3, 1);
+define->slow_tau_bound = PAIR(2.5, 10);
+define->long_ampl_bound = PAIR(3e-4, 1e-1);
+define->long_tau_bound = PAIR(13, 200);
+define->simultaneous_fit = true;
+define->do_fit = do_fit && fit_bad_forms;
+define->fit_option = def_fit_option;
+
+	pulse_shape SiPM_08kV_48V_no_trigger;
+	define = &SiPM_08kV_48V_no_trigger;
+	copy = &SiPM_08kV_no_trigger;
+define->folder = "190404/results_v6/Cd_48V_08kV_850V/";
+define->folder += Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/");
+define->fnames = {"SiPMs_form_by_Npe.hdata"};
+define->Td = "3.4";
+define->device = "SiPM-matrix, 48 V";
+define->fast_t_center = copy->fast_t_center;
+define->fast_t = copy->fast_t;
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = copy->slow_fit_t;
+define->long_fit_t = copy->long_fit_t;
+define->baseline_bound = PAIR(1e-6, 5e-5);
+define->slow_ampl_bound = PAIR(1e-3, 1);
+define->slow_tau_bound = PAIR(2.5, 10);
+define->long_ampl_bound = PAIR(3e-4, 1e-1);
+define->long_tau_bound = PAIR(13, 200);
+define->simultaneous_fit = true;
+define->do_fit = do_fit && fit_bad_forms;
+define->fit_option = def_fit_option;
+
+	pulse_shape SiPM_08kV_46V_no_trigger;
+	define = &SiPM_08kV_46V_no_trigger;
+	copy = &SiPM_08kV_no_trigger;
+define->folder = "190404/results_v6/Cd_46V_08kV_850V/";
+define->folder += Cd_peak ? (!Cd_peak_v2 ? "forms_Cd_peak/" : "forms_Cd_peak_v2/") : (!Cd_peak_v2 ? "forms_Cd_left/" : "forms_Cd_left_v2/");
+define->fnames = {"SiPMs_form_by_Npe.hdata"};
+define->Td = "3.4";
+define->device = "SiPM-matrix, 46 V";
+define->fast_t_center = copy->fast_t_center;
+define->fast_t = copy->fast_t;
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = copy->slow_fit_t;
+define->long_fit_t = copy->long_fit_t;
+define->baseline_bound = PAIR(1e-6, 5e-5);
+define->slow_ampl_bound = PAIR(1e-3, 1);
+define->slow_tau_bound = PAIR(2.5, 10);
+define->long_ampl_bound = PAIR(3e-4, 1e-1);
+define->long_tau_bound = PAIR(13, 200);
+define->simultaneous_fit = true;
+define->do_fit = do_fit && fit_bad_forms;
 define->fit_option = def_fit_option;
 
 	pulse_shape SiPM_20kV_no_trigger_v2;
 	define = &SiPM_20kV_no_trigger_v2;
 	copy = &SiPM_20kV_no_trigger;
-*define = *copy;
-define->slow_fit_t = PAIR(32.5, 41.3);
-define->long_fit_t = PAIR(75, 157);
-define->baseline_bound = PAIR(1e-6, 5e-3);
-define->long_baseline_bound = PAIR(1e-6, 1e-4);
+define->folder = copy->folder;
+define->fnames = copy->fnames;
+define->Td = copy->Td;
+define->device = "SiPM-matrix";
+define->fast_t_center = copy->fast_t_center;
+define->fast_t = copy->fast_t;
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = PAIR(31.7, 45.0);
+define->long_fit_t = PAIR(73, 159);
+define->baseline_bound = PAIR(1e-6, 3e-3);
+define->long_baseline_bound = PAIR(1e-6, 2e-4);
 define->slow_ampl_bound = PAIR(1e-3, 1);
 define->slow_tau_bound = PAIR(2.5, 10);
 define->long_ampl_bound = PAIR(3e-4, 1e-1);
-define->long_tau_bound = PAIR(20, 200);
+define->long_tau_bound = PAIR(30, 200);
 define->simultaneous_fit = false;
+define->do_fit = do_fit;
+define->fit_option = def_fit_option;
 
 	pulse_shape SiPM_18kV_no_trigger_v2;
 	define = &SiPM_18kV_no_trigger_v2;
 	copy = &SiPM_18kV_no_trigger;
-*define = *copy;
-define->slow_fit_t = PAIR(33.0, 41.8);
-define->long_fit_t = PAIR(75, 157);
-define->baseline_bound = PAIR(1e-6, 5e-3);
-define->long_baseline_bound = PAIR(1e-6, 1e-4);
+define->folder = copy->folder;
+define->fnames = copy->fnames;
+define->Td = copy->Td;
+define->device = "SiPM-matrix";
+define->fast_t_center = copy->fast_t_center;
+define->fast_t = copy->fast_t;
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = PAIR(31.7, 44.0);
+define->long_fit_t = PAIR(74, 159);
+define->baseline_bound = PAIR(1e-6, 1e-3);
+define->long_baseline_bound = PAIR(1e-6, 2e-4);
 define->slow_ampl_bound = PAIR(1e-3, 1);
 define->slow_tau_bound = PAIR(2.5, 10);
 define->long_ampl_bound = PAIR(3e-4, 1e-1);
-define->long_tau_bound = PAIR(20, 200);
+define->long_tau_bound = PAIR(30, 200);
 define->simultaneous_fit = false;
+define->do_fit = do_fit;
+define->fit_option = def_fit_option;
 
 	pulse_shape SiPM_16kV_no_trigger_v2;
 	define = &SiPM_16kV_no_trigger_v2;
 	copy = &SiPM_16kV_no_trigger;
-*define = *copy;
-define->slow_fit_t = PAIR(33.0, 41.8);
-define->long_fit_t = PAIR(73, 156);
-define->baseline_bound = PAIR(1e-6, 4e-3);
-define->long_baseline_bound = PAIR(1e-6, 1e-4);
+define->folder = copy->folder;
+define->fnames = copy->fnames;
+define->Td = copy->Td;
+define->device = "SiPM-matrix";
+define->fast_t_center = copy->fast_t_center;
+define->fast_t = copy->fast_t;
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = PAIR(33.0, 44.0);
+define->long_fit_t = PAIR(69, 159);
+define->baseline_bound = PAIR(1e-6, 2e-3);
+define->long_baseline_bound = PAIR(1e-6, 1.5e-4);
 define->slow_ampl_bound = PAIR(1e-3, 1);
 define->slow_tau_bound = PAIR(2.5, 10);
 define->long_ampl_bound = PAIR(3e-4, 1e-1);
-define->long_tau_bound = PAIR(20, 200);
+define->long_tau_bound = PAIR(30, 200);
 define->simultaneous_fit = false;
+define->do_fit = do_fit;
+define->fit_option = def_fit_option;
 
 	pulse_shape SiPM_14kV_no_trigger_v2;
 	define = &SiPM_14kV_no_trigger_v2;
 	copy = &SiPM_14kV_no_trigger;
-*define = *copy;
-define->slow_fit_t = PAIR(33.6, 42.5);
-define->long_fit_t = PAIR(68, 156);
-define->baseline_bound = PAIR(1e-6, 3e-3);
-define->long_baseline_bound = PAIR(1e-6, 1e-4);
+define->folder = copy->folder;
+define->fnames = copy->fnames;
+define->Td = copy->Td;
+define->device = "SiPM-matrix";
+define->fast_t_center = copy->fast_t_center;
+define->fast_t = copy->fast_t;
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = PAIR(33.1, 43.0);
+define->long_fit_t = PAIR(73, 159);
+define->baseline_bound = PAIR(1e-6, 1e-3);
+define->long_baseline_bound = PAIR(1e-6, 4e-5);
 define->slow_ampl_bound = PAIR(1e-3, 1);
 define->slow_tau_bound = PAIR(2.5, 10);
 define->long_ampl_bound = PAIR(3e-4, 1e-1);
 define->long_tau_bound = PAIR(20, 200);
 define->simultaneous_fit = false;
+define->do_fit = do_fit;
+define->fit_option = def_fit_option;
 
 	pulse_shape SiPM_12kV_no_trigger_v2;
 	define = &SiPM_12kV_no_trigger_v2;
 	copy = &SiPM_12kV_no_trigger;
-*define = *copy;
-define->slow_fit_t = PAIR(32.2, 43.4);
-define->long_fit_t = PAIR(60, 155);
-define->baseline_bound = PAIR(1e-6, 2e-3);
-define->long_baseline_bound = PAIR(1e-7, 2e-5);
+define->folder = copy->folder;
+define->fnames = copy->fnames;
+define->Td = copy->Td;
+define->device = "SiPM-matrix";
+define->fast_t_center = copy->fast_t_center;
+define->fast_t = copy->fast_t;
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = PAIR(33.1, 47.0);
+define->long_fit_t = PAIR(0, 0);
+define->baseline_bound = PAIR(1e-6, 1e-6);
 define->slow_ampl_bound = PAIR(1e-3, 1);
 define->slow_tau_bound = PAIR(2.5, 10);
-define->long_ampl_bound = PAIR(3e-4, 2.1e-3);
-define->long_tau_bound = PAIR(20, 200);
+define->long_ampl_bound = PAIR(3e-4, 1e-1);
+define->long_tau_bound = PAIR(30, 200);
 define->simultaneous_fit = false;
+define->do_fit = do_fit;
+define->fit_option = def_fit_option;
 
 	pulse_shape SiPM_10kV_no_trigger_v2;
 	define = &SiPM_10kV_no_trigger_v2;
 	copy = &SiPM_10kV_no_trigger;
-*define = *copy;
-define->slow_fit_t = PAIR(33.2, 42.0);
-define->long_fit_t = PAIR(53, 155);
-define->baseline_bound = PAIR(1e-6, 7e-4);
-define->long_baseline_bound = PAIR(1e-7, 1e-5);
-define->slow_ampl_bound = PAIR(1e-3, 0.014);
-define->slow_tau_bound = PAIR(2.5, 10);
-define->long_ampl_bound = PAIR(3e-4, 0.0012);
-define->long_tau_bound = PAIR(15, 200);
+define->folder = copy->folder;
+define->fnames = copy->fnames;
+define->Td = copy->Td;
+define->device = "SiPM-matrix";
+define->fast_t_center = copy->fast_t_center;
+define->fast_t = copy->fast_t;
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = PAIR(34.6, 44.0);
+define->long_fit_t = PAIR(0, 0);
+define->baseline_bound = PAIR(1e-6, 2e-4);
+define->slow_ampl_bound = PAIR(1e-3, 1);
+define->slow_tau_bound = PAIR(3, 10);
+define->long_ampl_bound = PAIR(3e-4, 1e-1);
+define->long_tau_bound = PAIR(30, 200);
 define->simultaneous_fit = false;
+define->do_fit = do_fit && fit_bad_forms;
+define->fit_option = def_fit_option;
 
-	pulse_shape PMT4_20kV_no_trigger;
-	define = &PMT4_20kV_no_trigger;
-define->folder = std::string("201015/results_v5/Pu_46V_20kV_850V/") + (Cd_peak ? "forms_Alpha_peak/" : "forms_Alpha_left/");
-if(PMT_used&0x1) define->fnames.push_back(fast_PMTs ? "5_form_by_Npe.hdata" : "1_form_by_Npe.hdata");
-if(PMT_used&0x2) define->fnames.push_back(fast_PMTs ? "6_form_by_Npe.hdata" : "2_form_by_Npe.hdata");
-if(PMT_used&0x4) define->fnames.push_back(fast_PMTs ? "7_form_by_Npe.hdata" : "3_form_by_Npe.hdata");
-if(PMT_used&0x8) define->fnames.push_back(fast_PMTs ? "8_form_by_Npe.hdata" : "4_form_by_Npe.hdata");
+	pulse_shape SiPM_08kV_no_trigger_v2;
+	define = &SiPM_08kV_no_trigger_v2;
+	copy = &SiPM_08kV_no_trigger;
+define->folder = copy->folder;
+define->fnames = copy->fnames;
+define->Td = copy->Td;
+define->device = "SiPM-matrix";
+define->fast_t_center = copy->fast_t_center;
+define->fast_t = copy->fast_t;
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = PAIR(35.0, 52.0);
+define->long_fit_t = PAIR(0, 0);
+define->baseline_bound = PAIR(1e-6, 2e-4);
+define->slow_ampl_bound = PAIR(1e-3, 1);
+define->slow_tau_bound = PAIR(3, 10);
+define->long_ampl_bound = PAIR(3e-4, 1e-1);
+define->long_tau_bound = PAIR(30, 200);
+define->simultaneous_fit = false;
+define->do_fit = do_fit && fit_bad_forms;
+define->fit_option = def_fit_option;
+
+	pulse_shape PMT4_20kV_trigger_01;
+	define = &PMT4_20kV_trigger_01;
+define->folder = std::string("190404/results_v5/Cd_46V_20kV_850V/iteration_06_Nb300_dt0.1/") +
+		(Cd_peak ? "forms_Cd_peak/" : "forms_Cd_left/");
+if(PMT_used&0x1) define->fnames.push_back(define->folder + (fast_PMTs ? "8_form_by_Npe.hdata" : "12_form_by_Npe.hdata"));
+if(PMT_used&0x2) define->fnames.push_back(define->folder + (fast_PMTs ? "9_form_by_Npe.hdata" : "13_form_by_Npe.hdata"));
+if(PMT_used&0x4) define->fnames.push_back(define->folder + (fast_PMTs ? "10_form_by_Npe.hdata" : "14_form_by_Npe.hdata"));
+if(PMT_used&0x8) define->fnames.push_back(define->folder + (fast_PMTs ? "11_form_by_Npe.hdata" : "15_form_by_Npe.hdata"));
+define->folder = "";
 define->Td = "8.5";
 if(PMT_used == (0x1|0x2|0x4|0x8))
-	define->device = "4PMT ";
+	define->device = "4PMT Nb300 dt0.1 ";
 else
 	define->device = std::string("PMT#") + (PMT_used&0x1 ? "1,":"") + (PMT_used&0x2 ? "2,":"") + (PMT_used&0x4 ? "3,":"") + (PMT_used&0x8 ? "4,":"");
 define->device.pop_back();
 if (!fast_PMTs) define->device += " (slow)";
-define->fast_t_center = 28.7;
-define->fast_t = PAIR(23, 30.2);
-define->S1_t_center = 0;
-define->S1_t = PAIR(0, 0);
-define->scale = 1;
-define->subtract_baseline = subtact_baseline;
-define->renormalize = true;
-define->slow_fit_t = PAIR(33.1, 159);
-define->long_fit_t = PAIR(33.1, 159);
-define->baseline_bound = PAIR(1e-6, 2e-4);
-define->slow_ampl_bound = PAIR(1e-3, 1);
-define->slow_tau_bound = PAIR(2.5, 10);
-define->long_ampl_bound = PAIR(1e-4, 0.1);
-define->long_tau_bound = PAIR(20, 200);
-define->simultaneous_fit = true;
-define->do_fit = do_fit;
-define->fit_option = def_fit_option;
-
-	pulse_shape PMT4_18kV_no_trigger;
-	define = &PMT4_18kV_no_trigger;
-	copy = &PMT4_20kV_no_trigger;
-define->folder = std::string("201015/results_v5/Pu_46V_18kV_850V/") + (Cd_peak ? "forms_Alpha_peak/" : "forms_Alpha_left/");
-define->fnames = copy->fnames;
-define->Td = "7.6";
-define->device = copy->device;
-define->fast_t_center = 28.7;
-define->fast_t = PAIR(23, 30.4);
-define->S1_t_center = 0;
-define->S1_t = PAIR(0, 0);
-define->scale = 1;
-define->subtract_baseline = subtact_baseline;
-define->renormalize = true;
-define->slow_fit_t = PAIR(33.1, 159);
-define->long_fit_t = PAIR(33.1, 159);
-define->baseline_bound = PAIR(1e-6, 2e-4);
-define->slow_ampl_bound = PAIR(1e-3, 1);
-define->slow_tau_bound = PAIR(2.5, 10);
-define->long_ampl_bound = PAIR(1e-4, 0.1);
-define->long_tau_bound = PAIR(20, 200);
-define->simultaneous_fit = true;
-define->do_fit = do_fit;
-define->fit_option = def_fit_option;
-
-	pulse_shape PMT4_16kV_no_trigger;
-	define = &PMT4_16kV_no_trigger;
-	copy = &PMT4_20kV_no_trigger;
-define->folder = std::string("201015/results_v5/Pu_46V_16kV_850V/") + (Cd_peak ? "forms_Alpha_peak/" : "forms_Alpha_left/");
-define->fnames = copy->fnames;
-define->Td = "6.8";
-define->device = copy->device;
-define->fast_t_center = 28.7;
-define->fast_t = PAIR(23, 30.4);
-define->S1_t_center = 0;
-define->S1_t = PAIR(0, 0);
-define->scale = 1;
-define->subtract_baseline = subtact_baseline;
-define->renormalize = true;
-define->slow_fit_t = PAIR(33.3, 159);
-define->long_fit_t = PAIR(33.3, 159);
-define->baseline_bound = PAIR(1e-6, 2e-4);
-define->slow_ampl_bound = PAIR(1e-3, 1);
-define->slow_tau_bound = PAIR(2.5, 10);
-define->long_ampl_bound = PAIR(1e-4, 0.009);
-define->long_tau_bound = PAIR(20, 200);
-define->simultaneous_fit = true;
-define->do_fit = do_fit;
-define->fit_option = def_fit_option;
-
-	pulse_shape PMT4_14kV_no_trigger;
-	define = &PMT4_14kV_no_trigger;
-	copy = &PMT4_20kV_no_trigger;
-define->folder = std::string("201015/results_v5/Pu_46V_14kV_850V/") + (Cd_peak ? "forms_Alpha_peak/" : "forms_Alpha_left/");
-define->fnames = copy->fnames;
-define->Td = "5.9";
-define->device = copy->device;
-define->fast_t_center = 28.7;
-define->fast_t = PAIR(23, 30.8);
-define->S1_t_center = 0;
-define->S1_t = PAIR(0, 0);
-define->scale = 1;
-define->subtract_baseline = subtact_baseline;
-define->renormalize = true;
-define->slow_fit_t = PAIR(33.5, 159);
-define->long_fit_t = PAIR(33.5, 159);
-define->baseline_bound = PAIR(1e-6, 1e-4);
-define->slow_ampl_bound = PAIR(1e-3, 1);
-define->slow_tau_bound = PAIR(2.5, 10);
-define->long_ampl_bound = PAIR(1e-4, 0.1);
-define->long_tau_bound = PAIR(20, 200);
-define->simultaneous_fit = true;
-define->do_fit = do_fit;
-define->fit_option = def_fit_option;
-
-	pulse_shape PMT4_12kV_no_trigger;
-	define = &PMT4_12kV_no_trigger;
-	copy = &PMT4_20kV_no_trigger;
-define->folder = std::string("201015/results_v5/Pu_46V_12kV_850V/") + (Cd_peak ? "forms_Alpha_peak/" : "forms_Alpha_left/");
-define->fnames = copy->fnames;
-define->Td = "5.1";
-define->device = copy->device;
-define->fast_t_center = 28.7;
-define->fast_t = PAIR(23, 31.2);
-define->S1_t_center = 0;
-define->S1_t = PAIR(0, 0);
-define->scale = 1;
-define->subtract_baseline = subtact_baseline;
-define->renormalize = true;
-define->slow_fit_t = PAIR(33.5, 159);
-define->long_fit_t = PAIR(33.5, 159);
-define->baseline_bound = PAIR(1e-6, 3e-5);
-define->slow_ampl_bound = PAIR(1e-3, 1);
-define->slow_tau_bound = PAIR(2.5, 10);
-define->long_ampl_bound = PAIR(1e-4, 0.004);
-define->long_tau_bound = PAIR(20, 200);
-define->simultaneous_fit = true;
-define->do_fit = do_fit;
-define->fit_option = def_fit_option;
-
-	pulse_shape PMT4_10kV_no_trigger;
-	define = &PMT4_10kV_no_trigger;
-	copy = &PMT4_20kV_no_trigger;
-define->folder = std::string("201015/results_v5/Pu_46V_10kV_850V/") + (Cd_peak ? "forms_Alpha_peak/" : "forms_Alpha_left/");
-define->fnames = copy->fnames;
-define->Td = "4.2";
-define->device = copy->device;
 define->fast_t_center = 28.6;
-define->fast_t = PAIR(23, 31.9);
+define->fast_t = PAIR(25, 30.4);
 define->S1_t_center = 0;
 define->S1_t = PAIR(0, 0);
 define->scale = 1;
 define->subtract_baseline = subtact_baseline;
 define->renormalize = true;
-define->slow_fit_t = PAIR(32.8, 47);
-define->long_fit_t = PAIR(0, 0);
+define->slow_fit_t = PAIR(31.9, 159);
+define->long_fit_t = PAIR(31.9, 159);
 define->baseline_bound = PAIR(1e-6, 2e-4);
 define->slow_ampl_bound = PAIR(1e-3, 1);
 define->slow_tau_bound = PAIR(2.5, 10);
-define->long_ampl_bound = PAIR(1e-4, 0.1);
-define->long_tau_bound = PAIR(20, 200);
+define->long_ampl_bound = PAIR(3e-4, 0.007);
+define->long_tau_bound = PAIR(60, 200);
 define->simultaneous_fit = true;
 define->do_fit = do_fit;
 define->fit_option = def_fit_option;
 
-	pulse_shape PMT4_20kV_no_trigger_v2;
-	define = &PMT4_20kV_no_trigger_v2;
-	copy = &PMT4_20kV_no_trigger;
-*define = *copy;
-define->slow_fit_t = PAIR(33.4, 45.8);
-define->long_fit_t = PAIR(74, 159);
-define->baseline_bound = PAIR(1e-6, 6e-3);
-define->long_baseline_bound = PAIR(1e-6, 2e-4);
-define->slow_ampl_bound = PAIR(1e-3, 1);
-define->slow_tau_bound = PAIR(2.5, 10);
-define->long_ampl_bound = PAIR(1e-4, 0.1);
-define->long_tau_bound = PAIR(20, 200);
-define->simultaneous_fit = false;
-
-	pulse_shape PMT4_18kV_no_trigger_v2;
-	define = &PMT4_18kV_no_trigger_v2;
-	copy = &PMT4_18kV_no_trigger;
-*define = *copy;
-define->slow_fit_t = PAIR(33.3, 45.0);
-define->long_fit_t = PAIR(74, 156);
-define->baseline_bound = PAIR(1e-6, 4.5e-3);
-define->long_baseline_bound = PAIR(1e-6, 2e-4);
-define->slow_ampl_bound = PAIR(1e-3, 0.085);
-define->slow_tau_bound = PAIR(2.5, 10);
-define->long_ampl_bound = PAIR(1e-4, 0.1);
-define->long_tau_bound = PAIR(20, 200);
-define->simultaneous_fit = false;
-
-	pulse_shape PMT4_16kV_no_trigger_v2;
-	define = &PMT4_16kV_no_trigger_v2;
-	copy = &PMT4_16kV_no_trigger;
-*define = *copy;
-define->slow_fit_t = PAIR(33.7, 42.5);
-define->long_fit_t = PAIR(70, 156);
-define->baseline_bound = PAIR(1e-6, 3e-3);
-define->long_baseline_bound = PAIR(1e-6, 2e-4);
-define->slow_ampl_bound = PAIR(1e-3, 1);
-define->slow_tau_bound = PAIR(2.5, 10);
-define->long_ampl_bound = PAIR(1e-4, 0.1);
-define->long_tau_bound = PAIR(20, 200);
-define->simultaneous_fit = false;
-
-	pulse_shape PMT4_14kV_no_trigger_v2;
-	define = &PMT4_14kV_no_trigger_v2;
-	copy = &PMT4_14kV_no_trigger;
-*define = *copy;
-define->slow_fit_t = PAIR(34.5, 45.0);
-define->long_fit_t = PAIR(70, 156);
-define->baseline_bound = PAIR(1e-6, 1.5e-3);
-define->long_baseline_bound = PAIR(1e-6, 2e-4);
-define->slow_ampl_bound = PAIR(1e-3, 0.035);
-define->slow_tau_bound = PAIR(2.5, 10);
-define->long_ampl_bound = PAIR(1e-4, 0.1);
-define->long_tau_bound = PAIR(20, 200);
-define->simultaneous_fit = false;
-
-	pulse_shape PMT4_12kV_no_trigger_v2;
-	define = &PMT4_12kV_no_trigger_v2;
-	copy = &PMT4_12kV_no_trigger;
-*define = *copy;
-define->slow_fit_t = PAIR(33.0, 45.5);
-define->long_fit_t = PAIR(54, 156);
-define->baseline_bound = PAIR(1e-6, 7e-4);
-define->long_baseline_bound = PAIR(1e-6, 6e-5);
-define->slow_ampl_bound = PAIR(1e-3, 0.025);
-define->slow_tau_bound = PAIR(2.5, 10);
-define->long_ampl_bound = PAIR(1e-4, 0.1);
-define->long_tau_bound = PAIR(20, 200);
-define->simultaneous_fit = false;
-
-	pulse_shape PMT4_10kV_no_trigger_v2;
-	define = &PMT4_10kV_no_trigger_v2;
-	copy = &PMT4_10kV_no_trigger;
-*define = *copy;
-define->slow_fit_t = PAIR(33.6, 46.0);
-define->long_fit_t = PAIR(0, 0);
+pulse_shape PMT4_20kV_trigger_02;
+define = &PMT4_20kV_trigger_02;
+define->folder = std::string("190404/results_v5/Cd_46V_20kV_850V/iteration_06_Nb300_dt0.2/") +
+	(Cd_peak ? "forms_Cd_peak/" : "forms_Cd_left/");
+if(PMT_used&0x1) define->fnames.push_back(define->folder + (fast_PMTs ? "8_form_by_Npe.hdata" : "12_form_by_Npe.hdata"));
+if(PMT_used&0x2) define->fnames.push_back(define->folder + (fast_PMTs ? "9_form_by_Npe.hdata" : "13_form_by_Npe.hdata"));
+if(PMT_used&0x4) define->fnames.push_back(define->folder + (fast_PMTs ? "10_form_by_Npe.hdata" : "14_form_by_Npe.hdata"));
+if(PMT_used&0x8) define->fnames.push_back(define->folder + (fast_PMTs ? "11_form_by_Npe.hdata" : "15_form_by_Npe.hdata"));
+define->folder = "";
+define->Td = "8.5";
+if(PMT_used == (0x1|0x2|0x4|0x8))
+define->device = "4PMT Nb300 dt0.2 ";
+else
+define->device = std::string("PMT#") + (PMT_used&0x1 ? "1,":"") + (PMT_used&0x2 ? "2,":"") + (PMT_used&0x4 ? "3,":"") + (PMT_used&0x8 ? "4,":"");
+define->device.pop_back();
+if (!fast_PMTs) define->device += " (slow)";
+define->fast_t_center = 28.6;
+define->fast_t = PAIR(25, 30.4);
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = PAIR(31.9, 159);
+define->long_fit_t = PAIR(31.9, 159);
 define->baseline_bound = PAIR(1e-6, 2e-4);
-define->long_baseline_bound = PAIR(1e-6, 6e-5);
-define->slow_ampl_bound = PAIR(1e-3, 0.007);
+define->slow_ampl_bound = PAIR(1e-3, 1);
 define->slow_tau_bound = PAIR(2.5, 10);
-define->long_ampl_bound = PAIR(1e-4, 0.1);
-define->long_tau_bound = PAIR(20, 200);
-define->simultaneous_fit = false;
+define->long_ampl_bound = PAIR(3e-4, 0.007);
+define->long_tau_bound = PAIR(60, 200);
+define->simultaneous_fit = true;
+define->do_fit = do_fit;
+define->fit_option = def_fit_option;
 
-	std::string folder = PMTs ? std::string("201015/results_v5/PMTs/")
-					: std::string("201015/results_v5/SiPMs/");
+pulse_shape PMT4_20kV_trigger_03;
+define = &PMT4_20kV_trigger_03;
+define->folder = std::string("190404/results_v5/Cd_46V_20kV_850V/iteration_06_Nb600_dt0.1/") +
+	(Cd_peak ? "forms_Cd_peak/" : "forms_Cd_left/");
+if(PMT_used&0x1) define->fnames.push_back(define->folder + (fast_PMTs ? "8_form_by_Npe.hdata" : "12_form_by_Npe.hdata"));
+if(PMT_used&0x2) define->fnames.push_back(define->folder + (fast_PMTs ? "9_form_by_Npe.hdata" : "13_form_by_Npe.hdata"));
+if(PMT_used&0x4) define->fnames.push_back(define->folder + (fast_PMTs ? "10_form_by_Npe.hdata" : "14_form_by_Npe.hdata"));
+if(PMT_used&0x8) define->fnames.push_back(define->folder + (fast_PMTs ? "11_form_by_Npe.hdata" : "15_form_by_Npe.hdata"));
+define->folder = "";
+define->Td = "8.5";
+if(PMT_used == (0x1|0x2|0x4|0x8))
+define->device = "4PMT Nb600 dt0.1 ";
+else
+define->device = std::string("PMT#") + (PMT_used&0x1 ? "1,":"") + (PMT_used&0x2 ? "2,":"") + (PMT_used&0x4 ? "3,":"") + (PMT_used&0x8 ? "4,":"");
+define->device.pop_back();
+if (!fast_PMTs) define->device += " (slow)";
+define->fast_t_center = 28.6;
+define->fast_t = PAIR(25, 30.4);
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = PAIR(31.9, 159);
+define->long_fit_t = PAIR(31.9, 159);
+define->baseline_bound = PAIR(1e-6, 2e-4);
+define->slow_ampl_bound = PAIR(1e-3, 1);
+define->slow_tau_bound = PAIR(2.5, 10);
+define->long_ampl_bound = PAIR(3e-4, 0.007);
+define->long_tau_bound = PAIR(60, 200);
+define->simultaneous_fit = true;
+define->do_fit = do_fit;
+define->fit_option = def_fit_option;
+
+pulse_shape PMT4_20kV_trigger_04;
+define = &PMT4_20kV_trigger_04;
+define->folder = std::string("190404/results_v5/Cd_46V_20kV_850V/iteration_06_Nb600_dt0.2/") +
+	(Cd_peak ? "forms_Cd_peak/" : "forms_Cd_left/");
+if(PMT_used&0x1) define->fnames.push_back(define->folder + (fast_PMTs ? "8_form_by_Npe.hdata" : "12_form_by_Npe.hdata"));
+if(PMT_used&0x2) define->fnames.push_back(define->folder + (fast_PMTs ? "9_form_by_Npe.hdata" : "13_form_by_Npe.hdata"));
+if(PMT_used&0x4) define->fnames.push_back(define->folder + (fast_PMTs ? "10_form_by_Npe.hdata" : "14_form_by_Npe.hdata"));
+if(PMT_used&0x8) define->fnames.push_back(define->folder + (fast_PMTs ? "11_form_by_Npe.hdata" : "15_form_by_Npe.hdata"));
+define->folder = "";
+define->Td = "8.5";
+if(PMT_used == (0x1|0x2|0x4|0x8))
+define->device = "4PMT Nb600 dt0.2 ";
+else
+define->device = std::string("PMT#") + (PMT_used&0x1 ? "1,":"") + (PMT_used&0x2 ? "2,":"") + (PMT_used&0x4 ? "3,":"") + (PMT_used&0x8 ? "4,":"");
+define->device.pop_back();
+if (!fast_PMTs) define->device += " (slow)";
+define->fast_t_center = 28.6;
+define->fast_t = PAIR(25, 30.4);
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = PAIR(31.9, 159);
+define->long_fit_t = PAIR(31.9, 159);
+define->baseline_bound = PAIR(1e-6, 2e-4);
+define->slow_ampl_bound = PAIR(1e-3, 1);
+define->slow_tau_bound = PAIR(2.5, 10);
+define->long_ampl_bound = PAIR(3e-4, 0.007);
+define->long_tau_bound = PAIR(60, 200);
+define->simultaneous_fit = true;
+define->do_fit = do_fit;
+define->fit_option = def_fit_option;
+
+pulse_shape PMT4_20kV_trigger_05;
+define = &PMT4_20kV_trigger_05;
+define->folder = std::string("190404/results_v5/Cd_46V_20kV_850V/iteration_06_Nb1600_dt0.1/") +
+	(Cd_peak ? "forms_Cd_peak/" : "forms_Cd_left/");
+if(PMT_used&0x1) define->fnames.push_back(define->folder + (fast_PMTs ? "8_form_by_Npe.hdata" : "12_form_by_Npe.hdata"));
+if(PMT_used&0x2) define->fnames.push_back(define->folder + (fast_PMTs ? "9_form_by_Npe.hdata" : "13_form_by_Npe.hdata"));
+if(PMT_used&0x4) define->fnames.push_back(define->folder + (fast_PMTs ? "10_form_by_Npe.hdata" : "14_form_by_Npe.hdata"));
+if(PMT_used&0x8) define->fnames.push_back(define->folder + (fast_PMTs ? "11_form_by_Npe.hdata" : "15_form_by_Npe.hdata"));
+define->folder = "";
+define->Td = "8.5";
+if(PMT_used == (0x1|0x2|0x4|0x8))
+define->device = "4PMT Nb1600 dt0.1 ";
+else
+define->device = std::string("PMT#") + (PMT_used&0x1 ? "1,":"") + (PMT_used&0x2 ? "2,":"") + (PMT_used&0x4 ? "3,":"") + (PMT_used&0x8 ? "4,":"");
+define->device.pop_back();
+if (!fast_PMTs) define->device += " (slow)";
+define->fast_t_center = 28.6;
+define->fast_t = PAIR(25, 30.4);
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = PAIR(31.9, 159);
+define->long_fit_t = PAIR(31.9, 159);
+define->baseline_bound = PAIR(1e-6, 2e-4);
+define->slow_ampl_bound = PAIR(1e-3, 1);
+define->slow_tau_bound = PAIR(2.5, 10);
+define->long_ampl_bound = PAIR(3e-4, 0.007);
+define->long_tau_bound = PAIR(60, 200);
+define->simultaneous_fit = true;
+define->do_fit = do_fit;
+define->fit_option = def_fit_option;
+
+pulse_shape PMT4_20kV_trigger_06;
+define = &PMT4_20kV_trigger_06;
+define->folder = std::string("190404/results_v5/Cd_46V_20kV_850V/iteration_06_Nb1600_dt0.2/") +
+	(Cd_peak ? "forms_Cd_peak/" : "forms_Cd_left/");
+if(PMT_used&0x1) define->fnames.push_back(define->folder + (fast_PMTs ? "8_form_by_Npe.hdata" : "12_form_by_Npe.hdata"));
+if(PMT_used&0x2) define->fnames.push_back(define->folder + (fast_PMTs ? "9_form_by_Npe.hdata" : "13_form_by_Npe.hdata"));
+if(PMT_used&0x4) define->fnames.push_back(define->folder + (fast_PMTs ? "10_form_by_Npe.hdata" : "14_form_by_Npe.hdata"));
+if(PMT_used&0x8) define->fnames.push_back(define->folder + (fast_PMTs ? "11_form_by_Npe.hdata" : "15_form_by_Npe.hdata"));
+define->folder = "";
+define->Td = "8.5";
+if(PMT_used == (0x1|0x2|0x4|0x8))
+define->device = "4PMT Nb1600 dt0.2 ";
+else
+define->device = std::string("PMT#") + (PMT_used&0x1 ? "1,":"") + (PMT_used&0x2 ? "2,":"") + (PMT_used&0x4 ? "3,":"") + (PMT_used&0x8 ? "4,":"");
+define->device.pop_back();
+if (!fast_PMTs) define->device += " (slow)";
+define->fast_t_center = 28.6;
+define->fast_t = PAIR(25, 30.4);
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = PAIR(31.9, 159);
+define->long_fit_t = PAIR(31.9, 159);
+define->baseline_bound = PAIR(1e-6, 2e-4);
+define->slow_ampl_bound = PAIR(1e-3, 1);
+define->slow_tau_bound = PAIR(2.5, 10);
+define->long_ampl_bound = PAIR(3e-4, 0.007);
+define->long_tau_bound = PAIR(60, 200);
+define->simultaneous_fit = true;
+define->do_fit = do_fit;
+define->fit_option = def_fit_option;
+
+pulse_shape PMT4_20kV_trigger_07;
+define = &PMT4_20kV_trigger_07;
+define->folder = std::string("190404/results_v5/Cd_46V_20kV_850V/iteration_06_Nb1600_dt0.4/") +
+	(Cd_peak ? "forms_Cd_peak/" : "forms_Cd_left/");
+if(PMT_used&0x1) define->fnames.push_back(define->folder + (fast_PMTs ? "8_form_by_Npe.hdata" : "12_form_by_Npe.hdata"));
+if(PMT_used&0x2) define->fnames.push_back(define->folder + (fast_PMTs ? "9_form_by_Npe.hdata" : "13_form_by_Npe.hdata"));
+if(PMT_used&0x4) define->fnames.push_back(define->folder + (fast_PMTs ? "10_form_by_Npe.hdata" : "14_form_by_Npe.hdata"));
+if(PMT_used&0x8) define->fnames.push_back(define->folder + (fast_PMTs ? "11_form_by_Npe.hdata" : "15_form_by_Npe.hdata"));
+define->folder = "";
+define->Td = "8.5";
+if(PMT_used == (0x1|0x2|0x4|0x8))
+define->device = "4PMT Nb1600 dt0.4 ";
+else
+define->device = std::string("PMT#") + (PMT_used&0x1 ? "1,":"") + (PMT_used&0x2 ? "2,":"") + (PMT_used&0x4 ? "3,":"") + (PMT_used&0x8 ? "4,":"");
+define->device.pop_back();
+if (!fast_PMTs) define->device += " (slow)";
+define->fast_t_center = 28.6;
+define->fast_t = PAIR(25, 30.4);
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtact_baseline;
+define->renormalize = true;
+define->slow_fit_t = PAIR(31.9, 159);
+define->long_fit_t = PAIR(31.9, 159);
+define->baseline_bound = PAIR(1e-6, 2e-4);
+define->slow_ampl_bound = PAIR(1e-3, 1);
+define->slow_tau_bound = PAIR(2.5, 10);
+define->long_ampl_bound = PAIR(3e-4, 0.007);
+define->long_tau_bound = PAIR(60, 200);
+define->simultaneous_fit = true;
+define->do_fit = do_fit;
+define->fit_option = def_fit_option;
+
+	std::string folder = PMTs ? std::string("190404/results_v5/PMTs/")
+					: std::string("190404/results_v5/SiPMs/");
 #ifdef FAST_FIGURES_MODE
 	std::vector<pulse_shape> pulses;
 	if (PMTs) {
 		if (in_kV == "20")
-			pulses.push_back((combined ? PMT4_20kV_no_trigger :  PMT4_20kV_no_trigger_v2));
+			pulses.push_back((combined ? PMT4_20kV_trigger_01 :  PMT4_20kV_trigger_01));
 	} else {
 		if (in_kV == "20")
-			pulses.push_back((combined ? SiPM_20kV_no_trigger :  SiPM_20kV_no_trigger_v2));
+			pulses.push_back((combined ? SiPM_20kV_no_trigger :  SiPM_20kV_no_trigger));
 	}
 #else //FAST_FIGURES_MODE
-
-	//std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger, SiPM_18kV_no_trigger, SiPM_16kV_no_trigger, SiPM_14kV_no_trigger, SiPM_12kV_no_trigger, SiPM_10kV_no_trigger};
-	//std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger_v2, SiPM_18kV_no_trigger_v2, SiPM_16kV_no_trigger_v2, SiPM_14kV_no_trigger_v2, SiPM_12kV_no_trigger_v2, SiPM_10kV_no_trigger_v2};
-	std::vector<pulse_shape> pulses = {PMT4_20kV_no_trigger, PMT4_18kV_no_trigger, PMT4_16kV_no_trigger, PMT4_14kV_no_trigger, PMT4_12kV_no_trigger, PMT4_10kV_no_trigger};
-	//std::vector<pulse_shape> pulses = {PMT4_20kV_no_trigger_v2, PMT4_18kV_no_trigger_v2, PMT4_16kV_no_trigger_v2, PMT4_14kV_no_trigger_v2, PMT4_12kV_no_trigger_v2, PMT4_10kV_no_trigger_v2};
+	//std::vector<pulse_shape> pulses = {PMT4_20kV_trigger_01, PMT4_20kV_trigger_02, PMT4_20kV_trigger_03, PMT4_20kV_trigger_04, PMT4_20kV_trigger_05, PMT4_20kV_trigger_06};
+	std::vector<pulse_shape> pulses = {PMT4_20kV_trigger_03, PMT4_20kV_trigger_04, PMT4_20kV_trigger_05, PMT4_20kV_trigger_06, PMT4_20kV_trigger_07};
 
 #endif //FAST_FIGURES_MODE
 
@@ -812,9 +1328,9 @@ define->simultaneous_fit = false;
 	//adsf - for fast Crtl + F
 	std::string framename;
 	if (PMTs)
-		framename = std::string("Results for 4PMT (no WLS), ")+(Cd_peak ? "" : "< ")+"5.6 MeV #alpha ^{238}Pu";
+		framename = std::string("Results for 4PMT (no WLS), ")+(Cd_peak ? "" : "< ")+"82 keV #gamma ^{109}Cd" + (Cd_peak_v2 ? " v2 cut": "");// + " " + Tds[0] + " Td";
 	else
-		framename = std::string("Results for SiPM-matrix (no WLS), ")+(Cd_peak ? "" : "< ")+"5.6 MeV #alpha ^{238}Pu";
+		framename = std::string("Results for SiPM-matrix (no WLS), ")+(Cd_peak ? "" : "< ")+"82 keV #gamma ^{109}Cd" + (Cd_peak_v2 ? " v2 cut": "");// + " " + Tds[0] + " Td";
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {
 		std::string hist_name = "hist" + std::to_string(hh);
 		pulses[hh].hist = new TH1D (hist_name.c_str(), hist_name.c_str(), Nbins, time_left, time_right);
@@ -1094,7 +1610,7 @@ define->simultaneous_fit = false;
 	if (!linear) {
 		std::vector<std::string> no_title;
 		std::vector<std::string> Slow_title = {"Contribution:", "Slow"};
-		std::vector<std::string> Long_title = {"","Long"};
+		std::vector<std::string> Long_title = {"Long"};
 		if (print_errors) {
 			//zcxv
 			add_text(46, 0.02, no_title, tau1, palette_major);

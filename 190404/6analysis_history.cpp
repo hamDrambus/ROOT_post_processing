@@ -1291,7 +1291,7 @@ ty(AStates::Correlation);
 	unset_as_run_cut("En_spec");
 	cuts.pop_back();
 
-form_n = "strange_events/";
+form_n = Num + "_strange_events/";
 ty(AStates::Correlation);
 	if (exp == "190404_Cd_20kV_850V_48V_th230mV")
 		x_y_regions = {61.0, 11.9, 39.0, 11.9, 61.0, 41.7};

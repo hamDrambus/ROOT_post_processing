@@ -2948,20 +2948,16 @@ namespace SignalOperations {
 		//enum TriggerType : int {tbNpeaks = 0, tbNpe = 1, tbS = 2}; //tb = trigger by
 		double ret = 0.0, ret2 = 0.0;
 		double length = pulse_shape.getX(pulse_shape.size()-1) - pulse_shape.getX(0);
-		double max_prob = -DBL_MAX;
-		for (std::size_t i = 0, i_end_ = pulse_shape.size(); i!=i_end_; ++i)
-			max_prob = std::max(max_prob, pulse_shape.getY(i));
-		if (max_prob <= 0 || DBL_MAX==max_prob)
-			max_prob = 1/length;
 		for (auto pk = peaks.begin(), pk_end_ = peaks.end(); pk!=pk_end_; ++pk) {
 			if (trigger_type == 2 && pk->S<=0)
 				continue;
 			if (trigger_type == 1 && pk->Npe<=0)
 				continue;
 			double res = pulse_shape(pk->t - offset);
-			double res2 = std::log(max_prob);
+			double res2 = std::log(1.0/length);
 			if (res <= 0 || DBL_MAX == res)
 				continue;
+			res = std::log(res);
 			if (trigger_type == 2) {
 				res *= pk->S;
 				res2 *= pk->S;
