@@ -2000,6 +2000,7 @@ FunctionWrapper* create_x_y_polygon_cut(std::vector<double> region, unsigned int
 	struct temp_data {
 		std::vector<double> reg_x, reg_y;
 		bool select;
+		int ch_size;
 	};
 	std::size_t size = region.size();
 	temp_data * st_data = new temp_data;
@@ -2009,14 +2010,25 @@ FunctionWrapper* create_x_y_polygon_cut(std::vector<double> region, unsigned int
 			st_data->reg_y.push_back(region[i]);
 		else
 			st_data->reg_x.push_back(region[i]);
+	st_data->ch_size = post_processor->isPMTtype(post_processor->current_type) ? post_processor->PMT_channels.size() : post_processor->MPPC_channels.size();
+	//return ((vals[((temp_data*)data)->ch_size] <= ((temp_data*)data)->mm.second) && (vals[((temp_data*)data)->ch_size] >= ((temp_data*)data)->mm.first));
 	FunctionWrapper *picker = new FunctionWrapper(st_data);
-	picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
-		temp_data* d = ((temp_data*)data);
-		bool edge = false;
-		bool inside = viewRegion::IsInPolygon(vals[0], vals[1], d->reg_x, d->reg_y, edge);
-		return d->select ? inside : !inside;
-	});
-
+	if (AStates::MPPC_coord == type) {
+		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
+			temp_data* d = ((temp_data*)data);
+			bool edge = false;
+			int ch_sz = ((temp_data*)data)->ch_size;
+			bool inside = viewRegion::IsInPolygon(vals[ch_sz], vals[ch_sz+1], d->reg_x, d->reg_y, edge);
+			return d->select ? inside : !inside;
+		});
+	} else {
+		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
+			temp_data* d = ((temp_data*)data);
+			bool edge = false;
+			bool inside = viewRegion::IsInPolygon(vals[0], vals[1], d->reg_x, d->reg_y, edge);
+			return d->select ? inside : !inside;
+		});
+	}
 	picker->SetDrawFunction([](TCanvas *can, void* data) {
 		if (NULL == can || NULL == data)
 			return false;

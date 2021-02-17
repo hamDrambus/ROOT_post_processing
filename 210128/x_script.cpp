@@ -58,7 +58,7 @@ if (false) {
 if (true) {
 	bool calibrate = false;
 	unsigned int method = 0;
-	/*analysis_history(calibrate, method); //19
+	analysis_history(calibrate, method); //19
 	nex();
 	analysis_history(calibrate, method); //18
 	nex();
@@ -67,7 +67,7 @@ if (true) {
 	analysis_history(calibrate, method); //14
 	nex();
 	analysis_history(calibrate, method); //13
-	nex();*/
+	nex();
 	analysis_history(calibrate, method); //12
 	nex();
 	analysis_history(calibrate, method); //11

@@ -4,7 +4,7 @@
 //Use compare_form for slow component and ncompare_form for long one
 #define PAIR std::pair<double, double>
 
-//When on, ncompare_forms is called with parameters to analyze pulse-shape and save it
+//When on, compare_forms is called with parameters to analyze pulse-shape and save it
 //to specified location automatically.
 //#define FAST_FIGURES_MODE
 

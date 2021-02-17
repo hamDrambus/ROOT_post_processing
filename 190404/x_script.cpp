@@ -25,9 +25,9 @@ if (false) {
 		nex();
 	}
 }
-if (false) {
+if (true) {
 	bool calibrate = false;
-	unsigned int method = 1;
+	unsigned int method = 0;
 	analysis_history(calibrate, method); //20, 46V
 	nex();
 	analysis_history(calibrate, method); //20
@@ -59,8 +59,8 @@ if (false) {
 	analysis_history(calibrate, method);	//8
 	nex();
 }
-if (true) { //to study cuts on 4PMT Npe t=[23, 40] vs t=[23, 160]
-	//setups are for 20kV, 6analysis_states.cpp (launch analysis_states(0, 0) with 'return;' after correlation setup before this code)
+if (false) { //to study cuts on 4PMT Npe t=[23, 40] vs t=[23, 160]
+	//setups are for 20kV, 6analysis_states.cpp (launch analysis_states(0, 0) with 'return;' after correlation setup there before running this code)
 	std::string exp = post_processor->experiments[post_processor->current_exp_index];
 	int first_run;
 	auto first_run_entry = experiment_runs.find(exp);

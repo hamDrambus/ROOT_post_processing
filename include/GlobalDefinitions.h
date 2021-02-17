@@ -64,7 +64,7 @@
 //#define _COMPLIE_MAIN_
 
 #define PEAK_AVR_TIME
-//#define WEIGHTED_COORD
+#define WEIGHTED_COORD
 
 //#define STD_CONT std::deque
 
