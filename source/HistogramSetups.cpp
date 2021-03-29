@@ -13,7 +13,7 @@ HistogramSetups::HistogramSetups(const std::deque<int>& channels) :
 	x_mean(boost::none), y_mean(boost::none), x_drawn_mean(boost::none),
 	y_drawn_mean(boost::none), x_variance(boost::none), x_drawn_variance(boost::none),
 	y_variance(boost::none), y_drawn_variance(boost::none), is_valid_fit_function(false),
-	use_default_setups(true), N_bins(0), N_gauss(0), use_fit(false), extra_data(NULL),
+	use_default_setups(true), N_bins(0), N_bins_y(0),  N_gauss(0), use_fit(false), extra_data(NULL),
 	logscale_x(false), logscale_y(false), logscale_z(false)
 {
 	for (std::size_t ind = 0, ind_end_ = channels.size(); ind != ind_end_; ++ind)
@@ -25,6 +25,7 @@ HistogramSetups::HistogramSetups(const HistogramSetups& setups)
 	hist_cuts = setups.hist_cuts;
 	active_channels = setups.active_channels;
 	N_bins = setups.N_bins;
+	N_bins_y = setups.N_bins_y;
 	x_zoom = setups.x_zoom;
 	y_zoom = setups.y_zoom;
 	is_zoomed = setups.is_zoomed;

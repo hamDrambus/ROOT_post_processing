@@ -290,7 +290,7 @@ int ycompare_forms (void) {
 	bool Cd_peak = true;
 	int Nbins = 300;
 	bool linear = 0;
-	bool PMTs = true;
+	bool PMTs = false;
 	bool Cd_peak_v2 = false; //if true uses forms_Cd_peak_v2 or forms_Cd_left_v2 selection;
 	std::string type = "by_Npe";
 	//std::string type = "by_S";
@@ -305,9 +305,9 @@ int ycompare_forms (void) {
 
 	bool fast_PMTs = true;
 	unsigned int PMT_used = 0x1 | 0x2 | 0x4 | 0x8;
-	bool do_fit = false;
+	bool do_fit = true;
 	bool fit_bad_forms = true;
-	bool subtact_baseline = false;
+	bool subtact_baseline = true;
 	bool center_pulses = false;
 	bool center_at_S1 = false; //Not used
 	bool normalize_by_S1 = false; //Not used
@@ -1553,9 +1553,9 @@ define->fit_option = def_fit_option;
 	//	 	SiPM_12kV_48V_no_trigger, SiPM_10kV_48V_no_trigger, SiPM_08kV_48V_no_trigger};
 	//std::vector<pulse_shape> pulses = {SiPM_20kV_46V_no_trigger, SiPM_18kV_46V_no_trigger, SiPM_16kV_46V_no_trigger, SiPM_14kV_46V_no_trigger,
 	//		SiPM_12kV_46V_no_trigger, SiPM_10kV_46V_no_trigger, SiPM_08kV_46V_no_trigger};
-	//std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger, SiPM_18kV_no_trigger, SiPM_16kV_no_trigger, SiPM_14kV_no_trigger, SiPM_12kV_no_trigger, SiPM_10kV_no_trigger, SiPM_08kV_no_trigger};
+	std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger, SiPM_18kV_no_trigger, SiPM_16kV_no_trigger, SiPM_14kV_no_trigger, SiPM_12kV_no_trigger, SiPM_10kV_no_trigger, SiPM_08kV_no_trigger};
 	//std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger_v2, SiPM_18kV_no_trigger_v2, SiPM_16kV_no_trigger_v2, SiPM_14kV_no_trigger_v2, SiPM_12kV_no_trigger_v2, SiPM_10kV_no_trigger_v2, SiPM_08kV_no_trigger_v2};
-	std::vector<pulse_shape> pulses = {PMT4_20kV_no_trigger, PMT4_18kV_no_trigger, PMT4_16kV_no_trigger, PMT4_14kV_no_trigger, PMT4_12kV_no_trigger, PMT4_10kV_no_trigger, PMT4_08kV_no_trigger};
+	//std::vector<pulse_shape> pulses = {PMT4_20kV_no_trigger, PMT4_18kV_no_trigger, PMT4_16kV_no_trigger, PMT4_14kV_no_trigger, PMT4_12kV_no_trigger, PMT4_10kV_no_trigger, PMT4_08kV_no_trigger};
 	//std::vector<pulse_shape> pulses = {PMT4_20kV_no_trigger_v2, PMT4_18kV_no_trigger_v2, PMT4_16kV_no_trigger_v2, PMT4_14kV_no_trigger_v2, PMT4_12kV_no_trigger_v2, PMT4_10kV_no_trigger_v2, PMT4_08kV_no_trigger_v2};
 
 #endif //FAST_FIGURES_MODE
@@ -1846,7 +1846,7 @@ define->fit_option = def_fit_option;
 		else
 			frsL.push_back(pulses[hh].Fr2 + (print_errors ? "#pm" + pulses[hh].err2 : emp));
 	}
-	/*
+
 	if (!linear) {
 		std::vector<std::string> no_title;
 		std::vector<std::string> Slow_title = {"Contribution:", "Slow"};
@@ -1871,7 +1871,7 @@ define->fit_option = def_fit_option;
 		add_text(30, 0.3, Slow_title, frsS, palette_major);
 		//add_text(52, 0.08, Long_title, frsL, palette_text);
 		//add_text(58, 0.08, no_title, tau2, palette_text);
-	}*/
+	}
 
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh)
 		legend->AddEntry(pulses[hh].hist, (std::string("E/N = ") + pulses[hh].Td + " Td, " + pulses[hh].device).c_str(), "l");

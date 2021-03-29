@@ -935,6 +935,7 @@ set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	remcut(-1, "1");
 
 std::string form_n = "forms_Cd_left/";
+	ty(AStates::Correlation);
 	x_y_regions = {32.4, 6.5, 25.5, 29.1, 41.0, 41.5, 48.9, 15.3}; //ty(AStates::PMT_Npe_sum); draw_limits(29, 45);
 	cut_x_y_poly_select(x_y_regions, true, "1");
 	update();
@@ -948,6 +949,7 @@ std::string form_n = "forms_Cd_left/";
 	cuts.pop_back();
 
 form_n = "forms_Cd_peak/";
+	ty(AStates::Correlation);
 	x_y_regions = {32.4, 6.5, 25.5, 29.1, 52.6, 54.4, 64.6, 20.2}; //ty(AStates::PMT_Npe_sum); draw_limits(29, 60);
 	cut_x_y_poly_select(x_y_regions, true, "1");
 	update();
@@ -1050,6 +1052,7 @@ set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	remcut(-1, "1");
 
 std::string form_n = "forms_Cd_left/";
+	ty(AStates::Correlation);
 	x_y_regions = {25.9, 3.9, 16.7, 25.0, 29.3, 33.0, 39.0, 9.9}; //ty(AStates::PMT_Npe_sum); draw_limits(22, 33);
 	cut_x_y_poly_select(x_y_regions, true, "1");
 	update();
@@ -1063,6 +1066,7 @@ std::string form_n = "forms_Cd_left/";
 	cuts.pop_back();
 
 form_n = "forms_Cd_peak/";
+	ty(AStates::Correlation);
 	x_y_regions = {25.9, 3.9, 16.7, 25.0, 39.0, 45.7, 49.7, 19.5}; //ty(AStates::PMT_Npe_sum); draw_limits(22, 45);
 	cut_x_y_poly_select(x_y_regions, true, "1");
 	update();
@@ -1165,6 +1169,7 @@ set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	remcut(-1, "1");
 
 std::string form_n = "forms_Cd_left/";
+	ty(AStates::Correlation);
 	x_y_regions = {18.5, 2.2, 12.5, 15.9, 20.2, 25.1, 27.3, 8.9}; //ty(AStates::PMT_Npe_sum); draw_limits(16, 24);
 	cut_x_y_poly_select(x_y_regions, true, "1");
 	update();
@@ -1178,6 +1183,7 @@ std::string form_n = "forms_Cd_left/";
 	cuts.pop_back();
 
 form_n = "forms_Cd_peak/";
+	ty(AStates::Correlation);
 	x_y_regions = {18.5, 2.2, 12.5, 15.9, 29.7, 35.0, 37.6, 15.9}; //ty(AStates::PMT_Npe_sum); draw_limits(16, 34);
 	cut_x_y_poly_select(x_y_regions, true, "1");
 	update();
@@ -1280,6 +1286,7 @@ set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	remcut(-1, "1");
 
 std::string form_n = "forms_Cd_left/";
+	ty(AStates::Correlation);
 	x_y_regions = {12.6, 2.4, 8.8, 11.9, 15.4, 18.8, 20.6, 7.7}; //ty(AStates::PMT_Npe_sum); draw_limits(11, 18);
 	cut_x_y_poly_select(x_y_regions, true, "1");
 	update();
@@ -1293,6 +1300,7 @@ std::string form_n = "forms_Cd_left/";
 	cuts.pop_back();
 
 form_n = "forms_Cd_peak/";
+	ty(AStates::Correlation);
 	x_y_regions = {12.6, 2.4, 8.8, 11.9, 22.1, 27.0, 27.6, 13.8}; //ty(AStates::PMT_Npe_sum); draw_limits(11, 25);
 	cut_x_y_poly_select(x_y_regions, true, "1");
 	update();
@@ -1395,6 +1403,7 @@ set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	remcut(-1, "1");
 
 std::string form_n = "forms_Cd_left/";
+	ty(AStates::Correlation);
 	x_y_regions = {9.5, 0.8, 5.9, 9.5, 10.4, 15.4, 14.9, 3.9}; //ty(AStates::PMT_Npe_sum); draw_limits(8, 13);
 	cut_x_y_poly_select(x_y_regions, true, "1");
 	update();
@@ -1408,6 +1417,7 @@ std::string form_n = "forms_Cd_left/";
 	cuts.pop_back();
 
 form_n = "forms_Cd_peak/";
+	ty(AStates::Correlation);
 	x_y_regions = {9.5, 0.8, 5.9, 9.5, 15.4, 21.1, 20.4, 8.7}; //ty(AStates::PMT_Npe_sum); draw_limits(8, 18);
 	cut_x_y_poly_select(x_y_regions, true, "1");
 	update();
@@ -1510,6 +1520,7 @@ set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	remcut(-1, "1");
 
 std::string form_n = "forms_Cd_left/";
+	ty(AStates::Correlation);
 	x_y_regions = {4.9, 0.8, 2.7, 6.1, 6.1, 10.0, 9.3, 1.6}; //ty(AStates::PMT_Npe_sum); draw_limits(5, 8);
 	cut_x_y_poly_select(x_y_regions, true, "1");
 	update();
@@ -1523,6 +1534,7 @@ std::string form_n = "forms_Cd_left/";
 	cuts.pop_back();
 
 form_n = "forms_Cd_peak/";
+	ty(AStates::Correlation);
 	x_y_regions = {4.9, 0.8, 2.7, 6.1, 10.2, 14.0, 14.2, 5.8}; //ty(AStates::PMT_Npe_sum); draw_limits(5, 12);
 	cut_x_y_poly_select(x_y_regions, true, "1");
 	update();
@@ -1625,6 +1637,7 @@ set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	remcut(-1, "1");
 
 std::string form_n = "forms_Cd_left/";
+	ty(AStates::Correlation);
 	x_y_regions = {4.1, -0.8, 1.6, 5.0, 4.9, 9.0, 7.7, 2.4}; //ty(AStates::PMT_Npe_sum); draw_limits(3, 6.5);
 	cut_x_y_poly_select(x_y_regions, true, "1");
 	update();
@@ -1638,6 +1651,7 @@ std::string form_n = "forms_Cd_left/";
 	cuts.pop_back();
 
 form_n = "forms_Cd_peak/";
+	ty(AStates::Correlation);
 	x_y_regions = {4.1, -0.8, 1.6, 5.0, 8.8, 13.5, 12.2, 5.5}; //ty(AStates::PMT_Npe_sum); draw_limits(3, 11);
 	cut_x_y_poly_select(x_y_regions, true, "1");
 	update();

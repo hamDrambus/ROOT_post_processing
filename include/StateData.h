@@ -105,4 +105,31 @@ public:
 	static double GetTriggerFirstScant(void);
 };
 
+class TriggerAvgTData: public StateData
+{
+public:
+	enum TriggerType : int {tbNpeaks = 0, tbNpe = 1, tbS = 2}; //tb = trigger by
+	TriggerType trigger_type;
+
+	static bool IsForState(CanvasSetups *state);
+	static bool IsForState(CanvasSetups *state, int channel, AStates::Type type);
+	virtual bool IsForState_virt(CanvasSetups *state, int channel, AStates::Type type); //override
+
+	TriggerAvgTData();
+	TriggerAvgTData(const CanvasSetups *for_state);
+	virtual void SetDefaultSettings(const CanvasSetups *for_state); //override
+	virtual StateData * Clone (); //override
+
+	bool IsValid() const;
+
+	//I want this method to be virtual AND static
+	static TriggerAvgTData* GetData(CanvasSetups *setups, int channel, AStates::Type type); //returns NULL if current setups do not contain this data class.
+	static TriggerAvgTData* GetData(void);//returns NULL if current setups do not contain this data class.
+	//I want this method to be virtual AND static
+	static void DataChanged(void);
+	//CINT interface:
+	static void SetTriggerType(TriggerType type);
+	static TriggerType GetTriggerType(void);
+};
+
 #endif

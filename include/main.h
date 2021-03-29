@@ -17,7 +17,7 @@
 * DONE*: for Cd time analysis: signal <time> per run per ch
 * TODO: remove all data except peaks?
 * TODO: unite some multichannel types, e.g. MPPC_times and MPPC_times_sum
-* 	the first type can be realized as second one with cuts turning off unneeded channels
+* 	the first type can be implemented as second one with cuts turning off unneeded channels
 * DONE: add drawing cuts on relevant histograms. (with PolyLine)
 * 	Maybe and render function for EventCut
 * DONE: work out which commands exactly will be needed to obtain signal forms
@@ -135,6 +135,7 @@ void remcut_S(int channel = -1, std::string name = "");
 void cut_t(double t_min, double t_max, bool drawn, int channel = -1, std::string name = "");
 void remcut_t(int channel = -1, std::string name = "");
 void remcut(int channel, std::string name);
+void remcut(std::string name);
 
 //(turn_)off/on
 void off_ch (int ch); //for multichannel types (e.g. signal form of all SiPMs (MPPCs)). TODO: single channel case may be implemented with multichannel one - decrease the number of types
@@ -147,19 +148,15 @@ void remcut_A_S_fast_PMT(int channel = -1, std::string _name = "");
 
 void cut_A_S_upper(double A_min, double S_min, double A_max, double S_max, bool drawn, int channel = -1, std::string _name = "");
 void cut_A_S_upper(std::vector<double> region, bool drawn, int channel = -1, std::string _name = "");
-void remcut_A_S_upper(int channel = -1, std::string _name = "");
 
 void cut_A_S_lower(double A_min, double S_min, double A_max, double S_max, bool drawn, int channel = -1, std::string _name = "");
 void cut_A_S_lower(std::vector<double> region, bool drawn, int channel = -1, std::string _name = "");
-void remcut_A_S_lower(int channel = -1, std::string _name = "");
 
 void cut_A_S_left(double A_min, double S_min, double A_max, double S_max, bool drawn, int channel = -1, std::string _name = "");
 void cut_A_S_left(std::vector<double> region, bool drawn, int channel = -1, std::string _name = "");
-void remcut_A_S_left(int channel = -1, std::string _name = "");
 
 void cut_A_S_right(double A_min, double S_min, double A_max, double S_max, bool drawn, int channel = -1, std::string _name = "");
 void cut_A_S_right(std::vector<double> region, bool drawn, int channel = -1, std::string _name = "");
-void remcut_A_S_right(int channel = -1, std::string _name = "");
 
 void cut_x_y_poly(std::vector<double> region, bool drawn, std::string _name);
 

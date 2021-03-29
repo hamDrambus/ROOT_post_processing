@@ -296,16 +296,17 @@ Bool_t AStates::isPMTtype(Type type) const
 		return isPMTtype(_x_corr)&&isPMTtype(_y_corr);
 	return (type == PMT_S2_S || PMT_Npe_sum==type || PMT_S_sum==type || PMT_S2_int==type || type == PMT_Ss || type == PMT_As || type == PMT_t_S
 			|| PMT_A_S == type || type == PMT_tbS || PMT_tbN == type || PMT_tbNpe== type || PMT_sum_N == type
-			|| type == PMT_trigger_bNpe || type==PMT_trigger_fit || type==PMT_trigger_bNpeaks|| type == PMT_trigger_bS || type == PMT_trigger_fit_chi2);
+			|| type == PMT_trigger_bNpe || type==PMT_trigger_fit || type==PMT_trigger_bNpeaks|| type == PMT_trigger_bS || type == PMT_trigger_fit_chi2
+			|| type == PMT_T_sum);
 }
 
 Bool_t AStates::isPerRun(Type type) const
 {
-	return type==MPPC_Double_I || type==MPPC_coord|| type==MPPC_coord_x|| type==MPPC_coord_y|| type==MPPC_Npe_sum||type==MPPC_N_sum||
+	return type==MPPC_Double_I || type==MPPC_coord|| type==MPPC_coord_x|| type==MPPC_coord_y|| type==MPPC_Npe_sum||type==MPPC_N_sum|| type==MPPC_S_sum ||
 			type==MPPC_S2 || type == Correlation_x|| type == Correlation_y|| type==Correlation|| type==CorrelationAll||
 			type== PMT_S2_S|| type== PMT_S2_int ||type==PMT_Npe_sum ||type==PMT_S_sum ||type==PMT_sum_N || type==PMT_trigger_bNpe ||
 			type==PMT_trigger_fit || type==PMT_trigger_bNpeaks || type==PMT_trigger_bS || type == PMT_trigger_fit_chi2 ||
-			type == MPPC_trigger_fit || type == MPPC_trigger_fit_chi2;
+			type == MPPC_trigger_fit || type == MPPC_trigger_fit_chi2 || type == MPPC_trigger_avg || type == PMT_T_sum;
 }
 
 Bool_t AStates::isMultichannel(Type type) const
@@ -314,9 +315,10 @@ Bool_t AStates::isMultichannel(Type type) const
 		return isMultichannel(_x_corr);
 	if (type == Correlation_y)
 		return isMultichannel(_y_corr);
-	return (type == MPPC_tbS_sum) || type == MPPC_tbNpe_sum || type == MPPC_tbN_sum || type==MPPC_coord || type==MPPC_coord_x || type==MPPC_coord_y || type==MPPC_Npe_sum || type==MPPC_N_sum
+	return (type == MPPC_tbS_sum) || type == MPPC_tbNpe_sum || type == MPPC_tbN_sum || type==MPPC_coord || type==MPPC_coord_x || type==MPPC_coord_y || type==MPPC_Npe_sum
+			|| type==MPPC_N_sum || type==MPPC_S_sum || type == MPPC_trigger_avg
 			|| type==Correlation || type==CorrelationAll || type==PMT_sum_N || type==PMT_Npe_sum || type==PMT_S_sum || type==PMT_trigger_bNpe || type==PMT_trigger_bNpeaks
-			|| type==PMT_trigger_fit || type==PMT_trigger_bS || type == PMT_trigger_fit_chi2 || type == MPPC_trigger_fit || type == MPPC_trigger_fit_chi2;
+			|| type==PMT_trigger_fit || type==PMT_trigger_bS || type == PMT_trigger_fit_chi2 || type == MPPC_trigger_fit || type == MPPC_trigger_fit_chi2 || type == PMT_T_sum;
 }
 
 Bool_t AStates::isTH1Dhist(Type type) const
@@ -332,9 +334,10 @@ bool AStates::isComposite (Type type) const
 	if (type == Correlation_y)
 		return isComposite(_y_corr);
 	return (type == MPPC_coord ||type == MPPC_coord_x ||type== MPPC_coord_y ||type==Correlation ||type==CorrelationAll
-			|| type==MPPC_Npe_sum ||type==MPPC_N_sum ||type==MPPC_S2 ||type==PMT_S2_S ||type==PMT_sum_N || type==PMT_Npe_sum
-			||type==PMT_S_sum||type==PMT_trigger_bNpe || type == PMT_trigger_bNpeaks || type==PMT_trigger_bS || type == PMT_trigger_fit
-			|| type==PMT_trigger_fit_chi2 || type == MPPC_trigger_fit || type == MPPC_trigger_fit_chi2);
+			|| type==MPPC_Npe_sum ||type==MPPC_N_sum || type==MPPC_S_sum ||type==MPPC_S2 ||type==PMT_S2_S ||type==PMT_sum_N || type==PMT_Npe_sum
+			|| type==PMT_S_sum ||type==PMT_trigger_bNpe || type == PMT_trigger_bNpeaks || type==PMT_trigger_bS || type == PMT_trigger_fit
+			|| type==PMT_trigger_fit_chi2 || type == MPPC_trigger_fit || type == MPPC_trigger_fit_chi2 || type == PMT_T_sum
+			|| type == MPPC_trigger_avg);
 }
 
 Bool_t AStates::isVirtual(Type type) const
@@ -574,11 +577,15 @@ std::string AStates::type_name(Type type) const
 		break;
 	}
 	case Type::MPPC_Npe_sum :{
-		name += "N_pe";
+		name += "N_pe_sum";
 		break;
 	}
 	case Type::MPPC_N_sum :{
-		name += "N_peaks";
+		name += "N_sum";
+		break;
+	}
+	case Type::MPPC_S_sum :{
+		name += "S_sum";
 		break;
 	}
 	case Type::MPPC_S2:{
@@ -671,6 +678,14 @@ std::string AStates::type_name(Type type) const
 	case Type::PMT_trigger_fit_chi2:
 	case Type::MPPC_trigger_fit_chi2: {
 		name += "trigger_by_fit_chi2";
+		break;
+	}
+	case Type::MPPC_trigger_avg: {
+		name += "trigger_by_avg_t";
+		break;
+	}
+	case Type::PMT_T_sum: {
+		name += "total_time";
 		break;
 	}
 	}

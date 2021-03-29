@@ -35,9 +35,8 @@
 //	FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region)
 //	FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region)
 //	FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region)
-//	FunctionWrapper* create_A_S_vertical_cut(std::vector<double> region, bool upper, bool select)
-//	FunctionWrapper* create_A_S_horizontal_cut(std::vector<double> region, bool right, bool select)
-
+//	FunctionWrapper* create_A_S_polygon_cut(std::vector<double> region, unsigned int cut_type)
+//  FunctionWrapper* create_x_y_polygon_cut(std::vector<double> region, unsigned int cut_type)
 
 class PostProcessor : public CanvasSetups {
 public:
@@ -127,7 +126,7 @@ public:
 	void print_events (std::string file, int run_offset, int sub_runs, bool accepted); //accepted = true - print accepted events, false - rejected ones
 	void do_fit(bool do_fit);
 	void set_N_bins(int N);
-	void set_N_bins(int from, int to);
+	void set_N_bins(int from, int to); //Or NbinsX, NbinsY for 2D histograms
 
 	void set_zoom (double xl, double xr);
 	void set_zoom_y (double yl, double yr);

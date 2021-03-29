@@ -89,6 +89,7 @@ void PostProcessor::print_hist(std::string path, bool png_only)
 	case MPPC_coord_x:
 	case MPPC_Npe_sum:
 	case MPPC_N_sum:
+	case MPPC_S_sum:
 	case PMT_Npe_sum:
 	case PMT_S_sum:
 	case PMT_sum_N:
@@ -165,6 +166,8 @@ void PostProcessor::print_hist(std::string path, bool png_only)
 	case PMT_trigger_fit_chi2:
 	case MPPC_trigger_fit:
 	case MPPC_trigger_fit_chi2:
+	case MPPC_trigger_avg:
+	case PMT_T_sum:
 	{
 		writer_to_file->SetFunction([](std::vector<double>& pars, int run, void* data) {
 			((temp_data*)data)->str->write((char*)&pars[0], sizeof(double));
@@ -705,6 +708,247 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 		}
 		break;
 	}
+	case Type::MPPC_trigger_avg:
+	{
+		bool ignore_no_run_cut = true;
+		for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
+			if (!operations[o].apply_run_cuts) {
+				ignore_no_run_cut = false;
+				break;
+			}
+		}
+		TriggerAvgTData* trigger_data = TriggerAvgTData::GetData(this, channel, type);
+		if (NULL == trigger_data) {
+			std::cout<<"PostProcessor::LoopThroughData: No trigger data for exp "<<current_exp_index<<" channel "<<channel<<" type "<<type_name(type)<<std::endl;
+			std::cout<<"\tDefualt TriggerAvgTData constructor is used"<<std::endl;
+			trigger_data = new TriggerAvgTData(this); //TODO: No cleanup
+		} else if (!trigger_data->IsValid())
+			std::cout<<"PostProcessor::LoopThroughData: Trigger data for exp "<<current_exp_index<<" channel "<<channel<<" type "<<type_name(type) <<" is invalid"<<std::endl;
+
+		//channel->run->peak_itself:
+		std::deque<std::deque<std::deque<peak> > > *peaks = NULL;
+		std::deque<int> *channels = NULL;
+		if (isPMTtype(type)) {
+			channels = &PMT_channels;
+			peaks = &(data->pmt_peaks[current_exp_index]);
+		} else {
+			channels = &MPPC_channels;
+			peaks = &(data->mppc_peaks[current_exp_index]);
+		}
+		int run_size = (*peaks)[0].size();
+		std::vector<double> cut_data(6);
+		for (auto run = 0; run != run_size; ++run) {
+			//cuts on peaks (low level cuts) are always applied (those affecting histogram only)
+			std::deque<peak_processed> accepted_peaks;
+			std::vector<double> trigger_offset(1, 0);
+			double weight = 0, average_t = 0;
+			bool failed_run_cut = false;
+			for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
+				if (kFALSE == cut->GetAccept(run)) {
+					failed_run_cut = true;
+					break;
+				}
+			if (failed_run_cut && ignore_no_run_cut)
+				continue;
+
+			for (int chan_ind=0,_ch_ind_end_= channels->size(); chan_ind<_ch_ind_end_;++chan_ind) {
+				if (NULL != setups) {
+					bool *active = setups->active_channels.info((*channels)[chan_ind]);
+					if (NULL == active)
+						continue;
+					if (!(*active))
+						continue;
+				}
+				double s1pe = calibr_info.get_S1pe((*channels)[chan_ind], current_exp_index);
+				for (int pk = 0, pk_end = (*peaks)[chan_ind][run].size(); pk != pk_end; ++pk) {
+					bool failed_hist_cut = false; //normal cuts
+					cut_data[0] = (*peaks)[chan_ind][run][pk].S;
+					cut_data[1] = (*peaks)[chan_ind][run][pk].A;
+					cut_data[2] = (*peaks)[chan_ind][run][pk].left + data->trigger_offset[current_exp_index][run];
+					cut_data[3] = (*peaks)[chan_ind][run][pk].right + data->trigger_offset[current_exp_index][run];
+					cut_data[4] =
+#ifdef PEAK_AVR_TIME
+							(*peaks)[chan_ind][run][pk].t + data->trigger_offset[current_exp_index][run];
+#else
+							0.5*(cut_data[3]+cut_data[2]);
+#endif
+					cut_data[5] = s1pe > 0 ? std::round(cut_data[0]/s1pe) : -1;
+					for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
+						if (cut->GetChannel()==(*channels)[chan_ind] && cut->GetAffectingHistogram() && !failed_hist_cut)
+							if (kFALSE == (*cut)(cut_data, run)) { //more expensive than GetAffectingHistogram
+								failed_hist_cut = true;
+								break;
+							}
+					}
+					if (!failed_hist_cut) {
+						double w = 0;
+						switch (trigger_data->trigger_type) {
+						case TriggerAvgTData::tbNpe: {
+							w = cut_data[5] > 0 ? cut_data[5] : 0;
+							break;
+						}
+						case TriggerAvgTData::tbS: {
+							w = cut_data[0];
+							break;
+						}
+						case TriggerAvgTData::tbNpeaks: {
+							w = 1;
+							break;
+						}
+						}
+						weight += w;
+						average_t += w * cut_data[4];
+					}
+				}
+			}
+
+			if (weight > 0){
+				trigger_offset[0] = average_t / weight;
+			} else {
+				trigger_offset[0] = 0;
+			}
+
+			bool failed_hist_phys = false, failed_hist = false, failed_phys = false;
+			for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut)
+				if (-1 == cut->GetChannel()) {
+					if (!failed_hist_phys)
+						if (kFALSE == (*cut)(trigger_offset, run))
+							failed_hist_phys = true;
+					if (!failed_hist && cut->GetAffectingHistogram())
+						if (kFALSE == (*cut)(trigger_offset, run))
+							failed_hist = true;
+					if (!failed_phys && !cut->GetAffectingHistogram())
+						if (kFALSE == (*cut)(trigger_offset, run))
+							failed_phys = true;
+				}
+			for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
+				if (operations[o].apply_run_cuts && failed_run_cut)
+					continue;
+				if (operations[o].apply_hist_cuts && !operations[o].apply_phys_cuts) {
+					if (!failed_hist)
+						(*operations[o].operation)(trigger_offset, run);
+					continue;
+				}
+				if (!operations[o].apply_hist_cuts && operations[o].apply_phys_cuts) {
+					if (!failed_phys) (*operations[o].operation)(trigger_offset, run);
+					continue;
+				}
+				if (operations[o].apply_hist_cuts && operations[o].apply_phys_cuts) {
+					if (!failed_hist_phys) (*operations[o].operation)(trigger_offset, run);
+					continue;
+				}
+				(*operations[o].operation)(trigger_offset, run);
+			}
+		}
+		break;
+	}
+	case Type::PMT_T_sum:
+	{
+		bool ignore_no_run_cut = true;
+		for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
+			if (!operations[o].apply_run_cuts) {
+				ignore_no_run_cut = false;
+				break;
+			}
+		}
+		//channel->run->peak_itself:
+		std::deque<std::deque<std::deque<peak> > > *peaks = NULL;
+		std::deque<int> *channels = NULL;
+		if (isPMTtype(type)) {
+			channels = &PMT_channels;
+			peaks = &(data->pmt_peaks[current_exp_index]);
+		} else {
+			channels = &MPPC_channels;
+			peaks = &(data->mppc_peaks[current_exp_index]);
+		}
+		int run_size = (*peaks)[0].size();
+		std::vector<double> cut_data(6);
+		for (auto run = 0; run != run_size; ++run) {
+			//cuts on peaks (low level cuts) are always applied (those affecting histogram only)
+			std::vector<double> time_length(1, 0);
+			int n_active_channels = 0;
+			bool failed_run_cut = false;
+			for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
+				if (kFALSE == cut->GetAccept(run)) {
+					failed_run_cut = true;
+					break;
+				}
+			if (failed_run_cut && ignore_no_run_cut)
+				continue;
+
+			for (int chan_ind=0,_ch_ind_end_= channels->size(); chan_ind<_ch_ind_end_;++chan_ind) {
+				if (NULL != setups) {
+					bool *active = setups->active_channels.info((*channels)[chan_ind]);
+					if (NULL == active)
+						continue;
+					if (!(*active))
+						continue;
+				}
+				n_active_channels += 1;
+				double s1pe = calibr_info.get_S1pe((*channels)[chan_ind], current_exp_index);
+				for (int pk = 0, pk_end = (*peaks)[chan_ind][run].size(); pk != pk_end; ++pk) {
+					bool failed_hist_cut = false; //normal cuts
+					cut_data[0] = (*peaks)[chan_ind][run][pk].S;
+					cut_data[1] = (*peaks)[chan_ind][run][pk].A;
+					cut_data[2] = (*peaks)[chan_ind][run][pk].left + data->trigger_offset[current_exp_index][run];
+					cut_data[3] = (*peaks)[chan_ind][run][pk].right + data->trigger_offset[current_exp_index][run];
+					cut_data[4] =
+#ifdef PEAK_AVR_TIME
+							(*peaks)[chan_ind][run][pk].t + data->trigger_offset[current_exp_index][run];
+#else
+							0.5*(cut_data[3]+cut_data[2]);
+#endif
+					cut_data[5] = s1pe > 0 ? std::round(cut_data[0]/s1pe) : -1;
+					for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
+						if (cut->GetChannel()==(*channels)[chan_ind] && cut->GetAffectingHistogram() && !failed_hist_cut)
+							if (kFALSE == (*cut)(cut_data, run)) { //more expensive than GetAffectingHistogram
+								failed_hist_cut = true;
+								break;
+							}
+					}
+					if (!failed_hist_cut)
+						time_length[0] += cut_data[3] - cut_data[2];
+				}
+			}
+
+			if (0!=n_active_channels) {
+				time_length[0] /= n_active_channels;
+			}
+
+			bool failed_hist_phys = false, failed_hist = false, failed_phys = false;
+			for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut)
+				if (-1 == cut->GetChannel()) {
+					if (!failed_hist_phys)
+						if (kFALSE == (*cut)(time_length, run))
+							failed_hist_phys = true;
+					if (!failed_hist && cut->GetAffectingHistogram())
+						if (kFALSE == (*cut)(time_length, run))
+							failed_hist = true;
+					if (!failed_phys && !cut->GetAffectingHistogram())
+						if (kFALSE == (*cut)(time_length, run))
+							failed_phys = true;
+				}
+			for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
+				if (operations[o].apply_run_cuts && failed_run_cut)
+					continue;
+				if (operations[o].apply_hist_cuts && !operations[o].apply_phys_cuts) {
+					if (!failed_hist)
+						(*operations[o].operation)(time_length, run);
+					continue;
+				}
+				if (!operations[o].apply_hist_cuts && operations[o].apply_phys_cuts) {
+					if (!failed_phys) (*operations[o].operation)(time_length, run);
+					continue;
+				}
+				if (operations[o].apply_hist_cuts && operations[o].apply_phys_cuts) {
+					if (!failed_hist_phys) (*operations[o].operation)(time_length, run);
+					continue;
+				}
+				(*operations[o].operation)(time_length, run);
+			}
+		}
+		break;
+	}
 	case Type::MPPC_tbS_sum:
 	case Type::MPPC_tbNpe_sum:
 	case Type::MPPC_tbN_sum:
@@ -1062,6 +1306,7 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 	}
 	case Type::MPPC_Npe_sum:
 	case Type::MPPC_N_sum:
+	case Type::MPPC_S_sum:
 	case Type::PMT_Npe_sum:
 	case Type::PMT_S_sum:
 	case Type::PMT_sum_N:
@@ -1435,6 +1680,8 @@ bool PostProcessor::set_correlation_filler(FunctionWrapper* operation, Type type
 	case Type::PMT_trigger_fit_chi2:
 	case Type::MPPC_trigger_fit:
 	case Type::MPPC_trigger_fit_chi2:
+	case Type::MPPC_trigger_avg:
+	case Type::PMT_T_sum:
 	{
 		operation->SetFunction([](std::vector<double>& pars, int run, void* data) {
 			(*((correlation_data*)data)->vals)[run] = pars[0];
@@ -1444,6 +1691,7 @@ bool PostProcessor::set_correlation_filler(FunctionWrapper* operation, Type type
 	}
 	case Type::MPPC_Npe_sum:
 	case Type::MPPC_N_sum:
+	case Type::MPPC_S_sum:
 	case Type::MPPC_coord_x:
 	case Type::PMT_sum_N:
 	case Type::PMT_Npe_sum:
@@ -1560,6 +1808,8 @@ bool PostProcessor::update(void)
 	case Type::PMT_trigger_fit_chi2:
 	case Type::MPPC_trigger_fit:
 	case Type::MPPC_trigger_fit_chi2:
+	case Type::MPPC_trigger_avg:
+	case Type::PMT_T_sum:
 	{
 		drawn_mean_taker.SetFunction(
 		mean_taker.SetFunction([](std::vector<double>& pars, int run, void* data) {
@@ -1719,6 +1969,7 @@ bool PostProcessor::update(void)
 	}
 	case Type::MPPC_Npe_sum:
 	case Type::MPPC_N_sum:
+	case Type::MPPC_S_sum:
 	case Type::MPPC_coord_x:
 	case Type::PMT_sum_N:
 	case Type::PMT_Npe_sum:
@@ -1993,7 +2244,7 @@ bool PostProcessor::update(void)
 				if (NULL == hist) {
 					TH2D new_hist2(hist_name().c_str(), hist_name().c_str(), setups->N_bins,
 						(is_zoomed().first ? get_current_x_zoom().first : x_lims.first),
-						(is_zoomed().first ? get_current_x_zoom().second : x_lims.second), setups->N_bins,
+						(is_zoomed().first ? get_current_x_zoom().second : x_lims.second), setups->N_bins_y,
 						(is_zoomed().second ? get_current_y_zoom().first : y_lims.first),
 						(is_zoomed().second ? get_current_y_zoom().second : y_lims.second));
 					set_hist2(&new_hist2);
@@ -2002,7 +2253,7 @@ bool PostProcessor::update(void)
 					hist->Reset("M");
 					hist->SetBins(setups->N_bins,
 						(is_zoomed().first ? get_current_x_zoom().first : x_lims.first),
-						(is_zoomed().first ? get_current_x_zoom().second : x_lims.second), setups->N_bins,
+						(is_zoomed().first ? get_current_x_zoom().second : x_lims.second), setups->N_bins_y,
 						(is_zoomed().second ? get_current_y_zoom().first : y_lims.first),
 						(is_zoomed().second ? get_current_y_zoom().second : y_lims.second));
 				}
@@ -2223,6 +2474,8 @@ void PostProcessor::default_hist_setups(HistogramSetups* setups)//does not affec
 		return;
 	}
 	//TODO: quite ugly approach
+	if (NULL==setups->extra_data && TriggerAvgTData::IsForState(this))
+		setups->extra_data = new TriggerAvgTData(this);
 	if (NULL==setups->extra_data && TriggerFitData::IsForState(this))
 		setups->extra_data = new TriggerFitData(this);
 	if (NULL==setups->extra_data && TriggerData::IsForState(this))
@@ -2234,6 +2487,7 @@ void PostProcessor::default_hist_setups(HistogramSetups* setups)//does not affec
 	int _N_ = numOfFills(false);
 	setups->N_bins = _N_;
 	setups->N_bins = std::max(4,(int)std::round(std::sqrt(setups->N_bins)));
+	setups->N_bins_y = setups->N_bins;
 	std::pair<double, double> x_lims = hist_x_limits();
 	x_lims.second+=(x_lims.second-x_lims.first)/setups->N_bins;
 
@@ -2900,13 +3154,14 @@ void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits 
 		std::cout<<"Can't use multi E data for run cut."<<std::endl;
 		return;
 	}
-	int run_size = isPMTtype(current_type) ? 
-		data->pmt_peaks[current_exp_index][0].size()
-		:data->mppc_peaks[current_exp_index][0].size();
 	std::deque<EventCut> *RunCuts = get_run_cuts(current_exp_index);
 	if (NULL==RunCuts) {
 		return;
 	}
+	unset_as_run_cut(name);
+	int run_size = isPMTtype(current_type) ?
+		data->pmt_peaks[current_exp_index][0].size()
+		:data->mppc_peaks[current_exp_index][0].size();
 	RunCuts->push_back(EventCut(run_size, EventCut::RunCut, name));
 	RunCuts->back().SetChannel(current_channel);
 	RunCuts->back().SetExperiment(current_exp_index);
@@ -3006,8 +3261,9 @@ void PostProcessor::set_N_bins(int N)
 	if (NULL==setups) {
 		std::cout<<"PostProcessor::set_N_bins: Error: NULL setups"<<std::endl;
 	}
-	if (setups->N_bins!=std::max(N, 1)) {
+	if (setups->N_bins!=std::max(N, 1) || setups->N_bins_y!=std::max(N, 1)) {
 		setups->N_bins = std::max(N, 1);
+		setups->N_bins_y = std::max(N, 1);
 		Invalidate(invHistogram);
 	}
 	update();
@@ -3023,15 +3279,27 @@ void PostProcessor::set_N_bins(int from, int to)
 	if (NULL==setups) {
 		std::cout<<"PostProcessor::set_N_bins: Error: NULL setups"<<std::endl;
 	}
-	if (setups->N_bins!=std::max(std::abs(to-from), 1)) {
-		setups->N_bins = std::max(std::abs(to-from), 1);
-		Invalidate(invHistogram);
+	if (isTH1Dhist(current_type)) {
+		if (setups->N_bins!=std::max(std::abs(to-from), 1)) {
+			setups->N_bins = std::max(std::abs(to-from), 1);
+			Invalidate(invHistogram);
+		}
+		std::pair<double, double> x_zoom, y_zoom = std::pair<double, double>(-DBL_MAX, DBL_MAX);
+		x_zoom.first = std::min(from, to);
+		x_zoom.second = std::max(from, to);
+		CanvasSetups::set_zoom(x_zoom, y_zoom);
+		update();
+	} else {
+		if (setups->N_bins!=std::max(from, 1)) {
+			setups->N_bins = std::max(from, 1);
+			Invalidate(invHistogram);
+		}
+		if (setups->N_bins_y!=std::max(to, 1)) {
+			setups->N_bins_y = std::max(to, 1);
+			Invalidate(invHistogram);
+		}
+		update();
 	}
-	std::pair<double, double> x_zoom, y_zoom = std::pair<double, double>(-DBL_MAX, DBL_MAX);
-	x_zoom.first = std::min(from, to);
-	x_zoom.second = std::max(from, to);
-	CanvasSetups::set_zoom(x_zoom, y_zoom);
-	update();
 }
 
 void PostProcessor::set_zoom (double xl, double xr)
@@ -3123,7 +3391,7 @@ bool PostProcessor::set_trigger_offsets(double extra_offset) //uses trigger type
 		std::cout << "Wrong input data: no channels or experiments from AnalysisManager" << std::endl;
 		return false;
 	}
-	if ((!TriggerData::IsForState(this) && !TriggerFitData::IsForState(this))
+	if ((!TriggerData::IsForState(this) && !TriggerFitData::IsForState(this) && !TriggerAvgTData::IsForState(this))
 			|| (current_type==Type::MPPC_trigger_fit_chi2 || current_type==Type::PMT_trigger_fit_chi2)) {
 		std::cerr << "PostProcessor::set_trigger_offsets:Error: Can't calculate trigger adjustment for not trigger type histogram (" << type_name(current_type) << ")" << std::endl;
 		return false;

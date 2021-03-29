@@ -30,6 +30,7 @@ bool StateData::IsForState_virt(CanvasSetups *state, int channel, AStates::Type 
 	case AStates::MPPC_coord_y:
 	case AStates::MPPC_Npe_sum:
 	case AStates::MPPC_N_sum:
+	case AStates::MPPC_S_sum:
 	case AStates::MPPC_S2:
 	case AStates::Correlation_x:
 	case AStates::Correlation_y:
@@ -54,6 +55,8 @@ bool StateData::IsForState_virt(CanvasSetups *state, int channel, AStates::Type 
 	case AStates::PMT_trigger_fit_chi2:
 	case AStates::MPPC_trigger_fit:
 	case AStates::MPPC_trigger_fit_chi2:
+	case AStates::MPPC_trigger_avg:
+	case AStates::PMT_T_sum:
 		return true;
 	default: {
 		std::cout<<"Error: StateData::IsForState_virt is not implemented for type "<<state->type_name(type)<<std::endl;
@@ -153,6 +156,7 @@ bool TriggerData::IsForState_virt(CanvasSetups *state, int channel, AStates::Typ
 		case AStates::MPPC_coord_y:
 		case AStates::MPPC_Npe_sum:
 		case AStates::MPPC_N_sum:
+		case AStates::MPPC_S_sum:
 		case AStates::MPPC_S2:
 		case AStates::PMT_S2_S:
 		case AStates::PMT_Npe_sum:
@@ -172,6 +176,8 @@ bool TriggerData::IsForState_virt(CanvasSetups *state, int channel, AStates::Typ
 		case AStates::PMT_trigger_fit_chi2:
 		case AStates::MPPC_trigger_fit:
 		case AStates::MPPC_trigger_fit_chi2:
+		case AStates::MPPC_trigger_avg:
+		case AStates::PMT_T_sum:
 			return false;
 		case AStates::Correlation_x: {
 			return (state->_x_corr == AStates::PMT_trigger_bNpe) || (state->_x_corr == AStates::PMT_trigger_bNpeaks)
@@ -282,6 +288,7 @@ bool TriggerFitData::IsForState_virt(CanvasSetups *state, int channel, AStates::
 		case AStates::MPPC_coord_y:
 		case AStates::MPPC_Npe_sum:
 		case AStates::MPPC_N_sum:
+		case AStates::MPPC_S_sum:
 		case AStates::MPPC_S2:
 		case AStates::PMT_S2_S:
 		case AStates::PMT_Npe_sum:
@@ -300,6 +307,8 @@ bool TriggerFitData::IsForState_virt(CanvasSetups *state, int channel, AStates::
 		case AStates::PMT_trigger_bNpe:
 		case AStates::PMT_trigger_bNpeaks:
 		case AStates::PMT_trigger_bS:
+		case AStates::MPPC_trigger_avg:
+		case AStates::PMT_T_sum:
 			return false;
 		case AStates::Correlation_x: {
 			return (state->_x_corr == AStates::PMT_trigger_fit || state->_x_corr == AStates::PMT_trigger_fit_chi2
@@ -486,5 +495,151 @@ double TriggerFitData::GetTriggerFirstScant(void)
 		return -DBL_MAX;
 	}
 	return data->scan_dt;
+}
+
+
+bool TriggerAvgTData::IsForState(CanvasSetups *state)
+{
+	StateData* d = new TriggerAvgTData();
+	bool ret = d->IsForState_virt(state);
+	delete d;
+	return ret;
+}
+bool TriggerAvgTData::IsForState(CanvasSetups *state, int channel, AStates::Type type)
+{
+	StateData* d = new TriggerAvgTData();
+	bool ret = d->IsForState_virt(state, channel, type);
+	delete d;
+	return ret;
+}
+
+bool TriggerAvgTData::IsForState_virt(CanvasSetups *state, int channel, AStates::Type type) //override
+{
+	if (StateData::IsForState_virt(state, channel, type)) {
+		switch (type) {
+		case AStates::MPPC_Ss:
+		case AStates::MPPC_As:
+		case AStates::MPPC_t_S:
+		case AStates::MPPC_A_S:
+		case AStates::MPPC_Double_I:
+		case AStates::MPPC_tbS:
+		case AStates::MPPC_tbN:
+		case AStates::MPPC_tbS_sum:
+		case AStates::MPPC_tbNpe_sum:
+		case AStates::MPPC_tbN_sum:
+		case AStates::MPPC_coord:
+		case AStates::MPPC_coord_x:
+		case AStates::MPPC_coord_y:
+		case AStates::MPPC_Npe_sum:
+		case AStates::MPPC_N_sum:
+		case AStates::MPPC_S_sum:
+		case AStates::MPPC_S2:
+		case AStates::PMT_S2_S:
+		case AStates::PMT_Npe_sum:
+		case AStates::PMT_S_sum:
+		case AStates::PMT_S2_int:
+		case AStates::PMT_Ss:
+		case AStates::PMT_As:
+		case AStates::PMT_t_S:
+		case AStates::PMT_A_S:
+		case AStates::PMT_tbS:
+		case AStates::PMT_tbN:
+		case AStates::PMT_tbNpe:
+		case AStates::PMT_sum_N:
+		case AStates::Correlation:
+		case AStates::CorrelationAll:
+		case AStates::PMT_trigger_bNpe:
+		case AStates::PMT_trigger_bNpeaks:
+		case AStates::PMT_trigger_bS:
+		case AStates::PMT_trigger_fit:
+		case AStates::PMT_trigger_fit_chi2:
+		case AStates::MPPC_trigger_fit:
+		case AStates::MPPC_trigger_fit_chi2:
+		case AStates::PMT_T_sum:
+			return false;
+		case AStates::Correlation_x: {
+			return (state->_x_corr == AStates::MPPC_trigger_avg);
+		}
+		case AStates::Correlation_y: {
+			return (state->_y_corr == AStates::MPPC_trigger_avg);
+		}
+		case AStates::MPPC_trigger_avg:
+			return true;
+		default: {
+			std::cout<<"Error: TriggerAvgTData::IsForState_virt is not implemented for type "<<state->type_name(type)<<std::endl;
+		}
+		}
+	}
+	return false;
+}
+
+TriggerAvgTData::TriggerAvgTData() :
+		StateData(), trigger_type(tbNpe)
+{};
+
+TriggerAvgTData::TriggerAvgTData(const CanvasSetups *for_state) :
+		StateData(for_state), trigger_type(tbNpe)
+{};
+
+void TriggerAvgTData::SetDefaultSettings(const CanvasSetups *for_state) //override
+{
+	trigger_type = tbNpe;
+}
+
+StateData * TriggerAvgTData::Clone () //override
+{
+	return new TriggerAvgTData(*this);
+}
+
+bool TriggerAvgTData::IsValid() const
+{
+	return true;
+}
+
+//I want this method to be virtual AND static
+TriggerAvgTData* TriggerAvgTData::GetData(CanvasSetups *setups, int channel, AStates::Type type) //returns NULL if current setups do not contain this data class.
+{
+	StateData* d = new TriggerAvgTData();
+	TriggerAvgTData* ret =  (TriggerAvgTData*) d->GetData_virt(setups, channel, type);
+	delete d;
+	return ret;
+}
+
+TriggerAvgTData* TriggerAvgTData::GetData(void)//returns NULL if current setups do not contain this data class.
+{
+	StateData* d = new TriggerAvgTData();
+	TriggerAvgTData* ret =  (TriggerAvgTData*) d->GetData_virt();
+	delete d;
+	return ret;
+}
+//I want this method to be virtual AND static
+void TriggerAvgTData::DataChanged(void)
+{
+	StateData* d = new TriggerAvgTData();
+	d->DataChanged_virt();
+	delete d;
+}
+
+//CINT interface:
+void TriggerAvgTData::SetTriggerType(TriggerType type)
+{
+	TriggerAvgTData* data = GetData();
+	if (NULL == data) {
+		std::cout<<"Error: TriggerAvgTData:SetTriggerType: current type is not trigger fit type"<<std::endl;
+		return;
+	}
+	bool update = data->trigger_type!=type;
+	data->trigger_type = type;
+	if (update)
+		DataChanged();
+}
+TriggerAvgTData::TriggerType TriggerAvgTData::GetTriggerType(void)
+{
+	TriggerAvgTData* data = GetData();
+	if (NULL == data) {
+		std::cout<<"Error: TriggerAvgTData:GetTriggerType: current type is not trigger fit type"<<std::endl;
+		return tbNpe;
+	}
+	return data->trigger_type;
 }
 

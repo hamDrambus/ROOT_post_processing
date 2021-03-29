@@ -17,6 +17,7 @@ public:
 	std::deque<EventCut> hist_cuts;
 	channel_info<bool> active_channels;
 	int N_bins;
+	int N_bins_y; //For 2D histograms only
 	std::pair<double, double> x_zoom, y_zoom;
 	std::pair<bool, bool> is_zoomed; //bool for each x and y
 	//Fit info:
