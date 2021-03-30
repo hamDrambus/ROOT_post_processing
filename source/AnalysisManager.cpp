@@ -114,6 +114,7 @@ void AnalysisManager::processAllExperiments(void)
 		processAllRuns();
 	}
 	all_exp_results.processAllExperiments(all_runs_results);
+	std::deque<AllRunsResults>().swap(all_runs_results);
 }
 
 void AnalysisManager::proceessAllRunsOneThread(void)

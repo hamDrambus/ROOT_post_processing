@@ -1,6 +1,7 @@
 #ifndef POST_PROCESSOR_H
 #define POST_PROCESSOR_H
 
+#include <thread>
 #include "SignalOperations.h"
 #include "AllExperimentsResults.h"
 #include "GraphicOutputManager.h"
@@ -65,11 +66,6 @@ protected:
 	bool set_correlation_filler(FunctionWrapper* operation, Type type);
 
 	AllExperimentsResults* data;
-
-	std::deque <std::deque<double> > avr_S2_S;	//TODO: reorganize? //initial (automatic) values are set in processAllExperiments
-	std::deque <std::deque<double> > avr_Double_I;
-	std::deque <double> PMT3_avr_S2_S;
-	std::deque <double> PMT1_avr_S2_S;
 
 	virtual Bool_t StateChange(int to_ch, int to_exp, Type to_type, std::size_t to_canvas, int from_ch, int from_exp, Type from_type, std::size_t from_canvas);
 	virtual Bool_t CorrelationXChange(int exp_index, int to_ch, Type to_type, int from_ch, Type from_type);

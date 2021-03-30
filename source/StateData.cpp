@@ -19,7 +19,6 @@ bool StateData::IsForState_virt(CanvasSetups *state, int channel, AStates::Type 
 	case AStates::MPPC_As:
 	case AStates::MPPC_t_S:
 	case AStates::MPPC_A_S:
-	case AStates::MPPC_Double_I:
 	case AStates::MPPC_tbS:
 	case AStates::MPPC_tbN:
 	case AStates::MPPC_tbS_sum:
@@ -39,7 +38,6 @@ bool StateData::IsForState_virt(CanvasSetups *state, int channel, AStates::Type 
 	case AStates::PMT_S2_S:
 	case AStates::PMT_Npe_sum:
 	case AStates::PMT_S_sum:
-	case AStates::PMT_S2_int:
 	case AStates::PMT_Ss:
 	case AStates::PMT_As:
 	case AStates::PMT_t_S:
@@ -145,7 +143,6 @@ bool TriggerData::IsForState_virt(CanvasSetups *state, int channel, AStates::Typ
 		case AStates::MPPC_As:
 		case AStates::MPPC_t_S:
 		case AStates::MPPC_A_S:
-		case AStates::MPPC_Double_I:
 		case AStates::MPPC_tbS:
 		case AStates::MPPC_tbN:
 		case AStates::MPPC_tbS_sum:
@@ -161,7 +158,6 @@ bool TriggerData::IsForState_virt(CanvasSetups *state, int channel, AStates::Typ
 		case AStates::PMT_S2_S:
 		case AStates::PMT_Npe_sum:
 		case AStates::PMT_S_sum:
-		case AStates::PMT_S2_int:
 		case AStates::PMT_Ss:
 		case AStates::PMT_As:
 		case AStates::PMT_t_S:
@@ -277,7 +273,6 @@ bool TriggerFitData::IsForState_virt(CanvasSetups *state, int channel, AStates::
 		case AStates::MPPC_As:
 		case AStates::MPPC_t_S:
 		case AStates::MPPC_A_S:
-		case AStates::MPPC_Double_I:
 		case AStates::MPPC_tbS:
 		case AStates::MPPC_tbN:
 		case AStates::MPPC_tbS_sum:
@@ -293,7 +288,6 @@ bool TriggerFitData::IsForState_virt(CanvasSetups *state, int channel, AStates::
 		case AStates::PMT_S2_S:
 		case AStates::PMT_Npe_sum:
 		case AStates::PMT_S_sum:
-		case AStates::PMT_S2_int:
 		case AStates::PMT_Ss:
 		case AStates::PMT_As:
 		case AStates::PMT_t_S:
@@ -521,7 +515,6 @@ bool TriggerAvgTData::IsForState_virt(CanvasSetups *state, int channel, AStates:
 		case AStates::MPPC_As:
 		case AStates::MPPC_t_S:
 		case AStates::MPPC_A_S:
-		case AStates::MPPC_Double_I:
 		case AStates::MPPC_tbS:
 		case AStates::MPPC_tbN:
 		case AStates::MPPC_tbS_sum:
@@ -537,7 +530,6 @@ bool TriggerAvgTData::IsForState_virt(CanvasSetups *state, int channel, AStates:
 		case AStates::PMT_S2_S:
 		case AStates::PMT_Npe_sum:
 		case AStates::PMT_S_sum:
-		case AStates::PMT_S2_int:
 		case AStates::PMT_Ss:
 		case AStates::PMT_As:
 		case AStates::PMT_t_S:

@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <utility>
+#include <thread>
 //#include <functional>
 
 #if defined (__WIN32__)
@@ -95,6 +96,9 @@ std::string dbl_to_str (double val, int precision=0);
 std::vector<double>::iterator iter_add(std::vector<double>::iterator& to, int what, std::vector<double>::iterator& end);
 std::string strtoken(std::string &in, std::string break_symbs);
 double fast_pown(double val, unsigned int n);
+//For threading. Splits [min, max) range into n parts as equal as possible.
+std::vector<std::pair<int, int>> split_range(int min, int max, int number);
+void test_ROOT_threads(void);
 
 template <class T>
 class channel_info {

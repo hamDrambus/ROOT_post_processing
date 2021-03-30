@@ -7,14 +7,14 @@
 class AStates { //short for AnalysisStates - faster to type (autocomplete) in root console.
 public:
 	enum Type {
-		MPPC_Ss, MPPC_As, MPPC_t_S, MPPC_A_S, MPPC_Double_I, MPPC_tbS /*time by peak area*/, MPPC_tbN /*time by N*/,
+		MPPC_Ss, MPPC_As, MPPC_t_S, MPPC_A_S, MPPC_tbS /*time by peak area*/, MPPC_tbN /*time by N*/,
 		MPPC_tbS_sum, //time distribution with weights as peak area S
 		MPPC_tbNpe_sum, //time distribution with weights as peak Npe
 		MPPC_tbN_sum, //time distribution with weight = 1 for each peak
 		MPPC_coord, MPPC_coord_x, MPPC_coord_y, MPPC_Npe_sum, MPPC_N_sum, MPPC_S2, MPPC_S_sum,
 		MPPC_trigger_fit, MPPC_trigger_fit_chi2, MPPC_trigger_avg,
 		Correlation_x, Correlation_y /*these two are mask (virtual) types*/, Correlation /*uses Correlation_x/y*/,CorrelationAll,
-		PMT_S2_S, PMT_Npe_sum, PMT_S_sum, PMT_S2_int, PMT_Ss, PMT_As, PMT_t_S, PMT_A_S, PMT_tbS, PMT_tbN, PMT_tbNpe, PMT_sum_N, PMT_trigger_fit,
+		PMT_S2_S, PMT_Npe_sum, PMT_S_sum, PMT_Ss, PMT_As, PMT_t_S, PMT_A_S, PMT_tbS, PMT_tbN, PMT_tbNpe, PMT_sum_N, PMT_trigger_fit,
 		PMT_T_sum, PMT_trigger_fit_chi2, PMT_trigger_bNpe, PMT_trigger_bNpeaks, PMT_trigger_bS};
 protected:
 	const Type _first_state;

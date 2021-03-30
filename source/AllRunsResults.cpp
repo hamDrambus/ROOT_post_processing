@@ -261,11 +261,13 @@ int AllRunsResults::Iteration(void) const
 
 void AllRunsResults::Clear(void)
 {
-	std::deque<std::deque<std::deque<peak>>>().swap(mppc_peaks);
-	std::deque<std::deque<std::deque<peak>>>().swap(pmt_peaks);
+	std::vector<bool>().swap(_valid);
 	std::deque<std::vector<double>>().swap(mppc_Double_Is);
 	std::deque<int>().swap(mppc_channels);
 	std::deque<int>().swap(pmt_channels);
+	std::deque<std::deque<std::deque<peak>>>().swap(mppc_peaks);
+	std::deque<std::deque<std::deque<peak>>>().swap(pmt_peaks);
+	std::deque<std::vector<double>>().swap(pmt_S2_integral);
 	N_of_runs = 0;
 	//Iteration_N preserved;
 }

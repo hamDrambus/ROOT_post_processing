@@ -56,24 +56,12 @@ void AllExperimentsResults::processAllExperiments(std::deque<AllRunsResults> &al
 		exp_area.experiments.push_back(i->_exp.experiments.back());
 		mppc_peaks.push_back(i->mppc_peaks);
 		pmt_peaks.push_back(i->pmt_peaks);
-		PMT_S2_int.push_back(i->pmt_S2_integral);
-		Double_I.push_back(i->mppc_Double_Is);
 		auto j = /*ParameterPile::*/experiment_fields.find(i->_exp.experiments.back());
 		if (/*ParameterPile::*/experiment_fields.end() != j)
 			Fields.push_back(j->second);
 		else
 			Fields.push_back(-1);
-		N_pe_direct.push_back(std::deque<double>());
-		N_pe_Double_I.push_back(std::deque<double>());
-		N_pe_result.push_back(std::deque<double>());
 		trigger_offset.push_back(std::vector<double>(i->N_of_runs, 0));
-		N_pe_PMT3.push_back(0);
-		N_pe_PMT1.push_back(0);
-		for (auto ff = mppc_channels.begin(); ff != mppc_channels.end(); ++ff){
-			N_pe_direct.back().push_back(0);
-			N_pe_Double_I.back().push_back(0);
-			N_pe_result.back().push_back(0);
-		}
 		i->Clear();
 	}
 	for (int exp = 0, e_end_ = exp_area.experiments.size(); exp != e_end_; ++exp){
@@ -82,9 +70,9 @@ void AllExperimentsResults::processAllExperiments(std::deque<AllRunsResults> &al
 		for (int ch = 0, _end_ = mppc_channels.size(); ch != _end_; ++ch)
 			not_ok = not_ok	|| (run_size != mppc_peaks[exp][ch].size());
 		for (int ch = 0, _end_ = pmt_channels.size(); ch != _end_; ++ch)
-			not_ok = not_ok||(run_size!=pmt_peaks[exp][ch].size()||(run_size!=PMT_S2_int[exp][ch].size()));
+			not_ok = not_ok||(run_size!=pmt_peaks[exp][ch].size());
 		if (not_ok){
-			std::cout << "AllExperimentResults::processAllExperiments Error: exp " << exp_area.experiments[exp] << " Run size mismathch!"<<std::endl;
+			std::cout << "AllExperimentResults::processAllExperiments Error: exp " << exp_area.experiments[exp] << " Run size mismatch!"<<std::endl;
 		}
 	}
 }

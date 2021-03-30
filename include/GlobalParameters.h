@@ -60,60 +60,58 @@ extern AnalysisManager *manager;
 extern AllExperimentsResults* g_data;
 extern PostProcessor* post_processor;
 
-//namespace ParameterPile
-//{
-	enum DrawEngine { Gnuplot, ROOT_ };
-	enum TriggerVersion { trigger_v1, trigger_v2, trigger_v3};
-	enum NamingScheme { name_scheme_v1, name_scheme_v2}; //v1 - before 2019.12.06 refactoring of Data_processing, v2 - after
+enum DrawEngine { Gnuplot, ROOT_ };
+enum TriggerVersion { trigger_v1, trigger_v2, trigger_v3};
+enum NamingScheme { name_scheme_v1, name_scheme_v2}; //v1 - before 2019.12.06 refactoring of Data_processing, v2 - after
 
-	double gasE_from_kV (double kV, double gasAr_layer); //gasAr_layer is in [cm], returns E in gaseous Ar in [V/cm]
-	double Td_from_E (double E); //E is in [V/cm]
-	double E_from_Td(double Td); //E is in [V/cm]
-	double Vdr_from_E (double E); //E is in [V/cm], returns drift velocity in gaseous Ar in [cm/s]
-	double Vdr_from_kV (double kV, double gasAr_layer); //LAr_layer is in [cm], returns drift velocity in gaseous Ar in [cm/s]
-	double drift_time_from_kV(double kV, double gasAr_layer); //gasAr_layer is in [cm], returns drift time in gaseous Ar in [microseconds]
-	Bool_t draw_required(/*ParameterPile::*/experiment_area what);
+double gasE_from_kV (double kV, double gasAr_layer); //gasAr_layer is in [cm], returns E in gaseous Ar in [V/cm]
+double Td_from_E (double E); //E is in [V/cm]
+double E_from_Td(double Td); //E is in [V/cm]
+double Vdr_from_E (double E); //E is in [V/cm], returns drift velocity in gaseous Ar in [cm/s]
+double Vdr_from_kV (double kV, double gasAr_layer); //LAr_layer is in [cm], returns drift velocity in gaseous Ar in [cm/s]
+double drift_time_from_kV(double kV, double gasAr_layer); //gasAr_layer is in [cm], returns drift time in gaseous Ar in [microseconds]
+Bool_t draw_required(/*ParameterPile::*/experiment_area what);
 
-	extern std::deque <experiment_area> areas_to_draw;
-	extern std::string this_path;
-	
-	extern std::string Vdrift_data_fname;
-	extern DataVector Vdrift; //e drift speed in gaseous Ar as a function of Td (in m/s)
-	extern const double bolzmann_SI; //SI
-	extern const double Td_is_Vcm2; //1 Townsend = 1e-17 V*cm^2
-	extern const double LAr_epsilon; //doi: 10.1016/j.nima.2019.162431
-	extern double full_gap_length; //cm, the distance between THGEM0 and THGEM1
-	extern double R3; //MOhm, THGEM0 resistance. 4 MOhm in experiments before ~ Feb 2019.
-	extern double Rgap; //MOhm, resistance defining E field in EL gap
-	extern double Rrest; //MOhm
-	extern const double T; //temperature in K
-	extern const double P; //pressure in Pa
+extern std::deque <experiment_area> areas_to_draw;
+extern std::string this_path;
 
-	extern std::string data_prefix_path;
-	extern std::string calibration_file;
-	extern std::string data_output_path;
+extern std::string Vdrift_data_fname;
+extern DataVector Vdrift; //e drift speed in gaseous Ar as a function of Td (in m/s)
+extern const double bolzmann_SI; //SI
+extern const double Td_is_Vcm2; //1 Townsend = 1e-17 V*cm^2
+extern const double LAr_epsilon; //doi: 10.1016/j.nima.2019.162431
+extern double full_gap_length; //cm, the distance between THGEM0 and THGEM1
+extern double R3; //MOhm, THGEM0 resistance. 4 MOhm in experiments before ~ Feb 2019.
+extern double Rgap; //MOhm, resistance defining E field in EL gap
+extern double Rrest; //MOhm
+extern const double T; //temperature in K
+extern const double P; //pressure in Pa
 
-	extern std::string DATA_MPPC_VERSION;
-	extern std::string DATA_PMT_VERSION;
+extern std::string data_prefix_path;
+extern std::string calibration_file;
+extern std::string data_output_path;
 
-	extern experiment_area exp_area;
-	extern int threads_number;
+extern std::string DATA_MPPC_VERSION;
+extern std::string DATA_PMT_VERSION;
 
-	extern int gnuplot_pad_size;
-	extern int gnuplot_max_size;
-	extern int gnuplot_width;
+extern experiment_area exp_area;
+extern int threads_number;
 
-	extern TriggerVersion trigger_version;
-	extern NamingScheme name_scheme_version;
-	extern std::map < std::string, double > experiment_fields;
-	extern std::map < std::string, double > PMT_V;
-	extern std::map < std::string, double > MPPC_V;
-	extern std::map < std::string, channel_info<dB_info> > dBs;
-	extern std::pair<int, int> calibaration_points;
-	extern std::map < int, std::pair<double,double> > MPPC_coords;
+extern int gnuplot_pad_size;
+extern int gnuplot_max_size;
+extern int gnuplot_width;
 
-	void Init_globals(bool full);
-//};
+extern TriggerVersion trigger_version;
+extern NamingScheme name_scheme_version;
+extern std::map < std::string, double > experiment_fields;
+extern std::map < std::string, double > PMT_V;
+extern std::map < std::string, double > MPPC_V;
+extern std::map < std::string, channel_info<dB_info> > dBs;
+extern std::pair<int, int> calibaration_points;
+extern std::map < int, std::pair<double,double> > MPPC_coords;
+
+void Init_globals(bool full);
+
 void DrawFileData(std::string name, std::vector<double> xs, std::vector<double> ys, /*ParameterPile::*/DrawEngine de = /*ParameterPile::*/ ROOT_);
 
 #endif

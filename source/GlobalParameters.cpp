@@ -135,6 +135,55 @@ double fast_pown(double val, unsigned int n)
 	return result;
 }
 
+//For threading. Splits [min, max) range into n parts as equal as possible.
+std::vector<std::pair<int, int>> split_range(int min, int max, int number)
+{
+	std::vector<std::pair<int, int>> result;
+	if (min == max)
+		return result;
+	unsigned int n_effective = (number > (max - min) ? (max - min) : number);
+	n_effective = (n_effective <= 0 ? 1 : n_effective);
+	int N_extra = (max - min) % n_effective;
+	std::vector<int> Ns(n_effective, 0);
+	for (unsigned int n = 0u; n < n_effective; ++n) { //distribute events among the processes as evenly as possible
+		Ns[n] = (max - min) / n_effective + ((N_extra>0) ? 1 : 0);
+		--N_extra;
+	}
+	int current_min = min;
+	for (unsigned int n = 0u; n < n_effective; ++n) {
+		result.push_back(std::pair<int, int>(current_min, current_min + Ns[n]));
+		current_min = current_min + Ns[n];
+	}
+	return result;
+}
+
+void test_ROOT_threads(void)
+{
+	int run_size = 25;
+	std::deque<int> results(run_size, -1);
+	std::vector<std::pair<int, int>> thread_indices = split_range(0, run_size, threads_number);
+	int thread_n = thread_indices.size();
+	std::vector<std::thread> threads;
+	for (unsigned int n_th = 0u; n_th < thread_n; ++n_th) {
+		threads.push_back(std::thread([&]()
+		{
+			for (int run = thread_indices[n_th].first; run!=thread_indices[n_th].second; ++run) {
+				results[run] = run;
+			}
+		}));
+	}
+	for (unsigned int n_th = 0u; n_th < thread_n; ++n_th) {
+		threads[n_th].join();
+	}
+	std::cout<<"test_ROOT_threads finished:"<<std::endl;
+	std::cout<<"{";
+	for (int run = 0; run!=run_size; ++run) {
+		std::cout<<results[run]<<", ";
+	}
+	std::cout<<"}";
+	std::cout<<std::endl;
+}
+
 void open_output_file(std::string name, std::ofstream &str, std::ios_base::openmode _mode)
 {
 	ensure_file(name);
@@ -1195,235 +1244,232 @@ bool viewRegion::RangesIntersect(double x1, double x2, double x3, double x4, dou
 	return false;
 }
 
-//namespace ParameterPile
-//{
-	std::deque <experiment_area> areas_to_draw;
-	std::string this_path;
+std::deque <experiment_area> areas_to_draw;
+std::string this_path;
 
-	std::string data_prefix_path;
-	std::string calibration_file;
-	std::string data_output_path;
+std::string data_prefix_path;
+std::string calibration_file;
+std::string data_output_path;
 
-	std::string DATA_MPPC_VERSION;
-	std::string DATA_PMT_VERSION;
+std::string DATA_MPPC_VERSION;
+std::string DATA_PMT_VERSION;
 
-	experiment_area exp_area;
-	int threads_number = 6; //obv. must be >=1
+experiment_area exp_area;
+int threads_number = 8; //obv. must be >=1
 
-	int gnuplot_pad_size = 400;
-	int gnuplot_max_size = 1600;
-	int gnuplot_width = 900; //default for gnuplot is 640
+int gnuplot_pad_size = 400;
+int gnuplot_max_size = 1600;
+int gnuplot_width = 900; //default for gnuplot is 640
 
-	TriggerVersion trigger_version;
-	NamingScheme name_scheme_version;
-	std::map < std::string, double > experiment_fields;
-	std::map < std::string, double > PMT_V;
-	std::map < std::string, double > MPPC_V;
-	std::map < std::string, channel_info<dB_info> > dBs;
-	std::pair<int, int> calibaration_points;
-	std::map < int, std::pair<double,double> > MPPC_coords;
+TriggerVersion trigger_version;
+NamingScheme name_scheme_version;
+std::map < std::string, double > experiment_fields;
+std::map < std::string, double > PMT_V;
+std::map < std::string, double > MPPC_V;
+std::map < std::string, channel_info<dB_info> > dBs;
+std::pair<int, int> calibaration_points;
+std::map < int, std::pair<double,double> > MPPC_coords;
 
 
-	std::string Vdrift_data_fname = "ArDriftVel.txt";
-	DataVector Vdrift(4, 5); //e drift speed in gaseous Ar as a function of Td (in m/s)
-	const double bolzmann_SI = 1.38064852e-23; //SI
-	const double Td_is_Vcm2 = 1e-17; //1 Townsend = 1e-17 V*cm^2
-	const double LAr_epsilon = 1.54; //doi: 10.1016/j.nima.2019.162431
-	double full_gap_length = 2.2; //cm, the distance between THGEM0 and THGEM1
-	double R3 = 10; //MOhm, THGEM0 resistance. 4 MOhm in experiments before ~ Feb 2019.
-	double Rgap = 600; //MOhm, resistance defining E field in EL gap
-	double Rrest = 200; //MOhm
-	const double T = 87; //temperature in K
-	const double P = 1.015e5; //pressure in Pa
+std::string Vdrift_data_fname = "ArDriftVel.txt";
+DataVector Vdrift(4, 5); //e drift speed in gaseous Ar as a function of Td (in m/s)
+const double bolzmann_SI = 1.38064852e-23; //SI
+const double Td_is_Vcm2 = 1e-17; //1 Townsend = 1e-17 V*cm^2
+const double LAr_epsilon = 1.54; //doi: 10.1016/j.nima.2019.162431
+double full_gap_length = 2.2; //cm, the distance between THGEM0 and THGEM1
+double R3 = 10; //MOhm, THGEM0 resistance. 4 MOhm in experiments before ~ Feb 2019.
+double Rgap = 600; //MOhm, resistance defining E field in EL gap
+double Rrest = 200; //MOhm
+const double T = 87; //temperature in K
+const double P = 1.015e5; //pressure in Pa
 
-	//LAr_layer must be in [0, full_gap_length]
-	double gasE_from_kV (double kV, double gasAr_layer) //gasAr_layer is in [cm], returns E in gaseous Ar in [V/cm]
-	{
-		if (gasAr_layer < 0)
-			gasAr_layer = 0;
-		if (gasAr_layer > full_gap_length)
-			gasAr_layer = full_gap_length;
-		return 1e3*kV*(Rgap / (Rgap + Rrest + R3))*LAr_epsilon / (LAr_epsilon*gasAr_layer + (full_gap_length - gasAr_layer));
-	}
+//LAr_layer must be in [0, full_gap_length]
+double gasE_from_kV (double kV, double gasAr_layer) //gasAr_layer is in [cm], returns E in gaseous Ar in [V/cm]
+{
+	if (gasAr_layer < 0)
+		gasAr_layer = 0;
+	if (gasAr_layer > full_gap_length)
+		gasAr_layer = full_gap_length;
+	return 1e3*kV*(Rgap / (Rgap + Rrest + R3))*LAr_epsilon / (LAr_epsilon*gasAr_layer + (full_gap_length - gasAr_layer));
+}
 
-	double Td_from_E (double E) //E is in [V/cm]
-	{
-		double N = 1e-6*P / (T*bolzmann_SI); //in cm^-3
-		return E / N / Td_is_Vcm2;
-	}
+double Td_from_E (double E) //E is in [V/cm]
+{
+	double N = 1e-6*P / (T*bolzmann_SI); //in cm^-3
+	return E / N / Td_is_Vcm2;
+}
 
-	double E_from_Td(double Td) //E is in [V/cm]
-	{
-		double N = 1e-6*P / (T*bolzmann_SI); //in cm^-3
-		return Td * N * Td_is_Vcm2;
-	}
+double E_from_Td(double Td) //E is in [V/cm]
+{
+	double N = 1e-6*P / (T*bolzmann_SI); //in cm^-3
+	return Td * N * Td_is_Vcm2;
+}
 
-	double Vdr_from_E (double E) //E is in [V/cm], returns drift velocity in gaseous Ar in [cm/s]
-	{
-		double Td = Td_from_E(E);
-		Td = std::fabs(Td);
-		double Vdr = 1e2 * Vdrift(Td);
-		return Vdr;
-	}
+double Vdr_from_E (double E) //E is in [V/cm], returns drift velocity in gaseous Ar in [cm/s]
+{
+	double Td = Td_from_E(E);
+	Td = std::fabs(Td);
+	double Vdr = 1e2 * Vdrift(Td);
+	return Vdr;
+}
 
-	double Vdr_from_kV (double kV, double gasAr_layer) //LAr_layer is in [cm], returns drift velocity in gaseous Ar in [cm/s]
-	{
-		if (!Vdrift.isValid()) {
-			std::ifstream str;
-			str.open(Vdrift_data_fname);
-			if (!str.is_open()) {
-				std::cerr << "Error: Failed to open file with V drfit data \"" << Vdrift_data_fname << "\"!" << std::endl;
-				return DBL_MAX;
-			}
-			Vdrift.read(str);
-		}
-		if (!Vdrift.isValid()) {
-			std::cerr << "Error: Failed to load file with V drfit data \"" << Vdrift_data_fname << "\"!" << std::endl;
+double Vdr_from_kV (double kV, double gasAr_layer) //LAr_layer is in [cm], returns drift velocity in gaseous Ar in [cm/s]
+{
+	if (!Vdrift.isValid()) {
+		std::ifstream str;
+		str.open(Vdrift_data_fname);
+		if (!str.is_open()) {
+			std::cerr << "Error: Failed to open file with V drfit data \"" << Vdrift_data_fname << "\"!" << std::endl;
 			return DBL_MAX;
 		}
-		double E = gasE_from_kV(kV, gasAr_layer);
-		return Vdr_from_E(E);
+		Vdrift.read(str);
 	}
-
-	double drift_time_from_kV(double kV, double gasAr_layer) //gasAr_layer is in [cm], returns drift time in gaseous Ar in [microseconds]
-	{
-		double Vdr = Vdr_from_kV(kV, gasAr_layer);
-		if (DBL_MAX == Vdr)
-			return 0;
-		return 1e6*gasAr_layer / Vdr;
+	if (!Vdrift.isValid()) {
+		std::cerr << "Error: Failed to load file with V drfit data \"" << Vdrift_data_fname << "\"!" << std::endl;
+		return DBL_MAX;
 	}
+	double E = gasE_from_kV(kV, gasAr_layer);
+	return Vdr_from_E(E);
+}
 
-	Bool_t draw_required(/*ParameterPile::*/experiment_area what)
-	{
-		for (auto i = areas_to_draw.begin(); i != areas_to_draw.end(); ++i)
-			if (i->contains(what))
-				return kTRUE;
-		return kFALSE;
-	}
+double drift_time_from_kV(double kV, double gasAr_layer) //gasAr_layer is in [cm], returns drift time in gaseous Ar in [microseconds]
+{
+	double Vdr = Vdr_from_kV(kV, gasAr_layer);
+	if (DBL_MAX == Vdr)
+		return 0;
+	return 1e6*gasAr_layer / Vdr;
+}
 
-	void Init_globals(bool full)
-	{
-		char path[FILENAME_MAX];
+Bool_t draw_required(/*ParameterPile::*/experiment_area what)
+{
+	for (auto i = areas_to_draw.begin(); i != areas_to_draw.end(); ++i)
+		if (i->contains(what))
+			return kTRUE;
+	return kFALSE;
+}
+
+void Init_globals(bool full)
+{
+	char path[FILENAME_MAX];
 #if defined(__WIN32__)
-		this_path = _getcwd(path, FILENAME_MAX);
+	this_path = _getcwd(path, FILENAME_MAX);
 #else
-		this_path = getcwd(path, FILENAME_MAX);
+	this_path = getcwd(path, FILENAME_MAX);
 #endif //__WIN32__
-		TThread::Initialize();
-		gStyle->SetOptFit();
-		gStyle->SetStatY(0.9);
-		gStyle->SetStatX(0.9);
-		calibaration_points = std::pair<int, int>(3, 6);
+	TThread::Initialize();
+	gStyle->SetOptFit();
+	gStyle->SetStatY(0.9);
+	gStyle->SetStatX(0.9);
+	calibaration_points = std::pair<int, int>(3, 6);
 
-		double SiPM_size = 10; //mm
-		//<x,y>
-		MPPC_coords.clear();
-		MPPC_coords[32]= std::pair<double,double>(-2,-2);
-		MPPC_coords[33]= std::pair<double,double>(-1,-2);
-		MPPC_coords[34]= std::pair<double,double>(2,-2);
-		MPPC_coords[35]= std::pair<double,double>(-2,-1);
-		MPPC_coords[36]= std::pair<double,double>(1,-1);
-		MPPC_coords[37]= std::pair<double,double>(2,-1);
-		MPPC_coords[38]= std::pair<double,double>(0,0);
-		MPPC_coords[39]= std::pair<double,double>(1,0);
-		MPPC_coords[40]= std::pair<double,double>(-1,1);
-		MPPC_coords[41]= std::pair<double,double>(0,1);
-		MPPC_coords[42]= std::pair<double,double>(-2,2);
-		MPPC_coords[43]= std::pair<double,double>(-1,2);
-		MPPC_coords[44]= std::pair<double,double>(2,2);
-		MPPC_coords[48]= std::pair<double,double>(0,-2);
-		MPPC_coords[49]= std::pair<double,double>(1,-2);
-		MPPC_coords[50]= std::pair<double,double>(-1,-1);
-		MPPC_coords[51]= std::pair<double,double>(0,-1);
-		MPPC_coords[52]= std::pair<double,double>(-2,0);
-		MPPC_coords[53]= std::pair<double,double>(-1,0);
-		MPPC_coords[54]= std::pair<double,double>(2,0);
-		MPPC_coords[55]= std::pair<double,double>(-2,1);
-		MPPC_coords[56]= std::pair<double,double>(1,1);
-		MPPC_coords[57]= std::pair<double,double>(2,1);
-		MPPC_coords[58]= std::pair<double,double>(0,2);
-		MPPC_coords[59]= std::pair<double,double>(1,2);
-		for (auto i = MPPC_coords.begin();i!=MPPC_coords.end();++i){
-			i->second.first *=SiPM_size;
-			i->second.second*=SiPM_size;
-		}
-
-		if (!full)
-			return;
-		trigger_version = trigger_v2;
-		name_scheme_version = name_scheme_v1;
-		if (areas_to_draw.empty())
-			areas_to_draw.push_back(experiment_area());
-		areas_to_draw.back().channels.erase();
-		areas_to_draw.back().runs.erase();
-		areas_to_draw.back().sub_runs.erase();
-		areas_to_draw.back().runs.push_pair(0, 0);
-		areas_to_draw.back().channels.push_pair(0, 1);
-		areas_to_draw.back().channels.push_pair(32, 62);
-		areas_to_draw.back().sub_runs.push_pair(0, 0);
-
-		exp_area.channels.erase();
-		exp_area.runs.erase();
-		exp_area.sub_runs.erase();
-		exp_area.channels.push_pair(0, 1);
-		exp_area.channels.push_pair(8, 8);
-		exp_area.channels.push_pair(12,12);
-		//exp_area.channels.push_pair(2, 2);
-		exp_area.channels.push_pair(32, 62);//will load only present channels
-		exp_area.runs.push_pair(0, 0);
-		exp_area.sub_runs.push_pair(0, 0);
-
-
-		data_prefix_path = "../Data/180215/results/";
-		calibration_file = "PMT_SiPM_48V_180215.dat";
-		data_output_path = "180215/results/";
-
-		if (name_scheme_version == name_scheme_v1) {
-			DATA_MPPC_VERSION = "MPPCs_v1";
-			DATA_PMT_VERSION = "PMT_v1";
-		} else {
-			DATA_MPPC_VERSION = "SiPM";
-			DATA_PMT_VERSION = "PMT";
-		}
-
-		PMT_V.clear();
-		PMT_V["X-ray_6kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
-		PMT_V["X-ray_8kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
-		PMT_V["X-ray_10kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
-		PMT_V["X-ray_11kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
-		PMT_V["X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
-		PMT_V["X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
-
-		channel_info<dB_info> atten0;
-		atten0.push(0, dB_info(12));
-		dBs.clear();
-		dBs["X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = atten0;
-		dBs["X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = atten0;
-
-		experiment_fields.clear();
-		experiment_fields["X-ray_6kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 6;
-		experiment_fields["X-ray_8kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 8;
-		experiment_fields["X-ray_10kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 10;
-		experiment_fields["X-ray_11kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 11;
-		experiment_fields["X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 12;
-		experiment_fields["X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 14;
-
-
-		areas_to_draw.back().experiments.clear();
-		areas_to_draw.back().experiments.push_back("X-ray_6kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
-		areas_to_draw.back().experiments.push_back("X-ray_8kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
-		areas_to_draw.back().experiments.push_back("X-ray_10kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
-		areas_to_draw.back().experiments.push_back("X-ray_11kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
-		areas_to_draw.back().experiments.push_back("X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
-		areas_to_draw.back().experiments.push_back("X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
-
-
-		exp_area.experiments.clear();
-		exp_area.experiments.push_back("X-ray_6kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
-		exp_area.experiments.push_back("X-ray_8kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
-		exp_area.experiments.push_back("X-ray_10kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
-		exp_area.experiments.push_back("X-ray_11kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
-		exp_area.experiments.push_back("X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
-		exp_area.experiments.push_back("X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+	double SiPM_size = 10; //mm
+	//<x,y>
+	MPPC_coords.clear();
+	MPPC_coords[32]= std::pair<double,double>(-2,-2);
+	MPPC_coords[33]= std::pair<double,double>(-1,-2);
+	MPPC_coords[34]= std::pair<double,double>(2,-2);
+	MPPC_coords[35]= std::pair<double,double>(-2,-1);
+	MPPC_coords[36]= std::pair<double,double>(1,-1);
+	MPPC_coords[37]= std::pair<double,double>(2,-1);
+	MPPC_coords[38]= std::pair<double,double>(0,0);
+	MPPC_coords[39]= std::pair<double,double>(1,0);
+	MPPC_coords[40]= std::pair<double,double>(-1,1);
+	MPPC_coords[41]= std::pair<double,double>(0,1);
+	MPPC_coords[42]= std::pair<double,double>(-2,2);
+	MPPC_coords[43]= std::pair<double,double>(-1,2);
+	MPPC_coords[44]= std::pair<double,double>(2,2);
+	MPPC_coords[48]= std::pair<double,double>(0,-2);
+	MPPC_coords[49]= std::pair<double,double>(1,-2);
+	MPPC_coords[50]= std::pair<double,double>(-1,-1);
+	MPPC_coords[51]= std::pair<double,double>(0,-1);
+	MPPC_coords[52]= std::pair<double,double>(-2,0);
+	MPPC_coords[53]= std::pair<double,double>(-1,0);
+	MPPC_coords[54]= std::pair<double,double>(2,0);
+	MPPC_coords[55]= std::pair<double,double>(-2,1);
+	MPPC_coords[56]= std::pair<double,double>(1,1);
+	MPPC_coords[57]= std::pair<double,double>(2,1);
+	MPPC_coords[58]= std::pair<double,double>(0,2);
+	MPPC_coords[59]= std::pair<double,double>(1,2);
+	for (auto i = MPPC_coords.begin();i!=MPPC_coords.end();++i){
+		i->second.first *=SiPM_size;
+		i->second.second*=SiPM_size;
 	}
-//};
+
+	if (!full)
+		return;
+	trigger_version = trigger_v2;
+	name_scheme_version = name_scheme_v1;
+	if (areas_to_draw.empty())
+		areas_to_draw.push_back(experiment_area());
+	areas_to_draw.back().channels.erase();
+	areas_to_draw.back().runs.erase();
+	areas_to_draw.back().sub_runs.erase();
+	areas_to_draw.back().runs.push_pair(0, 0);
+	areas_to_draw.back().channels.push_pair(0, 1);
+	areas_to_draw.back().channels.push_pair(32, 62);
+	areas_to_draw.back().sub_runs.push_pair(0, 0);
+
+	exp_area.channels.erase();
+	exp_area.runs.erase();
+	exp_area.sub_runs.erase();
+	exp_area.channels.push_pair(0, 1);
+	exp_area.channels.push_pair(8, 8);
+	exp_area.channels.push_pair(12,12);
+	//exp_area.channels.push_pair(2, 2);
+	exp_area.channels.push_pair(32, 62);//will load only present channels
+	exp_area.runs.push_pair(0, 0);
+	exp_area.sub_runs.push_pair(0, 0);
+
+
+	data_prefix_path = "../Data/180215/results/";
+	calibration_file = "PMT_SiPM_48V_180215.dat";
+	data_output_path = "180215/results/";
+
+	if (name_scheme_version == name_scheme_v1) {
+		DATA_MPPC_VERSION = "MPPCs_v1";
+		DATA_PMT_VERSION = "PMT_v1";
+	} else {
+		DATA_MPPC_VERSION = "SiPM";
+		DATA_PMT_VERSION = "PMT";
+	}
+
+	PMT_V.clear();
+	PMT_V["X-ray_6kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
+	PMT_V["X-ray_8kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
+	PMT_V["X-ray_10kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
+	PMT_V["X-ray_11kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
+	PMT_V["X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
+	PMT_V["X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 750;
+
+	channel_info<dB_info> atten0;
+	atten0.push(0, dB_info(12));
+	dBs.clear();
+	dBs["X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = atten0;
+	dBs["X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = atten0;
+
+	experiment_fields.clear();
+	experiment_fields["X-ray_6kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 6;
+	experiment_fields["X-ray_8kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 8;
+	experiment_fields["X-ray_10kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 10;
+	experiment_fields["X-ray_11kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 11;
+	experiment_fields["X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 12;
+	experiment_fields["X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray"] = 14;
+
+
+	areas_to_draw.back().experiments.clear();
+	areas_to_draw.back().experiments.push_back("X-ray_6kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+	areas_to_draw.back().experiments.push_back("X-ray_8kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+	areas_to_draw.back().experiments.push_back("X-ray_10kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+	areas_to_draw.back().experiments.push_back("X-ray_11kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+	areas_to_draw.back().experiments.push_back("X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+	areas_to_draw.back().experiments.push_back("X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+
+
+	exp_area.experiments.clear();
+	exp_area.experiments.push_back("X-ray_6kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+	exp_area.experiments.push_back("X-ray_8kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+	exp_area.experiments.push_back("X-ray_10kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+	exp_area.experiments.push_back("X-ray_11kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+	exp_area.experiments.push_back("X-ray_12kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+	exp_area.experiments.push_back("X-ray_14kV_PMT_SiPM_48V_THGEM_0V_coll_6mm_trig_xray");
+}

@@ -706,8 +706,6 @@ FunctionWrapper* create_vertical_lines_cut(double left, double right) //do not c
 	case AStates::PMT_S2_S:
 	case AStates::MPPC_S2:
 	case AStates::MPPC_Ss:
-	case AStates::MPPC_Double_I:
-	case AStates::PMT_S2_int:
 	case AStates::PMT_Ss:
 	case AStates::PMT_trigger_bNpe:
 	case AStates::PMT_trigger_bNpeaks:
@@ -938,8 +936,6 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 		});
 		break;
 	}
-	case AStates::PMT_S2_int:
-	case AStates::MPPC_Double_I:
 	case AStates::Correlation:
 	case AStates::CorrelationAll:
 	{
@@ -1095,8 +1091,6 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 		});
 		break;
 	}
-	case AStates::PMT_S2_int:
-	case AStates::MPPC_Double_I:
 	case AStates::Correlation:
 	case AStates::CorrelationAll:
 	{
@@ -1251,8 +1245,6 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 		});
 		break;
 	}
-	case AStates::PMT_S2_int:
-	case AStates::MPPC_Double_I:
 	case AStates::Correlation:
 	case AStates::CorrelationAll:
 	{
@@ -1487,8 +1479,6 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 		});
 		break;
 	}
-	case AStates::PMT_S2_int:
-	case AStates::MPPC_Double_I:
 	case AStates::Correlation:
 	case AStates::CorrelationAll:
 	{
@@ -1607,8 +1597,6 @@ FunctionWrapper* create_A_S_polygon_cut(std::vector<double> region, unsigned int
 		});
 		break;
 	}
-	case AStates::PMT_S2_int:
-	case AStates::MPPC_Double_I:
 	case AStates::Correlation:
 	case AStates::CorrelationAll:
 	{

@@ -1,6 +1,7 @@
 {
   gStyle->SetCanvasDefH(800);
 	gStyle->SetCanvasDefW(1000);
+  threads_number = 8;
   name_scheme_version = name_scheme_v2;
   trigger_version = TriggerVersion::trigger_v2;
   //From global parameters:

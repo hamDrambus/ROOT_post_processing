@@ -9,16 +9,6 @@ CanvasSetups(_data->mppc_channels,_data->pmt_channels, _data->exp_area.experimen
 		return;
 	}
 	data = _data;
-	for (auto exp = data->exp_area.experiments.begin(); exp != data->exp_area.experiments.end(); ++exp) {
-		avr_S2_S.push_back(std::deque<double>());
-		avr_Double_I.push_back(std::deque<double>());
-		PMT3_avr_S2_S.push_back(-1);
-		PMT1_avr_S2_S.push_back(-1);
-		for (auto ch = data->mppc_channels.begin(); ch != data->mppc_channels.end(); ++ch) {
-			avr_S2_S.back().push_back(-1);
-			avr_Double_I.back().push_back(-1);
-		}
-	}
 	StateChange(current_channel, current_exp_index, current_type, canvas_ind, current_channel, current_exp_index, current_type, canvas_ind); //To create HistogramSetups at the start of the program
 	update();
 }
@@ -156,8 +146,6 @@ void PostProcessor::print_hist(std::string path, bool png_only)
 	case PMT_S2_S:
 	case MPPC_S2:
 	case MPPC_Ss:
-	case MPPC_Double_I:
-	case PMT_S2_int:
 	case PMT_Ss:
 	case PMT_trigger_bNpe:
 	case PMT_trigger_bNpeaks:
@@ -280,19 +268,6 @@ void PostProcessor::save(int channel)
 	int ch_ind = data->get_ch_index(channel);
 	if (ch_ind < 0)
 		return;
-	std::vector<double> N_pe_result;
-	for (std::size_t pt = 0; pt < data->exp_area.experiments.size(); ++pt){
-		if (pt <= calibr_info.get_N_calib(channel).second)
-			N_pe_result.push_back(data->N_pe_direct[pt][ch_ind]);
-		else
-			N_pe_result.push_back(data->N_pe_Double_I[pt][ch_ind]);
-	}
-	std::ofstream file;
-	open_output_file(data_output_path + DATA_MPPC_VERSION + std::to_string(channel) + "_Npe.txt", file);
-	file << "E[kV/cm]\tN_pe_direct\tN_pe_Double_I\tN_pe_result" << std::endl;
-	for (std::size_t pt = 0; pt < data->exp_area.experiments.size(); ++pt)
-		file << data->Fields[pt] << "\t" << data->N_pe_direct[pt][ch_ind] << "\t" << data->N_pe_Double_I[pt][ch_ind] << "\t" << N_pe_result[pt] << std::endl;
-	file.close();
 }
 
 /* PARAMETERS PASSED TO FUNCTION WRAPPER (*operation) AS WELL AS CUTTER
@@ -346,42 +321,6 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 	int ch_ind = channel_to_index(channel, type);
 	switch (type)
 	{
-	case Type::MPPC_Double_I:
-	{
-		int run_size = data->Double_I[current_exp_index][ch_ind].size();
-		std::vector<double> cut_data(1);
-		for (auto run = 0; run != run_size; ++run) {
-			bool failed_run_cut = false;
-			bool failed_hist_cut = false; //normal cuts
-			bool failed_phys_cut = false; //drawn (displayed) cuts only
-			for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
-				if (kFALSE == cut->GetAccept(run)) {
-					failed_run_cut = true;
-					break;
-				}
-			cut_data[0] = data->Double_I[current_exp_index][ch_ind][run];
-			for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
-				if (cut->GetAffectingHistogram() && !failed_hist_cut)
-					if (kFALSE == (*cut)(cut_data, run)) //more expensive than GetAffectingHistogram
-						failed_hist_cut = true;
-				if (!cut->GetAffectingHistogram() && !failed_phys_cut)
-					if (kFALSE == (*cut)(cut_data, run))
-						failed_phys_cut = true;
-				if (failed_hist_cut && failed_phys_cut)
-					break;
-			}
-			for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
-				if (operations[o].apply_run_cuts && failed_run_cut)
-					continue;
-				if (operations[o].apply_hist_cuts && failed_hist_cut)
-					continue;
-				if (operations[o].apply_phys_cuts && failed_phys_cut)
-					continue;
-				(*operations[o].operation)(cut_data, run);
-			}
-		}
-		break;
-	}
 	case Type::MPPC_t_S:
 	case Type::MPPC_A_S:
 	case Type::MPPC_tbS:
@@ -588,8 +527,8 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 	case Type::MPPC_trigger_fit:
 	case Type::MPPC_trigger_fit_chi2:
 	{
-		bool ignore_no_run_cut = true;
 		bool is_chi2 = (type == Type::PMT_trigger_fit_chi2 || type == Type::MPPC_trigger_fit_chi2);
+		bool ignore_no_run_cut = true;
 		for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
 			if (!operations[o].apply_run_cuts) {
 				ignore_no_run_cut = false;
@@ -615,95 +554,114 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 			peaks = &(data->mppc_peaks[current_exp_index]);
 		}
 		int run_size = (*peaks)[0].size();
-		std::vector<double> cut_data(6);
-		for (auto run = 0; run != run_size; ++run) {
-			//cuts on peaks (low level cuts) are always applied (those affecting histogram only)
-			std::deque<peak_processed> accepted_peaks;
-			std::vector<double> trigger_offset(1, 0);
-			std::vector<double> chi2_value(1, 0);
+		struct event_result {
 			bool failed_run_cut = false;
-			for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
-				if (kFALSE == cut->GetAccept(run)) {
-					failed_run_cut = true;
-					break;
-				}
-			if (failed_run_cut && ignore_no_run_cut)
-				continue;
-
-			for (int chan_ind=0,_ch_ind_end_= channels->size(); chan_ind<_ch_ind_end_;++chan_ind) {
-				if (NULL != setups) {
-					bool *active = setups->active_channels.info((*channels)[chan_ind]);
-					if (NULL == active)
-						continue;
-					if (!(*active))
-						continue;
-				}
-				double s1pe = calibr_info.get_S1pe((*channels)[chan_ind], current_exp_index);
-				for (int pk = 0, pk_end = (*peaks)[chan_ind][run].size(); pk != pk_end; ++pk) {
-					bool failed_hist_cut = false; //normal cuts
-					cut_data[0] = (*peaks)[chan_ind][run][pk].S;
-					cut_data[1] = (*peaks)[chan_ind][run][pk].A;
-					cut_data[2] = (*peaks)[chan_ind][run][pk].left + data->trigger_offset[current_exp_index][run];
-					cut_data[3] = (*peaks)[chan_ind][run][pk].right + data->trigger_offset[current_exp_index][run];
-					cut_data[4] =
-#ifdef PEAK_AVR_TIME
-							(*peaks)[chan_ind][run][pk].t + data->trigger_offset[current_exp_index][run];
-#else
-							0.5*(cut_data[3]+cut_data[2]);
-#endif
-					cut_data[5] = s1pe > 0 ? std::round(cut_data[0]/s1pe) : -1;
-					for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
-						if (cut->GetChannel()==(*channels)[chan_ind] && cut->GetAffectingHistogram() && !failed_hist_cut)
-							if (kFALSE == (*cut)(cut_data, run)) { //more expensive than GetAffectingHistogram
-								failed_hist_cut = true;
-								break;
-							}
+			bool failed_hist_phys = false;
+			bool failed_hist = false;
+			bool failed_phys = false;
+			std::vector<double> trigger_offset = std::vector<double>(1, 0);
+			std::vector<double> chi2_value = std::vector<double>(1, 0);
+			int event_number = -1;
+		};
+		std::vector<event_result> results(run_size);
+		std::vector<std::pair<int, int>> thread_indices = split_range(0, run_size, threads_number);
+		int thread_n = thread_indices.size();
+		std::vector<std::thread> threads;
+		for (unsigned int n_th = 0u; n_th < thread_n; ++n_th) {
+			threads.push_back(std::thread([&](int n_th) {
+			for (int run = thread_indices[n_th].first; run != thread_indices[n_th].second; ++run) {
+				std::vector<double> cut_data(6);
+				results[run].event_number = run;
+				//cuts on peaks (low level cuts) are always applied (those affecting histogram only)
+				std::deque<peak_processed> accepted_peaks;
+				for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
+					if (kFALSE == cut->GetAccept(run)) {
+						results[run].failed_run_cut = true;
+						break;
 					}
-					if (!failed_hist_cut)
-						accepted_peaks.push_back(peak_processed(cut_data[0], cut_data[1], cut_data[2], cut_data[3], cut_data[4], cut_data[5]));
-				}
-			}
+				if (results[run].failed_run_cut && ignore_no_run_cut)
+					continue;
 
-			//TODO: cache is necessary
-			if (trigger_data->IsValid()) {
-				trigger_offset[0] = SignalOperations::find_trigger_by_fit(accepted_peaks, trigger_data->exp_pulse_shape,
-						(int) trigger_data->trigger_type, trigger_data->scan_dt, trigger_data->t0_precision);
-				chi2_value[0] = SignalOperations::get_likelihood(accepted_peaks, trigger_data->exp_pulse_shape, (int)trigger_data->trigger_type, trigger_offset[0]);
-			} else {
-				trigger_offset[0] = 0;
-				chi2_value[0] = DBL_MAX;
-			}
-
-			bool failed_hist_phys = false, failed_hist = false, failed_phys = false;
-			for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut)
-				if (-1 == cut->GetChannel()) {
-					if (!failed_hist_phys)
-						if (kFALSE == (*cut)(is_chi2 ? chi2_value : trigger_offset, run))
-							failed_hist_phys = true;
-					if (!failed_hist && cut->GetAffectingHistogram())
-						if (kFALSE == (*cut)(is_chi2 ? chi2_value : trigger_offset, run))
-							failed_hist = true;
-					if (!failed_phys && !cut->GetAffectingHistogram())
-						if (kFALSE == (*cut)(is_chi2 ? chi2_value : trigger_offset, run))
-							failed_phys = true;
+				for (int chan_ind=0,_ch_ind_end_= channels->size(); chan_ind<_ch_ind_end_;++chan_ind) {
+					if (NULL != setups) {
+						bool *active = setups->active_channels.info((*channels)[chan_ind]);
+						if (NULL == active)
+							continue;
+						if (!(*active))
+							continue;
+					}
+					double s1pe = calibr_info.get_S1pe((*channels)[chan_ind], current_exp_index);
+					for (int pk = 0, pk_end = (*peaks)[chan_ind][run].size(); pk != pk_end; ++pk) {
+						bool failed_hist_cut = false; //normal cuts
+						cut_data[0] = (*peaks)[chan_ind][run][pk].S;
+						cut_data[1] = (*peaks)[chan_ind][run][pk].A;
+						cut_data[2] = (*peaks)[chan_ind][run][pk].left + data->trigger_offset[current_exp_index][run];
+						cut_data[3] = (*peaks)[chan_ind][run][pk].right + data->trigger_offset[current_exp_index][run];
+						cut_data[4] =
+	#ifdef PEAK_AVR_TIME
+								(*peaks)[chan_ind][run][pk].t + data->trigger_offset[current_exp_index][run];
+	#else
+								0.5*(cut_data[3]+cut_data[2]);
+	#endif
+						cut_data[5] = s1pe > 0 ? std::round(cut_data[0]/s1pe) : -1;
+						for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
+							if (cut->GetChannel()==(*channels)[chan_ind] && cut->GetAffectingHistogram() && !failed_hist_cut)
+								if (kFALSE == (*cut)(cut_data, run)) { //more expensive than GetAffectingHistogram
+									failed_hist_cut = true;
+									break;
+								}
+						}
+						if (!failed_hist_cut)
+							accepted_peaks.push_back(peak_processed(cut_data[0], cut_data[1], cut_data[2], cut_data[3], cut_data[4], cut_data[5]));
+					}
 				}
+
+				//TODO: cache is necessary
+				if (trigger_data->IsValid()) {
+					results[run].trigger_offset[0] = SignalOperations::find_trigger_by_fit(accepted_peaks, trigger_data->exp_pulse_shape,
+							(int) trigger_data->trigger_type, trigger_data->scan_dt, trigger_data->t0_precision);
+					results[run].chi2_value[0] = SignalOperations::get_likelihood(accepted_peaks, trigger_data->exp_pulse_shape, (int)trigger_data->trigger_type, results[run].trigger_offset[0]);
+				} else {
+					results[run].trigger_offset[0] = 0;
+					results[run].chi2_value[0] = DBL_MAX;
+				}
+
+				for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut)
+					if (-1 == cut->GetChannel()) {
+						if (!results[run].failed_hist_phys)
+							if (kFALSE == (*cut)(is_chi2 ? results[run].chi2_value : results[run].trigger_offset, run))
+								results[run].failed_hist_phys = true;
+						if (!results[run].failed_hist && cut->GetAffectingHistogram())
+							if (kFALSE == (*cut)(is_chi2 ? results[run].chi2_value : results[run].trigger_offset, run))
+								results[run].failed_hist = true;
+						if (!results[run].failed_phys && !cut->GetAffectingHistogram())
+							if (kFALSE == (*cut)(is_chi2 ? results[run].chi2_value : results[run].trigger_offset, run))
+								results[run].failed_phys = true;
+					}
+			}
+			}, n_th));
+		}
+		for (unsigned int n_th = 0u; n_th < thread_n; ++n_th) {
+			threads[n_th].join();
+		}
+		for (auto run = 0; run != run_size; ++run) {
 			for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
-				if (operations[o].apply_run_cuts && failed_run_cut)
+				if (operations[o].apply_run_cuts && results[run].failed_run_cut)
 					continue;
 				if (operations[o].apply_hist_cuts && !operations[o].apply_phys_cuts) {
-					if (!failed_hist)
-						(*operations[o].operation)(is_chi2 ? chi2_value : trigger_offset, run);
+					if (!results[run].failed_hist)
+						(*operations[o].operation)(is_chi2 ? results[run].chi2_value : results[run].trigger_offset, run);
 					continue;
 				}
 				if (!operations[o].apply_hist_cuts && operations[o].apply_phys_cuts) {
-					if (!failed_phys) (*operations[o].operation)(is_chi2 ? chi2_value : trigger_offset, run);
+					if (!results[run].failed_phys) (*operations[o].operation)(is_chi2 ? results[run].chi2_value : results[run].trigger_offset, run);
 					continue;
 				}
 				if (operations[o].apply_hist_cuts && operations[o].apply_phys_cuts) {
-					if (!failed_hist_phys) (*operations[o].operation)(is_chi2 ? chi2_value : trigger_offset, run);
+					if (!results[run].failed_hist_phys) (*operations[o].operation)(is_chi2 ? results[run].chi2_value : results[run].trigger_offset, run);
 					continue;
 				}
-				(*operations[o].operation)(is_chi2 ? chi2_value : trigger_offset, run);
+				(*operations[o].operation)(is_chi2 ? results[run].chi2_value : results[run].trigger_offset, run);
 			}
 		}
 		break;
@@ -862,89 +820,107 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 			peaks = &(data->mppc_peaks[current_exp_index]);
 		}
 		int run_size = (*peaks)[0].size();
-		std::vector<double> cut_data(6);
-		for (auto run = 0; run != run_size; ++run) {
-			//cuts on peaks (low level cuts) are always applied (those affecting histogram only)
-			std::vector<double> time_length(1, 0);
-			int n_active_channels = 0;
+		struct event_result {
 			bool failed_run_cut = false;
-			for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
-				if (kFALSE == cut->GetAccept(run)) {
-					failed_run_cut = true;
-					break;
-				}
-			if (failed_run_cut && ignore_no_run_cut)
-				continue;
-
-			for (int chan_ind=0,_ch_ind_end_= channels->size(); chan_ind<_ch_ind_end_;++chan_ind) {
-				if (NULL != setups) {
-					bool *active = setups->active_channels.info((*channels)[chan_ind]);
-					if (NULL == active)
-						continue;
-					if (!(*active))
-						continue;
-				}
-				n_active_channels += 1;
-				double s1pe = calibr_info.get_S1pe((*channels)[chan_ind], current_exp_index);
-				for (int pk = 0, pk_end = (*peaks)[chan_ind][run].size(); pk != pk_end; ++pk) {
-					bool failed_hist_cut = false; //normal cuts
-					cut_data[0] = (*peaks)[chan_ind][run][pk].S;
-					cut_data[1] = (*peaks)[chan_ind][run][pk].A;
-					cut_data[2] = (*peaks)[chan_ind][run][pk].left + data->trigger_offset[current_exp_index][run];
-					cut_data[3] = (*peaks)[chan_ind][run][pk].right + data->trigger_offset[current_exp_index][run];
-					cut_data[4] =
-#ifdef PEAK_AVR_TIME
-							(*peaks)[chan_ind][run][pk].t + data->trigger_offset[current_exp_index][run];
-#else
-							0.5*(cut_data[3]+cut_data[2]);
-#endif
-					cut_data[5] = s1pe > 0 ? std::round(cut_data[0]/s1pe) : -1;
-					for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
-						if (cut->GetChannel()==(*channels)[chan_ind] && cut->GetAffectingHistogram() && !failed_hist_cut)
-							if (kFALSE == (*cut)(cut_data, run)) { //more expensive than GetAffectingHistogram
-								failed_hist_cut = true;
-								break;
-							}
+			bool failed_hist_phys = false;
+			bool failed_hist = false;
+			bool failed_phys = false;
+			std::vector<double> time_length = std::vector<double>(1, 0);
+			int event_number = -1;
+		};
+		std::deque<event_result> results(run_size);
+		std::vector<std::pair<int, int>> thread_indices = split_range(0, run_size, threads_number);
+		int thread_n = thread_indices.size();
+		std::vector<std::thread> threads;
+		for (unsigned int n_th = 0u; n_th < thread_n; ++n_th) {
+			threads.push_back(std::thread([&](int n_th) {
+			for (int run = thread_indices[n_th].first; run != thread_indices[n_th].second; ++run) {
+				std::vector<double> cut_data(6);
+				//cuts on peaks (low level cuts) are always applied (those affecting histogram only)
+				int n_active_channels = 0;
+				for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
+					if (kFALSE == cut->GetAccept(run)) {
+						results[run].failed_run_cut = true;
+						break;
 					}
-					if (!failed_hist_cut)
-						time_length[0] += cut_data[3] - cut_data[2];
-				}
-			}
+				if (results[run].failed_run_cut && ignore_no_run_cut)
+					continue;
 
-			if (0!=n_active_channels) {
-				time_length[0] /= n_active_channels;
-			}
-
-			bool failed_hist_phys = false, failed_hist = false, failed_phys = false;
-			for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut)
-				if (-1 == cut->GetChannel()) {
-					if (!failed_hist_phys)
-						if (kFALSE == (*cut)(time_length, run))
-							failed_hist_phys = true;
-					if (!failed_hist && cut->GetAffectingHistogram())
-						if (kFALSE == (*cut)(time_length, run))
-							failed_hist = true;
-					if (!failed_phys && !cut->GetAffectingHistogram())
-						if (kFALSE == (*cut)(time_length, run))
-							failed_phys = true;
+				for (int chan_ind=0,_ch_ind_end_= channels->size(); chan_ind<_ch_ind_end_;++chan_ind) {
+					if (NULL != setups) {
+						bool *active = setups->active_channels.info((*channels)[chan_ind]);
+						if (NULL == active)
+							continue;
+						if (!(*active))
+							continue;
+					}
+					n_active_channels += 1;
+					double s1pe = calibr_info.get_S1pe((*channels)[chan_ind], current_exp_index);
+					for (int pk = 0, pk_end = (*peaks)[chan_ind][run].size(); pk != pk_end; ++pk) {
+						bool failed_hist_cut = false; //normal cuts
+						cut_data[0] = (*peaks)[chan_ind][run][pk].S;
+						cut_data[1] = (*peaks)[chan_ind][run][pk].A;
+						cut_data[2] = (*peaks)[chan_ind][run][pk].left + data->trigger_offset[current_exp_index][run];
+						cut_data[3] = (*peaks)[chan_ind][run][pk].right + data->trigger_offset[current_exp_index][run];
+						cut_data[4] =
+	#ifdef PEAK_AVR_TIME
+								(*peaks)[chan_ind][run][pk].t + data->trigger_offset[current_exp_index][run];
+	#else
+								0.5*(cut_data[3]+cut_data[2]);
+	#endif
+						cut_data[5] = s1pe > 0 ? std::round(cut_data[0]/s1pe) : -1;
+						for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
+							if (cut->GetChannel()==(*channels)[chan_ind] && cut->GetAffectingHistogram() && !failed_hist_cut)
+								if (kFALSE == (*cut)(cut_data, run)) { //more expensive than GetAffectingHistogram
+									failed_hist_cut = true;
+									break;
+								}
+						}
+						if (!failed_hist_cut)
+							results[run].time_length[0] += cut_data[3] - cut_data[2];
+					}
 				}
+
+				if (0!=n_active_channels) {
+					results[run].time_length[0] /= n_active_channels;
+				}
+
+				for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut)
+					if (-1 == cut->GetChannel()) {
+						if (!results[run].failed_hist_phys)
+							if (kFALSE == (*cut)(results[run].time_length, run))
+								results[run].failed_hist_phys = true;
+						if (!results[run].failed_hist && cut->GetAffectingHistogram())
+							if (kFALSE == (*cut)(results[run].time_length, run))
+								results[run].failed_hist = true;
+						if (!results[run].failed_phys && !cut->GetAffectingHistogram())
+							if (kFALSE == (*cut)(results[run].time_length, run))
+								results[run].failed_phys = true;
+					}
+			}
+			}, n_th));
+		}
+		for (unsigned int n_th = 0u; n_th < thread_n; ++n_th) {
+			threads[n_th].join();
+		}
+		for (auto run = 0; run != run_size; ++run) {
 			for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
-				if (operations[o].apply_run_cuts && failed_run_cut)
+				if (operations[o].apply_run_cuts && results[run].failed_run_cut)
 					continue;
 				if (operations[o].apply_hist_cuts && !operations[o].apply_phys_cuts) {
-					if (!failed_hist)
-						(*operations[o].operation)(time_length, run);
+					if (!results[run].failed_hist)
+						(*operations[o].operation)(results[run].time_length, run);
 					continue;
 				}
 				if (!operations[o].apply_hist_cuts && operations[o].apply_phys_cuts) {
-					if (!failed_phys) (*operations[o].operation)(time_length, run);
+					if (!results[run].failed_phys) (*operations[o].operation)(results[run].time_length, run);
 					continue;
 				}
 				if (operations[o].apply_hist_cuts && operations[o].apply_phys_cuts) {
-					if (!failed_hist_phys) (*operations[o].operation)(time_length, run);
+					if (!results[run].failed_hist_phys) (*operations[o].operation)(results[run].time_length, run);
 					continue;
 				}
-				(*operations[o].operation)(time_length, run);
+				(*operations[o].operation)(results[run].time_length, run);
 			}
 		}
 		break;
@@ -1162,45 +1138,6 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 		}
 		break;
 	}
-	case Type::PMT_S2_int:
-	{
-		int run_size = data->PMT_S2_int[current_exp_index][ch_ind].size();
-		std::vector<double> cut_data(1);
-		double S1pe;
-		for (auto run = 0; run != run_size; ++run) {
-			bool failed_run_cut = false;
-			bool failed_hist_cut = false; //normal cuts
-			bool failed_phys_cut = false; //drawn (displayed) cuts only
-			for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
-				if (kFALSE == cut->GetAccept(run)) {
-					failed_run_cut = true;
-					break;
-				}
-			cut_data[0] = data->PMT_S2_int[current_exp_index][ch_ind][run];
-			S1pe = calibr_info.get_S1pe(channel, current_exp_index);
-			cut_data[0] = S1pe>0 ? cut_data[0]/S1pe : cut_data[0];
-			for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
-				if (cut->GetAffectingHistogram() && !failed_hist_cut)
-					if (kFALSE == (*cut)(cut_data, run)) //more expensive than GetAffectingHistogram
-						failed_hist_cut = true;
-				if (!cut->GetAffectingHistogram() && !failed_phys_cut)
-					if (kFALSE == (*cut)(cut_data, run))
-						failed_phys_cut = true;
-				if (failed_hist_cut && failed_phys_cut)
-					break;
-			}
-			for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
-				if (operations[o].apply_run_cuts && failed_run_cut)
-					continue;
-				if (operations[o].apply_hist_cuts && failed_hist_cut)
-					continue;
-				if (operations[o].apply_phys_cuts && failed_phys_cut)
-					continue;
-				(*operations[o].operation)(cut_data, run);
-			}
-		}
-		break;
-	}
 	case Type::MPPC_coord_x:
 	case Type::MPPC_coord_y:
 	case Type::MPPC_coord:
@@ -1330,87 +1267,108 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 			channels = &MPPC_channels;
 			peaks = &(data->mppc_peaks[current_exp_index]);
 		}
-		int run_size = (*peaks)[0].size();
-		std::vector<double> cut_data(6);
-		for (auto run = 0; run != run_size; ++run) {
-			std::vector<double>  Npes(channels->size()+1, 0);
+		struct event_result {
 			bool failed_run_cut = false;
-			for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
-				if (kFALSE == cut->GetAccept(run)) {
-					failed_run_cut = true;
-					break;
-				}
+			bool failed_hist_phys = false;
+			bool failed_hist = false;
+			bool failed_phys = false;
+			std::vector<double> Npes;
+			int event_number = -1;
+		};
+		int run_size = (*peaks)[0].size();
+		event_result def_res;
+		def_res.Npes = std::vector<double>(channels->size()+1, 0);
+		std::deque<event_result> results(run_size, def_res);
+		std::vector<std::pair<int, int>> thread_indices = split_range(0, run_size, threads_number);
+		int thread_n = thread_indices.size();
+		std::vector<std::thread> threads;
+		for (unsigned int n_th = 0u; n_th < thread_n; ++n_th) {
+			threads.push_back(std::thread([&](int n_th) {
+				for (int run = thread_indices[n_th].first; run != thread_indices[n_th].second; ++run) {
+					std::vector<double> cut_data(6);
+					results[run].event_number = run;
+					for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
+						if (kFALSE == cut->GetAccept(run)) {
+							results[run].failed_run_cut = true;
+							break;
+						}
 
-			if (failed_run_cut && ignore_no_run_cut)
-				continue;
+					if (results[run].failed_run_cut && ignore_no_run_cut)
+						continue;
 
-			for (int chan_ind=0,_ch_ind_end_= channels->size(); chan_ind<_ch_ind_end_;++chan_ind) {
-				if (NULL != setups) {
-					bool *active = setups->active_channels.info((*channels)[chan_ind]);
-					if (NULL == active)
-						continue;
-					if (!(*active))
-						continue;
-				}
-				double s1pe = calibr_info.get_S1pe((*channels)[chan_ind], current_exp_index);
-				double S2 = 0;
-				for (int pk = 0, pk_end = (*peaks)[chan_ind][run].size(); pk != pk_end; ++pk) {
-					bool failed_hist_cut = false; //normal cuts
-					cut_data[0] = (*peaks)[chan_ind][run][pk].S;
-					cut_data[1] = (*peaks)[chan_ind][run][pk].A;
-					cut_data[2] = (*peaks)[chan_ind][run][pk].left + data->trigger_offset[current_exp_index][run];
-					cut_data[3] = (*peaks)[chan_ind][run][pk].right + data->trigger_offset[current_exp_index][run];
-					cut_data[4] =
-#ifdef PEAK_AVR_TIME
-							(*peaks)[chan_ind][run][pk].t + data->trigger_offset[current_exp_index][run];
-#else
-							0.5*(cut_data[3]+cut_data[2]);
-#endif
-					cut_data[5] = s1pe > 0 ? std::round(cut_data[0]/s1pe) : -1;
-					for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
-						if (cut->GetChannel()==(*channels)[chan_ind] && cut->GetAffectingHistogram() && !failed_hist_cut)
-							if (kFALSE == (*cut)(cut_data, run)) { //more expensive than GetAffectingHistogram
-								failed_hist_cut = true;
-								break;
+					for (int chan_ind=0,_ch_ind_end_= channels->size(); chan_ind<_ch_ind_end_;++chan_ind) {
+						if (NULL != setups) {
+							bool *active = setups->active_channels.info((*channels)[chan_ind]);
+							if (NULL == active)
+								continue;
+							if (!(*active))
+								continue;
+						}
+						double s1pe = calibr_info.get_S1pe((*channels)[chan_ind], current_exp_index);
+						double S2 = 0;
+						for (int pk = 0, pk_end = (*peaks)[chan_ind][run].size(); pk != pk_end; ++pk) {
+							bool failed_hist_cut = false; //normal cuts
+							cut_data[0] = (*peaks)[chan_ind][run][pk].S;
+							cut_data[1] = (*peaks)[chan_ind][run][pk].A;
+							cut_data[2] = (*peaks)[chan_ind][run][pk].left + data->trigger_offset[current_exp_index][run];
+							cut_data[3] = (*peaks)[chan_ind][run][pk].right + data->trigger_offset[current_exp_index][run];
+							cut_data[4] =
+		#ifdef PEAK_AVR_TIME
+									(*peaks)[chan_ind][run][pk].t + data->trigger_offset[current_exp_index][run];
+		#else
+									0.5*(cut_data[3]+cut_data[2]);
+		#endif
+							cut_data[5] = s1pe > 0 ? std::round(cut_data[0]/s1pe) : -1;
+							for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
+								if (cut->GetChannel()==(*channels)[chan_ind] && cut->GetAffectingHistogram() && !failed_hist_cut)
+									if (kFALSE == (*cut)(cut_data, run)) { //more expensive than GetAffectingHistogram
+										failed_hist_cut = true;
+										break;
+									}
 							}
-					}
-					if (!failed_hist_cut)
-						S2 += use_Npeaks ? 1.0 : cut_data[0];
+							if (!failed_hist_cut)
+								S2 += use_Npeaks ? 1.0 : cut_data[0];
 
-				}
-				S2 = (use_Npe ? (s1pe > 0 ? S2/s1pe : 0) : S2);
-				Npes[chan_ind] = ((use_Npe || use_Npeaks ) ? std::round(S2) : S2);
-				Npes[channels->size()] += Npes[chan_ind];
-			}
-			bool failed_hist_phys = false, failed_hist = false, failed_phys = false;
-			for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut)
-				if (-1 == cut->GetChannel()) {
-					if (!failed_hist_phys)
-						if (kFALSE == (*cut)(Npes, run))
-							failed_hist_phys = true;
-					if (!failed_hist && cut->GetAffectingHistogram())
-						if (kFALSE == (*cut)(Npes, run))
-							failed_hist = true;
-					if (!failed_phys && !cut->GetAffectingHistogram())
-						if (kFALSE == (*cut)(Npes, run))
-							failed_phys = true;
-				}
+						}
+						S2 = (use_Npe ? (s1pe > 0 ? S2/s1pe : 0) : S2);
+						results[run].Npes[chan_ind] = ((use_Npe || use_Npeaks ) ? std::round(S2) : S2);
+						results[run].Npes[channels->size()] += results[run].Npes[chan_ind];
+					}
+					for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut)
+						if (-1 == cut->GetChannel()) {
+							if (!results[run].failed_hist_phys)
+								if (kFALSE == (*cut)(results[run].Npes, run))
+									results[run].failed_hist_phys = true;
+							if (!results[run].failed_hist && cut->GetAffectingHistogram())
+								if (kFALSE == (*cut)(results[run].Npes, run))
+									results[run].failed_hist = true;
+							if (!results[run].failed_phys && !cut->GetAffectingHistogram())
+								if (kFALSE == (*cut)(results[run].Npes, run))
+									results[run].failed_phys = true;
+						}
+				} //event loop
+			}, n_th));
+		}
+		for (unsigned int n_th = 0u; n_th < thread_n; ++n_th) {
+			threads[n_th].join();
+		}
+		for (auto run = 0; run != run_size; ++run) {
 			for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
-				if (operations[o].apply_run_cuts && failed_run_cut)
+				if (operations[o].apply_run_cuts && results[run].failed_run_cut)
 					continue;
 				if (operations[o].apply_hist_cuts && !operations[o].apply_phys_cuts) {
-					if (!failed_hist) (*operations[o].operation)(Npes, run);
+					if (!results[run].failed_hist) (*operations[o].operation)(results[run].Npes, run);
 					continue;
 				}
 				if (!operations[o].apply_hist_cuts && operations[o].apply_phys_cuts) {
-					if (!failed_phys) (*operations[o].operation)(Npes, run);
+					if (!results[run].failed_phys) (*operations[o].operation)(results[run].Npes, run);
 					continue;
 				}
 				if (operations[o].apply_hist_cuts && operations[o].apply_phys_cuts) {
-					if (!failed_hist_phys) (*operations[o].operation)(Npes, run);
+					if (!results[run].failed_hist_phys) (*operations[o].operation)(results[run].Npes, run);
 					continue;
 				}
-				(*operations[o].operation)(Npes, run);
+				(*operations[o].operation)(results[run].Npes, run);
 			}
 		}
 		break;
@@ -1669,10 +1627,8 @@ bool PostProcessor::set_correlation_filler(FunctionWrapper* operation, Type type
 	if (NULL == operation)
 		return false;
 	switch (type) {
-	case Type::MPPC_Double_I:
 	case Type::MPPC_S2:
 	case Type::PMT_S2_S:
-	case Type::PMT_S2_int:
 	case Type::PMT_trigger_bNpe:
 	case Type::PMT_trigger_bNpeaks:
 	case Type::PMT_trigger_bS:
@@ -1795,11 +1751,9 @@ bool PostProcessor::update(void)
 		type = _y_corr;
 	switch (type)
 	{
-	case Type::MPPC_Double_I:
 	case Type::MPPC_Ss:
 	case Type::MPPC_S2:
 	case Type::PMT_S2_S:
-	case Type::PMT_S2_int:
 	case Type::PMT_Ss:
 	case Type::PMT_trigger_bNpe:
 	case Type::PMT_trigger_bNpeaks:
@@ -2516,55 +2470,6 @@ void PostProcessor::save_all(void)
 	for (int ch = data->exp_area.channels.get_next_index(); ch != -1; ch = data->exp_area.channels.get_next_index())
 		save(ch);
 	calibr_info.Save(data_output_path + calibration_file);
-
-	std::ofstream str;
-	open_output_file(data_output_path+DATA_MPPC_VERSION+"/S2_manual.dat", str);
-	str<<"ch\\E"<<"\t";
-	for (int ee=0,_end_exp=experiments.size();ee!=_end_exp;++ee)
-		str<<data->Fields[ee]<<((ee==(_end_exp-1))? "\n": "\t");
-	for (int ch=0,_end_ch=MPPC_channels.size();ch!=_end_ch;++ch){
-		str<<MPPC_channels[ch]<<"\t";
-		for (int ee=0,_end_exp=experiments.size();ee!=_end_exp;++ee)
-			str<<avr_S2_S[ee][ch]<<((ee==(_end_exp-1))? "": "\t");
-		str<<std::endl;
-	}
-	str.close();
-
-	open_output_file(data_output_path+DATA_MPPC_VERSION+"/double_I.dat", str);
-	str<<"ch\\E"<<"\t";
-	for (int ee=0,_end_exp=experiments.size();ee!=_end_exp;++ee)
-		str<<data->Fields[ee]<<((ee==(_end_exp-1))? "\n": "\t");
-	for (int ch=0,_end_ch=MPPC_channels.size();ch!=_end_ch;++ch){
-		str<<MPPC_channels[ch]<<"\t";
-		for (int ee=0,_end_exp=experiments.size();ee!=_end_exp;++ee)
-			str<<avr_Double_I[ee][ch]<<((ee==(_end_exp-1))? "": "\t");
-		str<<std::endl;
-	}
-	str.close();
-
-	open_output_file(data_output_path+DATA_MPPC_VERSION+"/Npe_direct.dat", str);
-	str<<"ch\\E"<<"\t";
-	for (int ee=0,_end_exp=experiments.size();ee!=_end_exp;++ee)
-		str<<data->Fields[ee]<<((ee==(_end_exp-1))? "\n": "\t");
-	for (int ch=0,_end_ch=MPPC_channels.size();ch!=_end_ch;++ch){
-		str<<MPPC_channels[ch]<<"\t";
-		for (int ee=0,_end_exp=experiments.size();ee!=_end_exp;++ee)
-			str<<data->N_pe_direct[ee][ch]<<((ee==(_end_exp-1))? "": "\t");
-		str<<std::endl;
-	}
-	str.close();
-
-	open_output_file(data_output_path+DATA_MPPC_VERSION+"/Npe_result.dat", str);
-	str<<"ch\\E"<<"\t";
-	for (int ee=0,_end_exp=experiments.size();ee!=_end_exp;++ee)
-		str<<data->Fields[ee]<<((ee==(_end_exp-1))? "\n": "\t");
-	for (int ch=0,_end_ch=MPPC_channels.size();ch!=_end_ch;++ch){
-		str<<MPPC_channels[ch]<<"\t";
-		for (int ee=0,_end_exp=experiments.size();ee!=_end_exp;++ee)
-			str<<data->N_pe_result[ee][ch]<<((ee==(_end_exp-1))? "": "\t");
-		str<<std::endl;
-	}
-	str.close();
 }
 
 void PostProcessor::saveAs(std::string path, bool png_only)
@@ -2612,63 +2517,8 @@ void PostProcessor::clearAll(void) //clear everything, return to initial state (
 	update();
 }
 
-void PostProcessor::plot_N_pe(int channel, GraphicOutputManager* gr_man)
-{
-	if (!isValid()){
-		std::cout << "Wrong input data: no channels or experiments from AnalysisManager" << std::endl;
-		return;
-	}
-	int ch_ind = data->get_ch_index(channel);
-	if (ch_ind < 0)
-		return;
-	std::vector<double> N_pe_result;
-	std::vector<double> N_pe_Double_I_result;
-	std::vector<double> N_pe_direct_result;
-	for (std::size_t pt = 0; pt < data->exp_area.experiments.size(); ++pt){
-		N_pe_result.push_back(data->N_pe_result[pt][ch_ind]);
-		N_pe_Double_I_result.push_back(data->N_pe_Double_I[pt][ch_ind]);
-		N_pe_direct_result.push_back(data->N_pe_direct[pt][ch_ind]);
-	}
-	Drawing *dr = gr_man->GetDrawing("Npe MPPC#" + std::to_string(channel), ch_ind, /*ParameterPile::*/DrawEngine::Gnuplot);
-	std::string prefix_lines;
-	prefix_lines = "set xlabel \"Electric field in EL gap [kV/cm]\"\n";
-	prefix_lines += "set tmargin 2\n";
-	prefix_lines += "set ylabel \"N of pe\" rotate by 0 offset 4.5, 7.5\n";
-	prefix_lines += "set yrange[1:1000]\n";
-	prefix_lines += "set xrange[3:21]\n";
-	prefix_lines += "set logscale y\n";
-	prefix_lines += "unset key\n";
-	prefix_lines += "set key inside top left\n";
-
-	dr->AddToDraw(data->Fields, N_pe_direct_result, "MPPC#" + std::to_string(channel) + "N pe direct", "pt 4 ps 1.5 lc rgb '#000000'");
-	dr->AddToDraw(data->Fields, N_pe_Double_I_result, "MPPC#" + std::to_string(channel) + "N pe double I", "with line lc rgb '#000000'");
-	dr->DrawData();
-}
-
-//TODO: actually it is more logical to move the code below to CalibrationInfo, but then I'll need to add friends
 void PostProcessor::update_Npe(void)
 {
-	for (int exp = 0, exp_end_ = data->N_pe_direct.size(); exp != exp_end_; ++exp) {
-		for (int ch = 0, ch_end_ = MPPC_channels.size(); ch != ch_end_; ++ch) {
-			data->N_pe_direct[exp][ch] = avr_S2_S[exp][ch];
-			data->N_pe_Double_I[exp][ch] = avr_Double_I[exp][ch];
-		}
-	}
-	//calibr_info.recalibrate(data->N_pe_direct, data->N_pe_Double_I, data->Fields);
-	for (int exp = 0, exp_end_ = data->N_pe_direct.size(); exp != exp_end_; ++exp) {
-		for (int ch = 0, ch_end_ = MPPC_channels.size(); ch != ch_end_; ++ch) {
-			if (exp > calibr_info.get_N_calib(MPPC_channels[ch]).first)
-				data->N_pe_result[exp][ch] = data->N_pe_Double_I[exp][ch];
-			else
-				data->N_pe_result[exp][ch] = data->N_pe_direct[exp][ch];
-		}
-		if (!data->N_pe_PMT3.empty())
-			if (calibr_info.get_S1pe(0, exp)>0)
-				data->N_pe_PMT3[exp] = PMT3_avr_S2_S[exp] / calibr_info.get_S1pe(0, exp);
-		if (!data->N_pe_PMT1.empty())
-			if (calibr_info.get_S1pe(1, exp)>0)
-				data->N_pe_PMT1[exp] = PMT1_avr_S2_S[exp] / calibr_info.get_S1pe(1, exp);
-	}
 }
 
 //updates derived values such as S2 amplitude, S of single photoelectron etc.
@@ -2680,34 +2530,14 @@ void PostProcessor::update_physical(void)
 	}
 	std::string exp_str = experiments[current_exp_index];
 	switch (current_type) {
-	case Type::MPPC_Double_I:
-	{
-		if (setups->N_gauss>0 && setups->fitted)
-			avr_Double_I[current_exp_index][mppc_channel_to_index(current_channel)] = setups->par_val[1];
-		else {
-			if (0==setups->N_gauss) {
-				if (setups->x_drawn_mean == boost::none || (setups->stat_drawn_weight == boost::none && setups->num_of_drawn_fills == boost::none))
-					std::cout << "Warning! No mean double integral value for " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
-				else {
-					std::cout << "Mean = "<<*setups->x_drawn_mean<<std::endl;
-					avr_Double_I[current_exp_index][mppc_channel_to_index(current_channel)] = *setups->x_drawn_mean;
-				}
-			} else
-				std::cout << "Warning! No double integral for " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
-		}
-		break;
-	}
 	case Type::MPPC_S2:	//TODO: Warning!: these two types (MPPC_S2 and MPPC_S2_S) overwrite each other
 	{
-		if (setups->N_gauss>0 && setups->fitted)
-			avr_S2_S[current_exp_index][mppc_channel_to_index(current_channel)] = setups->par_val[1];
-		else {
+		if (!(setups->N_gauss>0 && setups->fitted)) {
 			if (0==setups->N_gauss) { //Use mean then
 				if (setups->x_drawn_mean == boost::none || (setups->stat_drawn_weight == boost::none && setups->num_of_drawn_fills == boost::none))
 					std::cout << "Warning! No mean S2 value for " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
 				else {
 					std::cout<<"Mean = "<<*setups->x_drawn_mean<<std::endl;
-					avr_S2_S[current_exp_index][mppc_channel_to_index(current_channel)] = *setups->x_drawn_mean;
 				}
 			} else
 				std::cout << "Warning! No S2 area for " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
@@ -2797,10 +2627,6 @@ void PostProcessor::update_physical(void)
 	case Type::PMT_S2_S:
 	{
 		if (setups->N_gauss > 0 && setups->fitted) {
-			if (0 == current_channel)
-				PMT3_avr_S2_S[current_exp_index] = setups->par_val[1];
-			if (1 == current_channel)
-				PMT1_avr_S2_S[current_exp_index] = setups->par_val[1];
 		}
 		else {
 			if (0==setups->N_gauss) { //Use mean then
@@ -2808,33 +2634,6 @@ void PostProcessor::update_physical(void)
 					std::cout << "Warning! No S2 area for PMT " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
 				else {
 					std::cout<<"Mean = "<< *setups->x_drawn_mean <<std::endl;
-					if (0 == current_channel)
-						PMT3_avr_S2_S[current_exp_index] = *setups->x_drawn_mean;
-					if (1 == current_channel)
-						PMT1_avr_S2_S[current_exp_index] = *setups->x_drawn_mean;
-				}
-			}
-		}
-		break;
-	}
-	case Type::PMT_S2_int:
-	{
-		if (setups->N_gauss > 0 && setups->fitted){
-			if (0 == current_channel)
-				PMT3_avr_S2_S[current_exp_index] = setups->par_val[1];
-			if (1 == current_channel)
-				PMT1_avr_S2_S[current_exp_index] = setups->par_val[1];
-		}
-		else {
-			if (0==setups->N_gauss) { //Use mean then
-				if (setups->x_drawn_mean == boost::none || (setups->stat_drawn_weight == boost::none && setups->num_of_drawn_fills == boost::none))
-					std::cout << "Warning! No S2 area for PMT " << data->exp_area.experiments[current_exp_index] << " ch " << current_channel << std::endl;
-				else {
-					std::cout<<"Mean = "<<*setups->x_drawn_mean<<std::endl;
-					if (0 == current_channel)
-						PMT3_avr_S2_S[current_exp_index] = *setups->x_drawn_mean;
-					if (1 == current_channel)
-						PMT1_avr_S2_S[current_exp_index] = *setups->x_drawn_mean;
 				}
 			}
 		}
