@@ -29,15 +29,16 @@
 //15) void PostProcessor::update_physical(void)
 //16) void PostProcessor::default_hist_setups(HistogramSetups*);
 //17) bool PostProcessor::set_trigger_offsets(double extra_offset);
+//18) void view_event(int event_index, double x_min = 0, double x_max = 160);
 
-//18) 2nd tier methods in main:
+//19) 2nd tier methods in main:
 //	FunctionWrapper* create_vertical_lines_cut(double left, double right)
 //	FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region)
 //	FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region)
 //	FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region)
 //	FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region)
 //	FunctionWrapper* create_A_S_polygon_cut(std::vector<double> region, unsigned int cut_type)
-//  FunctionWrapper* create_x_y_polygon_cut(std::vector<double> region, unsigned int cut_type)
+//	FunctionWrapper* create_x_y_polygon_cut(std::vector<double> region, unsigned int cut_type)
 
 class PostProcessor : public CanvasSetups {
 public:
@@ -56,6 +57,8 @@ public:
 			operation(op), apply_run_cuts(apply_run_cut), apply_hist_cuts(apply_hist_cut), apply_phys_cuts(apply_phys_cut)
 		{}
 	};
+	CalibrationInfo calibr_info;
+
 protected:
 #ifndef __ROOTCLING__
 	struct correlation_data {
@@ -63,29 +66,25 @@ protected:
 		int ch_size;
 	};
 #endif
-	bool set_correlation_filler(FunctionWrapper* operation, Type type);
-
 	AllExperimentsResults* data;
+	TCanvas* event_canvas; //TODO: separate class for event viewer?
 
 	virtual Bool_t StateChange(int to_ch, int to_exp, Type to_type, std::size_t to_canvas, int from_ch, int from_exp, Type from_type, std::size_t from_canvas);
 	virtual Bool_t CorrelationXChange(int exp_index, int to_ch, Type to_type, int from_ch, Type from_type);
 	virtual Bool_t CorrelationYChange(int exp_index, int to_ch, Type to_type, int from_ch, Type from_type);
-	
 
+	bool set_correlation_filler(FunctionWrapper* operation, Type type);
 	std::size_t numOfRuns (void);
 	std::pair<double, double> hist_x_limits(bool consider_displayed_cuts = false); //considering cuts
 	std::pair<double, double> hist_y_limits(bool consider_displayed_cuts = false); //valid only for 2d plots
 	void default_hist_setups(HistogramSetups*);
-
 	void update_physical(void); //2nd and 3rd mandates of ::update(void)
-	void update_Npe(void);		//4th part of ::update(void). TODO: actually it is better to move it to CalibrationInfo.
-
 	std::string hist_name();
 	void print_hist(std::string path, bool png_only); //use "" for default path
-	virtual bool Invalidate(unsigned int label);
-public:
 	void LoopThroughData(std::vector<Operation> &operations, int channel, Type type);
 
+public:
+	virtual bool Invalidate(unsigned int label);
 	std::size_t numOfFills(bool consider_displayed_cuts = false);
 	bool update(void); //mandates:	0)Calculate and store all relevant parameters for current state (x/y limits, number of entries to histogram, etc.)
 	//								1)update current picture. (only displayed histogram but not a png, as well as TF1)
@@ -94,7 +93,6 @@ public:
 	//								4)recalibrate Npe.
 	//png and raw data are saved manually via interface
 	PostProcessor(AllExperimentsResults* results); //results must be already processed, i.e. loaded
-	CalibrationInfo calibr_info;
 
 	void save(int ch);	//TODO: make that it saves results such as calibration and Npe(E) (for both PMT and MPPC). That is updates only one line in calibr. file
 	void save_all(void);
@@ -134,9 +132,9 @@ public:
 	bool set_X_title(std::string text);
 	bool set_Y_title(std::string text);
 
+	void view_event(int event_index, int N_bins, double x_min, double x_max); //If N_bins =0 draw graph
+
 	//Trigger adjustment related:
-	//bool set_time_window(double val);
-	//double get_time_window(void) const;
 	bool unset_trigger_offsets(void);
 	bool set_trigger_offsets(double extra_offset); //uses trigger type histogram only
 

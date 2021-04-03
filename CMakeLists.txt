@@ -3,6 +3,8 @@ project(Post_processing)
 
 find_package(Boost 1.33 REQUIRED)
 find_package(ROOT 6.04 REQUIRED)
+#Note that Minuit2 is required for ROOT! Default Minuit is not thread-safe! 
+#For that use -Dminuit2=ON option during ROOT compilation
 
 message(STATUS "ROOT include directories: ${ROOT_INCLUDE_DIRS}")
 

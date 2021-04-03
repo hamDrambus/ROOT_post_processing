@@ -17,8 +17,6 @@ class CanvasSetups;
 
 class StateData
 {
-protected:
-	bool static_instance;
 public:
 	static bool IsForState(CanvasSetups *state); //I want this method to be virtual AND static
 	static bool IsForState(CanvasSetups *state, int channel, AStates::Type type); //I want this method to be virtual AND static
@@ -130,6 +128,63 @@ public:
 	//CINT interface:
 	static void SetTriggerType(TriggerType type);
 	static TriggerType GetTriggerType(void);
+};
+
+class ShapeFitData: public StateData
+{
+public:
+	enum PeakType : int {ptNpeaks = 0, ptNpe = 1, ptS = 2};
+	PeakType peak_type;
+	int n_parameters;
+	std::vector<std::pair<double, double>> par_bounds;
+	std::vector<double> par_precisions;
+	FitWrapper fit_function;
+	int parameter_to_plot; //for PostProcessor
+	std::vector<std::string> par_names; //for PostProcessor
+
+	static bool IsForState(CanvasSetups *state);
+	static bool IsForState(CanvasSetups *state, int channel, AStates::Type type);
+	virtual bool IsForState_virt(CanvasSetups *state, int channel, AStates::Type type); //override
+
+	ShapeFitData();
+	ShapeFitData(const CanvasSetups *for_state);
+	virtual void SetDefaultSettings(const CanvasSetups *for_state); //override
+	virtual StateData * Clone (); //override
+
+	bool IsValid() const;
+
+	//I want this method to be virtual AND static
+	static ShapeFitData* GetData(CanvasSetups *setups, int channel, AStates::Type type); //returns NULL if current setups do not contain this data class.
+	static ShapeFitData* GetData(void);//returns NULL if current setups do not contain this data class.
+	//I want this method to be virtual AND static
+	static void DataChanged(void);
+	virtual void DataChanged_virt(void); //override
+	//returns n parameters + likelihood
+	void PeaksToXY(std::deque<peak_processed> &peaks, std::vector<double> &xs, std::vector<double> &ys) const;
+	std::vector<double> Fit(std::deque<peak_processed> &peaks) const;
+	//CINT interface:
+	static void SetPeakType(PeakType type);
+	static PeakType GetPeakType(void);
+	static void SetNPars(int n);
+	static int GetNPars(void);
+	static void SetPrecision(int n, double precision);
+	static double GetPrecision(int n);
+	static void SetPrecisions(std::vector<double> precisions);
+	static std::vector<double> GetPrecisions(void);
+	static void SetBound(int n, double min, double max);
+	static void SetBound(int n, std::pair<double, double> bound);
+	static void SetBound(int n, double fixed);
+	static std::pair<double, double> GetBound(int n);
+	static void SetBounds(std::vector<double> mins, std::vector<double> maxs);
+	static void SetBounds(std::vector<std::pair<double, double>> bounds);
+	static std::vector<std::pair<double, double>> GetBounds(void);
+	static void SetPlotParameter(int index);
+	static int GetPlotParameter(void);
+	static void SetParameterName(int n, std::string name);
+	static std::string GetParameterName(int n);
+	static void SetParameterNames(std::vector<std::string> names);
+	static std::vector<std::string> GetParameterNames(void);
+	static FIT_F SetFitFunction(FIT_F f); //ignore run_n and stat_data.
 };
 
 #endif

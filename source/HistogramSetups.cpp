@@ -148,6 +148,20 @@ bool CanvasSetups::set_hist_setups(HistogramSetups* setups, int exp_ind, int cha
 	if ((NULL != manual_setups[canvas_ind][type][exp_ind][ch_ind]) && (setups != manual_setups[canvas_ind][type][exp_ind][ch_ind]))
 		delete manual_setups[canvas_ind][type][exp_ind][ch_ind];
 	manual_setups[canvas_ind][type][exp_ind][ch_ind] = (NULL==setups ? NULL : new HistogramSetups(*setups));
+	setups = manual_setups[canvas_ind][type][exp_ind][ch_ind];
+	if (NULL != setups) {
+		//TODO: quite ugly approach
+		if (NULL==setups->extra_data && ShapeFitData::IsForState(this))
+			setups->extra_data = new ShapeFitData(this);
+		if (NULL==setups->extra_data && TriggerAvgTData::IsForState(this))
+			setups->extra_data = new TriggerAvgTData(this);
+		if (NULL==setups->extra_data && TriggerFitData::IsForState(this))
+			setups->extra_data = new TriggerFitData(this);
+		if (NULL==setups->extra_data && TriggerData::IsForState(this))
+			setups->extra_data = new TriggerData(this);
+		if (NULL==setups->extra_data && StateData::IsForState(this))
+			setups->extra_data = new StateData(this);
+	}
 	return true;
 }
 

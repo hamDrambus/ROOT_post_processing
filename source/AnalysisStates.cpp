@@ -306,7 +306,8 @@ Bool_t AStates::isPerRun(Type type) const
 			type==MPPC_S2 || type == Correlation_x|| type == Correlation_y|| type==Correlation|| type==CorrelationAll||
 			type== PMT_S2_S ||type==PMT_Npe_sum ||type==PMT_S_sum ||type==PMT_sum_N || type==PMT_trigger_bNpe ||
 			type==PMT_trigger_fit || type==PMT_trigger_bNpeaks || type==PMT_trigger_bS || type == PMT_trigger_fit_chi2 ||
-			type == MPPC_trigger_fit || type == MPPC_trigger_fit_chi2 || type == MPPC_trigger_avg || type == PMT_T_sum;
+			type == MPPC_trigger_fit || type == MPPC_trigger_fit_chi2 || type == MPPC_trigger_avg || type == PMT_T_sum ||
+			type == MPPC_shape_fit;
 }
 
 Bool_t AStates::isMultichannel(Type type) const
@@ -316,7 +317,7 @@ Bool_t AStates::isMultichannel(Type type) const
 	if (type == Correlation_y)
 		return isMultichannel(_y_corr);
 	return (type == MPPC_tbS_sum) || type == MPPC_tbNpe_sum || type == MPPC_tbN_sum || type==MPPC_coord || type==MPPC_coord_x || type==MPPC_coord_y || type==MPPC_Npe_sum
-			|| type==MPPC_N_sum || type==MPPC_S_sum || type == MPPC_trigger_avg
+			|| type==MPPC_N_sum || type==MPPC_S_sum || type == MPPC_trigger_avg || type == MPPC_shape_fit
 			|| type==Correlation || type==CorrelationAll || type==PMT_sum_N || type==PMT_Npe_sum || type==PMT_S_sum || type==PMT_trigger_bNpe || type==PMT_trigger_bNpeaks
 			|| type==PMT_trigger_fit || type==PMT_trigger_bS || type == PMT_trigger_fit_chi2 || type == MPPC_trigger_fit || type == MPPC_trigger_fit_chi2 || type == PMT_T_sum;
 }
@@ -337,7 +338,7 @@ bool AStates::isComposite (Type type) const
 			|| type==MPPC_Npe_sum ||type==MPPC_N_sum || type==MPPC_S_sum ||type==MPPC_S2 ||type==PMT_S2_S ||type==PMT_sum_N || type==PMT_Npe_sum
 			|| type==PMT_S_sum ||type==PMT_trigger_bNpe || type == PMT_trigger_bNpeaks || type==PMT_trigger_bS || type == PMT_trigger_fit
 			|| type==PMT_trigger_fit_chi2 || type == MPPC_trigger_fit || type == MPPC_trigger_fit_chi2 || type == PMT_T_sum
-			|| type == MPPC_trigger_avg);
+			|| type == MPPC_trigger_avg || type == MPPC_shape_fit);
 }
 
 Bool_t AStates::isVirtual(Type type) const
@@ -678,6 +679,10 @@ std::string AStates::type_name(Type type) const
 	}
 	case Type::PMT_T_sum: {
 		name += "total_time";
+		break;
+	}
+	case Type::MPPC_shape_fit: {
+		name += "shape_fit";
 		break;
 	}
 	}

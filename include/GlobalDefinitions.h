@@ -58,6 +58,16 @@
 #include "TLine.h"
 #include "TPolyLine.h"
 #include "TStyle.h"
+#include "Fit/Fitter.h"
+#include "Fit/LogLikelihoodFCN.h"
+#include "Math/FitMethodFunction.h"
+#include "Math/WrappedFunction.h"
+#include "Math/WrappedMultiTF1.h"
+#include "Math/WrappedParamFunction.h"
+#include "Math/PdfFuncMathCore.h"
+#include "Math/PdfFuncMathMore.h"
+#include "TPaveStats.h"
+#include "TLatex.h"
 //#include "Math/Unuran.h"
 
 #define _TEMP_CODE
@@ -81,6 +91,7 @@
 
 typedef bool(*CUTTER)(std::vector<double>& pars, int run_n, void* stat_data);
 typedef bool(*CUTTER_DRAW)(TCanvas* can, void* stat_data);
+typedef double(*FIT_F)(const double *x, const double *pars);
 
 void open_output_file(std::string name, std::ofstream &str, std::ios_base::openmode _mode = std::ios_base::trunc);
 void ensure_folder(std::string folder);
@@ -98,7 +109,30 @@ std::string strtoken(std::string &in, std::string break_symbs);
 double fast_pown(double val, unsigned int n);
 //For threading. Splits [min, max) range into n parts as equal as possible.
 std::vector<std::pair<int, int>> split_range(int min, int max, int number);
+TLatex* CreateStatBoxLine (std::string name, double val);
+TLatex* CreateStatBoxLine (std::string name, int val);
+TLatex* CreateStatBoxLine (std::string name);
 void test_ROOT_threads(void);
+
+//To use for ShapeFitData
+//par[0] - width of rectangle, par[1] - center position
+double rectangle_pdf (const double *x, const double *pars);
+//par[0] - width of rectangle, par[1] - center position, par[2] - fraction of bkg,
+//par[3] - start time for bkg (fix to 0us), par[4] - finish time for bkg (fix to 160us),
+double rectangle_bkg_pdf (const double *x, const double *pars);
+//par[0] - width of triangle, par[1] - left front position, par[2] - fraction of bkg,
+//par[3] - start time for bkg (fix to 0us), par[4] - finish time for bkg (fix to 160us),
+double triangle_bkg_pdf (const double *x, const double *pars);
+//par[0] - width of rectangle, par[1] - center of rectangle, par[2] - fraction(area) of triangle,
+//par[3] - width of triangle
+double rect_tria_pdf (const double *x, const double *pars);
+//par[0] - sigma, par[1] - center position, par[2] - fraction of bkg,
+//par[3] - start time for bkg (fix to 0us), par[4] - finish time for bkg (fix to 160us),
+double gauss_bkg_pdf (const double *x, const double *pars);
+//par[0] - sigma, par[1] - center position, par[2] - fraction of bkg,
+//par[3] - start time for bkg (fix to 0us), par[4] - finish time for bkg (fix to 160us),
+//par[5] - 2nd gauss sigma/sigma1 (>1), par[6] - fraction of 2nd gauss
+double gauss_gauss_bkg_pdf (const double *x, const double *pars);
 
 template <class T>
 class channel_info {

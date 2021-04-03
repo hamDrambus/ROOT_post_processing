@@ -718,6 +718,7 @@ FunctionWrapper* create_vertical_lines_cut(double left, double right) //do not c
 	case AStates::Correlation:
 	case AStates::CorrelationAll:
 	case AStates::PMT_T_sum:
+	case AStates::MPPC_shape_fit:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			return ((vals[0] <=((temp_data*)data)->mm.second) && (vals[0] >= ((temp_data*)data)->mm.first));
@@ -925,6 +926,7 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::MPPC_trigger_fit_chi2:
 	case AStates::MPPC_trigger_avg:
 	case AStates::PMT_T_sum:
+	case AStates::MPPC_shape_fit:
 	{
 		picker->SetFunction( [](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -1080,6 +1082,7 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 	case AStates::MPPC_trigger_fit_chi2:
 	case AStates::MPPC_trigger_avg:
 	case AStates::PMT_T_sum:
+	case AStates::MPPC_shape_fit:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -1234,6 +1237,7 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::MPPC_trigger_fit_chi2:
 	case AStates::MPPC_trigger_avg:
 	case AStates::PMT_T_sum:
+	case AStates::MPPC_shape_fit:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -1459,6 +1463,7 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 	case AStates::MPPC_trigger_fit_chi2:
 	case AStates::MPPC_trigger_avg:
 	case AStates::PMT_T_sum:
+	case AStates::MPPC_shape_fit:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			//{A_min, A0, S0, A1, S1, A_max}
@@ -1587,6 +1592,7 @@ FunctionWrapper* create_A_S_polygon_cut(std::vector<double> region, unsigned int
 	case AStates::MPPC_trigger_fit_chi2:
 	case AStates::MPPC_trigger_avg:
 	case AStates::PMT_T_sum:
+	case AStates::MPPC_shape_fit:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			temp_data* d = ((temp_data*)data);
@@ -1857,7 +1863,7 @@ FunctionWrapper* create_x_y_polygon_cut(std::vector<double> region, unsigned int
 		region.polyline_push(d->reg_x[0], d->reg_y[0]);
 		TPolyLine *line = region.get_clipped_polyline();
 		line->SetLineColor(kRed);
-		line->Draw("same");
+		line->Draw("Lsame");
 		return true;
 	});
 	return picker;
@@ -2189,5 +2195,14 @@ double get_mean(void)
 		return *setups->x_mean;
 	}
 	return -DBL_MAX;
+}
+
+void view_event(int event_index, int Nbins, double x_min, double x_max)
+{
+	if (NULL == g_data) {
+		status();
+		return;
+	}
+	post_processor->view_event(event_index, Nbins, x_min, x_max);
 }
 

@@ -157,6 +157,33 @@ std::vector<std::pair<int, int>> split_range(int min, int max, int number)
 	return result;
 }
 
+TLatex* CreateStatBoxLine (std::string name, double v)
+{
+	std::string val = Form("%g", v);
+	TLatex *myt = new TLatex(0,0, (name + " = " + val).c_str());// " = " is a control character
+	myt->SetTextFont(0);
+	myt->SetTextSize(0);
+	myt->SetTextAlign(0);
+	return myt;
+}
+TLatex* CreateStatBoxLine (std::string name, int v)
+{
+	std::string val = Form("%d", v);
+	TLatex *myt = new TLatex(0,0, (name + " = " + val).c_str());// " = " is a control character
+	myt->SetTextFont(0);
+	myt->SetTextSize(0);
+	myt->SetTextAlign(0);
+	return myt;
+}
+TLatex* CreateStatBoxLine (std::string name)
+{
+	TLatex *myt = new TLatex(0,0, name.c_str());// " = " is a control character
+	myt->SetTextFont(0);
+	myt->SetTextSize(0);
+	myt->SetTextAlign(0);
+	return myt;
+}
+
 void test_ROOT_threads(void)
 {
 	int run_size = 25;
@@ -182,6 +209,100 @@ void test_ROOT_threads(void)
 	}
 	std::cout<<"}";
 	std::cout<<std::endl;
+}
+
+//To use for ShapeFitData
+//par[0] - width of rectangle, par[1] - center position
+double rectangle_pdf (const double *x, const double *pars)
+{
+	double w = std::fabs(pars[0]);
+	double amplitude = 1.0/w;
+	if (x[0] < (pars[1] - 0.5*w) || x[0] > (pars[1] + 0.5*w))
+		return 0;
+	return amplitude;
+}
+
+//par[0] - width of rectangle, par[1] - center position, par[2] - fraction of bkg, (<1 !)
+//par[3] - start time for bkg (fix to 0us), par[4] - finish time for bkg (fix to 160us),
+double rectangle_bkg_pdf (const double *x, const double *pars)
+{
+	double dt = std::fabs(pars[4] - pars[3]);
+	if (0 == dt)
+		return rectangle_pdf(x, pars);
+	double w = std::fabs(pars[0]);
+	double amp_bkg = std::fabs(pars[2])/dt;
+	double amp_sig = 1/w + amp_bkg * (w - dt) / w; // > amp_bkg if fraction pars[2] < 1
+	double t1 = std::min(pars[4], pars[3]);
+	double t2 = std::max(pars[4], pars[3]);
+	if (x[0] < t1 || x[0] > t2)
+		return 0.0;
+	if (x[0] < (pars[1] - 0.5*w) || x[0] > (pars[1] + 0.5*w))
+		return amp_bkg;
+	return amp_sig;
+}
+
+//par[0] - width of triangle, par[1] - left front position, par[2] - fraction of bkg,
+//par[3] - start time for bkg (fix to 0us), par[4] - finish time for bkg (fix to 160us),
+double triangle_bkg_pdf (const double *x, const double *pars)
+{
+	double dt = std::fabs(pars[4] - pars[3]);
+	double w = std::fabs(pars[0]);
+	double amp_bkg = std::fabs(pars[2])/dt;
+	double amp_sig = (2/w + amp_bkg * (w - 2*dt) / w); // > amp_bkg if fraction pars[2] < 1
+	double t1 = std::min(pars[4], pars[3]);
+	double t2 = std::max(pars[4], pars[3]);
+	if (x[0] < t1 || x[0] > t2)
+		return 0.0;
+	if (x[0] < (pars[1]) || x[0] > (pars[1] + w))
+		return amp_bkg;
+	return amp_sig + (x[0] - pars[1])*(amp_bkg - amp_sig)/w;
+}
+
+//par[0] - width of rectangle, par[1] - center of rectangle, par[2] - fraction(area) of triangle,
+//par[3] - width of triangle
+double rect_tria_pdf (const double *x, const double *pars)
+{
+	double w1 = std::fabs(pars[0]);
+	double w2 = std::fabs(pars[3]);
+	double s = std::fabs(pars[2]);
+	if (s == 0 || w2 == 0) {
+		double amplitude = 1.0/w1;
+		if (x[0] < (pars[1] - 0.5*w1) || x[0] > (pars[1] + 0.5*w1))
+			return 0;
+		return amplitude;
+	}
+	double ampl1 = (1 - s) / w1;
+	double ampl2 = 2*s / w2;
+	if (x[0] >= (pars[1] - 0.5*w1) && x[0] <= (pars[1] + 0.5*w1))
+		return ampl1;
+	if (x[0] > (pars[1] + 0.5*w1) && x[0] <= (pars[1] + 0.5*w1 + w2)) {
+		return ampl2 - ampl2 * (x[0] - (pars[1] + 0.5*w1)) / w2;
+	}
+	return 0.0;
+}
+
+//par[0] - sigma, par[1] - center position, par[2] - fraction of bkg,
+//par[3] - start time for bkg (fix to 0us), par[4] - finish time for bkg (fix to 160us),
+double gauss_bkg_pdf (const double *x, const double *pars)
+{
+	double ampl_bkg = std::fabs(pars[2])/(pars[4] - pars[3]);
+	double ret = (1 - std::fabs(pars[2])) * ROOT::Math::gaussian_pdf(x[0], pars[0], pars[1]);
+	if (x[0] >= pars[3] && x[0] < pars[4])
+		ret += ampl_bkg;
+	return ret;
+}
+
+//par[0] - sigma, par[1] - center position, par[2] - fraction of bkg,
+//par[3] - start time for bkg (fix to 0us), par[4] - finish time for bkg (fix to 160us),
+//par[5] - 2nd gauss sigma/sigma1 (>1), par[6] - fraction of 2nd gauss
+double gauss_gauss_bkg_pdf (const double *x, const double *pars)
+{
+	double ampl_bkg = pars[2]/(pars[4] - pars[3]);
+	double ret = (1 - pars[2] - pars[6]) * ROOT::Math::gaussian_pdf(x[0], pars[0], pars[1]);
+	ret += (pars[6]) * ROOT::Math::gaussian_pdf(x[0], pars[0]*pars[5], pars[1]);
+	if (x[0] >= pars[3] && x[0] < pars[4])
+		ret += ampl_bkg;
+	return ret;
 }
 
 void open_output_file(std::string name, std::ofstream &str, std::ios_base::openmode _mode)
@@ -1212,7 +1333,7 @@ bool viewRegion::IsValidLine(double x1, double y1, double x2, double y2) {
 	return true;
 }
 
-bool viewRegion::IsInf(double val) {
+bool IsInf(double val) {
 	return val == DBL_MAX || val == -DBL_MAX;
 }
 
@@ -1360,6 +1481,7 @@ void Init_globals(bool full)
 	gStyle->SetOptFit();
 	gStyle->SetStatY(0.9);
 	gStyle->SetStatX(0.9);
+	//ROOT::EnableThreadSafety();
 	calibaration_points = std::pair<int, int>(3, 6);
 
 	double SiPM_size = 10; //mm

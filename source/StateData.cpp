@@ -55,6 +55,7 @@ bool StateData::IsForState_virt(CanvasSetups *state, int channel, AStates::Type 
 	case AStates::MPPC_trigger_fit_chi2:
 	case AStates::MPPC_trigger_avg:
 	case AStates::PMT_T_sum:
+	case AStates::MPPC_shape_fit:
 		return true;
 	default: {
 		std::cout<<"Error: StateData::IsForState_virt is not implemented for type "<<state->type_name(type)<<std::endl;
@@ -63,9 +64,9 @@ bool StateData::IsForState_virt(CanvasSetups *state, int channel, AStates::Type 
 	return false;
 }
 
-StateData::StateData() : static_instance(true)
+StateData::StateData()
 {}
-StateData::StateData(const CanvasSetups *for_state) : static_instance(false)
+StateData::StateData(const CanvasSetups *for_state)
 {}
 StateData::~StateData()
 {}
@@ -116,8 +117,10 @@ void StateData::DataChanged_virt(void) {
 		std::cout << "run Initialize() first" << std::endl;
 		return;
 	}
-	post_processor->Invalidate(CanvasSetups::InvalidateLabel::invData);
-	post_processor->update();
+	if (IsForState(post_processor)) {
+		post_processor->Invalidate(CanvasSetups::InvalidateLabel::invData);
+		post_processor->update();
+	}
 }
 
 
@@ -174,6 +177,7 @@ bool TriggerData::IsForState_virt(CanvasSetups *state, int channel, AStates::Typ
 		case AStates::MPPC_trigger_fit_chi2:
 		case AStates::MPPC_trigger_avg:
 		case AStates::PMT_T_sum:
+		case AStates::MPPC_shape_fit:
 			return false;
 		case AStates::Correlation_x: {
 			return (state->_x_corr == AStates::PMT_trigger_bNpe) || (state->_x_corr == AStates::PMT_trigger_bNpeaks)
@@ -303,6 +307,7 @@ bool TriggerFitData::IsForState_virt(CanvasSetups *state, int channel, AStates::
 		case AStates::PMT_trigger_bS:
 		case AStates::MPPC_trigger_avg:
 		case AStates::PMT_T_sum:
+		case AStates::MPPC_shape_fit:
 			return false;
 		case AStates::Correlation_x: {
 			return (state->_x_corr == AStates::PMT_trigger_fit || state->_x_corr == AStates::PMT_trigger_fit_chi2
@@ -548,6 +553,7 @@ bool TriggerAvgTData::IsForState_virt(CanvasSetups *state, int channel, AStates:
 		case AStates::MPPC_trigger_fit:
 		case AStates::MPPC_trigger_fit_chi2:
 		case AStates::PMT_T_sum:
+		case AStates::MPPC_shape_fit:
 			return false;
 		case AStates::Correlation_x: {
 			return (state->_x_corr == AStates::MPPC_trigger_avg);
@@ -634,4 +640,529 @@ TriggerAvgTData::TriggerType TriggerAvgTData::GetTriggerType(void)
 	}
 	return data->trigger_type;
 }
+
+//*********************************************************************************************************
+
+bool ShapeFitData::IsForState(CanvasSetups *state)
+{
+	StateData* d = new ShapeFitData();
+	bool ret = d->IsForState_virt(state);
+	delete d;
+	return ret;
+}
+bool ShapeFitData::IsForState(CanvasSetups *state, int channel, AStates::Type type)
+{
+	StateData* d = new ShapeFitData();
+	bool ret = d->IsForState_virt(state, channel, type);
+	delete d;
+	return ret;
+}
+
+bool ShapeFitData::IsForState_virt(CanvasSetups *state, int channel, AStates::Type type)
+{
+	if (StateData::IsForState_virt(state, channel, type)) {
+		switch (type) {
+		case AStates::MPPC_Ss:
+		case AStates::MPPC_As:
+		case AStates::MPPC_t_S:
+		case AStates::MPPC_A_S:
+		case AStates::MPPC_tbS:
+		case AStates::MPPC_tbN:
+		case AStates::MPPC_tbS_sum:
+		case AStates::MPPC_tbNpe_sum:
+		case AStates::MPPC_tbN_sum:
+		case AStates::MPPC_coord:
+		case AStates::MPPC_coord_x:
+		case AStates::MPPC_coord_y:
+		case AStates::MPPC_Npe_sum:
+		case AStates::MPPC_N_sum:
+		case AStates::MPPC_S_sum:
+		case AStates::MPPC_S2:
+		case AStates::PMT_S2_S:
+		case AStates::PMT_Npe_sum:
+		case AStates::PMT_S_sum:
+		case AStates::PMT_Ss:
+		case AStates::PMT_As:
+		case AStates::PMT_t_S:
+		case AStates::PMT_A_S:
+		case AStates::PMT_tbS:
+		case AStates::PMT_tbN:
+		case AStates::PMT_tbNpe:
+		case AStates::PMT_sum_N:
+		case AStates::Correlation:
+		case AStates::CorrelationAll:
+		case AStates::PMT_trigger_bNpe:
+		case AStates::PMT_trigger_bNpeaks:
+		case AStates::PMT_trigger_bS:
+		case AStates::PMT_trigger_fit:
+		case AStates::PMT_trigger_fit_chi2:
+		case AStates::MPPC_trigger_fit:
+		case AStates::MPPC_trigger_fit_chi2:
+		case AStates::PMT_T_sum:
+		case AStates::MPPC_trigger_avg:
+			return false;
+		case AStates::Correlation_x: {
+			return (state->_x_corr == AStates::MPPC_shape_fit);
+		}
+		case AStates::Correlation_y: {
+			return (state->_y_corr == AStates::MPPC_shape_fit);
+		}
+		case AStates::MPPC_shape_fit: {
+			return true;
+		}
+		default: {
+			std::cout<<"Error: ShapeFitData::IsForState_virt is not implemented for type "<<state->type_name(type)<<std::endl;
+		}
+		}
+	}
+	return false;
+}
+
+ShapeFitData::ShapeFitData():
+		StateData(), peak_type(ptNpe), n_parameters(0), fit_function(), parameter_to_plot(0)
+{}
+
+ShapeFitData::ShapeFitData(const CanvasSetups *for_state):
+		StateData(for_state), peak_type(ptNpe), n_parameters(0), fit_function(), parameter_to_plot(0)
+{}
+
+void ShapeFitData::SetDefaultSettings(const CanvasSetups *for_state)
+{
+	peak_type = ptNpe;
+	n_parameters = 0;
+	fit_function.SetFunction(NULL);
+	par_bounds.clear();
+	par_precisions.clear();
+}
+
+StateData* ShapeFitData::Clone ()
+{
+	return new ShapeFitData(*this);
+}
+
+bool ShapeFitData::IsValid() const
+{
+	return (n_parameters > 0 && par_bounds.size()==n_parameters && par_precisions.size()==n_parameters && parameter_to_plot <= n_parameters && fit_function.isValid());
+}
+
+//I want this method to be virtual AND static
+ShapeFitData* ShapeFitData::GetData(CanvasSetups *setups, int channel, AStates::Type type) //returns NULL if current setups do not contain this data class.
+{
+	StateData* d = new ShapeFitData();
+	ShapeFitData* ret =  (ShapeFitData*) d->GetData_virt(setups, channel, type);
+	delete d;
+	return ret;
+}
+ShapeFitData* ShapeFitData::GetData(void) //returns NULL if current setups do not contain this data class.
+{
+	StateData* d = new ShapeFitData();
+	ShapeFitData* ret =  (ShapeFitData*) d->GetData_virt();
+	delete d;
+	return ret;
+}
+
+//I want this method to be virtual AND static
+void ShapeFitData::DataChanged(void)
+{
+	StateData* d = new ShapeFitData();
+	d->DataChanged_virt();
+	delete d;
+}
+
+//Same as StateData, but does not force update()
+void ShapeFitData::DataChanged_virt(void)
+{
+	if (NULL == post_processor) {
+		std::cout << "run Initialize() first" << std::endl;
+		return;
+	}
+	if (ShapeFitData::IsForState(post_processor)) {
+		post_processor->Invalidate(CanvasSetups::InvalidateLabel::invData);
+	}
+}
+
+void ShapeFitData::PeaksToXY(std::deque<peak_processed> &peaks, std::vector<double> &xs, std::vector<double> &ys) const
+{
+	xs.clear();
+	ys.clear();
+	xs.reserve(peaks.size());
+	ys.reserve(peaks.size());
+	for (auto pk = peaks.begin(), pk_end_ = peaks.end(); pk!=pk_end_; ++pk) {
+		if (ptNpe == peak_type) {
+			if (pk->Npe <= 0)
+				continue;
+			xs.push_back(pk->t);
+			ys.push_back(pk->Npe);
+			continue;
+		}
+		if (ptS == peak_type) {
+			if (pk->S <= 0)
+				continue;
+			xs.push_back(pk->t);
+			ys.push_back(pk->S);
+			continue;
+		}
+		xs.push_back(pk->t);
+		ys.push_back(1.0);
+	}
+}
+//returns n parameters + likelihood
+std::vector<double> ShapeFitData::Fit(std::deque<peak_processed> &peaks) const
+{
+	if (!IsValid()) {
+		return std::vector<double>(n_parameters +1, DBL_MAX);
+	}
+	std::vector<double> xs, ys;
+	PeaksToXY(peaks, xs, ys);
+	ROOT::Fit::UnBinData data_to_fit(xs.size(), &xs[0], &ys[0]);
+	FitWrapper temp = fit_function;
+	ROOT::Math::WrappedParamFunction<FitWrapper*> root_f(&temp, 1, n_parameters, 0);
+	ROOT::Fit::LogLikelihoodFunction lkhood_fnc(data_to_fit, root_f);
+	ROOT::Fit::Fitter fitter;
+	fitter.Config().ParamsSettings() = std::vector<ROOT::Fit::ParameterSettings>(n_parameters);
+	for (int i = 0, i_end_ = n_parameters; i!=i_end_; ++i) {
+		double initial_value = 0;
+		initial_value += 0.5*(IsInf(par_bounds[i].first) ? (par_bounds[i].first > 0 ? 2 : -2) : par_bounds[i].first);
+		initial_value += 0.5*(IsInf(par_bounds[i].second) ? (par_bounds[i].second > 0 ? 2 : -2) : par_bounds[i].second);
+		fitter.Config().ParSettings(i).SetValue(initial_value);
+		fitter.Config().ParSettings(i).SetLimits(par_bounds[i].first, par_bounds[i].second);
+		double step_size = 0.05*((IsInf(par_bounds[i].second) ? 0 : par_bounds[i].second) - (IsInf(par_bounds[i].first) ? 0 : par_bounds[i].first));
+		if (0 == step_size)
+			step_size = 1;
+		if (par_precisions[i] > 0)
+			step_size = std::min(step_size, 10 * par_precisions[i]);
+		fitter.Config().ParSettings(i).SetStepSize(step_size);
+		fitter.Config().ParSettings(i).SetName("[" + int_to_str(i) + "]"); //Must set a name for Minuit2 to work
+	}
+	fitter.Config().SetMinimizer("Minuit2", "Minimize");
+	fitter.Config().MinimizerOptions().SetPrintLevel(0); //default - 0
+	fitter.Config().MinimizerOptions().SetTolerance(1e-7);
+	fitter.Config().SetMinosErrors(false);
+	fitter.Config().SetNormErrors(false);
+	fitter.Config().SetParabErrors(false);
+	fitter.FitFCN(n_parameters, lkhood_fnc, 0, xs.size(), false);
+	ROOT::Fit::FitResult fit_result = fitter.Result();
+	const double *out_pars = fit_result.GetParams();
+	std::vector<double> result(n_parameters + 1, 0);
+	for (int i = 0, i_end_ = n_parameters; i!=i_end_; ++i)
+		result[i] = out_pars[i];
+	result[n_parameters] = lkhood_fnc(out_pars);
+	return result;
+}
+
+//CINT interface:
+void ShapeFitData::SetPeakType(PeakType type)
+{
+	ShapeFitData* data = GetData();
+	if (NULL == data) {
+		std::cout<<"Error: ShapeFitData::SetPeakType: current type is not shape fit type"<<std::endl;
+		return;
+	}
+	bool update = data->peak_type!=type;
+	data->peak_type = type;
+	if (update)
+		DataChanged();
+}
+
+ShapeFitData::PeakType ShapeFitData::GetPeakType(void)
+{
+	ShapeFitData* data = GetData();
+	if (NULL == data) {
+		std::cout<<"Error: ShapeFitData::GetPeakType: current type is not shape fit type"<<std::endl;
+		return PeakType::ptNpe;
+	}
+	return data->peak_type;
+}
+
+void ShapeFitData::SetNPars(int n)
+{
+	ShapeFitData* data = GetData();
+	if (NULL == data) {
+		std::cout<<"Error: ShapeFitData::SetNPars: current type is not shape fit type"<<std::endl;
+		return;
+	}
+	bool update = false;
+	n = std::max(0, n);
+	if (data->n_parameters < n) {
+		update = true;
+		data->par_bounds.insert(data->par_bounds.end(), n - data->n_parameters, std::pair<double, double>(-DBL_MAX, DBL_MAX));
+		data->par_precisions.insert(data->par_precisions.end(), n - data->n_parameters, -1);
+		data->par_names.insert(data->par_names.end(), n - data->n_parameters, "");
+		data->n_parameters = n;
+	}
+	if (data->n_parameters > n) {
+		update = true;
+		data->par_bounds.erase(data->par_bounds.begin() + n, data->par_bounds.end());
+		data->par_precisions.erase(data->par_precisions.begin() + n, data->par_precisions.end());
+		data->par_names.erase(data->par_names.begin() + n, data->par_names.end());
+		data->n_parameters = n;
+	}
+	if (update)
+		DataChanged();
+}
+
+int ShapeFitData::GetNPars(void)
+{
+	ShapeFitData* data = GetData();
+	if (NULL == data) {
+		std::cout<<"Error: ShapeFitData::GetNPars: current type is not shape fit type"<<std::endl;
+		return 0;
+	}
+	return data->n_parameters;
+}
+
+void ShapeFitData::SetPrecision(int n, double precision)
+{
+	ShapeFitData* data = GetData();
+	if (NULL == data) {
+		std::cout<<"Error: ShapeFitData::SetPrecision: current type is not shape fit type"<<std::endl;
+		return;
+	}
+	if (n >= data->n_parameters || n < 0) {
+		std::cout<<"Error: ShapeFitData::SetPrecision: index is out of bounds"<<std::endl;
+		return;
+	}
+	bool update = data->par_precisions[n] != precision;
+	data->par_precisions[n] = precision;
+	if (update)
+		DataChanged();
+}
+
+double ShapeFitData::GetPrecision(int n)
+{
+	ShapeFitData* data = GetData();
+	if (NULL == data) {
+		std::cout<<"Error: ShapeFitData::GetPrecision: current type is not shape fit type"<<std::endl;
+		return -1;
+	}
+	if (n >= data->n_parameters || n < 0) {
+		std::cout<<"Error: ShapeFitData::GetPrecision: index is out of bounds"<<std::endl;
+		return -1;
+	}
+	return data->par_precisions[n];
+}
+
+void ShapeFitData::SetPrecisions(std::vector<double> precisions)
+{
+	ShapeFitData* data = GetData();
+	if (NULL == data) {
+		std::cout<<"Error: ShapeFitData::SetPrecisions: current type is not shape fit type"<<std::endl;
+		return;
+	}
+	if (precisions.size() != data->n_parameters) {
+		std::cout<<"Warning: ShapeFitData::SetPrecisions: input array does not have correct size"<<std::endl;
+	}
+	bool update = false;
+	for (int i = 0, i_end_= std::min(precisions.size(), (std::size_t)data->n_parameters); i!=i_end_; ++i) {
+		if (!update && data->par_precisions[i] != precisions[i])
+			update = true;
+		data->par_precisions[i] = precisions[i];
+	}
+	if (update)
+		DataChanged();
+}
+
+std::vector<double> ShapeFitData::GetPrecisions(void)
+{
+	ShapeFitData* data = GetData();
+	if (NULL == data) {
+		std::cout<<"Error: ShapeFitData::GetPrecisions: current type is not shape fit type"<<std::endl;
+		return std::vector<double>();
+	}
+	return data->par_precisions;
+}
+
+void ShapeFitData::SetBound(int n, double _min, double _max)
+{
+	ShapeFitData* data = GetData();
+	if (NULL == data) {
+		std::cout<<"Error: ShapeFitData::SetBound: current type is not shape fit type"<<std::endl;
+		return;
+	}
+	if (n >= data->n_parameters || n < 0) {
+		std::cout<<"Error: ShapeFitData::SetBound: index is out of bounds"<<std::endl;
+		return;
+	}
+	double min = std::min(_min, _max);
+	double max = std::max(_min, _max);
+	bool update = (data->par_bounds[n].first != min || data->par_bounds[n].second != max);
+	data->par_bounds[n].first = min;
+	data->par_bounds[n].second = max;
+	if (update)
+		DataChanged();
+}
+
+void ShapeFitData::SetBound(int n, std::pair<double, double> bound)
+{
+	SetBound(n, bound.first, bound.second);
+}
+
+void ShapeFitData::SetBound(int n, double fixed)
+{
+	SetBound(n, fixed, fixed);
+}
+
+std::pair<double, double> ShapeFitData::GetBound(int n)
+{
+	ShapeFitData* data = GetData();
+	if (NULL == data) {
+		std::cout<<"Error: ShapeFitData::SetBound: current type is not shape fit type"<<std::endl;
+		return std::pair<double, double>(DBL_MAX, DBL_MAX);
+	}
+	if (n >= data->n_parameters || n < 0) {
+		std::cout<<"Error: ShapeFitData::SetBound: index is out of bounds"<<std::endl;
+		return std::pair<double, double>(DBL_MAX, DBL_MAX);
+	}
+	return data->par_bounds[n];
+}
+
+void ShapeFitData::SetBounds(std::vector<double> mins, std::vector<double> maxs)
+{
+	ShapeFitData* data = GetData();
+	if (NULL == data) {
+		std::cout<<"Error: ShapeFitData::SetBounds: current type is not shape fit type"<<std::endl;
+		return;
+	}
+	if (mins.size() != data->n_parameters || maxs.size() != data->n_parameters) {
+		std::cout<<"Warning: ShapeFitData::SetBounds: input array does not have correct size"<<std::endl;
+	}
+	bool update = false;
+	for (int i = 0, i_end_= std::min(std::min(mins.size(), maxs.size()), (std::size_t)data->n_parameters); i!=i_end_; ++i) {
+		double min = std::min(mins[i], maxs[i]);
+		double max = std::max(mins[i], maxs[i]);
+		if (!update && (data->par_bounds[i].first != min || data->par_bounds[i].second != max))
+			update = true;
+		data->par_bounds[i].first = min;
+		data->par_bounds[i].second = max;
+	}
+	if (update)
+		DataChanged();
+}
+
+void ShapeFitData::SetBounds(std::vector<std::pair<double, double>> bounds)
+{
+	ShapeFitData* data = GetData();
+	if (NULL == data) {
+		std::cout<<"Error: ShapeFitData::SetBounds: current type is not shape fit type"<<std::endl;
+		return;
+	}
+	if (bounds.size() != data->n_parameters) {
+		std::cout<<"Warning: ShapeFitData::SetBounds: input array does not have correct size"<<std::endl;
+	}
+	bool update = false;
+	for (int i = 0, i_end_= std::min(bounds.size(), (std::size_t)data->n_parameters); i!=i_end_; ++i) {
+		double min = std::min(bounds[i].first, bounds[i].second);
+		double max = std::max(bounds[i].first, bounds[i].second);
+		if (!update && (data->par_bounds[i].first != min || data->par_bounds[i].second != max))
+			update = true;
+		data->par_bounds[i].first = min;
+		data->par_bounds[i].second = max;
+	}
+	if (update)
+		DataChanged();
+}
+
+std::vector<std::pair<double, double>> ShapeFitData::GetBounds(void)
+{
+	ShapeFitData* data = GetData();
+	if (NULL == data) {
+		std::cout<<"Error: ShapeFitData::GetBounds: current type is not shape fit type"<<std::endl;
+		return std::vector<std::pair<double, double>>();
+	}
+	return data->par_bounds;
+}
+
+void ShapeFitData::SetPlotParameter(int index)
+{
+	ShapeFitData* data = GetData();
+	if (NULL == data) {
+		std::cout<<"Error: ShapeFitData::SetPlotParameter: current type is not shape fit type"<<std::endl;
+		return;
+	}
+	if (index > data->n_parameters || index < 0) {
+		std::cout<<"Error: ShapeFitData::SetPlotParameter: index is out of bounds"<<std::endl;
+		return;
+	}
+	bool update = data->parameter_to_plot != index;
+	data->parameter_to_plot = index;
+	if (update)
+		DataChanged();
+}
+
+int ShapeFitData::GetPlotParameter(void)
+{
+	ShapeFitData* data = GetData();
+	if (NULL == data) {
+		std::cout<<"Error: ShapeFitData::GetPlotParameter: current type is not shape fit type"<<std::endl;
+		return -1;
+	}
+	return data->parameter_to_plot;
+}
+
+void ShapeFitData::SetParameterName(int n, std::string name)
+{
+	ShapeFitData* data = GetData();
+	if (NULL == data) {
+		std::cout<<"Error: ShapeFitData::SetParameterName: current type is not shape fit type"<<std::endl;
+		return;
+	}
+	if (n >= data->n_parameters || n < 0) {
+		std::cout<<"Error: ShapeFitData::SetParameterName: index is out of bounds"<<std::endl;
+		return;
+	}
+	data->par_names[n] = name;
+}
+
+std::string ShapeFitData::GetParameterName(int n)
+{
+	ShapeFitData* data = GetData();
+	if (NULL == data) {
+		std::cout<<"Error: ShapeFitData::GetParameterName: current type is not shape fit type"<<std::endl;
+		return "";
+	}
+	if (n == data->n_parameters && n != 0) {
+		return "LogLH";
+	}
+	if (n >= data->n_parameters || n < 0) {
+		std::cout<<"Error: ShapeFitData::GetParameterName: index is out of bounds"<<std::endl;
+		return "";
+	}
+	return data->par_names[n];
+}
+
+void ShapeFitData::SetParameterNames(std::vector<std::string> names)
+{
+	ShapeFitData* data = GetData();
+	if (NULL == data) {
+		std::cout<<"Error: ShapeFitData::SetParameterNames: current type is not shape fit type"<<std::endl;
+		return;
+	}
+	if (names.size() != data->n_parameters) {
+		std::cout<<"Warning: ShapeFitData::SetParameterNames: input array does not have correct size"<<std::endl;
+	}
+	data->par_names = names;
+}
+
+std::vector<std::string> ShapeFitData::GetParameterNames(void)
+{
+	ShapeFitData* data = GetData();
+	if (NULL == data) {
+		std::cout<<"Error: ShapeFitData::SetParameterNames: current type is not shape fit type"<<std::endl;
+		return std::vector<std::string>();
+	}
+	return data->par_names;
+}
+
+FIT_F ShapeFitData::SetFitFunction(FIT_F f) //ignore run_n and stat_data.
+{
+	ShapeFitData* data = GetData();
+	if (NULL == data) {
+		std::cout<<"Error: ShapeFitData::SetPrecision: current type is not shape fit type"<<std::endl;
+		return f;
+	}
+	data->fit_function.SetFunction(f);
+	DataChanged();
+	return f;
+}
+
 

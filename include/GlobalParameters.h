@@ -14,7 +14,7 @@
 #define ROOT_BL_CALL_V7 find_background_v_raw(f_ys, ys.size(), 20,	TSpectrum::kBackIncreasingWindow, TSpectrum::kBackOrder2, kFALSE, TSpectrum::kBackSmoothing3, kFALSE);
 #define ROOT_BL_CALL_V8 find_background_v_raw(f_ys, ys.size(), 20,	TSpectrum::kBackIncreasingWindow, TSpectrum::kBackOrder2, kFALSE, TSpectrum::kBackSmoothing3, kFALSE);
 
-
+bool IsInf(double val);
 class viewRegion { //helper class for drawing cuts (clipping lines to pad axes)
 protected:
 	std::vector<double> view_xs;
@@ -35,7 +35,6 @@ public:
 	static int LinesCrossed(double x1, double y1, double x2, double y2,
 		double u1, double v1, double u2, double v2, double& xc, double& yc);
 	static bool OnLine(double x1, double y1, double x2, double y2, double u, double v);
-	static bool IsInf(double val);
 	static bool InRange(double val, double a, double b, double tolerance);
 	static bool RangesIntersect(double x1, double x2, double x3, double x4, double tolerance, double &p);
 	static bool IsValidLine(double x1, double y1, double x2, double y2);

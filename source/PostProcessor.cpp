@@ -2,7 +2,7 @@
 #include "StateData.h"
 
 PostProcessor::PostProcessor(AllExperimentsResults* _data) : 
-CanvasSetups(_data->mppc_channels,_data->pmt_channels, _data->exp_area.experiments), calibr_info(this, calibration_file)
+CanvasSetups(_data->mppc_channels,_data->pmt_channels, _data->exp_area.experiments), calibr_info(this, calibration_file), event_canvas(NULL)
 {
 	if (!isValid()) {
 		std::cout << "Wrong input data: no channels or experiments from AnalysisManager" << std::endl;
@@ -156,6 +156,7 @@ void PostProcessor::print_hist(std::string path, bool png_only)
 	case MPPC_trigger_fit_chi2:
 	case MPPC_trigger_avg:
 	case PMT_T_sum:
+	case MPPC_shape_fit:
 	{
 		writer_to_file->SetFunction([](std::vector<double>& pars, int run, void* data) {
 			((temp_data*)data)->str->write((char*)&pars[0], sizeof(double));
@@ -662,6 +663,137 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 					continue;
 				}
 				(*operations[o].operation)(is_chi2 ? results[run].chi2_value : results[run].trigger_offset, run);
+			}
+		}
+		break;
+	}
+	case Type::MPPC_shape_fit:
+	{
+		bool ignore_no_run_cut = true;
+		for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
+			if (!operations[o].apply_run_cuts) {
+				ignore_no_run_cut = false;
+				break;
+			}
+		}
+		ShapeFitData* fitter = ShapeFitData::GetData(this, channel, type);
+		if (NULL == fitter) {
+			std::cout<<"PostProcessor::LoopThroughData: No ShapeFitData for exp "<<current_exp_index<<" channel "<<channel<<" type "<<type_name(type)<<std::endl;
+			return;
+		} else if (!fitter->IsValid()) {
+			std::cout<<"PostProcessor::LoopThroughData: shape fit data for exp "<<current_exp_index<<" channel "<<channel<<" type "<<type_name(type) <<" is invalid"<<std::endl;
+			return;
+		}
+
+		//channel->run->peak_itself:
+		std::deque<std::deque<std::deque<peak> > > *peaks = NULL;
+		std::deque<int> *channels = NULL;
+		if (isPMTtype(type)) {
+			channels = &PMT_channels;
+			peaks = &(data->pmt_peaks[current_exp_index]);
+		} else {
+			channels = &MPPC_channels;
+			peaks = &(data->mppc_peaks[current_exp_index]);
+		}
+		int run_size = (*peaks)[0].size();
+		struct event_result {
+			bool failed_run_cut = false;
+			bool failed_hist_phys = false;
+			bool failed_hist = false;
+			bool failed_phys = false;
+			std::vector<double> plotted_value = std::vector<double>(1, 0);
+		};
+		int plot_par_index = fitter->parameter_to_plot;
+		std::vector<event_result> results(run_size);
+		std::vector<std::pair<int, int>> thread_indices = split_range(0, run_size, threads_number);
+		int thread_n = thread_indices.size();
+		std::vector<std::thread> threads;
+		for (unsigned int n_th = 0u; n_th < thread_n; ++n_th) {
+			threads.push_back(std::thread([&](int n_th) {
+			for (int run = thread_indices[n_th].first; run != thread_indices[n_th].second; ++run) {
+				std::vector<double> cut_data(6);
+				//cuts on peaks (low level cuts) are always applied (those affecting histogram only)
+				std::deque<peak_processed> accepted_peaks;
+				for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
+					if (kFALSE == cut->GetAccept(run)) {
+						results[run].failed_run_cut = true;
+						break;
+					}
+				if (results[run].failed_run_cut && ignore_no_run_cut)
+					continue;
+
+				for (int chan_ind=0,_ch_ind_end_= channels->size(); chan_ind<_ch_ind_end_;++chan_ind) {
+					if (NULL != setups) {
+						bool *active = setups->active_channels.info((*channels)[chan_ind]);
+						if (NULL == active)
+							continue;
+						if (!(*active))
+							continue;
+					}
+					double s1pe = calibr_info.get_S1pe((*channels)[chan_ind], current_exp_index);
+					for (int pk = 0, pk_end = (*peaks)[chan_ind][run].size(); pk != pk_end; ++pk) {
+						bool failed_hist_cut = false; //normal cuts
+						cut_data[0] = (*peaks)[chan_ind][run][pk].S;
+						cut_data[1] = (*peaks)[chan_ind][run][pk].A;
+						cut_data[2] = (*peaks)[chan_ind][run][pk].left + data->trigger_offset[current_exp_index][run];
+						cut_data[3] = (*peaks)[chan_ind][run][pk].right + data->trigger_offset[current_exp_index][run];
+						cut_data[4] =
+	#ifdef PEAK_AVR_TIME
+								(*peaks)[chan_ind][run][pk].t + data->trigger_offset[current_exp_index][run];
+	#else
+								0.5*(cut_data[3]+cut_data[2]);
+	#endif
+						cut_data[5] = s1pe > 0 ? std::round(cut_data[0]/s1pe) : -1;
+						for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
+							if (cut->GetChannel()==(*channels)[chan_ind] && cut->GetAffectingHistogram() && !failed_hist_cut)
+								if (kFALSE == (*cut)(cut_data, run)) { //more expensive than GetAffectingHistogram
+									failed_hist_cut = true;
+									break;
+								}
+						}
+						if (!failed_hist_cut)
+							accepted_peaks.push_back(peak_processed(cut_data[0], cut_data[1], cut_data[2], cut_data[3], cut_data[4], cut_data[5]));
+					}
+				}
+				std::vector<double> pars = fitter->Fit(accepted_peaks);
+				results[run].plotted_value[0] = pars[plot_par_index];
+
+				for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut)
+					if (-1 == cut->GetChannel()) {
+						if (!results[run].failed_hist_phys)
+							if (kFALSE == (*cut)(results[run].plotted_value, run))
+								results[run].failed_hist_phys = true;
+						if (!results[run].failed_hist && cut->GetAffectingHistogram())
+							if (kFALSE == (*cut)(results[run].plotted_value, run))
+								results[run].failed_hist = true;
+						if (!results[run].failed_phys && !cut->GetAffectingHistogram())
+							if (kFALSE == (*cut)(results[run].plotted_value, run))
+								results[run].failed_phys = true;
+					}
+			}
+			}, n_th));
+		}
+		for (unsigned int n_th = 0u; n_th < thread_n; ++n_th) {
+			threads[n_th].join();
+		}
+		for (auto run = 0; run != run_size; ++run) {
+			for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
+				if (operations[o].apply_run_cuts && results[run].failed_run_cut)
+					continue;
+				if (operations[o].apply_hist_cuts && !operations[o].apply_phys_cuts) {
+					if (!results[run].failed_hist)
+						(*operations[o].operation)(results[run].plotted_value, run);
+					continue;
+				}
+				if (!operations[o].apply_hist_cuts && operations[o].apply_phys_cuts) {
+					if (!results[run].failed_phys) (*operations[o].operation)(results[run].plotted_value, run);
+					continue;
+				}
+				if (operations[o].apply_hist_cuts && operations[o].apply_phys_cuts) {
+					if (!results[run].failed_hist_phys) (*operations[o].operation)(results[run].plotted_value, run);
+					continue;
+				}
+				(*operations[o].operation)(results[run].plotted_value, run);
 			}
 		}
 		break;
@@ -1622,6 +1754,160 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 	}
 }
 
+void PostProcessor::view_event(int event_index, int N_bins, double x_min, double x_max)
+{
+	if (NULL == event_canvas) {
+		event_canvas = new TCanvas((std::string("event_canvas_")).c_str(), (std::string("event_canvas_")).c_str());
+		event_canvas->SetGrid();
+		event_canvas->SetTicks();
+		event_canvas->ToggleEventStatus();
+		event_canvas->ToggleToolBar();
+	}
+	event_canvas->cd();
+	event_canvas->SetTitle((hist_name() + "_ev#" + int_to_str(event_index)).c_str());
+	event_canvas->Clear();
+
+	Type type = current_type;
+	HistogramSetups* setups = get_hist_setups(current_exp_index, current_channel, current_type);
+	std::deque<EventCut> empty;
+	std::deque<EventCut> *hist_cuts = (NULL==setups ? &empty : &(setups->hist_cuts));
+	std::string exp_str = experiments[current_exp_index];
+	if (type == Correlation_x)
+		type = _x_corr;
+	if (type == Correlation_y)
+		type = _y_corr;
+	switch (type)
+	{
+	case Type::MPPC_shape_fit:
+	{
+		ShapeFitData* fitter = ShapeFitData::GetData(this, current_channel, type);
+		if (NULL == fitter) {
+			std::cout<<"PostProcessor::view_event: No ShapeFitData for exp "<<current_exp_index<<" channel "<<current_channel<<" type "<<type_name(type)<<std::endl;
+			return;
+		} else if (!fitter->IsValid()) {
+			std::cout<<"PostProcessor::view_event: shape fit data for exp "<<current_exp_index<<" channel "<<current_channel<<" type "<<type_name(type) <<" is invalid"<<std::endl;
+			return;
+		}
+		//channel->run->peak_itself:
+		std::deque<std::deque<std::deque<peak> > > *peaks = NULL;
+		std::deque<int> *channels = NULL;
+		if (isPMTtype(type)) {
+			channels = &PMT_channels;
+			peaks = &(data->pmt_peaks[current_exp_index]);
+		} else {
+			channels = &MPPC_channels;
+			peaks = &(data->mppc_peaks[current_exp_index]);
+		}
+		int run_size = (*peaks)[0].size();
+		if (event_index >= run_size) {
+			std::cout<<"PostProcessor::view_event: index "<<event_index<<" is out of bounds [0, "<<run_size<<")"<<std::endl;
+			return;
+		}
+		std::vector<double> fit_pars;
+		std::vector<double> cut_data(6);
+		//cuts on peaks (low level cuts) are always applied (those affecting histogram only)
+		std::deque<peak_processed> accepted_peaks;
+		for (int chan_ind=0,_ch_ind_end_= channels->size(); chan_ind<_ch_ind_end_;++chan_ind) {
+			if (NULL != setups) {
+				bool *active = setups->active_channels.info((*channels)[chan_ind]);
+				if (NULL == active)
+					continue;
+				if (!(*active))
+					continue;
+			}
+			double s1pe = calibr_info.get_S1pe((*channels)[chan_ind], current_exp_index);
+			for (int pk = 0, pk_end = (*peaks)[chan_ind][event_index].size(); pk != pk_end; ++pk) {
+				bool failed_hist_cut = false; //normal cuts
+				cut_data[0] = (*peaks)[chan_ind][event_index][pk].S;
+				cut_data[1] = (*peaks)[chan_ind][event_index][pk].A;
+				cut_data[2] = (*peaks)[chan_ind][event_index][pk].left + data->trigger_offset[current_exp_index][event_index];
+				cut_data[3] = (*peaks)[chan_ind][event_index][pk].right + data->trigger_offset[current_exp_index][event_index];
+				cut_data[4] =
+#ifdef PEAK_AVR_TIME
+						(*peaks)[chan_ind][event_index][pk].t + data->trigger_offset[current_exp_index][event_index];
+#else
+						0.5*(cut_data[3]+cut_data[2]);
+#endif
+				cut_data[5] = s1pe > 0 ? std::round(cut_data[0]/s1pe) : -1;
+				for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
+					if (cut->GetChannel()==(*channels)[chan_ind] && cut->GetAffectingHistogram() && !failed_hist_cut)
+						if (kFALSE == (*cut)(cut_data, event_index)) { //more expensive than GetAffectingHistogram
+							failed_hist_cut = true;
+							break;
+						}
+				}
+				if (!failed_hist_cut)
+					accepted_peaks.push_back(peak_processed(cut_data[0], cut_data[1], cut_data[2], cut_data[3], cut_data[4], cut_data[5]));
+			}
+		}
+		fit_pars = fitter->Fit(accepted_peaks);
+		std::vector<double> xs, ys;
+		fitter->PeaksToXY(accepted_peaks, xs, ys);
+
+		double max_val = 0;
+		TH1D* hist = (TH1D*)gDirectory->FindObject("event_view");
+		if (NULL!=hist)
+			hist->Delete();
+		hist = NULL;
+		if (0 >= N_bins) {
+			for (int i = 0, i_end_ = xs.size(); i != i_end_; ++i)
+				max_val = std::max(max_val, ys[i]);
+		} else {
+			hist = new TH1D("event_view", "event_view", N_bins, x_min, x_max);
+			for (int i = 0, i_end_ = xs.size(); i != i_end_; ++i) {
+				hist->Fill(xs[i], ys[i]);
+			}
+			max_val = hist->GetMaximum();
+		}
+		TH2F* frame = (TH2F*)gDirectory->FindObject("Frame");
+		if (NULL!=frame)
+			frame->Delete();
+		frame = new TH2F("Frame", (hist_name() + "_ev#"+int_to_str(event_index)).c_str(), 500, x_min, x_max, 500, 0, 1.2 * max_val);
+		frame->GetXaxis()->SetTitle("Time [#mus]");
+		frame->GetYaxis()->SetTitle("PE peaks");
+		frame->Draw();
+		event_canvas->Update();
+
+		if (NULL == hist) {
+			TGraph* peaks_graph = new TGraph(xs.size(), &xs[0], &ys[0]);
+			peaks_graph->SetMarkerStyle(kFullCircle);
+			peaks_graph->SetMarkerSize(1);
+			peaks_graph->SetLineWidth(1);
+			peaks_graph->SetMarkerColor(kBlack);
+			peaks_graph->Draw("psame");
+		} else
+			hist->Draw("samehist");
+		double y_scale = 0.6 * max_val / fitter->fit_function(&fit_pars[1], &fit_pars[0]);//TODO: universal maximum finder
+		if (!fitter->fit_function.Draw(event_canvas, fit_pars, &y_scale)) {
+			std::cout<<"Could not draw fitted function"<<std::endl;
+		}
+		event_canvas->Update();
+		TPaveStats *ps = (TPaveStats*)frame->FindObject("stats");
+		if (NULL != ps && NULL != frame) {
+			ps->SetName("mystats");
+			TList *list = ps->GetListOfLines();
+			list->Clear();
+			list->Add(CreateStatBoxLine(std::string("Event #") + int_to_str(event_index)));
+			list->Add(CreateStatBoxLine("Entries", (int)xs.size()));
+			for (int i = 0, i_end_ = fit_pars.size(); i!=i_end_; ++i) {
+				std::string name = fitter->GetParameterName(i);
+				if ("" == name)
+					name = "par[" + int_to_str(i) + "]";
+				list->Add(CreateStatBoxLine(name, fit_pars[i]));
+			}
+			frame->SetStats(0);//Needed to avoid the automatic redrawing of stats
+			event_canvas->Modified();
+			event_canvas->Update();
+		}
+		break;
+	}
+	default: {
+		std::cout<<"Type "<< type_name(type) <<" is not implemented for event viewing"<<std::endl;
+		return;
+	}
+	}
+}
+
 bool PostProcessor::set_correlation_filler(FunctionWrapper* operation, Type type)
 {
 	if (NULL == operation)
@@ -1638,6 +1924,7 @@ bool PostProcessor::set_correlation_filler(FunctionWrapper* operation, Type type
 	case Type::MPPC_trigger_fit_chi2:
 	case Type::MPPC_trigger_avg:
 	case Type::PMT_T_sum:
+	case Type::MPPC_shape_fit:
 	{
 		operation->SetFunction([](std::vector<double>& pars, int run, void* data) {
 			(*((correlation_data*)data)->vals)[run] = pars[0];
@@ -1764,6 +2051,7 @@ bool PostProcessor::update(void)
 	case Type::MPPC_trigger_fit_chi2:
 	case Type::MPPC_trigger_avg:
 	case Type::PMT_T_sum:
+	case Type::MPPC_shape_fit:
 	{
 		drawn_mean_taker.SetFunction(
 		mean_taker.SetFunction([](std::vector<double>& pars, int run, void* data) {
@@ -2339,7 +2627,6 @@ bool PostProcessor::update(void)
 	}
 
 	update_physical();
-	update_Npe();
 	return true;
 }
 
@@ -2427,15 +2714,6 @@ void PostProcessor::default_hist_setups(HistogramSetups* setups)//does not affec
 		std::cerr<<"PostProcessor::default_hist_setups: Error: NULL HistogramSetups*"<<std::endl;
 		return;
 	}
-	//TODO: quite ugly approach
-	if (NULL==setups->extra_data && TriggerAvgTData::IsForState(this))
-		setups->extra_data = new TriggerAvgTData(this);
-	if (NULL==setups->extra_data && TriggerFitData::IsForState(this))
-		setups->extra_data = new TriggerFitData(this);
-	if (NULL==setups->extra_data && TriggerData::IsForState(this))
-		setups->extra_data = new TriggerData(this);
-	if (NULL==setups->extra_data && StateData::IsForState(this))
-		setups->extra_data = new StateData(this);
 
 	setups->use_default_setups = false;
 	int _N_ = numOfFills(false);
@@ -2515,10 +2793,6 @@ void PostProcessor::clearAll(void) //clear everything, return to initial state (
 	}
 	StateChange(current_channel, current_exp_index, current_type, canvas_ind, current_channel, current_exp_index, current_type, canvas_ind); //To create HistogramSetups as at the start of the program
 	update();
-}
-
-void PostProcessor::update_Npe(void)
-{
 }
 
 //updates derived values such as S2 amplitude, S of single photoelectron etc.
@@ -3346,3 +3620,4 @@ void PostProcessor::status(Bool_t full)
 		list_hist_cuts();
 	}
 }
+

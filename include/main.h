@@ -190,6 +190,8 @@ void cut_runs(int max_index, std::string _name = "");
 
 double get_mean(void); //x mean (ignores drawn cuts)
 
+void view_event(int event_index, int Nbins = 0, double x_min = 0, double x_max = 160);
+
 #ifdef _COMPLIE_MAIN_
 int main(int argc, char* argv[]) {
 	TestSignalGenerator("test/");
