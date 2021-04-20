@@ -15,7 +15,7 @@ public:
 		MPPC_trigger_fit, MPPC_trigger_fit_chi2, MPPC_trigger_avg, MPPC_shape_fit,
 		Correlation_x, Correlation_y /*these two are mask (virtual) types*/, Correlation /*uses Correlation_x/y*/,CorrelationAll,
 		PMT_S2_S, PMT_Npe_sum, PMT_S_sum, PMT_Ss, PMT_As, PMT_t_S, PMT_A_S, PMT_tbS, PMT_tbN, PMT_tbNpe, PMT_sum_N, PMT_trigger_fit,
-		PMT_T_sum, PMT_trigger_fit_chi2, PMT_trigger_bNpe, PMT_trigger_bNpeaks, PMT_trigger_bS};
+		PMT_T_sum, PMT_trigger_fit_chi2, PMT_shape_fit, PMT_trigger_bNpe, PMT_trigger_bNpeaks, PMT_trigger_bS};
 protected:
 	const Type _first_state;
 	const Type _last_state;

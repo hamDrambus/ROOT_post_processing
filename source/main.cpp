@@ -719,6 +719,7 @@ FunctionWrapper* create_vertical_lines_cut(double left, double right) //do not c
 	case AStates::CorrelationAll:
 	case AStates::PMT_T_sum:
 	case AStates::MPPC_shape_fit:
+	case AStates::PMT_shape_fit:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			return ((vals[0] <=((temp_data*)data)->mm.second) && (vals[0] >= ((temp_data*)data)->mm.first));
@@ -927,6 +928,7 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::MPPC_trigger_avg:
 	case AStates::PMT_T_sum:
 	case AStates::MPPC_shape_fit:
+	case AStates::PMT_shape_fit:
 	{
 		picker->SetFunction( [](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -1083,6 +1085,7 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 	case AStates::MPPC_trigger_avg:
 	case AStates::PMT_T_sum:
 	case AStates::MPPC_shape_fit:
+	case AStates::PMT_shape_fit:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -1238,6 +1241,7 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::MPPC_trigger_avg:
 	case AStates::PMT_T_sum:
 	case AStates::MPPC_shape_fit:
+	case AStates::PMT_shape_fit:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -1464,6 +1468,7 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 	case AStates::MPPC_trigger_avg:
 	case AStates::PMT_T_sum:
 	case AStates::MPPC_shape_fit:
+	case AStates::PMT_shape_fit:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			//{A_min, A0, S0, A1, S1, A_max}
@@ -1593,6 +1598,7 @@ FunctionWrapper* create_A_S_polygon_cut(std::vector<double> region, unsigned int
 	case AStates::MPPC_trigger_avg:
 	case AStates::PMT_T_sum:
 	case AStates::MPPC_shape_fit:
+	case AStates::PMT_shape_fit:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			temp_data* d = ((temp_data*)data);

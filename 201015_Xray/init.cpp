@@ -6,9 +6,9 @@
   name_scheme_version = name_scheme_v2;
   trigger_version = TriggerVersion::trigger_v2;
   //From global parameters:
-  calibration_file = "210311/results_v1/210311_calibration.dat";
-  data_prefix_path = "../Data/210311/results_v1/";
-  data_output_path = "210311/results_v1/";
+  calibration_file = "201015_Xray/results_v1/201015_Xray_calibration.dat";
+  data_prefix_path = "../Data/201015/results_v1/";
+  data_output_path = "201015_Xray/results_v1/";
   DATA_MPPC_VERSION = "SiPM";
   DATA_PMT_VERSION = "PMT";
   std::cout<<"data_prefix_path: \""<<data_prefix_path<<"\""<<std::endl;
@@ -27,8 +27,7 @@
 	str.close();
 
   exp_area.experiments.clear();
-  exp_area.experiments.push_back("210311_Pu_7.6kV_800V_50V_12dB_200K");
-
+  exp_area.experiments.push_back("201015_Xray_0kV_850V_46V_12dB_wo_coll");
 
   PMT_V.clear();
   MPPC_V.clear();
@@ -40,16 +39,16 @@
   atten0.push(4, dB_info(12));
   dBs.clear();
   for (auto i = exp_area.experiments.begin(), i_end_ = exp_area.experiments.end(); i != i_end_; ++i) {
+	  PMT_V[*i] = 850;
 	  dBs[*i] = atten0;
-    PMT_V[*i] = 800;
-    MPPC_V[*i] = 50;
+	  MPPC_V[*i] = 46;
   }
 
   experiment_fields.clear();
-  experiment_fields["210311_Pu_7.6kV_800V_50V_12dB_200K"] = 7.6;
+  experiment_fields["201015_Xray_0kV_850V_46V_12dB_wo_coll"] = 0;
 
   std::map<std::string, int> experiment_runs; //required for printing accpeted/rejected events
-  experiment_runs["210311_Pu_7.6kV_800V_50V_12dB_200K"] = 1;
+  experiment_runs["201015_Xray_0kV_850V_46V_12dB_wo_coll"] = 141;
 
   if (areas_to_draw.empty())
 	areas_to_draw.push_back(experiment_area());
@@ -59,15 +58,14 @@
   areas_to_draw.back().runs.push_pair(0, 0);
   areas_to_draw.back().channels.push_pair(0, 4); //slow PMTs no. sum, 1-4
   areas_to_draw.back().channels.push_pair(5, 8); //fast PMTs no. 1-4
-  areas_to_draw.back().channels.push_pair(9, 9); //trigger signal
-  areas_to_draw.back().channels.push_pair(32, 64); //SiPMs
+  areas_to_draw.back().channels.push_pair(32, 62);
   areas_to_draw.back().sub_runs.push_pair(0, 0);
 
   exp_area.channels.erase();
   exp_area.runs.erase();
   exp_area.sub_runs.erase();
-  exp_area.channels.push_pair(0, 9);//will load only present channels
-  exp_area.channels.push_pair(32, 64);//will load only present channels
+  exp_area.channels.push_pair(0, 8);//will load only present channels
+  exp_area.channels.push_pair(32, 62);//will load only present channels
   exp_area.runs.push_pair(0, 0);
   exp_area.sub_runs.push_pair(0, 0);
   //end of global parameters

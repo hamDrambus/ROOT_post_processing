@@ -1,7 +1,7 @@
 {
   gStyle->SetCanvasDefH(800);
 	gStyle->SetCanvasDefW(1000);
-  gErrorIgnoreLevel = 1001;
+  gErrorIgnoreLevel = 1001; //To shut up minuit output during failed(?) fitting
   threads_number = 10;
   name_scheme_version = name_scheme_v2;
   trigger_version = TriggerVersion::trigger_v2;

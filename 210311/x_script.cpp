@@ -1,5 +1,5 @@
 {
-if (true) {
+if (false) {
 	// nch(); set_zoom(0, 0.04, 0, 0.005); set_bins(1000); set_log_z();
 	int channel = 59;
 	bool display = true;
@@ -12,54 +12,69 @@ if (true) {
 	if (aggressiveness>=2)//remove afterimpulses
 		cut_A_S_upper(0.0086, 0.00181, 0.0202, 0.00270, display, channel, "2pe_merged");
 }
-if (false) { //Inspect SiPM en spectrum
-	double d_S2_start = 22;
-	int SiPM_state = 0;
-	nex();
-	ty(AStates::MPPC_Npe_sum);
+if (true) { //Two gausses + bkg fit
+	int PMT_state = 0, SiPM_state = 0; //256K
+	ty(AStates::MPPC_shape_fit);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, 0, SiPM_state, false);
-		cut_t(d_S2_start, 160, false, chan);
 	}
-	set_bins(0, 800);
+	ShapeFitData::SetPeakType(ShapeFitData::ptNpe);
+	ShapeFitData::SetNPars(7);
+	ShapeFitData::SetBound(0, 0.1, 5);
+	ShapeFitData::SetPrecision(0, 0.05);
+	ShapeFitData::SetParameterName(0, "Width");
+	ShapeFitData::SetBound(1, 42, 55);
+	ShapeFitData::SetPrecision(1, 0.05);
+	ShapeFitData::SetParameterName(1, "Center");
+	ShapeFitData::SetBound(2, 0, 0.55);
+	ShapeFitData::SetPrecision(2, 0.005);
+	ShapeFitData::SetParameterName(2, "BkgFr");
+	ShapeFitData::SetBound(3, 0, 0);
+	ShapeFitData::SetParameterName(3, "t1");
+	ShapeFitData::SetBound(4, 160, 160);
+	ShapeFitData::SetParameterName(4, "t2");
+	ShapeFitData::SetBound(5, 1.5, 6.0);
+	ShapeFitData::SetPrecision(5, 0.02);
+	ShapeFitData::SetParameterName(5, "W2/W1");
+	ShapeFitData::SetBound(6, 0, 0.45);
+	ShapeFitData::SetPrecision(6, 0.01);
+	ShapeFitData::SetParameterName(6, "Gauss2Fr");
+	ShapeFitData::SetFitFunction(gauss_gauss_bkg_pdf);
+	ShapeFitData::SetPlotParameter(0);
+	view_event(0, 200);
 }
-if (false) { //Inspect sPMTs en spectrum
-	double d_S2_start = 22;
-	int PMT_state = 0;
-	nex();
-	ty(AStates::PMT_Npe_sum);
-	slow_PMTs_only();
-	noise_cut(1, 0, PMT_state, 0);
-	noise_cut(2, 0, PMT_state, 0);
-	noise_cut(3, 0, PMT_state, 0);
-	noise_cut(4, 0, PMT_state, 0);
-	time_zoom_sPMTs(d_S2_start, 160);
-	set_bins(0, 400);
-}
-if (false) {
-	nex();
-	set_corr(AStates::PMT_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
-	ty(AStates::Correlation);
-	set_zoom(0, 600, 0, 600);
-	set_bins(600);
-	set_titles("N_{pe} PMTs", "N_{pe} SiPM-matrix");
-}
-if (false) {
-	unsigned int max_iter = 5;
-	unsigned int exps = post_processor->experiments.size();
-	for (int e = 0; e!=exps; ++e) {
-		for (int i = 0; i!=(max_iter+1); ++i)
-			analysis_history(false, i);
-		nex();
-	}
-}
-if (false) {
-	bool calibrate = false;
-	unsigned int method = 0;
-	analysis_history(calibrate, method); //5.5
-	nex();
-	analysis_history(calibrate, method); //5.5
-	nex();
+if (false) { //Two gausses + bkg fit
+	int PMT_state = 0, SiPM_state = 0; //256K
+	ty(AStates::PMT_shape_fit);
+	fast_PMTs_only(); //slow PMTs' peaks are merging
+	noise_cut(5, 0, PMT_state, 0);
+	noise_cut(6, 0, PMT_state, 0);
+	noise_cut(7, 0, PMT_state, 0);
+	noise_cut(8, 0, PMT_state, 0);
+	ShapeFitData::SetPeakType(ShapeFitData::ptNpe);
+	ShapeFitData::SetNPars(7);
+	ShapeFitData::SetBound(0, 0.1, 5);
+	ShapeFitData::SetPrecision(0, 0.05);
+	ShapeFitData::SetParameterName(0, "Width");
+	ShapeFitData::SetBound(1, 58, 70);
+	ShapeFitData::SetPrecision(1, 0.05);
+	ShapeFitData::SetParameterName(1, "Center");
+	ShapeFitData::SetBound(2, 0, 0.55);
+	ShapeFitData::SetPrecision(2, 0.005);
+	ShapeFitData::SetParameterName(2, "BkgFr");
+	ShapeFitData::SetBound(3, 0, 0);
+	ShapeFitData::SetParameterName(3, "t1");
+	ShapeFitData::SetBound(4, 160, 160);
+	ShapeFitData::SetParameterName(4, "t2");
+	ShapeFitData::SetBound(5, 1.5, 5.0);
+	ShapeFitData::SetPrecision(5, 0.02);
+	ShapeFitData::SetParameterName(5, "W2/W1");
+	ShapeFitData::SetBound(6, 0, 0.45);
+	ShapeFitData::SetPrecision(6, 0.01);
+	ShapeFitData::SetParameterName(6, "Gauss2Fr");
+	ShapeFitData::SetFitFunction(gauss_gauss_bkg_pdf);
+	ShapeFitData::SetPlotParameter(0);
+	view_event(0, 200);
 }
 }

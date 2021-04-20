@@ -9,6 +9,10 @@
 #include "HistogramSetups.h"
 #include "CalibrationInfo.h"
 
+//TODO: too many places to adjust to add a new type.
+//Many functions can be rewritten by simply using value picker for each type.
+//In addition, methods in main can be rewritten using AnalysisStates::is... methods.
+
 //for adding new types of analysis - dependence on AnalysisStates::Type
 //1) AnalysisStates::AnalysisStates (first/last state)
 //2) AnalysisStates::isMultichannel(Type type) const;
@@ -21,17 +25,19 @@
 
 //9) Corresponding StateData.h if necessary (initialized in PostProcessor::default_hist_setups(HistogramSetups*))
 //10) StateData::IsForState_virt for each class derived from StateData including StateData itself
+//11) bool CanvasSetups::set_hist_setups(HistogramSetups* setups, int exp_ind, int channel, Type type)
 
-//11) void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int channel, Type type);
-//12) bool PostProcessor::set_correlation_filler(FunctionWrapper* operation, Type type);
-//13) void PostProcessor::print_hist(std::string path);
-//14) bool PostProcessor::update(void);
-//15) void PostProcessor::update_physical(void)
-//16) void PostProcessor::default_hist_setups(HistogramSetups*);
-//17) bool PostProcessor::set_trigger_offsets(double extra_offset);
-//18) void view_event(int event_index, double x_min = 0, double x_max = 160);
+//12) void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int channel, Type type);
+//13) bool PostProcessor::set_correlation_filler(FunctionWrapper* operation, Type type);
+//14) void PostProcessor::print_hist(std::string path);
+//15) bool PostProcessor::update(void);
+//16) void PostProcessor::update_physical(void)
+//17) void PostProcessor::default_hist_setups(HistogramSetups*);
+//18) bool PostProcessor::set_trigger_offsets(double extra_offset);
+//19) void view_event(int event_index, double x_min = 0, double x_max = 160);
 
-//19) 2nd tier methods in main:
+
+//20) 2nd tier methods in main:
 //	FunctionWrapper* create_vertical_lines_cut(double left, double right)
 //	FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region)
 //	FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region)

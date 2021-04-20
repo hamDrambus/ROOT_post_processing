@@ -157,6 +157,7 @@ void PostProcessor::print_hist(std::string path, bool png_only)
 	case MPPC_trigger_avg:
 	case PMT_T_sum:
 	case MPPC_shape_fit:
+	case PMT_shape_fit:
 	{
 		writer_to_file->SetFunction([](std::vector<double>& pars, int run, void* data) {
 			((temp_data*)data)->str->write((char*)&pars[0], sizeof(double));
@@ -667,6 +668,7 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 		}
 		break;
 	}
+	case Type::PMT_shape_fit:
 	case Type::MPPC_shape_fit:
 	{
 		bool ignore_no_run_cut = true;
@@ -1779,6 +1781,7 @@ void PostProcessor::view_event(int event_index, int N_bins, double x_min, double
 	switch (type)
 	{
 	case Type::MPPC_shape_fit:
+	case Type::PMT_shape_fit:
 	{
 		ShapeFitData* fitter = ShapeFitData::GetData(this, current_channel, type);
 		if (NULL == fitter) {
@@ -1925,6 +1928,7 @@ bool PostProcessor::set_correlation_filler(FunctionWrapper* operation, Type type
 	case Type::MPPC_trigger_avg:
 	case Type::PMT_T_sum:
 	case Type::MPPC_shape_fit:
+	case Type::PMT_shape_fit:
 	{
 		operation->SetFunction([](std::vector<double>& pars, int run, void* data) {
 			(*((correlation_data*)data)->vals)[run] = pars[0];
@@ -2052,6 +2056,7 @@ bool PostProcessor::update(void)
 	case Type::MPPC_trigger_avg:
 	case Type::PMT_T_sum:
 	case Type::MPPC_shape_fit:
+	case Type::PMT_shape_fit:
 	{
 		drawn_mean_taker.SetFunction(
 		mean_taker.SetFunction([](std::vector<double>& pars, int run, void* data) {
