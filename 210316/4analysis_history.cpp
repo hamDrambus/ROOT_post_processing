@@ -1217,5 +1217,170 @@ ty(AStates::Correlation);
 	unset_as_run_cut("En_spec");
 	cuts.pop_back();
 }
+if (exp == "210316_Pu_7.6kV_850V_55V_12dB_300K") {
+	std::vector<std::string> cuts;
+	std::string zoomx = "Npe" + dbl_to_str(160-d_S2_start, 0);
+	std::string zoomy = "Npe" + dbl_to_str(d_S2_finish-d_S2_start, 0);
+	int no = 0; //picture number
+	std::string Num = int_to_str(++no, 2); //="01" //picture number as string
+	std::string FOLDER = data_output_path + folder + "/";
+
+	ty(AStates::PMT_Npe_sum);
+	fast_PMTs_only();
+	noise_cut(5, 0, PMT_state, 0);
+	noise_cut(6, 0, PMT_state, 0);
+	noise_cut(7, 0, PMT_state, 0);
+	noise_cut(8, 0, PMT_state, 0);
+	time_zoom_fPMTs(d_S2_start, 160);
+	set_bins(0, 1500);
+	saveaspng(FOLDER + Num+"_fastPMTs_Npe_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+
+	//Set AStates::PMT_Npe_sum, AStates::PMT_sum_N and MPPC_Npe_sum cuts for future correlations
+	ty(AStates::PMT_Npe_sum);
+	slow_PMTs_only();
+	noise_cut(1, 0, PMT_state, 0);
+	noise_cut(2, 0, PMT_state, 0);
+	noise_cut(3, 0, PMT_state, 0);
+	noise_cut(4, 0, PMT_state, 0);
+	time_zoom_sPMTs(d_S2_start, 160);
+	set_bins(0, 1500);
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_sPMTs(0, 160);
+
+	ty(AStates::PMT_sum_N);
+	fast_PMTs_only();
+	noise_cut(5, 0, PMT_state, 0);
+	noise_cut(6, 0, PMT_state, 0);
+	noise_cut(7, 0, PMT_state, 0);
+	noise_cut(8, 0, PMT_state, 0);
+	time_zoom_fPMTs(d_S2_start, 160);
+	set_bins(0, 1500);
+	saveaspng(FOLDER + Num+"_fastPMTs_Npeaks_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+
+	ty(AStates::MPPC_Npe_sum);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, 0, SiPM_state, false);
+		cut_t(d_S2_start, 160, false, chan);
+	}
+	set_bins(3000, 7000);
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_SiPMs(0, 160);
+
+set_corr(AStates::MPPC_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
+	ty(AStates::Correlation_y);
+	time_zoom_SiPMs(d_S2_start, d_S2_finish);
+	ty(AStates::Correlation);
+	set_zoom(5500, 7000, 1000, 2000);
+	set_bins(1500, 2000);
+	x_y_regions = {5740, 1000, 6999, 1880};
+	cut_x_y_right(x_y_regions, true, "1");
+	update();
+	set_titles("N_{pe} t#in[0, 160] #mus", "N_{pe} t#in["+S2_start+", "+S2_finish+"] #mus");
+	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us");
+	set_as_run_cut("good_SiPMs_ZxZy"); cuts.push_back(Num);
+	Num = int_to_str(++no, 2);
+	remcut(-1, "1");
+
+set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
+	ty(AStates::Correlation_y);
+	time_zoom_sPMTs(d_S2_start, d_S2_finish);
+	ty(AStates::Correlation);
+	set_zoom(0, 1000, 0, 1000);
+	set_bins(1000);
+	x_y_regions = {22.8, 0, 999, 951};
+	cut_x_y_right(x_y_regions, true, "1");
+	update();
+	set_titles("N_{pe} t#in[0, 160] #mus", "N_{pe} t#in["+S2_start+", "+S2_finish+"] #mus");
+	saveaspng(FOLDER + Num + "_PMTs_Npe_"+cuts_str(cuts)+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us");
+	set_as_run_cut("good_PMTs_ZxZy"); cuts.push_back(Num);
+	Num = int_to_str(++no, 2);
+	remcut(-1, "1");
+
+	//Does not work! ty(AStates::MPPC_shape_fit);
+ty(AStates::PMT_shape_fit);
+	fast_PMTs_only(); //slow PMTs' peaks are merging which worsens fit
+	noise_cut(5, 0, PMT_state, 0);
+	noise_cut(6, 0, PMT_state, 0);
+	noise_cut(7, 0, PMT_state, 0);
+	noise_cut(8, 0, PMT_state, 0);
+	set_zoom(0, 6); set_bins(500);
+	ShapeFitData::SetPeakType(ShapeFitData::ptNpe);
+	ShapeFitData::SetNPars(7);
+	ShapeFitData::SetBound(0, 0.1, 5);
+	ShapeFitData::SetPrecision(0, 0.05);
+	ShapeFitData::SetParameterName(0, "Width");
+	ShapeFitData::SetBound(1, 42, 55);
+	ShapeFitData::SetPrecision(1, 0.05);
+	ShapeFitData::SetParameterName(1, "Center");
+	ShapeFitData::SetBound(2, 0, 0.55);
+	ShapeFitData::SetPrecision(2, 0.005);
+	ShapeFitData::SetParameterName(2, "BkgFr");
+	ShapeFitData::SetBound(3, 0, 0);
+	ShapeFitData::SetParameterName(3, "t1");
+	ShapeFitData::SetBound(4, 160, 160);
+	ShapeFitData::SetParameterName(4, "t2");
+	ShapeFitData::SetBound(5, 1.5, 5.0);
+	ShapeFitData::SetPrecision(5, 0.02);
+	ShapeFitData::SetParameterName(5, "W2/W1");
+	ShapeFitData::SetBound(6, 0, 0.45);
+	ShapeFitData::SetPrecision(6, 0.01);
+	ShapeFitData::SetParameterName(6, "Gauss2Fr");
+	ShapeFitData::SetFitFunction(gauss_gauss_bkg_pdf);
+	ShapeFitData::SetPlotParameter(0); //Select for which parameter histogram will be plotted.
+	update();
+	saveaspng(FOLDER + Num+"_fPMTs_fitted_width_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+
+std::string form_n = "forms_Alpha_peak_v1/"; //v1 - orthogonal tracks, v2 - longitudial
+set_corr(AStates::PMT_Npe_sum, AStates::PMT_shape_fit, -1, -1);
+	ty(AStates::Correlation);
+	set_zoom(0, 1000, 0, 6);
+	set_bins(1000, 500);
+	set_titles("N_{pe} sPMTs t#in[0, 160] #mus", "fPMTs fitted width [#mus]");
+	x_y_regions = {700, 1.66, 486, 1.66, 401, 2.35, 703, 2.35};
+	cut_x_y_poly_select(x_y_regions, true, "1");
+	update();
+	saveaspng(FOLDER + Num + "_fPMTs_width_vs_sPMTs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
+	set_as_run_cut("En_spec"); cuts.push_back(Num);
+	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
+	Num = int_to_str(++no, 2);
+
+	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
+	unset_as_run_cut("En_spec");
+	cuts.pop_back();
+
+form_n = "forms_Alpha_peak_v2/"; //v1 - orthogonal tracks, v2 - longitudial
+ty(AStates::Correlation);
+	x_y_regions = {490, 3.07, 343, 3.07, 368, 4.12, 432, 4.12};
+	cut_x_y_poly_select(x_y_regions, true, "1");
+	update();
+	saveaspng(FOLDER + Num + "_fPMTs_width_vs_sPMTs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
+	set_as_run_cut("En_spec"); cuts.push_back(Num);
+	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
+	Num = int_to_str(++no, 2);
+
+	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
+	unset_as_run_cut("En_spec");
+	cuts.pop_back();
+
+form_n = "forms_Alpha_peak_v3/"; //v3 - middle case
+ty(AStates::Correlation);
+	x_y_regions = {572, 2.47, 402, 2.47, 355, 3.00, 512, 3.00};
+	cut_x_y_poly_select(x_y_regions, true, "1");
+	update();
+	saveaspng(FOLDER + Num + "_fPMTs_width_vs_sPMTs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
+	set_as_run_cut("En_spec"); cuts.push_back(Num);
+	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
+	Num = int_to_str(++no, 2);
+
+	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
+	unset_as_run_cut("En_spec");
+	cuts.pop_back();
+}
 //END OF FORMS
 }

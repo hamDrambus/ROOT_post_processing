@@ -288,8 +288,8 @@ int ncompare_forms (void) {
 	std::string def_fit_option = "NRE";
 	bool combined = true;
 	bool Cd_peak = true;
-	int Nbins = 600;
-	bool linear = 0;
+	int Nbins = 2500;
+	bool linear = 1;
 	bool PMTs = false;
 #ifdef FAST_FIGURES_MODE
 	linear = (in_is_linear == "lin");
@@ -301,13 +301,14 @@ int ncompare_forms (void) {
 
 	bool fast_PMTs = true;
 	unsigned int PMT_used = 0x1 | 0x2 | 0x4 | 0x8;
-	bool do_fit = true;
+	bool do_fit = false;
 	bool fit_bad_forms = true;
 	bool subtact_baseline = true;
 	bool center_pulses = false;
 	bool center_at_S1 = false; //Not used
 	bool normalize_by_S1 = false; //Not used
 	bool print_errors = false;
+	bool print_results = false;
 	double time_pretrigger_left = 2, time_pretrigger_right = 18;
 	double time_left = 0, time_right = 160;//us
 	double max_val = 0;
@@ -1029,8 +1030,8 @@ define->simultaneous_fit = false;
 	}
 #else //FAST_FIGURES_MODE
 
-	std::vector<pulse_shape> pulses = {SiPM_16_3kV_no_trigger, SiPM_14_6kV_no_trigger, SiPM_13_0kV_no_trigger, SiPM_11_4kV_no_trigger, SiPM_10_6kV_no_trigger};
-	//std::vector<pulse_shape> pulses = {SiPM_09_7kV_no_trigger, SiPM_08_9kV_no_trigger, SiPM_08_1kV_no_trigger, SiPM_06_5kV_no_trigger};
+	//std::vector<pulse_shape> pulses = {SiPM_16_3kV_no_trigger, SiPM_14_6kV_no_trigger, SiPM_13_0kV_no_trigger, SiPM_11_4kV_no_trigger, SiPM_10_6kV_no_trigger};
+	std::vector<pulse_shape> pulses = {SiPM_09_7kV_no_trigger, SiPM_08_9kV_no_trigger, SiPM_08_1kV_no_trigger, SiPM_06_5kV_no_trigger};
 	//std::vector<pulse_shape> pulses = {SiPM_16_3kV_no_trigger_v2, SiPM_14_6kV_no_trigger_v2, SiPM_13_0kV_no_trigger_v2, SiPM_11_4kV_no_trigger_v2, SiPM_10_6kV_no_trigger_v2};
 	//std::vector<pulse_shape> pulses = {SiPM_09_7kV_no_trigger_v2, SiPM_08_9kV_no_trigger_v2, SiPM_08_1kV_no_trigger_v2, SiPM_06_5kV_no_trigger_v2};
 
@@ -1326,6 +1327,7 @@ define->simultaneous_fit = false;
 		else
 			frsL.push_back(pulses[hh].Fr2 + (print_errors ? "#pm" + pulses[hh].err2 : emp));
 	}
+	if (print_results) {
 	if (!linear) {
 		std::vector<std::string> no_title;
 		std::vector<std::string> Slow_title = {"Contribution:", "Slow"};
@@ -1350,6 +1352,7 @@ define->simultaneous_fit = false;
 		add_text(30, 0.3, Slow_title, frsS, palette_major);
 		//add_text(52, 0.08, Long_title, frsL, palette_text);
 		//add_text(58, 0.08, no_title, tau2, palette_text);
+	}
 	}
 
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh)

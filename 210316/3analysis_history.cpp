@@ -936,6 +936,7 @@ void analysis_history(bool calibrate, unsigned int method = 0) {
 //Same as 2analysis_history.cpp, but trying to select tracks selecting narrow signals.
 //Signal width is determined by max likelihood fit of all SiPM peaks in the event
 //with 2 gaussians and uniform background.
+//300K SiPMs can not be fitted for some reason.
 data_output_path = "210316/results_v3/";
 calibration_file = "210316/results_v1/210316_calibration.dat";
 post_processor->calibr_info.Load(calibration_file);

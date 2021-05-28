@@ -462,7 +462,7 @@ void noise_cut(int channel, int aggressiveness, int device_condition, bool displ
 void analysis_history(bool calibrate, unsigned int method = 0) {
 //Created on 2021.04.13
 //Same as 210302/4analysis_history.cpp: double event cut by SiPM [t1,t2]vs[0,160] and sPMT [t1,t2]vs[0,160]
-//and track selection signal width by SiPM pulse-shape fit vs sPMT Npe
+//and track selection by signal width by SiPM pulse-shape fit vs sPMT Npe
 data_output_path = "210311/results_v4/";
 calibration_file = "210311/results_v1/210311_calibration.dat";
 post_processor->calibr_info.Load(calibration_file);

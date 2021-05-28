@@ -1062,7 +1062,7 @@ set_corr(AStates::MPPC_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
 	ty(AStates::Correlation);
 	set_zoom(5500, 7000, 1000, 2000);
 	set_bins(1500, 2000);
-	x_y_regions = {5740, 1000, 7999, 1880};
+	x_y_regions = {5740, 1000, 6999, 1880};
 	cut_x_y_right(x_y_regions, true, "1");
 	update();
 	set_titles("N_{pe} t#in[0, 160] #mus", "N_{pe} t#in["+S2_start+", "+S2_finish+"] #mus");

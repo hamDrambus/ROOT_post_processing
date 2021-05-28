@@ -297,11 +297,12 @@ double gauss_bkg_pdf (const double *x, const double *pars)
 //par[5] - 2nd gauss sigma/sigma1 (>1), par[6] - fraction of 2nd gauss
 double gauss_gauss_bkg_pdf (const double *x, const double *pars)
 {
+	if (!(x[0] >= pars[3] && x[0] < pars[4]))
+		return 0;
 	double ampl_bkg = pars[2]/(pars[4] - pars[3]);
 	double ret = (1 - pars[2] - pars[6]) * ROOT::Math::gaussian_pdf(x[0], pars[0], pars[1]);
 	ret += (pars[6]) * ROOT::Math::gaussian_pdf(x[0], pars[0]*pars[5], pars[1]);
-	if (x[0] >= pars[3] && x[0] < pars[4])
-		ret += ampl_bkg;
+	ret += ampl_bkg;
 	return ret;
 }
 

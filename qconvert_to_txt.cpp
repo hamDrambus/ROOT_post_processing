@@ -9,7 +9,7 @@ void read_hist (TH1D *hist, std::string fname) {
 	std::ifstream str;
 	str.open(fname, std::ios_base::binary);
 	if (!str.is_open()) {
-        std::cerr<<"Failed to open file '"<<fname<<"'"<<std::endl;	    
+        std::cerr<<"Failed to open file '"<<fname<<"'"<<std::endl;
         return;
     }
 	std::size_t real_size = 0;
@@ -27,7 +27,7 @@ void read_hist_w (TH1D *hist, std::string fname) {
 	std::ifstream str;
 	str.open(fname, std::ios_base::binary);
 	if (!str.is_open()) {
-        std::cerr<<"Failed to open file '"<<fname<<"'"<<std::endl;	    
+        std::cerr<<"Failed to open file '"<<fname<<"'"<<std::endl;
         return;
     }
 	std::size_t real_size = 0;
@@ -43,13 +43,13 @@ void read_hist_w (TH1D *hist, std::string fname) {
         hist->Fill(val1, val2);
 	}
 	str.close();
-} 
+}
 
 void write_hist(TH1D *hist, std::string fname) {
 	std::ofstream str;
 	str.open(fname, std::ios_base::trunc);
 	if (!str.is_open()) {
-        std::cerr<<"Failed to open file '"<<fname<<"'"<<std::endl;	    
+        std::cerr<<"Failed to open file '"<<fname<<"'"<<std::endl;
         return;
     }
 	for (int bin = 1, bin_end = hist->GetNbinsX()+1; bin!=bin_end; ++bin)
@@ -83,12 +83,12 @@ int qconvert_to_txt (void) {
 	std::vector<Color_t> palette_minor = {kGray + 2, kMagenta, kAzure + 10, kGreen -2, kMagenta+3, kOrange - 7, kOrange + 6};
     double max_val = 0;
 	bool linear = true;
-    std::string prefix = "190404/results_v4/Cd_46V_20kV_850V/forms_Cd_peak/";
-	std::string output = "190404/results_v4_ascii/Cd_46V_20kV_850V/fPMTs_Cd_peak.txt";
-	read_hist_w (hist_1, prefix + "8_form_by_S.hdata");
-	read_hist_w (hist_1, prefix + "9_form_by_S.hdata");
-	read_hist_w (hist_1, prefix + "10_form_by_S.hdata");
-	read_hist_w (hist_1, prefix + "11_form_by_S.hdata");
+    std::string prefix = "210128/results_v6/Pu_46V_19kV_850V/forms_Alpha_peak/";
+	std::string output = "210128/results_v6/v1_hists_for_origin/fPMTs_19kV_Pu_peak.txt";
+	//read_hist_w (hist_1, prefix + "SiPMs_form_by_Npe.hdata");
+	read_hist_w (hist_1, prefix + "6_form_by_Npe.hdata");
+	read_hist_w (hist_1, prefix + "7_form_by_Npe.hdata");
+	read_hist_w (hist_1, prefix + "8_form_by_Npe.hdata");
 	write_hist(hist_1, output);
 	std::string framename = "framename";
 	for (int hh = 0, hh_end_ = hists.size(); hh!=hh_end_; ++hh)
@@ -109,13 +109,13 @@ int qconvert_to_txt (void) {
 	frame->GetXaxis()->SetTitle("t [#mus]");
 	frame->GetYaxis()->SetTitle("");
 	frame->Draw();
-	
+
 	for (int hh = 0, hh_end_ = hists.size(); hh!=hh_end_; ++hh) {
 		hists[hh]->SetLineWidth(2);
 		hists[hh]->SetLineColor(palette_major[hh]);
 		hists[hh]->Draw("hist Lsame");
     }
-	
+
 	legend->AddEntry(hist_1, (std::string("? Td fPMTs Cd peak")).c_str(), "l");
 
 	frame->Draw("sameaxis");

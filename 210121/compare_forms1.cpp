@@ -287,9 +287,9 @@ int compare_forms1 (void) {
 
 	std::string def_fit_option = "NRE";
 	bool combined = true;
-	bool Cd_peak = false;
-	int Nbins = 600;
-	bool linear = 0;
+	bool Cd_peak = true;
+	int Nbins = 1000;
+	bool linear = 1;
 	bool PMTs = false;
 #ifdef FAST_FIGURES_MODE
 	linear = (in_is_linear == "lin");
@@ -301,14 +301,14 @@ int compare_forms1 (void) {
 
 	bool fast_PMTs = true;
 	unsigned int PMT_used = 0x1 | 0x2 | 0x4 | 0x8;
-	bool do_fit = true;
+	bool do_fit = false;
 	bool fit_bad_forms = true;
 	bool subtact_baseline = true;
 	bool center_pulses = false;
 	bool center_at_S1 = false; //Not used
 	bool normalize_by_S1 = false; //Not used
-	bool print_errors = true;
-	bool print_results = true;
+	bool print_errors = false;
+	bool print_results = false;
 	double time_pretrigger_left = 5, time_pretrigger_right = 19;
 	double time_left = 0, time_right = 160;//us
 	double max_val = 0;

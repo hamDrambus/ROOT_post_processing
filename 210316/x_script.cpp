@@ -147,7 +147,7 @@ if (false) { //Simple gauss+bkg fit
 	view_event(0);
 }
 if (false) { //Two gausses + bkg fit
-	int PMT_state = 1, SiPM_state = 1; //256K
+	int PMT_state = 0, SiPM_state = 0;
 	ty(AStates::MPPC_shape_fit);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
@@ -155,31 +155,31 @@ if (false) { //Two gausses + bkg fit
 	}
 	ShapeFitData::SetPeakType(ShapeFitData::ptNpe);
 	ShapeFitData::SetNPars(7);
-	ShapeFitData::SetBound(0, 0.1, 5);
-	ShapeFitData::SetPrecision(0, 0.05);
+	ShapeFitData::SetBound(0, 1.0, 4.5);
+	ShapeFitData::SetPrecision(0, 0.2);
 	ShapeFitData::SetParameterName(0, "Width");
-	ShapeFitData::SetBound(1, 42, 55);
-	ShapeFitData::SetPrecision(1, 0.05);
+	ShapeFitData::SetBound(1, 44, 58);
+	ShapeFitData::SetPrecision(1, 0.3);
 	ShapeFitData::SetParameterName(1, "Center");
-	ShapeFitData::SetBound(2, 0, 0.55);
+	ShapeFitData::SetBound(2, 0.7, 0.99);
 	ShapeFitData::SetPrecision(2, 0.005);
 	ShapeFitData::SetParameterName(2, "BkgFr");
-	ShapeFitData::SetBound(3, 0, 0);
+	ShapeFitData::SetBound(3, 20, 20);
 	ShapeFitData::SetParameterName(3, "t1");
-	ShapeFitData::SetBound(4, 160, 160);
+	ShapeFitData::SetBound(4, 80, 80);
 	ShapeFitData::SetParameterName(4, "t2");
-	ShapeFitData::SetBound(5, 1.5, 5.0);
+	ShapeFitData::SetBound(5, 1, 1);
 	ShapeFitData::SetPrecision(5, 0.02);
 	ShapeFitData::SetParameterName(5, "W2/W1");
-	ShapeFitData::SetBound(6, 0, 0.45);
-	ShapeFitData::SetPrecision(6, 0.01);
+	ShapeFitData::SetBound(6, 0, 0);
+	ShapeFitData::SetPrecision(6, 0.0005);
 	ShapeFitData::SetParameterName(6, "Gauss2Fr");
 	ShapeFitData::SetFitFunction(gauss_gauss_bkg_pdf);
 	ShapeFitData::SetPlotParameter(0);
 	view_event(0, 200);
 }
 if (true) { //Two gausses + bkg fit
-	int PMT_state = 1, SiPM_state = 1; //256K
+	int PMT_state = 0, SiPM_state = 0; //256K
 	ty(AStates::PMT_shape_fit);
 	fast_PMTs_only(); //slow PMTs' peaks are merging
 	noise_cut(5, 0, PMT_state, 0);

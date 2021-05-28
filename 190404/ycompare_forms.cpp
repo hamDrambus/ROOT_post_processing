@@ -288,8 +288,8 @@ int ycompare_forms (void) {
 	std::string def_fit_option = "NRE";
 	bool combined = true;
 	bool Cd_peak = true;
-	int Nbins = 300;
-	bool linear = 0;
+	int Nbins = 1000;
+	bool linear = 1;
 	bool PMTs = false;
 	bool Cd_peak_v2 = false; //if true uses forms_Cd_peak_v2 or forms_Cd_left_v2 selection;
 	std::string type = "by_Npe";
@@ -305,7 +305,7 @@ int ycompare_forms (void) {
 
 	bool fast_PMTs = true;
 	unsigned int PMT_used = 0x1 | 0x2 | 0x4 | 0x8;
-	bool do_fit = true;
+	bool do_fit = false;
 	bool fit_bad_forms = true;
 	bool subtact_baseline = true;
 	bool center_pulses = false;
