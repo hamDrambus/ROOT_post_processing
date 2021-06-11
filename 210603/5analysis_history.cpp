@@ -201,7 +201,7 @@ void noise_cut(int channel, int aggressiveness, int device_condition, bool displ
 	//	SiPM: 0 - cut only noise, 1 - select only single phe peaks (including merged peaks - same A but double S)
 	//		2 - select only single phe peaks without merged ones.
 	//device_condition: (if out of range 0 is used)
-	//	PMT: 0 - 850V, 12dB, 1 - 800V, 12dB
+	//	PMT: 0 - 850V, 12dB
 	//	SiPM: 0 - 46V, 1 - 48V
 	if (0 == device_condition) {
 		if (channel==1) {
@@ -221,52 +221,6 @@ void noise_cut(int channel, int aggressiveness, int device_condition, bool displ
 		}
 		if (channel==4) {
 			cut_A_S_upper(0.01, 0.0, 0.0162, 0.0, display, channel, "rem_smallA_largeS_1");
-			cut_A_S_lower(0.01, 0.00110, 0.035, 0.0023, display, channel, "rem_smallA_smallS");
-			cut_A_S_lower(0.035, 0.0023, 1.6, 0.26, display, channel, "rem_largeA_smallS");
-		}
-		if (channel==5) {
-			if (aggressiveness == 1) {
-				cut_A_S_upper(0.35, 0, 2, 0, display, channel, "rem_A>0.35");
-				cut_A_S_upper(0.0, 0.015, 1.6, 0.015, display, channel, "rem_S>0.015");
-			}
-		}
-		if (channel==6) {
-			if (aggressiveness == 1) {
-				cut_A_S_upper(0.35, 0, 2, 0, display, channel, "rem_A>0.35");
-				cut_A_S_upper(0.0, 0.015, 1.6, 0.015, display, channel, "rem_S>0.015");
-			}
-		}
-		if (channel==7) {
-			if (aggressiveness == 1) {
-				cut_A_S_upper(0.35, 0, 2, 0, display, channel, "rem_A>0.35");
-				cut_A_S_upper(0.0, 0.015, 1.6, 0.015, display, channel, "rem_S>0.015");
-			}
-		}
-		if (channel==8) {
-			if (aggressiveness == 1) {
-				cut_A_S_upper(0.35, 0, 2, 0, display, channel, "rem_A>0.35");
-				cut_A_S_upper(0.0, 0.015, 1.6, 0.015, display, channel, "rem_S>0.015");
-			}
-		}
-	}
-	if (1 == device_condition) {
-		if (channel==1) {
-			cut_A_S_upper(0.005, 0.0, 0.0105, 0.0, display, channel, "rem_smallA_largeS_1");
-			cut_A_S_lower(0.0086, 0.0, 0.020, 0.0015, display, channel, "rem_smallA_smallS");
-			cut_A_S_lower(0.020, 0.0015, 1.1, 0.22, display, channel, "rem_largeA_smallS");
-		}
-		if (channel==2) {
-			cut_A_S_upper(0.005, 0.0, 0.0145, 0.0, display, channel, "rem_smallA_largeS_1");
-			cut_A_S_lower(0.010, 0.00112, 0.055, 0.0039, display, channel, "rem_smallA_smallS");
-			cut_A_S_lower(0.055, 0.0039, 1.6, 0.29, display, channel, "rem_largeA_smallS");
-		}
-		if (channel==3) {
-			cut_A_S_upper(0.005, 0.0, 0.0118, 0.0, display, channel, "rem_smallA_largeS");
-			cut_A_S_lower(0.01, 0.00116, 0.030, 0.0022, display, channel, "rem_smallA_smallS");
-			cut_A_S_lower(0.030, 0.0022, 1.2, 0.26, display, channel, "rem_largeA_smallS");
-		}
-		if (channel==4) {
-			cut_A_S_upper(0.005, 0.0, 0.0135, 0.0, display, channel, "rem_smallA_largeS_1");
 			cut_A_S_lower(0.01, 0.00110, 0.035, 0.0023, display, channel, "rem_smallA_smallS");
 			cut_A_S_lower(0.035, 0.0023, 1.6, 0.26, display, channel, "rem_largeA_smallS");
 		}
@@ -541,57 +495,48 @@ void noise_cut(int channel, int aggressiveness, int device_condition, bool displ
 }
 
 void analysis_history(bool calibrate, unsigned int method = 0) {
-//Created on 2021.05.20
-//Almost standard analysis, event selection using only SiPM-matrix (forms_Alpha_peak)
+//Created on 2021.06.06
+//Almost standard analysis, event selection using only SiPM-matrix (forms_Cd_peak)
 //Not using trigger adjustement or trigger-related cuts.
 //Removed pre-trigger cut, using 2D cut on whole 0-160us range instead
 //bacause previous approach may systematically increase or decrease long component.
 //In order to determine its threshold more precisely, pre-trigger and long component
 //areas must be treated in the same manner.
 //Same as 210128/5analysis_history.cpp
-data_output_path = "210513/results_v5/";
-calibration_file = "210513/results_v5/210513_calibration.dat";
+data_output_path = "210603/results_v5/";
+calibration_file = "210603/results_v5/210603_calibration.dat";
 post_processor->calibr_info.Load(calibration_file);
 trigger_version = TriggerVersion::trigger_v2; //not used
 
 std::map<std::string, std::pair<double, double> > S2_times;
-S2_times["210513_Cd_20kV_800V_46V_12dB"] = std::pair<double, double> (22, 35);
-S2_times["210513_Cd_20kV_850V_46V_12dB"] = std::pair<double, double> (22, 35);
-S2_times["210513_Cd_18kV_850V_46V_12dB"] = std::pair<double, double> (22, 34);
-S2_times["210513_Cd_16kV_850V_46V_12dB"] = std::pair<double, double> (22, 33.5);
-S2_times["210513_Cd_14kV_850V_46V_12dB"] = std::pair<double, double> (22, 33);
-S2_times["210513_Cd_13kV_850V_46V_12dB"] = std::pair<double, double> (22, 34);
-S2_times["210513_Cd_12kV_850V_46V_12dB"] = std::pair<double, double> (22, 34);
-S2_times["210513_Cd_11kV_850V_46V_12dB"] = std::pair<double, double> (22, 34);
-S2_times["210513_Cd_10kV_850V_46V_12dB"] = std::pair<double, double> (22, 34.5);
-S2_times["210513_Cd_9kV_850V_46V_12dB"] = std::pair<double, double> (22, 35);
-S2_times["210513_Cd_8kV_850V_46V_12dB"] = std::pair<double, double> (22, 35);
+S2_times["210603_Cd_20kV_850V_46V_12dB_0"] = std::pair<double, double> (22, 35);
+S2_times["210603_Cd_20kV_850V_46V_12dB_1"] = std::pair<double, double> (22, 35);
+S2_times["210603_Cd_16kV_850V_46V_12dB_0"] = std::pair<double, double> (22, 33.5);
+S2_times["210603_Cd_16kV_850V_46V_12dB_1"] = std::pair<double, double> (22, 33.5);
+S2_times["210603_Cd_16kV_850V_46V_12dB_2"] = std::pair<double, double> (22, 33.5);
+S2_times["210603_Cd_12kV_850V_46V_12dB_0"] = std::pair<double, double> (22, 34);
+S2_times["210603_Cd_12kV_850V_46V_12dB_1"] = std::pair<double, double> (22, 34);
+S2_times["210603_Cd_12kV_850V_46V_12dB_2"] = std::pair<double, double> (22, 34);
 
 std::map<std::string, std::string> exp_folders;
-exp_folders["210513_Cd_20kV_800V_46V_12dB"] = "Cd_46V_20kV_800V";
-exp_folders["210513_Cd_20kV_850V_46V_12dB"] = "Cd_46V_20kV_850V";
-exp_folders["210513_Cd_18kV_850V_46V_12dB"] = "Cd_46V_18kV_850V";
-exp_folders["210513_Cd_16kV_850V_46V_12dB"] = "Cd_46V_16kV_850V";
-exp_folders["210513_Cd_14kV_850V_46V_12dB"] = "Cd_46V_14kV_850V";
-exp_folders["210513_Cd_13kV_850V_46V_12dB"] = "Cd_46V_13kV_850V";
-exp_folders["210513_Cd_12kV_850V_46V_12dB"] = "Cd_46V_12kV_850V";
-exp_folders["210513_Cd_11kV_850V_46V_12dB"] = "Cd_46V_11kV_850V";
-exp_folders["210513_Cd_10kV_850V_46V_12dB"] = "Cd_46V_10kV_850V";
-exp_folders["210513_Cd_9kV_850V_46V_12dB"] = "Cd_46V_09kV_850V";
-exp_folders["210513_Cd_8kV_850V_46V_12dB"] = "Cd_46V_08kV_850V";
+exp_folders["210603_Cd_20kV_850V_46V_12dB_0"] = "Cd_46V_20kV_850V_0";
+exp_folders["210603_Cd_20kV_850V_46V_12dB_1"] = "Cd_46V_20kV_850V_1";
+exp_folders["210603_Cd_16kV_850V_46V_12dB_0"] = "Cd_46V_16kV_850V_0";
+exp_folders["210603_Cd_16kV_850V_46V_12dB_1"] = "Cd_46V_16kV_850V_1";
+exp_folders["210603_Cd_16kV_850V_46V_12dB_2"] = "Cd_46V_16kV_850V_2";
+exp_folders["210603_Cd_12kV_850V_46V_12dB_0"] = "Cd_46V_12kV_850V_0";
+exp_folders["210603_Cd_12kV_850V_46V_12dB_1"] = "Cd_46V_12kV_850V_1";
+exp_folders["210603_Cd_12kV_850V_46V_12dB_2"] = "Cd_46V_12kV_850V_2";
 
-std::map<std::string, double> pre_trigger_max_S; //for calibration
-pre_trigger_max_S["210513_Cd_20kV_800V_46V_12dB"] = 0.28;
-pre_trigger_max_S["210513_Cd_20kV_850V_46V_12dB"] = 0.31;
-pre_trigger_max_S["210513_Cd_18kV_850V_46V_12dB"] = 0.27;
-pre_trigger_max_S["210513_Cd_16kV_850V_46V_12dB"] = 0.20;
-pre_trigger_max_S["210513_Cd_14kV_850V_46V_12dB"] = 0.19;
-pre_trigger_max_S["210513_Cd_13kV_850V_46V_12dB"] = 0.17;
-pre_trigger_max_S["210513_Cd_12kV_850V_46V_12dB"] = 0.18;
-pre_trigger_max_S["210513_Cd_11kV_850V_46V_12dB"] = 0.18;
-pre_trigger_max_S["210513_Cd_10kV_850V_46V_12dB"] = 0.16;
-pre_trigger_max_S["210513_Cd_9kV_850V_46V_12dB"] = 0.15;
-pre_trigger_max_S["210513_Cd_8kV_850V_46V_12dB"] = 0.15;
+std::map<std::string, double> pre_trigger_max_S; //for calibration only
+pre_trigger_max_S["210603_Cd_20kV_850V_46V_12dB_0"] = 0.31;
+pre_trigger_max_S["210603_Cd_20kV_850V_46V_12dB_1"] = 0.31;
+pre_trigger_max_S["210603_Cd_16kV_850V_46V_12dB_0"] = 0.22;
+pre_trigger_max_S["210603_Cd_16kV_850V_46V_12dB_1"] = 0.22;
+pre_trigger_max_S["210603_Cd_16kV_850V_46V_12dB_2"] = 0.22;
+pre_trigger_max_S["210603_Cd_12kV_850V_46V_12dB_0"] = 0.20;
+pre_trigger_max_S["210603_Cd_12kV_850V_46V_12dB_1"] = 0.20;
+pre_trigger_max_S["210603_Cd_12kV_850V_46V_12dB_2"] = 0.20;
 
 bool forms = !calibrate;
 //CALIBRATION (slow PMT and SiPMs)
@@ -602,9 +547,6 @@ double d_S_max;
 std::string exp = post_processor->experiments[post_processor->current_exp_index];
 int PMT_state = 0; //850V, 12 dB
 int SiPM_state = 0; //46V
-if (exp == "210513_Cd_20kV_800V_46V_12dB") {
-	PMT_state = 1; //800V, 12 dB
-}
 auto folder_entry = exp_folders.find(exp);
 if (folder_entry != exp_folders.end())
     folder = folder_entry->second;
@@ -888,9 +830,6 @@ int first_run = 0;
 std::string exp = post_processor->experiments[post_processor->current_exp_index];
 int PMT_state = 0; //850V, 12 dB
 int SiPM_state = 0; //46 V
-if (exp == "210513_Cd_20kV_800V_46V_12dB") {
-	PMT_state = 1; //800V, 12 dB
-}
 auto folder_entry = exp_folders.find(exp);
 if (folder_entry != exp_folders.end())
     folder = folder_entry->second;
@@ -916,111 +855,7 @@ else {
     first_run = -10000;
 }
 //zcxv
-if (exp == "210513_Cd_20kV_800V_46V_12dB") {
-	std::vector<std::string> cuts;
-	std::string zoomx = "Npe" + dbl_to_str(160-d_S2_start, 0);
-	std::string zoomy = "Npe" + dbl_to_str(d_S2_finish-d_S2_start, 0);
-	int no = 0; //picture number
-	std::string Num = int_to_str(++no, 2); //="01" //picture number as string
-	std::string FOLDER = data_output_path + folder + "/";
-
-	ty(AStates::PMT_Npe_sum);
-	fast_PMTs_only();
-	noise_cut(5, 0, PMT_state, 0);
-	noise_cut(6, 0, PMT_state, 0);
-	noise_cut(7, 0, PMT_state, 0);
-	noise_cut(8, 0, PMT_state, 0);
-	time_zoom_fPMTs(d_S2_start, 160);
-	set_bins(0, 300);
-	saveaspng(FOLDER + Num+"_fastPMTs_Npe_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	//Set AStates::PMT_Npe_sum, AStates::PMT_sum_N and MPPC_Npe_sum cuts for future correlations
-	ty(AStates::PMT_Npe_sum);
-	slow_PMTs_only();
-	noise_cut(1, 0, PMT_state, 0);
-	noise_cut(2, 0, PMT_state, 0);
-	noise_cut(3, 0, PMT_state, 0);
-	noise_cut(4, 0, PMT_state, 0);
-	time_zoom_sPMTs(d_S2_start, 160);
-	set_bins(0, 300);
-	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	ty(AStates::PMT_sum_N);
-	fast_PMTs_only();
-	noise_cut(5, 0, PMT_state, 0);
-	noise_cut(6, 0, PMT_state, 0);
-	noise_cut(7, 0, PMT_state, 0);
-	noise_cut(8, 0, PMT_state, 0);
-	time_zoom_fPMTs(d_S2_start, 160);
-	set_bins(0, 300);
-	saveaspng(FOLDER + Num+"_fastPMTs_Npeaks_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	ty(AStates::MPPC_Npe_sum);
-	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
-		int chan = post_processor->MPPC_channels[ich];
-		noise_cut(chan, 0, SiPM_state, false);
-		cut_t(0, 160, false, chan);
-	}
-	set_bins(0, 300);
-	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+cuts_str(cuts)+"_w_0-160us");
-	Num = int_to_str(++no, 2);
-
-set_corr(AStates::MPPC_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
-	ty(AStates::Correlation_y);
-	time_zoom_SiPMs(d_S2_start, d_S2_finish);
-	ty(AStates::Correlation);
-	set_zoom(0, 200, 0, 200);
-	set_bins(200);
-	x_y_regions = {43, 0, 90, 23.3, 199.9, 114};
-	cut_x_y_right(x_y_regions, true, "1");
-	update();
-	set_titles("N_{pe} t#in[0, 160] #mus", "N_{pe} t#in["+S2_start+", "+S2_finish+"] #mus");
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us");
-	set_log_z();
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us_log");
-	set_as_run_cut("good_SiPMs_ZxZy"); cuts.push_back(Num);
-	Num = int_to_str(++no, 2);
-	remcut(-1, "1");
-
-set_corr(AStates::PMT_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
-	set_zoom(0, 200, 0, 200);
-	set_bins(200);
-	set_titles("N_{pe} PMTs", "N_{pe} SiPM-matrix");
-	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts));
-	set_log_z();
-	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts)+"_log");
-	unset_log_z();
-	Num = int_to_str(++no, 2);
-
-std::string form_n = "forms_Cd_left/";
-ty(AStates::MPPC_Npe_sum);
-	time_zoom_SiPMs(d_S2_start, 160);
-	draw_limits(49, 87);
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
-	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
-	Num = int_to_str(++no, 2);
-
-	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
-	unset_as_run_cut("En_spec");
-	cuts.pop_back();
-
-form_n = "forms_Cd_peak/";
-ty(AStates::MPPC_Npe_sum);
-	draw_limits(49, 121);
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
-	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
-	Num = int_to_str(++no, 2);
-
-	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
-	unset_as_run_cut("En_spec");
-	cuts.pop_back();
-}
-if (exp == "210513_Cd_20kV_850V_46V_12dB") {
+if (exp == "210603_Cd_20kV_850V_46V_12dB_0" || exp == "210603_Cd_20kV_850V_46V_12dB_1") {
 	std::vector<std::string> cuts;
 	std::string zoomx = "Npe" + dbl_to_str(160-d_S2_start, 0);
 	std::string zoomy = "Npe" + dbl_to_str(d_S2_finish-d_S2_start, 0);
@@ -1124,111 +959,7 @@ ty(AStates::MPPC_Npe_sum);
 	unset_as_run_cut("En_spec");
 	cuts.pop_back();
 }
-if (exp == "210513_Cd_18kV_850V_46V_12dB") {
-	std::vector<std::string> cuts;
-	std::string zoomx = "Npe" + dbl_to_str(160-d_S2_start, 0);
-	std::string zoomy = "Npe" + dbl_to_str(d_S2_finish-d_S2_start, 0);
-	int no = 0; //picture number
-	std::string Num = int_to_str(++no, 2); //="01" //picture number as string
-	std::string FOLDER = data_output_path + folder + "/";
-
-	ty(AStates::PMT_Npe_sum);
-	fast_PMTs_only();
-	noise_cut(5, 0, PMT_state, 0);
-	noise_cut(6, 0, PMT_state, 0);
-	noise_cut(7, 0, PMT_state, 0);
-	noise_cut(8, 0, PMT_state, 0);
-	time_zoom_fPMTs(d_S2_start, 160);
-	set_bins(0, 200);
-	saveaspng(FOLDER + Num+"_fastPMTs_Npe_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	//Set AStates::PMT_Npe_sum, AStates::PMT_sum_N and MPPC_Npe_sum cuts for future correlations
-	ty(AStates::PMT_Npe_sum);
-	slow_PMTs_only();
-	noise_cut(1, 0, PMT_state, 0);
-	noise_cut(2, 0, PMT_state, 0);
-	noise_cut(3, 0, PMT_state, 0);
-	noise_cut(4, 0, PMT_state, 0);
-	time_zoom_sPMTs(d_S2_start, 160);
-	set_bins(0, 200);
-	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	ty(AStates::PMT_sum_N);
-	fast_PMTs_only();
-	noise_cut(5, 0, PMT_state, 0);
-	noise_cut(6, 0, PMT_state, 0);
-	noise_cut(7, 0, PMT_state, 0);
-	noise_cut(8, 0, PMT_state, 0);
-	time_zoom_fPMTs(d_S2_start, 160);
-	set_bins(0, 200);
-	saveaspng(FOLDER + Num+"_fastPMTs_Npeaks_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	ty(AStates::MPPC_Npe_sum);
-	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
-		int chan = post_processor->MPPC_channels[ich];
-		noise_cut(chan, 0, SiPM_state, false);
-		cut_t(0, 160, false, chan);
-	}
-	set_bins(0, 200);
-	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+cuts_str(cuts)+"_w_0-160us");
-	Num = int_to_str(++no, 2);
-
-set_corr(AStates::MPPC_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
-	ty(AStates::Correlation_y);
-	time_zoom_SiPMs(d_S2_start, d_S2_finish);
-	ty(AStates::Correlation);
-	set_zoom(0, 180, 0, 180);
-	set_bins(180);
-	x_y_regions = {21.2, 0, 52.3, 9.0, 179.9, 102.7};
-	cut_x_y_right(x_y_regions, true, "1");
-	update();
-	set_titles("N_{pe} t#in[0, 160] #mus", "N_{pe} t#in["+S2_start+", "+S2_finish+"] #mus");
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us");
-	set_log_z();
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us_log");
-	set_as_run_cut("good_SiPMs_ZxZy"); cuts.push_back(Num);
-	Num = int_to_str(++no, 2);
-	remcut(-1, "1");
-
-set_corr(AStates::PMT_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
-	set_zoom(0, 180, 0, 180);
-	set_bins(180);
-	set_titles("N_{pe} PMTs", "N_{pe} SiPM-matrix");
-	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts));
-	set_log_z();
-	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts)+"_log");
-	unset_log_z();
-	Num = int_to_str(++no, 2);
-
-std::string form_n = "forms_Cd_left/";
-ty(AStates::MPPC_Npe_sum);
-	time_zoom_SiPMs(d_S2_start, 160);
-	draw_limits(38, 60);
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
-	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
-	Num = int_to_str(++no, 2);
-
-	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
-	unset_as_run_cut("En_spec");
-	cuts.pop_back();
-
-form_n = "forms_Cd_peak/";
-ty(AStates::MPPC_Npe_sum);
-	draw_limits(38, 79.5);
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
-	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
-	Num = int_to_str(++no, 2);
-
-	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
-	unset_as_run_cut("En_spec");
-	cuts.pop_back();
-}
-if (exp == "210513_Cd_16kV_850V_46V_12dB") {
+if (exp == "210603_Cd_16kV_850V_46V_12dB_0" || exp == "210603_Cd_16kV_850V_46V_12dB_1" || exp == "210603_Cd_16kV_850V_46V_12dB_2") {
 	std::vector<std::string> cuts;
 	std::string zoomx = "Npe" + dbl_to_str(160-d_S2_start, 0);
 	std::string zoomy = "Npe" + dbl_to_str(d_S2_finish-d_S2_start, 0);
@@ -1332,215 +1063,7 @@ ty(AStates::MPPC_Npe_sum);
 	unset_as_run_cut("En_spec");
 	cuts.pop_back();
 }
-if (exp == "210513_Cd_14kV_850V_46V_12dB") {
-	std::vector<std::string> cuts;
-	std::string zoomx = "Npe" + dbl_to_str(160-d_S2_start, 0);
-	std::string zoomy = "Npe" + dbl_to_str(d_S2_finish-d_S2_start, 0);
-	int no = 0; //picture number
-	std::string Num = int_to_str(++no, 2); //="01" //picture number as string
-	std::string FOLDER = data_output_path + folder + "/";
-
-	ty(AStates::PMT_Npe_sum);
-	fast_PMTs_only();
-	noise_cut(5, 0, PMT_state, 0);
-	noise_cut(6, 0, PMT_state, 0);
-	noise_cut(7, 0, PMT_state, 0);
-	noise_cut(8, 0, PMT_state, 0);
-	time_zoom_fPMTs(d_S2_start, 160);
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_fastPMTs_Npe_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	//Set AStates::PMT_Npe_sum, AStates::PMT_sum_N and MPPC_Npe_sum cuts for future correlations
-	ty(AStates::PMT_Npe_sum);
-	slow_PMTs_only();
-	noise_cut(1, 0, PMT_state, 0);
-	noise_cut(2, 0, PMT_state, 0);
-	noise_cut(3, 0, PMT_state, 0);
-	noise_cut(4, 0, PMT_state, 0);
-	time_zoom_sPMTs(d_S2_start, 160);
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	ty(AStates::PMT_sum_N);
-	fast_PMTs_only();
-	noise_cut(5, 0, PMT_state, 0);
-	noise_cut(6, 0, PMT_state, 0);
-	noise_cut(7, 0, PMT_state, 0);
-	noise_cut(8, 0, PMT_state, 0);
-	time_zoom_fPMTs(d_S2_start, 160);
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_fastPMTs_Npeaks_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	ty(AStates::MPPC_Npe_sum);
-	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
-		int chan = post_processor->MPPC_channels[ich];
-		noise_cut(chan, 0, SiPM_state, false);
-		cut_t(0, 160, false, chan);
-	}
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+cuts_str(cuts)+"_w_0-160us");
-	Num = int_to_str(++no, 2);
-
-set_corr(AStates::MPPC_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
-	ty(AStates::Correlation_y);
-	time_zoom_SiPMs(d_S2_start, d_S2_finish);
-	ty(AStates::Correlation);
-	set_zoom(0, 150, 0, 150);
-	set_bins(150);
-	x_y_regions = {11.3, 0, 27.8, 6.1, 149.9, 109};
-	cut_x_y_right(x_y_regions, true, "1");
-	update();
-	set_titles("N_{pe} t#in[0, 160] #mus", "N_{pe} t#in["+S2_start+", "+S2_finish+"] #mus");
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us");
-	set_log_z();
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us_log");
-	set_as_run_cut("good_SiPMs_ZxZy"); cuts.push_back(Num);
-	Num = int_to_str(++no, 2);
-	remcut(-1, "1");
-
-set_corr(AStates::PMT_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
-	set_zoom(0, 150, 0, 150);
-	set_bins(150);
-	set_titles("N_{pe} PMTs", "N_{pe} SiPM-matrix");
-	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts));
-	set_log_z();
-	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts)+"_log");
-	unset_log_z();
-	Num = int_to_str(++no, 2);
-
-std::string form_n = "forms_Cd_left/";
-ty(AStates::MPPC_Npe_sum);
-	time_zoom_SiPMs(d_S2_start, 160);
-	draw_limits(16, 30.5);
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
-	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
-	Num = int_to_str(++no, 2);
-
-	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
-	unset_as_run_cut("En_spec");
-	cuts.pop_back();
-
-form_n = "forms_Cd_peak/";
-ty(AStates::MPPC_Npe_sum);
-	draw_limits(16, 44.5);
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
-	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
-	Num = int_to_str(++no, 2);
-
-	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
-	unset_as_run_cut("En_spec");
-	cuts.pop_back();
-}
-if (exp == "210513_Cd_13kV_850V_46V_12dB") {
-	std::vector<std::string> cuts;
-	std::string zoomx = "Npe" + dbl_to_str(160-d_S2_start, 0);
-	std::string zoomy = "Npe" + dbl_to_str(d_S2_finish-d_S2_start, 0);
-	int no = 0; //picture number
-	std::string Num = int_to_str(++no, 2); //="01" //picture number as string
-	std::string FOLDER = data_output_path + folder + "/";
-
-	ty(AStates::PMT_Npe_sum);
-	fast_PMTs_only();
-	noise_cut(5, 0, PMT_state, 0);
-	noise_cut(6, 0, PMT_state, 0);
-	noise_cut(7, 0, PMT_state, 0);
-	noise_cut(8, 0, PMT_state, 0);
-	time_zoom_fPMTs(d_S2_start, 160);
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_fastPMTs_Npe_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	//Set AStates::PMT_Npe_sum, AStates::PMT_sum_N and MPPC_Npe_sum cuts for future correlations
-	ty(AStates::PMT_Npe_sum);
-	slow_PMTs_only();
-	noise_cut(1, 0, PMT_state, 0);
-	noise_cut(2, 0, PMT_state, 0);
-	noise_cut(3, 0, PMT_state, 0);
-	noise_cut(4, 0, PMT_state, 0);
-	time_zoom_sPMTs(d_S2_start, 160);
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	ty(AStates::PMT_sum_N);
-	fast_PMTs_only();
-	noise_cut(5, 0, PMT_state, 0);
-	noise_cut(6, 0, PMT_state, 0);
-	noise_cut(7, 0, PMT_state, 0);
-	noise_cut(8, 0, PMT_state, 0);
-	time_zoom_fPMTs(d_S2_start, 160);
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_fastPMTs_Npeaks_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	ty(AStates::MPPC_Npe_sum);
-	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
-		int chan = post_processor->MPPC_channels[ich];
-		noise_cut(chan, 0, SiPM_state, false);
-		cut_t(0, 160, false, chan);
-	}
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+cuts_str(cuts)+"_w_0-160us");
-	Num = int_to_str(++no, 2);
-
-set_corr(AStates::MPPC_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
-	ty(AStates::Correlation_y);
-	time_zoom_SiPMs(d_S2_start, d_S2_finish);
-	ty(AStates::Correlation);
-	set_zoom(0, 150, 0, 150);
-	set_bins(150);
-	x_y_regions = {7.9, 0, 22.4, 5.6, 149.9, 114.7};
-	cut_x_y_right(x_y_regions, true, "1");
-	update();
-	set_titles("N_{pe} t#in[0, 160] #mus", "N_{pe} t#in["+S2_start+", "+S2_finish+"] #mus");
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us");
-	set_log_z();
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us_log");
-	set_as_run_cut("good_SiPMs_ZxZy"); cuts.push_back(Num);
-	Num = int_to_str(++no, 2);
-	remcut(-1, "1");
-
-set_corr(AStates::PMT_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
-	set_zoom(0, 150, 0, 150);
-	set_bins(150);
-	set_titles("N_{pe} PMTs", "N_{pe} SiPM-matrix");
-	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts));
-	set_log_z();
-	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts)+"_log");
-	unset_log_z();
-	Num = int_to_str(++no, 2);
-
-std::string form_n = "forms_Cd_left/";
-ty(AStates::MPPC_Npe_sum);
-	time_zoom_SiPMs(d_S2_start, 160);
-	draw_limits(13, 25.5);
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
-	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
-	Num = int_to_str(++no, 2);
-
-	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
-	unset_as_run_cut("En_spec");
-	cuts.pop_back();
-
-form_n = "forms_Cd_peak/";
-ty(AStates::MPPC_Npe_sum);
-	draw_limits(13, 36.5);
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
-	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
-	Num = int_to_str(++no, 2);
-
-	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
-	unset_as_run_cut("En_spec");
-	cuts.pop_back();
-}
-if (exp == "210513_Cd_12kV_850V_46V_12dB") {
+if (exp == "210603_Cd_12kV_850V_46V_12dB_0" || exp == "210603_Cd_12kV_850V_46V_12dB_1" || exp == "210603_Cd_12kV_850V_46V_12dB_2") {
 	std::vector<std::string> cuts;
 	std::string zoomx = "Npe" + dbl_to_str(160-d_S2_start, 0);
 	std::string zoomy = "Npe" + dbl_to_str(d_S2_finish-d_S2_start, 0);
@@ -1635,422 +1158,6 @@ ty(AStates::MPPC_Npe_sum);
 form_n = "forms_Cd_peak/";
 ty(AStates::MPPC_Npe_sum);
 	draw_limits(9, 30.5);
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
-	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
-	Num = int_to_str(++no, 2);
-
-	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
-	unset_as_run_cut("En_spec");
-	cuts.pop_back();
-}
-if (exp == "210513_Cd_11kV_850V_46V_12dB") {
-	std::vector<std::string> cuts;
-	std::string zoomx = "Npe" + dbl_to_str(160-d_S2_start, 0);
-	std::string zoomy = "Npe" + dbl_to_str(d_S2_finish-d_S2_start, 0);
-	int no = 0; //picture number
-	std::string Num = int_to_str(++no, 2); //="01" //picture number as string
-	std::string FOLDER = data_output_path + folder + "/";
-
-	ty(AStates::PMT_Npe_sum);
-	fast_PMTs_only();
-	noise_cut(5, 0, PMT_state, 0);
-	noise_cut(6, 0, PMT_state, 0);
-	noise_cut(7, 0, PMT_state, 0);
-	noise_cut(8, 0, PMT_state, 0);
-	time_zoom_fPMTs(d_S2_start, 160);
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_fastPMTs_Npe_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	//Set AStates::PMT_Npe_sum, AStates::PMT_sum_N and MPPC_Npe_sum cuts for future correlations
-	ty(AStates::PMT_Npe_sum);
-	slow_PMTs_only();
-	noise_cut(1, 0, PMT_state, 0);
-	noise_cut(2, 0, PMT_state, 0);
-	noise_cut(3, 0, PMT_state, 0);
-	noise_cut(4, 0, PMT_state, 0);
-	time_zoom_sPMTs(d_S2_start, 160);
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	ty(AStates::PMT_sum_N);
-	fast_PMTs_only();
-	noise_cut(5, 0, PMT_state, 0);
-	noise_cut(6, 0, PMT_state, 0);
-	noise_cut(7, 0, PMT_state, 0);
-	noise_cut(8, 0, PMT_state, 0);
-	time_zoom_fPMTs(d_S2_start, 160);
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_fastPMTs_Npeaks_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	ty(AStates::MPPC_Npe_sum);
-	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
-		int chan = post_processor->MPPC_channels[ich];
-		noise_cut(chan, 0, SiPM_state, false);
-		cut_t(0, 160, false, chan);
-	}
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+cuts_str(cuts)+"_w_0-160us");
-	Num = int_to_str(++no, 2);
-
-set_corr(AStates::MPPC_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
-	ty(AStates::Correlation_y);
-	time_zoom_SiPMs(d_S2_start, d_S2_finish);
-	ty(AStates::Correlation);
-	set_zoom(0, 150, 0, 150);
-	set_bins(150);
-	x_y_regions = {2.9, 0, 12.8, 2.9, 149.9, 134};
-	cut_x_y_right(x_y_regions, true, "1");
-	update();
-	set_titles("N_{pe} t#in[0, 160] #mus", "N_{pe} t#in["+S2_start+", "+S2_finish+"] #mus");
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us");
-	set_log_z();
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us_log");
-	set_as_run_cut("good_SiPMs_ZxZy"); cuts.push_back(Num);
-	Num = int_to_str(++no, 2);
-	remcut(-1, "1");
-
-set_corr(AStates::PMT_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
-	set_zoom(0, 150, 0, 150);
-	set_bins(150);
-	set_titles("N_{pe} PMTs", "N_{pe} SiPM-matrix");
-	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts));
-	set_log_z();
-	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts)+"_log");
-	unset_log_z();
-	Num = int_to_str(++no, 2);
-
-std::string form_n = "forms_Cd_left/";
-ty(AStates::MPPC_Npe_sum);
-	time_zoom_SiPMs(d_S2_start, 160);
-	draw_limits(6, 16);
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
-	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
-	Num = int_to_str(++no, 2);
-
-	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
-	unset_as_run_cut("En_spec");
-	cuts.pop_back();
-
-form_n = "forms_Cd_peak/";
-ty(AStates::MPPC_Npe_sum);
-	draw_limits(6, 27.5);
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
-	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
-	Num = int_to_str(++no, 2);
-
-	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
-	unset_as_run_cut("En_spec");
-	cuts.pop_back();
-}
-if (exp == "210513_Cd_10kV_850V_46V_12dB") {
-	std::vector<std::string> cuts;
-	std::string zoomx = "Npe" + dbl_to_str(160-d_S2_start, 0);
-	std::string zoomy = "Npe" + dbl_to_str(d_S2_finish-d_S2_start, 0);
-	int no = 0; //picture number
-	std::string Num = int_to_str(++no, 2); //="01" //picture number as string
-	std::string FOLDER = data_output_path + folder + "/";
-
-	ty(AStates::PMT_Npe_sum);
-	fast_PMTs_only();
-	noise_cut(5, 0, PMT_state, 0);
-	noise_cut(6, 0, PMT_state, 0);
-	noise_cut(7, 0, PMT_state, 0);
-	noise_cut(8, 0, PMT_state, 0);
-	time_zoom_fPMTs(d_S2_start, 160);
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_fastPMTs_Npe_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	//Set AStates::PMT_Npe_sum, AStates::PMT_sum_N and MPPC_Npe_sum cuts for future correlations
-	ty(AStates::PMT_Npe_sum);
-	slow_PMTs_only();
-	noise_cut(1, 0, PMT_state, 0);
-	noise_cut(2, 0, PMT_state, 0);
-	noise_cut(3, 0, PMT_state, 0);
-	noise_cut(4, 0, PMT_state, 0);
-	time_zoom_sPMTs(d_S2_start, 160);
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	ty(AStates::PMT_sum_N);
-	fast_PMTs_only();
-	noise_cut(5, 0, PMT_state, 0);
-	noise_cut(6, 0, PMT_state, 0);
-	noise_cut(7, 0, PMT_state, 0);
-	noise_cut(8, 0, PMT_state, 0);
-	time_zoom_fPMTs(d_S2_start, 160);
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_fastPMTs_Npeaks_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	ty(AStates::MPPC_Npe_sum);
-	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
-		int chan = post_processor->MPPC_channels[ich];
-		noise_cut(chan, 0, SiPM_state, false);
-		cut_t(0, 160, false, chan);
-	}
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+cuts_str(cuts)+"_w_0-160us");
-	Num = int_to_str(++no, 2);
-
-set_corr(AStates::MPPC_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
-	ty(AStates::Correlation_y);
-	time_zoom_SiPMs(d_S2_start, d_S2_finish);
-	ty(AStates::Correlation);
-	set_zoom(0, 150, 0, 150);
-	set_bins(150);
-	x_y_regions = {1.2, 0, 9.8, 2.6, 149.9, 137.4};
-	cut_x_y_right(x_y_regions, true, "1");
-	update();
-	set_titles("N_{pe} t#in[0, 160] #mus", "N_{pe} t#in["+S2_start+", "+S2_finish+"] #mus");
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us");
-	set_log_z();
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us_log");
-	set_as_run_cut("good_SiPMs_ZxZy"); cuts.push_back(Num);
-	Num = int_to_str(++no, 2);
-	remcut(-1, "1");
-
-set_corr(AStates::PMT_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
-	set_zoom(0, 150, 0, 150);
-	set_bins(150);
-	set_titles("N_{pe} PMTs", "N_{pe} SiPM-matrix");
-	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts));
-	set_log_z();
-	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts)+"_log");
-	unset_log_z();
-	Num = int_to_str(++no, 2);
-
-std::string form_n = "forms_Cd_left/";
-ty(AStates::MPPC_Npe_sum);
-	time_zoom_SiPMs(d_S2_start, 160);
-	draw_limits(5, 13.5);
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
-	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
-	Num = int_to_str(++no, 2);
-
-	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
-	unset_as_run_cut("En_spec");
-	cuts.pop_back();
-
-form_n = "forms_Cd_peak/";
-ty(AStates::MPPC_Npe_sum);
-	draw_limits(5, 21.5);
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
-	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
-	Num = int_to_str(++no, 2);
-
-	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
-	unset_as_run_cut("En_spec");
-	cuts.pop_back();
-}
-if (exp == "210513_Cd_9kV_850V_46V_12dB") {
-	std::vector<std::string> cuts;
-	std::string zoomx = "Npe" + dbl_to_str(160-d_S2_start, 0);
-	std::string zoomy = "Npe" + dbl_to_str(d_S2_finish-d_S2_start, 0);
-	int no = 0; //picture number
-	std::string Num = int_to_str(++no, 2); //="01" //picture number as string
-	std::string FOLDER = data_output_path + folder + "/";
-
-	ty(AStates::PMT_Npe_sum);
-	fast_PMTs_only();
-	noise_cut(5, 0, PMT_state, 0);
-	noise_cut(6, 0, PMT_state, 0);
-	noise_cut(7, 0, PMT_state, 0);
-	noise_cut(8, 0, PMT_state, 0);
-	time_zoom_fPMTs(d_S2_start, 160);
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_fastPMTs_Npe_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	//Set AStates::PMT_Npe_sum, AStates::PMT_sum_N and MPPC_Npe_sum cuts for future correlations
-	ty(AStates::PMT_Npe_sum);
-	slow_PMTs_only();
-	noise_cut(1, 0, PMT_state, 0);
-	noise_cut(2, 0, PMT_state, 0);
-	noise_cut(3, 0, PMT_state, 0);
-	noise_cut(4, 0, PMT_state, 0);
-	time_zoom_sPMTs(d_S2_start, 160);
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	ty(AStates::PMT_sum_N);
-	fast_PMTs_only();
-	noise_cut(5, 0, PMT_state, 0);
-	noise_cut(6, 0, PMT_state, 0);
-	noise_cut(7, 0, PMT_state, 0);
-	noise_cut(8, 0, PMT_state, 0);
-	time_zoom_fPMTs(d_S2_start, 160);
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_fastPMTs_Npeaks_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	ty(AStates::MPPC_Npe_sum);
-	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
-		int chan = post_processor->MPPC_channels[ich];
-		noise_cut(chan, 0, SiPM_state, false);
-		cut_t(0, 160, false, chan);
-	}
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+cuts_str(cuts)+"_w_0-160us");
-	Num = int_to_str(++no, 2);
-
-set_corr(AStates::MPPC_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
-	ty(AStates::Correlation_y);
-	time_zoom_SiPMs(d_S2_start, d_S2_finish);
-	ty(AStates::Correlation);
-	set_zoom(0, 150, 0, 150);
-	set_bins(150);
-	x_y_regions = {1.3, 0, 8.8, 1.4, 149.8, 137.4};
-	cut_x_y_right(x_y_regions, true, "1");
-	update();
-	set_titles("N_{pe} t#in[0, 160] #mus", "N_{pe} t#in["+S2_start+", "+S2_finish+"] #mus");
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us");
-	set_log_z();
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us_log");
-	set_as_run_cut("good_SiPMs_ZxZy"); cuts.push_back(Num);
-	Num = int_to_str(++no, 2);
-	remcut(-1, "1");
-
-set_corr(AStates::PMT_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
-	set_zoom(0, 150, 0, 150);
-	set_bins(150);
-	set_titles("N_{pe} PMTs", "N_{pe} SiPM-matrix");
-	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts));
-	set_log_z();
-	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts)+"_log");
-	unset_log_z();
-	Num = int_to_str(++no, 2);
-
-std::string form_n = "forms_Cd_left/";
-ty(AStates::MPPC_Npe_sum);
-	time_zoom_SiPMs(d_S2_start, 160);
-	draw_limits(4, 10.5);
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
-	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
-	Num = int_to_str(++no, 2);
-
-	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
-	unset_as_run_cut("En_spec");
-	cuts.pop_back();
-
-form_n = "forms_Cd_peak/";
-ty(AStates::MPPC_Npe_sum);
-	draw_limits(4, 17.5);
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
-	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
-	Num = int_to_str(++no, 2);
-
-	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
-	unset_as_run_cut("En_spec");
-	cuts.pop_back();
-}
-if (exp == "210513_Cd_8kV_850V_46V_12dB") {
-	std::vector<std::string> cuts;
-	std::string zoomx = "Npe" + dbl_to_str(160-d_S2_start, 0);
-	std::string zoomy = "Npe" + dbl_to_str(d_S2_finish-d_S2_start, 0);
-	int no = 0; //picture number
-	std::string Num = int_to_str(++no, 2); //="01" //picture number as string
-	std::string FOLDER = data_output_path + folder + "/";
-
-	ty(AStates::PMT_Npe_sum);
-	fast_PMTs_only();
-	noise_cut(5, 0, PMT_state, 0);
-	noise_cut(6, 0, PMT_state, 0);
-	noise_cut(7, 0, PMT_state, 0);
-	noise_cut(8, 0, PMT_state, 0);
-	time_zoom_fPMTs(d_S2_start, 160);
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_fastPMTs_Npe_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	//Set AStates::PMT_Npe_sum, AStates::PMT_sum_N and MPPC_Npe_sum cuts for future correlations
-	ty(AStates::PMT_Npe_sum);
-	slow_PMTs_only();
-	noise_cut(1, 0, PMT_state, 0);
-	noise_cut(2, 0, PMT_state, 0);
-	noise_cut(3, 0, PMT_state, 0);
-	noise_cut(4, 0, PMT_state, 0);
-	time_zoom_sPMTs(d_S2_start, 160);
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	ty(AStates::PMT_sum_N);
-	fast_PMTs_only();
-	noise_cut(5, 0, PMT_state, 0);
-	noise_cut(6, 0, PMT_state, 0);
-	noise_cut(7, 0, PMT_state, 0);
-	noise_cut(8, 0, PMT_state, 0);
-	time_zoom_fPMTs(d_S2_start, 160);
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_fastPMTs_Npeaks_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	ty(AStates::MPPC_Npe_sum);
-	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
-		int chan = post_processor->MPPC_channels[ich];
-		noise_cut(chan, 0, SiPM_state, false);
-		cut_t(0, 160, false, chan);
-	}
-	set_bins(0, 150);
-	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+cuts_str(cuts)+"_w_0-160us");
-	Num = int_to_str(++no, 2);
-
-set_corr(AStates::MPPC_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
-	ty(AStates::Correlation_y);
-	time_zoom_SiPMs(d_S2_start, d_S2_finish);
-	ty(AStates::Correlation);
-	set_zoom(0, 150, 0, 150);
-	set_bins(150);
-	x_y_regions = {2.5, 0, 8.4, 1.2, 149.8, 137.4};
-	cut_x_y_right(x_y_regions, true, "1");
-	update();
-	set_titles("N_{pe} t#in[0, 160] #mus", "N_{pe} t#in["+S2_start+", "+S2_finish+"] #mus");
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us");
-	set_log_z();
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_"+S2_start+"-"+S2_finish+"us_vs_"+S2_start+"-160us_log");
-	set_as_run_cut("good_SiPMs_ZxZy"); cuts.push_back(Num);
-	Num = int_to_str(++no, 2);
-	remcut(-1, "1");
-
-set_corr(AStates::PMT_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
-	set_zoom(0, 150, 0, 150);
-	set_bins(150);
-	set_titles("N_{pe} PMTs", "N_{pe} SiPM-matrix");
-	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts));
-	set_log_z();
-	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts)+"_log");
-	unset_log_z();
-	Num = int_to_str(++no, 2);
-
-std::string form_n = "forms_Cd_left/";
-ty(AStates::MPPC_Npe_sum);
-	time_zoom_SiPMs(d_S2_start, 160);
-	draw_limits(4, 9);
-	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
-	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
-	Num = int_to_str(++no, 2);
-
-	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
-	unset_as_run_cut("En_spec");
-	cuts.pop_back();
-
-form_n = "forms_Cd_peak/";
-ty(AStates::MPPC_Npe_sum);
-	draw_limits(4, 14.5);
 	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
 	set_as_run_cut("En_spec"); cuts.push_back(Num);
 	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
