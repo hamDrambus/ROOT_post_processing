@@ -505,7 +505,7 @@ calibration_file = "210909/results_v5/210909_calibration.dat";
 post_processor->calibr_info.Load(calibration_file);
 trigger_version = TriggerVersion::trigger_v2; //not used
 
-std::map<std::string, std::pair<double, double> > S2_times;
+std::map<std::string, std::pair<double, double> > S2_times; //adsf - for fast Ctrl+F
 S2_times["210909_Pu_13.8kV_850V_46V_12dB_2588V"] = std::pair<double, double> (23, 32);
 S2_times["210909_Pu_13.8kV_850V_46V_12dB_2465V"] = std::pair<double, double> (23, 32);
 S2_times["210909_Pu_13.8kV_850V_46V_12dB_2300V"] = std::pair<double, double> (23, 32);
