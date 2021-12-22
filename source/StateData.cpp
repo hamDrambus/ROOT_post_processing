@@ -57,6 +57,10 @@ bool StateData::IsForState_virt(CanvasSetups *state, int channel, AStates::Type 
 	case AStates::PMT_T_sum:
 	case AStates::MPPC_shape_fit:
 	case AStates::PMT_shape_fit:
+	case AStates::MPPC_Npe_profile:
+	case AStates::MPPC_Npe_profile_x:
+	case AStates::MPPC_Npe_profile_y:
+	case AStates::MPPC_coord_disp:
 		return true;
 	default: {
 		std::cout<<"Error: StateData::IsForState_virt is not implemented for type "<<state->type_name(type)<<std::endl;
@@ -180,6 +184,10 @@ bool TriggerData::IsForState_virt(CanvasSetups *state, int channel, AStates::Typ
 		case AStates::PMT_T_sum:
 		case AStates::MPPC_shape_fit:
 		case AStates::PMT_shape_fit:
+		case AStates::MPPC_Npe_profile:
+		case AStates::MPPC_Npe_profile_x:
+		case AStates::MPPC_Npe_profile_y:
+		case AStates::MPPC_coord_disp:
 			return false;
 		case AStates::Correlation_x: {
 			return (state->_x_corr == AStates::PMT_trigger_bNpe) || (state->_x_corr == AStates::PMT_trigger_bNpeaks)
@@ -311,6 +319,10 @@ bool TriggerFitData::IsForState_virt(CanvasSetups *state, int channel, AStates::
 		case AStates::PMT_T_sum:
 		case AStates::MPPC_shape_fit:
 		case AStates::PMT_shape_fit:
+		case AStates::MPPC_Npe_profile:
+		case AStates::MPPC_Npe_profile_x:
+		case AStates::MPPC_Npe_profile_y:
+		case AStates::MPPC_coord_disp:
 			return false;
 		case AStates::Correlation_x: {
 			return (state->_x_corr == AStates::PMT_trigger_fit || state->_x_corr == AStates::PMT_trigger_fit_chi2
@@ -558,6 +570,10 @@ bool TriggerAvgTData::IsForState_virt(CanvasSetups *state, int channel, AStates:
 		case AStates::PMT_T_sum:
 		case AStates::MPPC_shape_fit:
 		case AStates::PMT_shape_fit:
+		case AStates::MPPC_Npe_profile:
+		case AStates::MPPC_Npe_profile_x:
+		case AStates::MPPC_Npe_profile_y:
+		case AStates::MPPC_coord_disp:
 			return false;
 		case AStates::Correlation_x: {
 			return (state->_x_corr == AStates::MPPC_trigger_avg);
@@ -704,6 +720,10 @@ bool ShapeFitData::IsForState_virt(CanvasSetups *state, int channel, AStates::Ty
 		case AStates::MPPC_trigger_fit_chi2:
 		case AStates::PMT_T_sum:
 		case AStates::MPPC_trigger_avg:
+		case AStates::MPPC_Npe_profile:
+		case AStates::MPPC_Npe_profile_x:
+		case AStates::MPPC_Npe_profile_y:
+		case AStates::MPPC_coord_disp:
 			return false;
 		case AStates::Correlation_x: {
 			return (state->_x_corr == AStates::MPPC_shape_fit || state->_x_corr == AStates::PMT_shape_fit);

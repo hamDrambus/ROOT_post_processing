@@ -27,21 +27,21 @@
 	str.close();
 
   exp_area.experiments.clear();
-  //exp_area.experiments.push_back("211028_Pu_7.8kV_850V_46V_12dB_2650V");
+  exp_area.experiments.push_back("211028_Pu_7.8kV_850V_46V_12dB_2650V");
   //exp_area.experiments.push_back("211028_Pu_7.8kV_850V_46V_12dB_2500V");
   //exp_area.experiments.push_back("211028_Pu_7.8kV_850V_46V_12dB_2300V");
-  //exp_area.experiments.push_back("211028_Pu_7.8kV_850V_46V_12dB_2083V");
+  exp_area.experiments.push_back("211028_Pu_7.8kV_850V_46V_12dB_2083V");
   //exp_area.experiments.push_back("211028_Pu_7.8kV_850V_46V_12dB_1875V");
   //exp_area.experiments.push_back("211028_Pu_7.8kV_850V_46V_12dB_1666V");
   //exp_area.experiments.push_back("211028_Pu_7.8kV_850V_46V_12dB_1438V");
   //exp_area.experiments.push_back("211028_Pu_7.8kV_850V_46V_12dB_1250V");
   //exp_area.experiments.push_back("211028_Pu_7.8kV_850V_46V_12dB_833V");
   //exp_area.experiments.push_back("211028_Pu_7.8kV_850V_46V_12dB_292V");
-  exp_area.experiments.push_back("211028_Pu_7.8kV_850V_46V_12dB_208V");
+  /*exp_area.experiments.push_back("211028_Pu_7.8kV_850V_46V_12dB_208V");
   exp_area.experiments.push_back("211028_Pu_7.8kV_850V_46V_12dB_187V");
   exp_area.experiments.push_back("211028_Pu_7.8kV_850V_46V_12dB_167V");
   exp_area.experiments.push_back("211028_Pu_7.8kV_850V_46V_12dB_125V");
-  exp_area.experiments.push_back("211028_Pu_7.8kV_850V_46V_12dB_0V");
+  exp_area.experiments.push_back("211028_Pu_7.8kV_850V_46V_12dB_0V");*/
 
   PMT_V.clear();
   MPPC_V.clear();

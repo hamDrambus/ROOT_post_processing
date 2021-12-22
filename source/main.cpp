@@ -664,10 +664,32 @@ FunctionWrapper* create_vertical_lines_cut(double left, double right) //do not c
 		});
 		break;
 	}
+	case AStates::MPPC_Npe_profile:
+	case AStates::MPPC_Npe_profile_x:
+	{
+		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
+			return ((vals[0] <= ((temp_data*)data)->mm.second) && (vals[0] >= ((temp_data*)data)->mm.first));
+		});
+		break;
+	}
+	case AStates::MPPC_Npe_profile_y:
+	{
+		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
+			return ((vals[1] <= ((temp_data*)data)->mm.second) && (vals[1] >= ((temp_data*)data)->mm.first));
+		});
+		break;
+	}
 	case AStates::MPPC_coord_y:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			return ((vals[((temp_data*)data)->ch_size+1] <= ((temp_data*)data)->mm.second) && (vals[((temp_data*)data)->ch_size+1] >= ((temp_data*)data)->mm.first));
+		});
+		break;
+	}
+	case AStates::MPPC_coord_disp:
+	{
+		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
+			return ((vals[((temp_data*)data)->ch_size+2] <= ((temp_data*)data)->mm.second) && (vals[((temp_data*)data)->ch_size+2] >= ((temp_data*)data)->mm.first));
 		});
 		break;
 	}
@@ -872,6 +894,14 @@ void unset_log_z(void)
 	}
 	post_processor->set_log_z(false);
 }
+void set_draw_option(std::string option)
+{
+	if (NULL == g_data) {
+		status();
+		return;
+	}
+	post_processor->set_draw_option(option);
+}
 
 //region is {t_min0, t_max0, S_min0, S_max0, t_min1, t_max1 ...}
 FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do not call from the CINT
@@ -894,6 +924,7 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::MPPC_coord:
 	case AStates::MPPC_coord_x:
 	case AStates::MPPC_coord_y:
+	case AStates::MPPC_coord_disp:
 	case AStates::PMT_t_S:
 	case AStates::PMT_Ss:
 	case AStates::PMT_As:
@@ -929,6 +960,9 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::PMT_T_sum:
 	case AStates::MPPC_shape_fit:
 	case AStates::PMT_shape_fit:
+	case AStates::MPPC_Npe_profile:
+	case AStates::MPPC_Npe_profile_x:
+	case AStates::MPPC_Npe_profile_y:
 	{
 		picker->SetFunction( [](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -1051,6 +1085,7 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 	case AStates::MPPC_coord:
 	case AStates::MPPC_coord_x:
 	case AStates::MPPC_coord_y:
+	case AStates::MPPC_coord_disp:
 	case AStates::PMT_t_S:
 	case AStates::PMT_Ss:
 	case AStates::PMT_As:
@@ -1086,6 +1121,9 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 	case AStates::PMT_T_sum:
 	case AStates::MPPC_shape_fit:
 	case AStates::PMT_shape_fit:
+	case AStates::MPPC_Npe_profile:
+	case AStates::MPPC_Npe_profile_x:
+	case AStates::MPPC_Npe_profile_y:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -1207,6 +1245,7 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::MPPC_coord:
 	case AStates::MPPC_coord_x:
 	case AStates::MPPC_coord_y:
+	case AStates::MPPC_coord_disp:
 	case AStates::PMT_t_S:
 	case AStates::PMT_Ss:
 	case AStates::PMT_As:
@@ -1242,6 +1281,9 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 	case AStates::PMT_T_sum:
 	case AStates::MPPC_shape_fit:
 	case AStates::PMT_shape_fit:
+	case AStates::MPPC_Npe_profile:
+	case AStates::MPPC_Npe_profile_x:
+	case AStates::MPPC_Npe_profile_y:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			temp_data* da = (temp_data*)data;
@@ -1434,6 +1476,7 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 	case AStates::MPPC_coord:
 	case AStates::MPPC_coord_x:
 	case AStates::MPPC_coord_y:
+	case AStates::MPPC_coord_disp:
 	case AStates::PMT_t_S:
 	case AStates::PMT_Ss:
 	case AStates::PMT_As:
@@ -1469,6 +1512,9 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 	case AStates::PMT_T_sum:
 	case AStates::MPPC_shape_fit:
 	case AStates::PMT_shape_fit:
+	case AStates::MPPC_Npe_profile:
+	case AStates::MPPC_Npe_profile_x:
+	case AStates::MPPC_Npe_profile_y:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			//{A_min, A0, S0, A1, S1, A_max}
@@ -1564,6 +1610,7 @@ FunctionWrapper* create_A_S_polygon_cut(std::vector<double> region, unsigned int
 	case AStates::MPPC_coord:
 	case AStates::MPPC_coord_x:
 	case AStates::MPPC_coord_y:
+	case AStates::MPPC_coord_disp:
 	case AStates::PMT_t_S:
 	case AStates::PMT_Ss:
 	case AStates::PMT_As:
@@ -1599,6 +1646,9 @@ FunctionWrapper* create_A_S_polygon_cut(std::vector<double> region, unsigned int
 	case AStates::PMT_T_sum:
 	case AStates::MPPC_shape_fit:
 	case AStates::PMT_shape_fit:
+	case AStates::MPPC_Npe_profile:
+	case AStates::MPPC_Npe_profile_x:
+	case AStates::MPPC_Npe_profile_y:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			temp_data* d = ((temp_data*)data);

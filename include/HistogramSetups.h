@@ -34,6 +34,7 @@ public:
 	StateData* extra_data; //for example parameters for trigger adjustment algorithm
 
 	bool logscale_x, logscale_y, logscale_z;
+	std::string draw_option;
 #ifndef __ROOTCLING__
 	//1st tier parameters of distribution: (stored in order to minimize calls of LoopThroughData to recalculate them)
 	boost::optional<std::size_t> num_of_runs;
@@ -101,6 +102,7 @@ protected:
 	void set_log_x(bool is_log);
 	void set_log_y(bool is_log);
 	void set_log_z(bool is_log);
+	void set_draw_option(std::string option);
 
 	Bool_t StateChange(int to_ch, int to_exp, Type to_type, int from_ch, int from_exp, Type from_type);
 	virtual Bool_t StateChange(int to_ch, int to_exp, Type to_type, std::size_t to_canvas, int from_ch, int from_exp, Type from_type, std::size_t from_canvas);

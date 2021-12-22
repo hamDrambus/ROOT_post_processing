@@ -76,6 +76,14 @@ void cut_PMT_noise(int device_condition)
 	noise_cut(8, 0, device_condition, 0);
 }
 
+void cut_SiPM_noise(int device_condition)
+{
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, 0, device_condition, 0);
+	}
+}
+
 void save_forms (std::string path, bool N_only, int PMT_condition, int SiPM_condition)
 {
 	double zoom_l = 0, zoom_r = 160;
@@ -520,6 +528,8 @@ void analysis_history(bool calibrate, unsigned int method = 0) {
 //In order to determine its threshold more precisely, pre-trigger and long component
 //areas must be treated in the same manner.
 //Similar to 211028/5analysis_history.cpp
+
+//!!!! There is slight error in this analysis: PMT#1 is turned off for event selection.
 data_output_path = "211202/results_v5/";
 calibration_file = "211202/results_v5/211202_calibration.dat";
 post_processor->calibr_info.Load(calibration_file);

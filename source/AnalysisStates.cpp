@@ -307,7 +307,7 @@ Bool_t AStates::isPerRun(Type type) const
 			type== PMT_S2_S ||type==PMT_Npe_sum ||type==PMT_S_sum ||type==PMT_sum_N || type==PMT_trigger_bNpe ||
 			type==PMT_trigger_fit || type==PMT_trigger_bNpeaks || type==PMT_trigger_bS || type == PMT_trigger_fit_chi2 ||
 			type == MPPC_trigger_fit || type == MPPC_trigger_fit_chi2 || type == MPPC_trigger_avg || type == PMT_T_sum ||
-			type == MPPC_shape_fit || type == PMT_shape_fit;
+			type == MPPC_shape_fit || type == PMT_shape_fit || type==MPPC_coord_disp;
 }
 
 Bool_t AStates::isMultichannel(Type type) const
@@ -319,13 +319,14 @@ Bool_t AStates::isMultichannel(Type type) const
 	return (type == MPPC_tbS_sum) || type == MPPC_tbNpe_sum || type == MPPC_tbN_sum || type==MPPC_coord || type==MPPC_coord_x || type==MPPC_coord_y || type==MPPC_Npe_sum
 			|| type==MPPC_N_sum || type==MPPC_S_sum || type == MPPC_trigger_avg || type == MPPC_shape_fit || type == PMT_shape_fit
 			|| type==Correlation || type==CorrelationAll || type==PMT_sum_N || type==PMT_Npe_sum || type==PMT_S_sum || type==PMT_trigger_bNpe || type==PMT_trigger_bNpeaks
-			|| type==PMT_trigger_fit || type==PMT_trigger_bS || type == PMT_trigger_fit_chi2 || type == MPPC_trigger_fit || type == MPPC_trigger_fit_chi2 || type == PMT_T_sum;
+			|| type==PMT_trigger_fit || type==PMT_trigger_bS || type == PMT_trigger_fit_chi2 || type == MPPC_trigger_fit || type == MPPC_trigger_fit_chi2 || type == PMT_T_sum
+			|| type==MPPC_Npe_profile || type==MPPC_Npe_profile_x ||type==MPPC_Npe_profile_y || type==MPPC_coord_disp;
 }
 
 Bool_t AStates::isTH1Dhist(Type type) const
 {
 	return !((type == Type::PMT_t_S)||(type == Type::PMT_A_S) || (type == Type::MPPC_t_S)||
-			(type == Type::MPPC_A_S)||(type== Type::MPPC_coord)||(type==Correlation)||(type==CorrelationAll));
+			(type == Type::MPPC_A_S)||(type== Type::MPPC_coord)||(type==Correlation)||(type==CorrelationAll)||type==MPPC_Npe_profile);
 }
 
 bool AStates::isComposite (Type type) const
@@ -338,7 +339,8 @@ bool AStates::isComposite (Type type) const
 			|| type==MPPC_Npe_sum ||type==MPPC_N_sum || type==MPPC_S_sum ||type==MPPC_S2 ||type==PMT_S2_S ||type==PMT_sum_N || type==PMT_Npe_sum
 			|| type==PMT_S_sum ||type==PMT_trigger_bNpe || type == PMT_trigger_bNpeaks || type==PMT_trigger_bS || type == PMT_trigger_fit
 			|| type==PMT_trigger_fit_chi2 || type == MPPC_trigger_fit || type == MPPC_trigger_fit_chi2 || type == PMT_T_sum
-			|| type == MPPC_trigger_avg || type == MPPC_shape_fit || type == PMT_shape_fit);
+			|| type == MPPC_trigger_avg || type == MPPC_shape_fit || type == PMT_shape_fit || type == MPPC_Npe_profile
+			|| type == MPPC_Npe_profile_x ||type == MPPC_Npe_profile_y || type == MPPC_coord_disp);
 }
 
 Bool_t AStates::isVirtual(Type type) const
@@ -684,6 +686,22 @@ std::string AStates::type_name(Type type) const
 	case Type::PMT_shape_fit:
 	case Type::MPPC_shape_fit: {
 		name += "shape_fit";
+		break;
+	}
+	case Type::MPPC_Npe_profile: {
+		name += "Npe_profile";
+		break;
+	}
+	case Type::MPPC_Npe_profile_x: {
+		name += "Npe_profile_X";
+		break;
+	}
+	case Type::MPPC_Npe_profile_y: {
+		name += "Npe_profile_Y";
+		break;
+	}
+	case Type::MPPC_coord_disp: {
+		name += "coordinate_dispersion";
 		break;
 	}
 	}

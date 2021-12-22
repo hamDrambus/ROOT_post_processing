@@ -1,4 +1,8 @@
 {
+  gStyle->SetCanvasDefH(800);
+	gStyle->SetCanvasDefW(1000);
+  gErrorIgnoreLevel = 1001; //To shut up minuit output during failed(?) fitting
+  threads_number = 10;
   name_scheme_version = name_scheme_v2;
   trigger_version = TriggerVersion::trigger_v2;
   //From global parameters:
@@ -23,9 +27,9 @@
 	str.close();
 
   exp_area.experiments.clear();
-  //exp_area.experiments.push_back("210121_Pu_20kV_850V_46V_12dB");
+  exp_area.experiments.push_back("210121_Pu_20kV_850V_46V_12dB");
   //exp_area.experiments.push_back("210121_Pu_18kV_850V_46V_12dB");
-  exp_area.experiments.push_back("210121_Pu_16kV_850V_46V_12dB");
+  //exp_area.experiments.push_back("210121_Pu_16kV_850V_46V_12dB");
   //exp_area.experiments.push_back("210121_Pu_15kV_850V_46V_12dB");
   //exp_area.experiments.push_back("210121_Pu_14kV_850V_46V_12dB");
   //exp_area.experiments.push_back("210121_Pu_13kV_850V_46V_12dB");

@@ -31,13 +31,14 @@
 //13) bool PostProcessor::set_correlation_filler(FunctionWrapper* operation, Type type);
 //14) void PostProcessor::print_hist(std::string path);
 //15) bool PostProcessor::update(void);
-//16) void PostProcessor::update_physical(void)
-//17) void PostProcessor::default_hist_setups(HistogramSetups*);
-//18) bool PostProcessor::set_trigger_offsets(double extra_offset);
-//19) void view_event(int event_index, double x_min = 0, double x_max = 160);
+//16) void PostProcessor::post_fill_transform(void);
+//17) void PostProcessor::update_physical(void)
+//18) void PostProcessor::default_hist_setups(HistogramSetups*);
+//19) bool PostProcessor::set_trigger_offsets(double extra_offset);
+//20) void view_event(int event_index, double x_min = 0, double x_max = 160);
 
 
-//20) 2nd tier methods in main:
+//21) 2nd tier methods in main:
 //	FunctionWrapper* create_vertical_lines_cut(double left, double right)
 //	FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region)
 //	FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region)
@@ -84,6 +85,7 @@ protected:
 	std::pair<double, double> hist_x_limits(bool consider_displayed_cuts = false); //considering cuts
 	std::pair<double, double> hist_y_limits(bool consider_displayed_cuts = false); //valid only for 2d plots
 	void default_hist_setups(HistogramSetups*);
+	void post_fill_transform(void); //transform histogram after filling but before fitting and drawing
 	void update_physical(void); //2nd and 3rd mandates of ::update(void)
 	std::string hist_name();
 	void print_hist(std::string path, bool png_only); //use "" for default path
@@ -135,6 +137,7 @@ public:
 	void set_log_x(bool is_log);
 	void set_log_y(bool is_log);
 	void set_log_z(bool is_log);
+	void set_draw_option(std::string option);
 	bool set_X_title(std::string text);
 	bool set_Y_title(std::string text);
 

@@ -13,6 +13,7 @@ public:
 		MPPC_tbN_sum, //time distribution with weight = 1 for each peak
 		MPPC_coord, MPPC_coord_x, MPPC_coord_y, MPPC_Npe_sum, MPPC_N_sum, MPPC_S2, MPPC_S_sum,
 		MPPC_trigger_fit, MPPC_trigger_fit_chi2, MPPC_trigger_avg, MPPC_shape_fit,
+		MPPC_Npe_profile, MPPC_Npe_profile_x, MPPC_Npe_profile_y, MPPC_coord_disp,
 		Correlation_x, Correlation_y /*these two are mask (virtual) types*/, Correlation /*uses Correlation_x/y*/,CorrelationAll,
 		PMT_S2_S, PMT_Npe_sum, PMT_S_sum, PMT_Ss, PMT_As, PMT_t_S, PMT_A_S, PMT_tbS, PMT_tbN, PMT_tbNpe, PMT_sum_N, PMT_trigger_fit,
 		PMT_T_sum, PMT_trigger_fit_chi2, PMT_shape_fit, PMT_trigger_bNpe, PMT_trigger_bNpeaks, PMT_trigger_bS};

@@ -14,7 +14,7 @@ HistogramSetups::HistogramSetups(const std::deque<int>& channels) :
 	y_drawn_mean(boost::none), x_variance(boost::none), x_drawn_variance(boost::none),
 	y_variance(boost::none), y_drawn_variance(boost::none), is_valid_fit_function(false),
 	use_default_setups(true), N_bins(0), N_bins_y(0),  N_gauss(0), use_fit(false), extra_data(NULL),
-	logscale_x(false), logscale_y(false), logscale_z(false)
+	logscale_x(false), logscale_y(false), logscale_z(false), draw_option("hist")
 {
 	for (std::size_t ind = 0, ind_end_ = channels.size(); ind != ind_end_; ++ind)
 		active_channels.push(channels[ind], true);
@@ -45,6 +45,7 @@ HistogramSetups::HistogramSetups(const HistogramSetups& setups)
 	logscale_x = setups.logscale_x;
 	logscale_y = setups.logscale_y;
 	logscale_z = setups.logscale_z;
+	draw_option = setups.draw_option;
 
 	//1st tier parameters of distribution: (stored in order to minimize calls of LoopThroughData to recalculate them)
 	num_of_runs = setups.num_of_runs;
@@ -161,6 +162,14 @@ bool CanvasSetups::set_hist_setups(HistogramSetups* setups, int exp_ind, int cha
 			setups->extra_data = new TriggerData(this);
 		if (NULL==setups->extra_data && StateData::IsForState(this))
 			setups->extra_data = new StateData(this);
+	}
+	if (isTH1Dhist(type)) {
+		setups->draw_option = "hist";
+	} else {
+		setups->draw_option = "colz";
+		if (type == MPPC_Npe_profile) {
+			setups->draw_option = "lego";
+		}
 	}
 	return true;
 }
@@ -527,6 +536,15 @@ void CanvasSetups::set_log_z(bool is_log)
 		return;
 	bool invalidate = curr_hist->logscale_z!=is_log;
 	curr_hist->logscale_z=is_log;
+}
+
+void CanvasSetups::set_draw_option(std::string option)
+{
+	HistogramSetups* curr_hist = get_hist_setups();
+	if (NULL==curr_hist)
+		return;
+	bool invalidate = curr_hist->draw_option!=option;
+	curr_hist->draw_option=option;
 }
 
 //public (interfaces)

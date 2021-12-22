@@ -67,6 +67,34 @@ void PostProcessor::print_hist(std::string path, bool png_only)
 	FunctionWrapper* writer_to_file = new FunctionWrapper(&st_data);
 	switch (type)
 	{
+	case MPPC_Npe_profile:
+	{
+		writer_to_file->SetFunction([](std::vector<double> &pars, int run, void* data) {
+			((temp_data*)data)->str->write((char*)&pars[0], sizeof(double));
+			((temp_data*)data)->str->write((char*)&pars[1], sizeof(double));
+			((temp_data*)data)->str->write((char*)&pars[2], sizeof(double));
+			return true;
+		});
+		break;
+	}
+	case MPPC_Npe_profile_x:
+	{
+		writer_to_file->SetFunction([](std::vector<double> &pars, int run, void* data) {
+			((temp_data*)data)->str->write((char*)&pars[0], sizeof(double));
+			((temp_data*)data)->str->write((char*)&pars[2], sizeof(double));
+			return true;
+		});
+		break;
+	}
+	case MPPC_Npe_profile_y:
+	{
+		writer_to_file->SetFunction([](std::vector<double> &pars, int run, void* data) {
+			((temp_data*)data)->str->write((char*)&pars[1], sizeof(double));
+			((temp_data*)data)->str->write((char*)&pars[2], sizeof(double));
+			return true;
+		});
+		break;
+	}
 	case MPPC_coord:
 	{
 		writer_to_file->SetFunction([](std::vector<double> &pars, int run, void* data) {
@@ -94,6 +122,14 @@ void PostProcessor::print_hist(std::string path, bool png_only)
 	{
 		writer_to_file->SetFunction([](std::vector<double> &pars, int run, void* data) {
 			((temp_data*)data)->str->write((char*)&pars[((temp_data*)data)->ch_size+1], sizeof(double));
+			return true;
+		});
+		break;
+	}
+	case MPPC_coord_disp:
+	{
+		writer_to_file->SetFunction([](std::vector<double> &pars, int run, void* data) {
+			((temp_data*)data)->str->write((char*)&pars[((temp_data*)data)->ch_size+2], sizeof(double));
 			return true;
 		});
 		break;
@@ -290,9 +326,9 @@ MPPC_tbN_sum	peak.S		peak.A		peak.left	peak.right	peak.t		Npe
 MPPC_S2																					//composite: cuts for peaks and then derived parameter. Data is derived within loop.
 	1st level:	peak.S		peak.A		peak.left	peak.right	peak.t		Npe			//cuts with corresponding channel, no need to check ==-2
 	2nd level:	SUM(peak.S)	-2			-2			-2			-2						//cuts with channel -1 called.
-MPPC_coord===MPPC_coord_x===MPPC_coord_y														//composite: cuts for peaks and then derived parameters. Data is derived within loop.
+MPPC_coord===MPPC_coord_x===MPPC_coord_y==MPPC_coord_disp								//composite: cuts for peaks and then derived parameters. Data is derived within loop.
 	1st level:	peak.S		peak.A		peak.left	peak.right	peak.t		Npe					//per channel, cuts with corresponding channel called.
-	2nd level:	Npe[0]	Npe[1]	...	Npe[MPPC_channels.size()-1]		X derived		Y derived	//cuts with channel -1 called.
+	2nd level:	Npe[0]	Npe[1]	...	Npe[MPPC_channels.size()-1]		X derived		Y derived	2D_Dispersion	//cuts with channel -1 called.
 MPPC_Npe_sum
 	1st level:	peak.S		peak.A		peak.left	peak.right	peak.t		Npe					//per channel, cuts with corresponding channel called.
 	2nd level:	Npe[0]	Npe[1]	...	Npe[MPPC_channels.size()-1]		NpeSum						//cuts with channel -1 called.
@@ -306,6 +342,9 @@ PMT_tbN			peak.S		peak.A		peak.left	peak.right	peak.t		Npe		===	PMT_Ss
 PMT_sum_N
 	1st level:	peak.S		peak.A		peak.left	peak.right	peak.t		Npe					//per channel, cuts with corresponding channel called.
 	2nd level:	Npeaks[0]	Np[1]	...	Np[PMT_channels.size()-1]		NpSum					//cuts with channel -1 called.
+MPPC_Npe_profile	X	Y	Npe	S_total	Npeaks	channel
+MPPC_Npe_profile_x	X	Y	Npe	S_total	Npeaks	channel
+MPPC_Npe_profile_y	X	Y	Npe	S_total	Npeaks	channel
 */
 void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int channel, Type type)
 {
@@ -1275,11 +1314,12 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 	case Type::MPPC_coord_x:
 	case Type::MPPC_coord_y:
 	case Type::MPPC_coord:
+	case Type::MPPC_coord_disp:
 	{
 		int run_size = data->mppc_peaks[current_exp_index][0].size();
 		//[0] - data for no cuts, [1] - data for histogram cuts, [2] - for physical cuts and [3] - for both histogram and physical
 		for (auto run = 0; run != run_size; ++run) {
-			std::vector<double> Npes (MPPC_channels.size()+2, 0);
+			std::vector<double> Npes (MPPC_channels.size()+3, 0);
 			double Npe_sum = 0, Npe_max = 0;
 			std::vector<double> cut_data(6);
 			bool failed_run_cut = false;
@@ -1339,8 +1379,16 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 				}
 			}
 #ifdef WEIGHTED_COORD
-			Npes[MPPC_channels.size()] /= Npe_sum;
-			Npes[MPPC_channels.size()+1] /= Npe_sum;
+			Npes[MPPC_channels.size()] /= (Npe_sum == 0 ? 1: Npe_sum);
+			Npes[MPPC_channels.size()+1] /= (Npe_sum == 0 ? 1: Npe_sum);
+			for (int chan_ind=0,_ch_ind_end_= MPPC_channels.size(); chan_ind<_ch_ind_end_; ++chan_ind) {
+				if (MPPC_coords.find(MPPC_channels[chan_ind])!=MPPC_coords.end()) {
+					double d_x = Npes[MPPC_channels.size()] - MPPC_coords.find(MPPC_channels[chan_ind])->second.first;
+					double d_y = Npes[MPPC_channels.size()+1] - MPPC_coords.find(MPPC_channels[chan_ind])->second.second;
+					Npes[MPPC_channels.size()+2] += Npes[chan_ind]*(d_x * d_x + d_y * d_y);
+				}
+			}
+			Npes[MPPC_channels.size()+2] /= (Npe_sum == 0 ? 1: Npe_sum);
 #endif
 			bool failed_hist_phys = false, failed_hist = false, failed_phys = false;
 			for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut)
@@ -1373,6 +1421,106 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 				(*operations[o].operation)(Npes, run);
 			}
 		}
+		break;
+	}
+	case Type::MPPC_Npe_profile:
+	case Type::MPPC_Npe_profile_x:
+	case Type::MPPC_Npe_profile_y:
+	{
+		int run_size = data->mppc_peaks[current_exp_index][0].size();
+		bool ignore_no_run_cut = true;
+		for (std::size_t o = 0, o_end_ = operations.size(); o != o_end_; ++o) {
+			if (!operations[o].apply_run_cuts) {
+				ignore_no_run_cut = false;
+				break;
+			}
+		}
+		//[0] - data for no cuts, [1] - data for histogram cuts, [2] - for physical cuts and [3] - for both histogram and physical
+		for (auto run = 0; run != run_size; ++run) {
+			std::vector<double> cut_data(6, 0);
+			bool failed_run_cut = false;
+			for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
+				if (kFALSE == cut->GetAccept(run)) {
+					failed_run_cut = true;
+					break;
+				}
+
+			if (failed_run_cut && ignore_no_run_cut)
+				continue;
+
+			for (int chan_ind=0,_ch_ind_end_= MPPC_channels.size(); chan_ind<_ch_ind_end_; ++chan_ind) {
+				if (NULL != setups) {
+					bool *active = setups->active_channels.info(MPPC_channels[chan_ind]);
+					if (NULL == active)
+						continue;
+					if (!(*active))
+						continue;
+				}
+				if (MPPC_coords.find(MPPC_channels[chan_ind]) == MPPC_coords.end())
+					continue;
+				std::vector<double> MPPC_result (6, 0); //X, Y, Npe, S_total, Npeaks, channel
+				MPPC_result[0] = MPPC_coords.find(MPPC_channels[chan_ind])->second.first;
+				MPPC_result[1] = MPPC_coords.find(MPPC_channels[chan_ind])->second.second;
+				MPPC_result[5] = MPPC_channels[chan_ind];
+				double s1pe = calibr_info.get_S1pe(MPPC_channels[chan_ind], current_exp_index);
+				for (int pk = 0, pk_end = data->mppc_peaks[current_exp_index][chan_ind][run].size(); pk != pk_end; ++pk) {
+					bool failed_hist_cut = false; //normal cuts
+					cut_data[0] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].S;
+					cut_data[1] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].A;
+					cut_data[2] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].left + data->trigger_offset[current_exp_index][run];
+					cut_data[3] = data->mppc_peaks[current_exp_index][chan_ind][run][pk].right + data->trigger_offset[current_exp_index][run];
+					cut_data[4] =
+#ifdef PEAK_AVR_TIME
+							data->mppc_peaks[current_exp_index][chan_ind][run][pk].t + data->trigger_offset[current_exp_index][run];
+#else
+							0.5*(cut_data[3]+cut_data[2]);
+#endif
+					cut_data[5] = s1pe > 0 ? std::round(cut_data[0]/s1pe) : -1;
+					for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
+						if (cut->GetChannel()==MPPC_channels[chan_ind] && cut->GetAffectingHistogram() && !failed_hist_cut)
+							if (kFALSE == (*cut)(cut_data, run)) { //more expensive than GetAffectingHistogram
+								failed_hist_cut = true;
+								break;
+							}
+					}
+					if (!failed_hist_cut) {
+						MPPC_result[3] += cut_data[0];
+						MPPC_result[4] += 1;
+					}
+				}
+				MPPC_result[2] = (s1pe > 0 ? std::round(MPPC_result[3]/s1pe) : MPPC_result[4]);
+				bool failed_hist_phys = false, failed_hist = false, failed_phys = false;
+				for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut)
+					if (-1 == cut->GetChannel()) {
+						if (!failed_hist_phys)
+							if (kFALSE == (*cut)(MPPC_result, run))
+								failed_hist_phys = true;
+						if (!failed_hist && cut->GetAffectingHistogram())
+							if (kFALSE == (*cut)(MPPC_result, run))
+								failed_hist = true;
+						if (!failed_phys && !cut->GetAffectingHistogram())
+							if (kFALSE == (*cut)(MPPC_result, run))
+								failed_phys = true;
+					}
+				for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
+					if (operations[o].apply_run_cuts && failed_run_cut)
+						continue;
+					if (operations[o].apply_hist_cuts && !operations[o].apply_phys_cuts) {
+						if (!failed_hist) (*operations[o].operation)(MPPC_result, run);
+						continue;
+					}
+					if (!operations[o].apply_hist_cuts && operations[o].apply_phys_cuts) {
+						if (!failed_phys) (*operations[o].operation)(MPPC_result, run);
+						continue;
+					}
+					if (operations[o].apply_hist_cuts && operations[o].apply_phys_cuts) {
+						if (!failed_hist_phys) (*operations[o].operation)(MPPC_result, run);
+						continue;
+					}
+					(*operations[o].operation)(MPPC_result, run);
+				}
+			} //channel loop
+		}//run loop
 		break;
 	}
 	case Type::MPPC_Npe_sum:
@@ -1958,6 +2106,14 @@ bool PostProcessor::set_correlation_filler(FunctionWrapper* operation, Type type
 		});
 		break;
 	}
+	case Type::MPPC_coord_disp:
+	{
+		operation->SetFunction([](std::vector<double>& pars, int run, void* data) {
+			(*((correlation_data*)data)->vals)[run] = pars[((correlation_data*)data)->ch_size + 2];
+			return true;
+		});
+		break;
+	}
 	default: {
 		std::cerr << "PostProcessor::set_correlation_filler: Warning! Not implemented type. Either it is 2D/not per event or forgotten to be implemented" << std::endl;
 		return false;
@@ -1995,15 +2151,13 @@ bool PostProcessor::update(void)
 	std::size_t num_of_fills = 0;
 	std::size_t num_of_drawn_fills = 0;
 	FunctionWrapper fills_counter(&num_of_fills);
-	fills_counter.SetFunction([](std::vector<double>& pars, int run, void* data) {
-		++(*(std::size_t*)data);
-		return true;
-	});
 	FunctionWrapper drawn_fills_counter(&num_of_drawn_fills);
-	drawn_fills_counter.SetFunction([](std::vector<double>& pars, int run, void* data) {
-		++(*(std::size_t*)data);
-		return true;
-	});
+	fills_counter.SetFunction(
+		drawn_fills_counter.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			++(*(std::size_t*)data);
+			return true;
+		})
+	);
 
 	struct limits_data_ {
 		std::pair<double,double> x_mm;
@@ -2214,6 +2368,93 @@ bool PostProcessor::update(void)
 		});
 		break;
 	}
+	case Type::MPPC_Npe_profile:
+	{
+		drawn_mean_taker.SetFunction(
+		mean_taker.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			(((mean_variance_data_*)data)->mean_x) += pars[0] * pars[2];
+			(((mean_variance_data_*)data)->mean_y) += pars[1] * pars[2];
+			(((mean_variance_data_*)data)->stat_weight) += pars[2];
+			return true;
+		}));
+		drawn_variance_taker.SetFunction(
+		variance_taker.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			double meanX = ((mean_variance_data_*)data)->mean_x;
+			double meanY = ((mean_variance_data_*)data)->mean_y;
+			(((mean_variance_data_*)data)->variance_x) += (pars[0] - meanX) * (pars[0] - meanX) * pars[2];
+			(((mean_variance_data_*)data)->variance_y) += (pars[1] - meanY) * (pars[1] - meanY) * pars[2];
+			return true;
+		}));
+		drawn_limits_finder.SetFunction(
+		limits_finder.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			std::pair<double,double>* x = &((limits_data_*)data)->x_mm;
+			std::pair<double,double>* y = &((limits_data_*)data)->y_mm;
+			x->first = std::min(x->first, pars[0]);
+			x->second = std::max(x->second, pars[0]);
+			y->first = std::min(y->first, pars[1]);
+			y->second = std::max(y->second, pars[1]);
+			return true;
+		}));
+		histogram_filler.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			((TH2D*)((hist_fill_data_*)data)->phist)->Fill(pars[0], pars[1], pars[2]);
+			return true;
+		});
+		break;
+	}
+	case Type::MPPC_Npe_profile_x:
+	{
+		drawn_mean_taker.SetFunction(
+		mean_taker.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			(((mean_variance_data_*)data)->mean_x) += pars[0] * pars[2];
+			(((mean_variance_data_*)data)->stat_weight) += pars[2];
+			return true;
+		}));
+		drawn_variance_taker.SetFunction(
+		variance_taker.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			double meanX = ((mean_variance_data_*)data)->mean_x;
+			(((mean_variance_data_*)data)->variance_x) += (pars[0] - meanX) * (pars[0] - meanX) * pars[2];
+			return true;
+		}));
+		drawn_limits_finder.SetFunction(
+		limits_finder.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			std::pair<double,double>* x = &((limits_data_*)data)->x_mm;
+			x->first = std::min(x->first, pars[0]);
+			x->second = std::max(x->second, pars[0]);
+			return true;
+		}));
+		histogram_filler.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			((TH1D*)((hist_fill_data_*)data)->phist)->Fill(pars[0], pars[2]);
+			return true;
+		});
+		break;
+	}
+	case Type::MPPC_Npe_profile_y:
+	{
+		drawn_mean_taker.SetFunction(
+		mean_taker.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			(((mean_variance_data_*)data)->mean_x) += pars[1] * pars[2];
+			(((mean_variance_data_*)data)->stat_weight) += pars[2];
+			return true;
+		}));
+		drawn_variance_taker.SetFunction(
+		variance_taker.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			double meanX = ((mean_variance_data_*)data)->mean_x;
+			(((mean_variance_data_*)data)->variance_x) += (pars[1] - meanX) * (pars[1] - meanX) * pars[2];
+			return true;
+		}));
+		drawn_limits_finder.SetFunction(
+		limits_finder.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			std::pair<double,double>* x = &((limits_data_*)data)->x_mm;
+			x->first = std::min(x->first, pars[1]);
+			x->second = std::max(x->second, pars[1]);
+			return true;
+		}));
+		histogram_filler.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			((TH1D*)((hist_fill_data_*)data)->phist)->Fill(pars[1], pars[2]);
+			return true;
+		});
+		break;
+	}
 	case Type::MPPC_Npe_sum:
 	case Type::MPPC_N_sum:
 	case Type::MPPC_S_sum:
@@ -2270,6 +2511,33 @@ bool PostProcessor::update(void)
 		}));
 		histogram_filler.SetFunction([](std::vector<double>& pars, int run, void* data) {
 			((TH1D*)((hist_fill_data_*)data)->phist)->Fill(pars[((hist_fill_data_*)data)->ch_size + 1]);
+			return true;
+		});
+		break;
+	}
+	case Type::MPPC_coord_disp:
+	{
+		drawn_mean_taker.SetFunction(
+		mean_taker.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			(((mean_variance_data_*)data)->mean_x) += pars[((mean_variance_data_*)data)->ch_size + 2];
+			return true;
+		}));
+		drawn_variance_taker.SetFunction(
+		variance_taker.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			double meanX = ((mean_variance_data_*)data)->mean_x;
+			int ch_sz = ((mean_variance_data_*)data)->ch_size + 2;
+			(((mean_variance_data_*)data)->variance_x) += (pars[ch_sz] - meanX) * (pars[ch_sz] - meanX);
+			return true;
+		}));
+		drawn_limits_finder.SetFunction(
+		limits_finder.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			std::pair<double,double>* p = &((limits_data_*)data)->x_mm;
+			p->first = std::min(p->first, pars[((limits_data_*)data)->ch_size + 2]);
+			p->second = std::max(p->second, pars[((limits_data_*)data)->ch_size + 2]);
+			return true;
+		}));
+		histogram_filler.SetFunction([](std::vector<double>& pars, int run, void* data) {
+			((TH1D*)((hist_fill_data_*)data)->phist)->Fill(pars[((hist_fill_data_*)data)->ch_size + 2]);
 			return true;
 		});
 		break;
@@ -2578,6 +2846,8 @@ bool PostProcessor::update(void)
 			Invalidate(invFit | invFitFunction);
 	}
 
+	post_fill_transform();
+
 	if (isTH1Dhist(current_type)) {
 		if (!setups->is_valid_fit_function && setups->use_fit) {
 			std::pair<double, double> x_drawn_lims = hist_x_limits(true);
@@ -2606,14 +2876,14 @@ bool PostProcessor::update(void)
 			if (hist) {
 				hist->GetXaxis()->SetTitle(setups->x_axis_title.c_str());
 				hist->GetYaxis()->SetTitle(setups->y_axis_title.c_str());
-				hist->Draw("hist");
+				hist->Draw(setups->draw_option.c_str());
 			}
 		} else { 
 			TH2D* hist = get_current_hist2();
 			if (hist) {
 				hist->GetXaxis()->SetTitle(setups->x_axis_title.c_str());
 				hist->GetYaxis()->SetTitle(setups->y_axis_title.c_str());
-				hist->Draw("colz"/*"lego"*/);
+				hist->Draw(setups->draw_option.c_str()/*"lego"*/);
 			}
 		}
 		canvas->Update(); //required for updates axes which are used in drawing cuts
@@ -2799,6 +3069,71 @@ void PostProcessor::clearAll(void) //clear everything, return to initial state (
 	StateChange(current_channel, current_exp_index, current_type, canvas_ind, current_channel, current_exp_index, current_type, canvas_ind); //To create HistogramSetups as at the start of the program
 	update();
 }
+
+void PostProcessor::post_fill_transform(void)
+{
+	HistogramSetups *setups = get_hist_setups();
+	if (NULL==setups) {
+		std::cout<<"PostProcessor::update_physical: Error: NULL setups"<<std::endl;
+	}
+	std::string exp_str = experiments[current_exp_index];
+	switch (current_type) {
+	case Type::MPPC_Npe_profile:
+	{
+		if (setups->num_of_runs!=boost::none && *setups->num_of_runs > 0) {
+			TH2D * hist = get_current_hist2();
+			if (NULL == hist) {
+				std::cout << "post_fill_transform(): Error! NULL histogram for " << data->exp_area.experiments[current_exp_index] << std::endl;
+				break;
+			}
+			hist->Scale(1.0/(*setups->num_of_runs));
+			hist->SetLineColor(TColor::GetColorDark(kBlue));
+			hist->SetFillStyle(0);
+		} else {
+			std::cout << "post_fill_transform(): Error! 0 runs for " << data->exp_area.experiments[current_exp_index] << std::endl;
+		}
+		break;
+	}
+	case Type::MPPC_Npe_profile_x:
+	case Type::MPPC_Npe_profile_y:
+	{
+		if (setups->num_of_runs!=boost::none && *setups->num_of_runs > 0) {
+			TH1D * hist = get_current_hist1();
+			if (NULL == hist) {
+				std::cout << "post_fill_transform(): Error! NULL histogram for " << data->exp_area.experiments[current_exp_index] << std::endl;
+				break;
+			}
+			hist->Scale(1.0/(*setups->num_of_runs));
+			hist->SetLineColor(kBlack);
+			hist->SetFillStyle(3335);
+			hist->SetFillColor(kBlack);
+		} else {
+			std::cout << "post_fill_transform(): Error! 0 runs for " << data->exp_area.experiments[current_exp_index] << std::endl;
+		}
+		break;
+	}
+	default: {
+		if (isTH1Dhist(current_type)) {
+			TH1D * hist = get_current_hist1();
+			if (NULL == hist) {
+				std::cout << "post_fill_transform(): Error! NULL histogram for " << data->exp_area.experiments[current_exp_index] << std::endl;
+				break;
+			}
+			hist->SetLineColor(TColor::GetColorDark(kBlue));
+			hist->SetFillStyle(0);
+		} else {
+			TH2D * hist = get_current_hist2();
+			if (NULL == hist) {
+				std::cout << "post_fill_transform(): Error! NULL histogram for " << data->exp_area.experiments[current_exp_index] << std::endl;
+				break;
+			}
+			//hist->SetStats(true);
+		}
+		break;
+	}
+	}
+}
+
 
 //updates derived values such as S2 amplitude, S of single photoelectron etc.
 void PostProcessor::update_physical(void)
@@ -3232,6 +3567,10 @@ void PostProcessor::set_as_run_cut(std::string name)//adds current drawn_limits 
 		std::cout<<"Can't use multi E data for run cut."<<std::endl;
 		return;
 	}
+	if (!isPerRun(current_type)) {
+		std::cout<<"Can't use current type ("<<type_name(current_type)<<") for event (run) cut"<<std::endl;
+		return;
+	}
 	std::deque<EventCut> *RunCuts = get_run_cuts(current_exp_index);
 	if (NULL==RunCuts) {
 		return;
@@ -3453,6 +3792,12 @@ void PostProcessor::set_log_y(bool is_log)
 void PostProcessor::set_log_z(bool is_log)
 {
 	CanvasSetups::set_log_z(is_log);
+	update();
+}
+
+void PostProcessor::set_draw_option(std::string option)
+{
+	CanvasSetups::set_draw_option(option);
 	update();
 }
 
