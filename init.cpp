@@ -7,6 +7,7 @@
 
 	gSystem->Load("libpost_processing.so");
 	std::vector<double> x_y_regions;
+	double d_S2_start, d_S2_finish;
 	/*gROOT->ProcessLine(".L source/ExperimentArea.cpp+");
 	gROOT->ProcessLine(".L source/GlobalParameters.cpp+");
 	gROOT->ProcessLine(".L source/SingleRunData.cpp+");
