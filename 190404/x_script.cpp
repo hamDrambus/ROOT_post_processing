@@ -26,38 +26,10 @@ if (false) {
 	}
 }
 if (true) {
-	bool calibrate = false;
-	unsigned int method = 0;
-	analysis_history(calibrate, method); //20, 46V
-	nex();
-	analysis_history(calibrate, method); //20
-	nex();
-	analysis_history(calibrate, method); //18
-	nex();
-	analysis_history(calibrate, method); //16
-	nex();
-	analysis_history(calibrate, method); //14
-	nex();
-	analysis_history(calibrate, method); //12
-	nex();
-	analysis_history(calibrate, method);	//10
-	nex();
-	analysis_history(calibrate, method);	//8
-	nex();
-	analysis_history(calibrate, method); //20, 48V
-	nex();
-	analysis_history(calibrate, method); //18
-	nex();
-	analysis_history(calibrate, method); //16
-	nex();
-	analysis_history(calibrate, method); //14
-	nex();
-	analysis_history(calibrate, method); //12
-	nex();
-	analysis_history(calibrate, method);	//10
-	nex();
-	analysis_history(calibrate, method);	//8
-	nex();
+	for (int e = 0; e != exp_area.experiments.size(); ++e) {
+		analysis_history(0);
+		nex();
+	}
 }
 if (false) { //to study cuts on 4PMT Npe t=[23, 40] vs t=[23, 160]
 	//setups are for 20kV, 6analysis_states.cpp (launch analysis_states(0, 0) with 'return;' after correlation setup there before running this code)

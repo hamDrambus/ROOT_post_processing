@@ -1,4 +1,8 @@
 {
+  gStyle->SetCanvasDefH(800);
+	gStyle->SetCanvasDefW(1000);
+  gErrorIgnoreLevel = 1001; //To shut up minuit output during failed(?) fitting
+  threads_number = 10;
   name_scheme_version = name_scheme_v2;
   trigger_version = TriggerVersion::trigger_v2;
   //From global parameters:
@@ -23,12 +27,13 @@
 	str.close();
 
   exp_area.experiments.clear();
-  exp_area.experiments.push_back("201015_Pu_20kV_850V_46V_12dB");
+  /*exp_area.experiments.push_back("201015_Pu_20kV_850V_46V_12dB");
   exp_area.experiments.push_back("201015_Pu_18kV_850V_46V_12dB");
   exp_area.experiments.push_back("201015_Pu_16kV_850V_46V_12dB");
   exp_area.experiments.push_back("201015_Pu_14kV_850V_46V_12dB");
   exp_area.experiments.push_back("201015_Pu_12kV_850V_46V_12dB");
-  exp_area.experiments.push_back("201015_Pu_10kV_850V_46V_12dB");
+  exp_area.experiments.push_back("201015_Pu_10kV_850V_46V_12dB");*/
+  exp_area.experiments.push_back("201015_Pu_20kV_850V_46V_12dB_S1");
 
   PMT_V.clear();
   MPPC_V.clear();
@@ -52,6 +57,7 @@
   experiment_fields["201015_Pu_14kV_850V_46V_12dB"] = 14;
   experiment_fields["201015_Pu_12kV_850V_46V_12dB"] = 12;
   experiment_fields["201015_Pu_10kV_850V_46V_12dB"] = 10;
+  experiment_fields["201015_Pu_20kV_850V_46V_12dB_S1"] = 20;
 
   std::map<std::string, int> experiment_runs; //required for printing accpeted/rejected events
   experiment_runs["201015_Pu_20kV_850V_46V_12dB"] = 190;
@@ -60,7 +66,13 @@
   experiment_runs["201015_Pu_14kV_850V_46V_12dB"] = 368;
   experiment_runs["201015_Pu_12kV_850V_46V_12dB"] = 461;
   experiment_runs["201015_Pu_10kV_850V_46V_12dB"] = 493;
-
+  experiment_runs["201015_Pu_20kV_850V_46V_12dB_S1"] = 148;
+  experiment_runs["201015_Pu_18kV_850V_46V_12dB_S1"] = 272;
+  experiment_runs["201015_Pu_16kV_850V_46V_12dB_S1"] = 306;
+  experiment_runs["201015_Pu_14kV_850V_46V_12dB_S1"] = 399;
+  experiment_runs["201015_Pu_12kV_850V_46V_12dB_S1"] = 430;
+  experiment_runs["201015_Pu_10kV_850V_46V_12dB_S1"] = 526;
+  experiment_runs["201015_Pu_6kV_850V_46V_12dB_S1"] = 557;
 
   if (areas_to_draw.empty())
 	areas_to_draw.push_back(experiment_area());

@@ -300,7 +300,7 @@ int ncompare_forms (void) {
 
 	bool do_fit = false;
 	bool fit_bad_forms = false;
-	bool subtact_baseline = false;
+	bool subtact_baseline = true;
 	bool center_pulses = false;
 	bool center_at_S1 = false;
 	bool normalize_by_S1 = false;
@@ -309,7 +309,7 @@ int ncompare_forms (void) {
 	double time_left = 0, time_right = 160;//us
 	double max_val = 0;
 	double trigger_at = center_at_S1 ? 50 : 90;
-	double y_min = 1e-3;
+	double y_min = 1e-4;
 	Nbins *= (time_right - time_left)/160.0;
 
 	pulse_shape* define = NULL, *copy = NULL;
@@ -1191,7 +1191,7 @@ define->fit_option = def_fit_option;
 	//std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger, SiPM_18kV_no_trigger, SiPM_16kV_no_trigger, SiPM_14kV_no_trigger, SiPM_12kV_no_trigger, SiPM_10kV_no_trigger, SiPM_8kV_no_trigger};
 	//std::vector<pulse_shape> pulses = {PMT4_20kV_no_trigger, PMT4_18kV_no_trigger, PMT4_16kV_no_trigger, PMT4_14kV_no_trigger, PMT4_12kV_no_trigger, PMT4_10kV_no_trigger, PMT4_8kV_no_trigger};
 	//std::vector<pulse_shape> pulses = {PMT4_10kV_no_trigger, PMT4_8kV_no_trigger, PMT4_6kV_no_trigger};
-	std::vector<pulse_shape> pulses = {SiPM_10kV_no_trigger, SiPM_8kV_no_trigger, SiPM_6kV_no_trigger};
+	//std::vector<pulse_shape> pulses = {SiPM_10kV_no_trigger, SiPM_8kV_no_trigger, SiPM_6kV_no_trigger};
 
 	//std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger, SiPM_18kV_no_trigger, SiPM_16kV_no_trigger, SiPM_14kV_no_trigger};
 	//std::vector<pulse_shape> pulses = {SiPM_12kV_no_trigger, SiPM_10kV_no_trigger, SiPM_8kV_no_trigger, SiPM_6kV_no_trigger};
@@ -1201,6 +1201,8 @@ define->fit_option = def_fit_option;
 	//for paper:
 	//std::vector<pulse_shape> pulses = {PMT4_20kV_no_trigger, PMT4_18kV_no_trigger, PMT4_14kV_no_trigger, PMT4_10kV_no_trigger};
 	//std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger, SiPM_18kV_no_trigger, SiPM_14kV_no_trigger, SiPM_10kV_no_trigger};
+	//std::vector<pulse_shape> pulses = {PMT4_20kV_no_trigger};
+	std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger};
 #endif //FAST_FIGURES_MODE
 
 	std::vector<Color_t> palette_major = {kBlack, kRed, kBlue, kGreen, kYellow + 2, kMagenta, kOrange + 7};

@@ -1,5 +1,6 @@
 {
  name_scheme_version = name_scheme_v2;
+ threads_number = 10;
  int aggressive_PMT_cuts = 0; //0 - no cuts at all, only PMT15 (original analysis of 08.2019). 1 - very low A-S exclusion, also exclude high A low S. Calibration as well as Npe and signal forms must be plotted from scratch for every agrressiveness level.
   //From global parameters:
   if (name_scheme_version == name_scheme_v1) {
