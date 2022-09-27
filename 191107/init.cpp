@@ -1,4 +1,8 @@
 {
+  gStyle->SetCanvasDefH(800);
+	gStyle->SetCanvasDefW(1000);
+  gErrorIgnoreLevel = 1001; //To shut up minuit output during failed(?) fitting
+  threads_number = 10;
   name_scheme_version = name_scheme_v2;
   trigger_version = TriggerVersion::trigger_v2;
   //From global parameters:
@@ -24,14 +28,14 @@
 
   exp_area.experiments.clear();
   exp_area.experiments.push_back("191107_U_20kV_850V_46V_12dB");
-  exp_area.experiments.push_back("191107_U_18kV_850V_46V_12dB");
+  /*exp_area.experiments.push_back("191107_U_18kV_850V_46V_12dB");
   exp_area.experiments.push_back("191107_U_16kV_850V_46V_12dB");
   exp_area.experiments.push_back("191107_U_14kV_850V_46V_12dB");
   exp_area.experiments.push_back("191107_U_12kV_850V_46V_12dB");
   exp_area.experiments.push_back("191107_U_10kV_850V_46V_12dB");
   exp_area.experiments.push_back("191107_U_8kV_850V_46V_12dB");
-  exp_area.experiments.push_back("191107_U_6kV_850V_46V_12dB");
-  
+  exp_area.experiments.push_back("191107_U_6kV_850V_46V_12dB");*/
+
   PMT_V.clear();
   MPPC_V.clear();
   channel_info<dB_info> atten0;
@@ -67,7 +71,7 @@
   experiment_runs["191107_U_8kV_850V_46V_12dB"] = 248;
   experiment_runs["191107_U_6kV_850V_46V_12dB"] = 1;
 
-   
+
   if (areas_to_draw.empty())
 	areas_to_draw.push_back(experiment_area());
   areas_to_draw.back().channels.erase();

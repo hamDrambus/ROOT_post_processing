@@ -4,8 +4,8 @@ if (false) {
 	int channel = 59;
 	bool display = true;
 	int aggressiveness = 2;
-	cut_A_S_lower(0.0067, 0.00118, 0.02, 0.00118, display, channel, "small_A-S_noise");
-	x_y_regions = {0.0067, 0.0067, 0.00066, 0.05, 0.0090, 1e3};
+	cut_A_S_lower(0.0067, 0.00111, 0.02, 0.00111, display, channel, "small_A-S_noise");
+	x_y_regions = {0.0067, 0.0067, 0.00057, 0.05, 0.0090, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
 	cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
@@ -18,6 +18,6 @@ if (true) {
 		analysis_history(0);
 		nex();
 	}
-	save_SiPM_Npe_table(data_output_path + "SiPM_Npes.txt");
+	save_SiPM_Npe_table(data_output_path + "SiPM_Npes_Q0.04.txt");
 }
 }

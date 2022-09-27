@@ -507,7 +507,7 @@ struct pulse_shape {
 void draw_slow_component(TF1* fit_f, pulse_shape& shape)
 {
 	fit_f->SetNpx(800);
-	fit_f->Draw("same");
+	//fit_f->Draw("same");
 }
 
 
@@ -543,13 +543,38 @@ int compare_forms2 (void) {
 
 	pulse_shape* define = NULL, *copy = NULL;
 
-  pulse_shape Q_20_0kV_no_trigger;
-  define = &Q_20_0kV_no_trigger;
+  pulse_shape Q_20_0kV_restored;
+  define = &Q_20_0kV_restored;
 define->folder = std::string("211007/results_v5/restored_Q/");
 define->fnames.push_back("211007_Pu_20.0kV_800V_46V_12dB_2650V");
 define->file_type = ShapeFileType::RawNoError;
 define->Td = "8.5";
-define->device = "Charge, 2650V";
+define->device = "Charge, 2650V, restored";
+define->fast_t_center = 30.9;
+define->fast_t = PAIR(29.7, 2*30.94 - 29.70);
+define->S1_t_center = 0;
+define->S1_t = PAIR(0, 0);
+define->scale = 1;
+define->subtract_baseline = subtract_baseline;
+define->renormalize = true;
+define->slow_fit_t = PAIR(2*30.94 - 29.70, 100);
+define->long_fit_t = PAIR(0, 0);
+define->baseline_bound = PAIR(-0.3, 0.3);
+define->slow_ampl_bound = PAIR(1e-1, 2.9e-1);
+define->slow_tau_bound = PAIR(2.0, 10);
+define->long_ampl_bound = PAIR(2e-4, 2e-3);
+define->long_tau_bound = PAIR(15, 200);
+define->simultaneous_fit = true;
+define->do_fit = do_fit;
+define->fit_option = "NRWE";
+
+  pulse_shape Q_20_0kV_raw;
+  define = &Q_20_0kV_raw;
+define->folder = std::string("../Data/211007/results_v2/211007_Pu_20.0kV_800V_46V_12dB_2650V/Charge_10/");
+define->fnames.push_back("Charge211007_Pu_20.0kV_800V_46V_12dB_2650V_ch_10_AVR_0");
+define->file_type = ShapeFileType::RawNoError;
+define->Td = "8.5";
+define->device = "Charge, 2650V, raw";
 define->fast_t_center = 30.9;
 define->fast_t = PAIR(29.7, 2*30.94 - 29.70);
 define->S1_t_center = 0;
@@ -780,8 +805,8 @@ define->fit_option = "NRWE";
 
 	//std::vector<pulse_shape> pulses = {SiPM_11_0kV_no_trigger};
 	//For paper and reports:
-  //std::vector<pulse_shape> pulses = {Q_20_0kV_no_trigger, Q_17_0kV_no_trigger};
-  std::vector<pulse_shape> pulses = {Q_20_0kV_no_trigger};
+  //std::vector<pulse_shape> pulses = {Q_20_0kV_restored, Q_20_0kV_raw};
+  std::vector<pulse_shape> pulses = {Q_20_0kV_raw};
 
 	std::vector<Color_t> palette_major = {kBlack, kRed, kBlue, kGreen, kYellow + 2, kMagenta, kOrange + 7};
 	std::vector<Color_t> palette_minor = {kGray + 1, kRed-3, kAzure + 6, kGreen -2, kMagenta+3, kOrange - 7, kOrange + 6};
@@ -867,14 +892,14 @@ define->fit_option = "NRWE";
 	//legend->SetHeader("");
 	legend->SetMargin(0.25);
 	TH2F* frame = new TH2F("frame", framename.c_str(), 500, time_left, time_right, 500, linear ? -0.3 : y_min, max_val);
-	frame->GetXaxis()->SetTitle("Time [#mus]");
+	frame->GetXaxis()->SetTitle("Time (#mus)");
 	//=====================================
 	if (!linear)
 		frame->GetXaxis()->SetRangeUser(0, 160);
 	else
 		frame->GetXaxis()->SetRangeUser(20, 80);
 	//=====================================
-	frame->GetYaxis()->SetTitle("Amplitude [V]");
+	frame->GetYaxis()->SetTitle("Amplitude (V)");
 	frame->Draw();
 
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {
@@ -1228,7 +1253,7 @@ define->fit_option = "NRWE";
 			std::vector<std::string> Slow_title = {"Slow component", "contribution:"};
 			std::vector<std::string> Long_title;// = {"Long"};
 			add_text(40, 0.15, no_title, tau1, palette_major);
-			add_text(52, 0.15, Slow_title, frsS, palette_major);
+			add_text(70, 0.15, Slow_title, frsS, palette_major);
 			//add_text(52, 0.08, Long_title, frsL, palette_text);
 			//add_text(58, 0.08, no_title, tau2, palette_text);
 		}

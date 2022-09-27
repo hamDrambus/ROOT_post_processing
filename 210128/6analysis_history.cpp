@@ -677,24 +677,30 @@ set_corr(AStates::MPPC_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1");
 
+int OptStat = gStyle->GetOptStat();
 set_corr(AStates::PMT_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
+	gStyle->SetOptStat("");
 	set_zoom(0, 600, 0, 600);
 	set_bins(600);
-	set_titles("N_{pe} PMTs", "N_{pe} SiPM-matrix");
+	set_titles("N_{PE} PMTs", "N_{PE} SiPM-matrix");
 	saveaspng(FOLDER + Num + "_slowPMTs_vs_SiPMs_Npe_"+cuts_str(cuts));
-	//set_log_z();
-	//saveaspng(FOLDER + Num + "_slowPMTs_vs_SiPMs_Npe_"+cuts_str(cuts)+"_log");
-	//unset_log_z();
+	set_log_z();
+	saveaspng(FOLDER + Num + "_slowPMTs_vs_SiPMs_Npe_"+cuts_str(cuts)+"_log");
+	unset_log_z();
 	Num = int_to_str(++no, 2);
+	gStyle->SetOptStat(OptStat);
 
 std::string form_n = "forms_Alpha_left/";
 ty(AStates::MPPC_Npe_sum);
+	gStyle->SetOptStat("");
+	set_titles("N_{PE} SiPM-matrix", "Counts");
 	time_zoom_SiPMs(d_S2_start, 160);
 	draw_limits(341, 410);
 	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
 	set_as_run_cut("En_spec"); cuts.push_back(Num);
 	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
 	Num = int_to_str(++no, 2);
+	gStyle->SetOptStat(OptStat);
 
 	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
 	unset_as_run_cut("En_spec");
@@ -702,11 +708,13 @@ ty(AStates::MPPC_Npe_sum);
 
 form_n = "forms_Alpha_peak/";
 ty(AStates::MPPC_Npe_sum);
+	gStyle->SetOptStat("");
 	draw_limits(341, 479);
 	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
 	set_as_run_cut("En_spec"); cuts.push_back(Num);
 	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
 	Num = int_to_str(++no, 2);
+	gStyle->SetOptStat(OptStat);
 
 	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
 

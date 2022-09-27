@@ -190,7 +190,7 @@ void save_forms (std::string path, bool N_only, int PMT_condition, int SiPM_cond
 	}
 }
 
-//Even it is hard to read the whole analysis because of it, it is better to move all A-S cuts for PMT in one
+//Even if it is hard to read the whole analysis because of it, it is better to move all A-S cuts for PMT in one
 //place. These cuts are used multiple times: during calibration - for A-S histogram and for Ss, the parameters are
 //selected at that stage at 20kV; during Npe plots (for Cd peak selection, which is required during signal forms) and during
 //plotting PMT signal forms themselves. Without this function changing cut parameters would have to take place in several places

@@ -76,6 +76,14 @@ void cut_PMT_noise(int device_condition)
 	noise_cut(8, 0, device_condition, 0);
 }
 
+void cut_SiPM_noise(int device_condition)
+{
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, 0, device_condition, 0);
+	}
+}
+
 void save_forms (std::string path, bool N_only, int PMT_condition, int SiPM_condition)
 {
 	double zoom_l = 0, zoom_r = 160;
@@ -278,22 +286,22 @@ void noise_cut(int channel, int aggressiveness, int device_condition, bool displ
 	if (0 == device_condition) {
 		if (channel==1) {
 			//cut_A_S_upper(0.005, 0.0, 0.0132, 0.0, display, channel, "rem_smallA_largeS_1");
-			cut_A_S_lower(0.010, 0.0004, 0.030, 0.0021, display, channel, "rem_smallA_smallS");
-			cut_A_S_lower(0.030, 0.0021, 1.1, 0.18, display, channel, "rem_largeA_smallS");
+			cut_A_S_lower(0.010, 0.0011, 0.030, 0.0026, display, channel, "rem_smallA_smallS");
+			cut_A_S_lower(0.030, 0.0026, 1.1, 0.18, display, channel, "rem_largeA_smallS");
 		}
 		if (channel==2) {
-			//cut_A_S_upper(0.005, 0.0, 0.023, 0.0, display, channel, "rem_smallA_largeS_1");
-			cut_A_S_lower(0.022, 0.0, 1.6, 0.15, display, channel, "rem_smallA_smallS");
+			cut_A_S_lower(0.005, 0.0009, 0.02, 0.0010, display, channel, "rem_smallA_smallS");
+			cut_A_S_lower(0.02, 0.0010, 1.6, 0.15, display, channel, "rem_smallA_largeS");
 		}
 		if (channel==3) {
-			cut_A_S_upper(0.005, 0.0, 0.0112, 0.0, display, channel, "rem_smallA_largeS");
+			//cut_A_S_upper(0.005, 0.0, 0.0112, 0.0, display, channel, "rem_smallA_largeS");
 			cut_A_S_lower(0.01, 0.0003, 0.025, 0.0014, display, channel, "rem_smallA_smallS");
 			cut_A_S_lower(0.025, 0.0014, 1.2, 0.18, display, channel, "rem_largeA_smallS");
 		}
 		if (channel==4) {
 			//cut_A_S_upper(0.01, 0.0, 0.0180, 0.0, display, channel, "rem_smallA_largeS_1");
-			cut_A_S_lower(0.01, 0.00051, 0.035, 0.0012, display, channel, "rem_smallA_smallS");
-			cut_A_S_lower(0.035, 0.0012, 1.6, 0.15, display, channel, "rem_largeA_smallS");
+			cut_A_S_lower(0.01, 0.0018, 0.035, 0.0025, display, channel, "rem_smallA_smallS");
+			cut_A_S_lower(0.035, 0.0025, 1.6, 0.15, display, channel, "rem_largeA_smallS");
 		}
 		if (channel==5) {
 			if (aggressiveness == 1) {
@@ -324,13 +332,13 @@ void noise_cut(int channel, int aggressiveness, int device_condition, bool displ
 	//The following are set by hand for 20kV individually, there is no other way.
 	if (channel==32) {
 		cut_A_S_lower(0.0062, 0.00106, 0.02, 0.00106, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0062, 0.0062, 0.00077, 0.05, 0.0092, 1e3};
+		x_y_regions = {0.0062, 0.0062, 0.00061, 0.05, 0.0090, 1e3};
 		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
 		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
 		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0153, 0.0001, 1, 0.0001, display, channel, "2pe");
+			cut_A_S_upper(0.0156, 0.0001, 1, 0.0001, display, channel, "2pe");
 		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0062, 0.00163, 0.0153, 0.00353, display, channel, "2pe_merged");
+			cut_A_S_upper(0.0062, 0.00163, 0.0156, 0.00353, display, channel, "2pe_merged");
 	}
 	if (channel==33) {
 		cut_A_S_lower(0.0056, 0.00101, 0.02, 0.00101, display, channel, "small_A-S_noise");
@@ -344,13 +352,13 @@ void noise_cut(int channel, int aggressiveness, int device_condition, bool displ
 	}
 	if (channel==34) {
 		cut_A_S_lower(0.0074, 0.00128, 0.02, 0.00128, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0074, 0.0074, 0.00101, 0.05, 0.0092, 1e3};
+		x_y_regions = {0.0074, 0.0074, 0.00084, 0.05, 0.0090, 1e3};
 		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
 		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
 		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0173, 0.0001, 1, 0.0001, display, channel, "2pe");
+			cut_A_S_upper(0.0168, 0.0001, 1, 0.0001, display, channel, "2pe");
 		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0074, 0.00171, 0.0173, 0.00376, display, channel, "2pe_merged");
+			cut_A_S_upper(0.0074, 0.00179, 0.0168, 0.00366, display, channel, "2pe_merged");
 	}
 	if (channel==35) {
 		cut_A_S_lower(0.0069, 0.00115, 0.02, 0.00115, display, channel, "small_A-S_noise");
@@ -364,13 +372,13 @@ void noise_cut(int channel, int aggressiveness, int device_condition, bool displ
 	}
 	if (channel==36) {
 		cut_A_S_lower(0.0074, 0.00132, 0.02, 0.00132, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0074, 0.0074, 0.00100, 0.05, 0.0094, 1e3};
+		x_y_regions = {0.0074, 0.0074, 0.00084, 0.05, 0.0092, 1e3};
 		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
 		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
 		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0173, 0.0001, 1, 0.0001, display, channel, "2pe");
+			cut_A_S_upper(0.0167, 0.0001, 1, 0.0001, display, channel, "2pe");
 		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0074, 0.00191, 0.0173, 0.00387, display, channel, "2pe_merged");
+			cut_A_S_upper(0.0074, 0.00191, 0.0167, 0.00387, display, channel, "2pe_merged");
 	}
 	if (channel==37) {
 		cut_A_S_lower(0.0059, 0.00102, 0.02, 0.00102, display, channel, "small_A-S_noise");
@@ -383,28 +391,28 @@ void noise_cut(int channel, int aggressiveness, int device_condition, bool displ
 			cut_A_S_upper(0.0059, 0.00162, 0.0141, 0.00311, display, channel, "2pe_merged");
 	}
 	if (channel==38) {
-		cut_A_S_lower(0.0079, 0.00136, 0.02, 0.00136, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0079, 0.0079, 0.00086, 0.05, 0.0095, 1e3};
+		cut_A_S_lower(0.0074, 0.00113, 0.02, 0.00113, display, channel, "small_A-S_noise");
+		x_y_regions = {0.0074, 0.0074, 0.00052, 0.05, 0.0091, 1e3};
 		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
 		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
 		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0183, 0.0001, 1, 0.0001, display, channel, "2pe");
+			cut_A_S_upper(0.0182, 0.0001, 1, 0.0001, display, channel, "2pe");
 		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0079, 0.00214, 0.0183, 0.00407, display, channel, "2pe_merged");
+			cut_A_S_upper(0.0074, 0.00199, 0.0182, 0.00410, display, channel, "2pe_merged");
 	}
 	if (channel==39) {
 		cut_A_S_lower(0.0066, 0.00107, 0.02, 0.00107, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0066, 0.0066, 0.00068, 0.05, 0.0094, 1e3};
+		x_y_regions = {0.0066, 0.0066, 0.00060, 0.05, 0.0091, 1e3};
 		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
 		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
 		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0163, 0.0001, 1, 0.0001, display, channel, "2pe");
+			cut_A_S_upper(0.0159, 0.0001, 1, 0.0001, display, channel, "2pe");
 		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0066, 0.00191, 0.0163, 0.00370, display, channel, "2pe_merged");
+			cut_A_S_upper(0.0066, 0.00191, 0.0159, 0.00361, display, channel, "2pe_merged");
 	}
 	if (channel==40) {
 		cut_A_S_lower(0.0066, 0.00107, 0.02, 0.00107, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0066, 0.0066, 0.00068, 0.05, 0.0090, 1e3};
+		x_y_regions = {0.0066, 0.0066, 0.00052, 0.05, 0.0089, 1e3};
 		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
 		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
 		if (aggressiveness>=1)//select only 1 photoelectron for calibration
@@ -413,8 +421,8 @@ void noise_cut(int channel, int aggressiveness, int device_condition, bool displ
 			cut_A_S_upper(0.0066, 0.00191, 0.0165, 0.00377, display, channel, "2pe_merged");
 	}
 	if (channel==41) {
-		cut_A_S_lower(0.0064, 0.00103, 0.02, 0.00103, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0064, 0.0064, 0.00060, 0.05, 0.0090, 1e3};
+		cut_A_S_lower(0.0064, 0.00089, 0.02, 0.00089, display, channel, "small_A-S_noise");
+		x_y_regions = {0.0064, 0.0064, 0.00055, 0.05, 0.0089, 1e3};
 		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
 		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
 		if (aggressiveness>=1)//select only 1 photoelectron for calibration
@@ -443,14 +451,14 @@ void noise_cut(int channel, int aggressiveness, int device_condition, bool displ
 			cut_A_S_upper(0.0064, 0.00191, 0.0167, 0.00388, display, channel, "2pe_merged");
 	}
 	if (channel==44) {
-		cut_A_S_lower(0.0064, 0.00107, 0.02, 0.00107, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0064, 0.0064, 0.00084, 0.05, 0.0087, 1e3};
+		cut_A_S_lower(0.0055, 0.00102, 0.02, 0.00102, display, channel, "small_A-S_noise");
+		x_y_regions = {0.0055, 0.0055, 0.00058, 0.05, 0.0083, 1e3};
 		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
 		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
 		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0142, 0.0001, 1, 0.0001, display, channel, "2pe");
+			cut_A_S_upper(0.0140, 0.0001, 1, 0.0001, display, channel, "2pe");
 		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0064, 0.00178, 0.0142, 0.00317, display, channel, "2pe_merged");
+			cut_A_S_upper(0.0055, 0.00165, 0.0140, 0.00303, display, channel, "2pe_merged");
 		//if (post_processor->isMultichannel(post_processor->current_type)) {
 		//	off_ch(channel);
 		//}
@@ -506,14 +514,14 @@ void noise_cut(int channel, int aggressiveness, int device_condition, bool displ
 			cut_A_S_upper(0.0071, 0.00186, 0.0170, 0.00384, display, channel, "2pe_merged");
 	}
 	if (channel==53) {
-		cut_A_S_lower(0.0083, 0.00131, 0.02, 0.00131, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0083, 0.0083, 0.00100, 0.05, 0.0090, 1e3};
+		cut_A_S_lower(0.0079, 0.00123, 0.02, 0.00123, display, channel, "small_A-S_noise");
+		x_y_regions = {0.0079, 0.0079, 0.00082, 0.05, 0.0090, 1e3};
 		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
 		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
 		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0186, 0.0001, 1, 0.0001, display, channel, "2pe");
+			cut_A_S_upper(0.0184, 0.0001, 1, 0.0001, display, channel, "2pe");
 		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0083, 0.00210, 0.0186, 0.00415, display, channel, "2pe_merged");
+			cut_A_S_upper(0.0079, 0.00208, 0.0184, 0.00416, display, channel, "2pe_merged");
 	}
 	if (channel==54) {
 		cut_A_S_lower(0.0061, 0.00108, 0.02, 0.00108, display, channel, "small_A-S_noise");
@@ -536,14 +544,14 @@ void noise_cut(int channel, int aggressiveness, int device_condition, bool displ
 			cut_A_S_upper(0.0061, 0.00164, 0.0151, 0.00335, display, channel, "2pe_merged");
 	}
 	if (channel==56) {
-		cut_A_S_lower(0.0066, 0.00115, 0.02, 0.00115, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0066, 0.0066, 0.00066, 0.05, 0.0090, 1e3};
+		cut_A_S_lower(0.0065, 0.00095, 0.02, 0.00095, display, channel, "small_A-S_noise");
+		x_y_regions = {0.0065, 0.0065, 0.00047, 0.05, 0.0088, 1e3};
 		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
 		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
 		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0165, 0.0001, 1, 0.0001, display, channel, "2pe");
+			cut_A_S_upper(0.0159, 0.0001, 1, 0.0001, display, channel, "2pe");
 		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0066, 0.00186, 0.0165, 0.00369, display, channel, "2pe_merged");
+			cut_A_S_upper(0.0065, 0.00181, 0.0159, 0.00359, display, channel, "2pe_merged");
 	}
 	if (channel==57) {
 		cut_A_S_lower(0.0069, 0.00120, 0.02, 0.00120, display, channel, "small_A-S_noise");
@@ -556,18 +564,18 @@ void noise_cut(int channel, int aggressiveness, int device_condition, bool displ
 			cut_A_S_upper(0.0069, 0.00183, 0.0167, 0.00363, display, channel, "2pe_merged");
 	}
 	if (channel==58) {
-		cut_A_S_lower(0.0067, 0.00115, 0.02, 0.00115, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0067, 0.0067, 0.00066, 0.05, 0.0090, 1e3};
+		cut_A_S_lower(0.0066, 0.00099, 0.02, 0.00099, display, channel, "small_A-S_noise");
+		x_y_regions = {0.0066, 0.0066, 0.00058, 0.05, 0.0090, 1e3};
 		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
 		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
 		if (aggressiveness>=1)//select only 1 photoelectron for calibration
 			cut_A_S_upper(0.0160, 0.0001, 1, 0.0001, display, channel, "2pe");
 		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0067, 0.00180, 0.0160, 0.00353, display, channel, "2pe_merged");
+			cut_A_S_upper(0.0066, 0.00180, 0.0160, 0.00352, display, channel, "2pe_merged");
 	}
 	if (channel==59) {
-		cut_A_S_lower(0.0067, 0.00118, 0.02, 0.00118, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0067, 0.0067, 0.00066, 0.05, 0.0090, 1e3};
+		cut_A_S_lower(0.0067, 0.00111, 0.02, 0.00111, display, channel, "small_A-S_noise");
+		x_y_regions = {0.0067, 0.0067, 0.00057, 0.05, 0.0090, 1e3};
 		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
 		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
 		if (aggressiveness>=1)//select only 1 photoelectron for calibration
@@ -578,83 +586,123 @@ void noise_cut(int channel, int aggressiveness, int device_condition, bool displ
 }
 
 void analysis_history(bool calibrate, unsigned int method = 0) {
-//Created on 2022.02.07
+//Created on 2022.08.12
 //S1 + S2 in LAr in THGEM1
 //Standard pulsed X-ray analysis, no event selection
 //Not using trigger adjustement or trigger-related cuts.
 //Output is signal pulse-shapes and Npe for S2
-data_output_path = "220203/results_v5/";
-calibration_file = "220203/results_v5/220203_calibration.dat";
+data_output_path = "220804/results_v5/";
+calibration_file = "220804/results_v5/220804_calibration.dat";
 post_processor->calibr_info.Load(calibration_file);
 trigger_version = TriggerVersion::trigger_v2; //not used
 
 std::map<std::string, std::pair<double, double> > S2_times;
-S2_times["220203_X-ray_20kV_850V_46V_12dB_6180V"] = std::pair<double, double> (44, 78);
-S2_times["220203_X-ray_20kV_850V_46V_12dB_5993V"] = std::pair<double, double> (44, 78);
-S2_times["220203_X-ray_20kV_850V_46V_12dB_5738V"] = std::pair<double, double> (44, 78);
-S2_times["220203_X-ray_20kV_850V_46V_12dB_5297V"] = std::pair<double, double> (44, 78);
-S2_times["220203_X-ray_20kV_850V_46V_12dB_4856V"] = std::pair<double, double> (44, 78);
-S2_times["220203_X-ray_20kV_850V_46V_12dB_4413V"] = std::pair<double, double> (44, 78);
-S2_times["220203_X-ray_20kV_850V_46V_12dB_3972V"] = std::pair<double, double> (44, 78);
-S2_times["220203_X-ray_20kV_850V_46V_12dB_3531V"] = std::pair<double, double> (44, 78);
-S2_times["220203_X-ray_20kV_850V_46V_12dB_3090V"] = std::pair<double, double> (44, 78);
-S2_times["220203_X-ray_20kV_850V_46V_12dB_2648V"] = std::pair<double, double> (44, 78);
-S2_times["220203_X-ray_20kV_850V_46V_12dB_2206V"] = std::pair<double, double> (44, 78);
-S2_times["220203_X-ray_20kV_850V_46V_12dB_1765V"] = std::pair<double, double> (44, 78);
-S2_times["220203_X-ray_20kV_850V_46V_12dB_0V_6180V"] = std::pair<double, double> (44, 78);
-S2_times["220203_X-ray_20kV_850V_46V_12dB_0V_5736V"] = std::pair<double, double> (44, 78);
-S2_times["220203_X-ray_20kV_850V_46V_12dB_0V"] = std::pair<double, double> (44, 78);
+S2_times["220804_X-ray_Q1.00_20kV_850V_46V_12dB_6169V"] = std::pair<double, double> (44, 78);
+S2_times["220804_X-ray_Q1.00_20kV_850V_46V_12dB_5728V"] = std::pair<double, double> (44, 78);
+S2_times["220804_X-ray_Q1.00_20kV_850V_46V_12dB_5288V"] = std::pair<double, double> (44, 78);
+S2_times["220804_X-ray_Q1.00_20kV_850V_46V_12dB_4847V"] = std::pair<double, double> (44, 78);
+S2_times["220804_X-ray_Q1.00_20kV_850V_46V_12dB_3966V"] = std::pair<double, double> (44, 78);
+S2_times["220804_X-ray_Q1.00_20kV_850V_46V_12dB_3525V"] = std::pair<double, double> (44, 78);
+S2_times["220804_X-ray_Q1.00_20kV_850V_46V_12dB_2644V"] = std::pair<double, double> (44, 78);
+S2_times["220804_X-ray_Q1.00_20kV_850V_46V_12dB_1762V"] = std::pair<double, double> (44, 78);
+S2_times["220804_X-ray_Q1.00_20kV_850V_46V_12dB_0V"] = std::pair<double, double> (44, 78);
+
+S2_times["220804_X-ray_Q0.20_20kV_850V_46V_12dB_6169V"] = std::pair<double, double> (44, 78);
+S2_times["220804_X-ray_Q0.20_20kV_850V_46V_12dB_5728V"] = std::pair<double, double> (44, 78);
+S2_times["220804_X-ray_Q0.20_20kV_850V_46V_12dB_5288V"] = std::pair<double, double> (44, 78);
+S2_times["220804_X-ray_Q0.20_20kV_850V_46V_12dB_4847V"] = std::pair<double, double> (44, 78);
+S2_times["220804_X-ray_Q0.20_20kV_850V_46V_12dB_3966V"] = std::pair<double, double> (44, 78);
+S2_times["220804_X-ray_Q0.20_20kV_850V_46V_12dB_3525V"] = std::pair<double, double> (44, 78);
+S2_times["220804_X-ray_Q0.20_20kV_850V_46V_12dB_2644V"] = std::pair<double, double> (44, 78);
+S2_times["220804_X-ray_Q0.20_20kV_850V_46V_12dB_1762V"] = std::pair<double, double> (44, 78);
+S2_times["220804_X-ray_Q0.20_20kV_850V_46V_12dB_0V"] = std::pair<double, double> (44, 78);
+
+S2_times["220804_X-ray_Q0.04_20kV_850V_46V_12dB_6169V"] = std::pair<double, double> (44, 78);
+S2_times["220804_X-ray_Q0.04_20kV_850V_46V_12dB_5288V"] = std::pair<double, double> (44, 78);
+S2_times["220804_X-ray_Q0.04_20kV_850V_46V_12dB_3966V"] = std::pair<double, double> (44, 78);
+S2_times["220804_X-ray_Q0.04_20kV_850V_46V_12dB_2644V"] = std::pair<double, double> (44, 78);
+S2_times["220804_X-ray_Q0.04_20kV_850V_46V_12dB_0V"] = std::pair<double, double> (44, 78);
 
 std::map<std::string, std::pair<double, double> > S1_times;
-S1_times["220203_X-ray_20kV_850V_46V_12dB_6180V"] = std::pair<double, double> (31.5, 44);
-S1_times["220203_X-ray_20kV_850V_46V_12dB_5993V"] = std::pair<double, double> (31.5, 44);
-S1_times["220203_X-ray_20kV_850V_46V_12dB_5738V"] = std::pair<double, double> (31.5, 44);
-S1_times["220203_X-ray_20kV_850V_46V_12dB_5297V"] = std::pair<double, double> (31.5, 44);
-S1_times["220203_X-ray_20kV_850V_46V_12dB_4856V"] = std::pair<double, double> (31.5, 44);
-S1_times["220203_X-ray_20kV_850V_46V_12dB_4413V"] = std::pair<double, double> (31.5, 44);
-S1_times["220203_X-ray_20kV_850V_46V_12dB_3972V"] = std::pair<double, double> (31.5, 44);
-S1_times["220203_X-ray_20kV_850V_46V_12dB_3531V"] = std::pair<double, double> (31.5, 44);
-S1_times["220203_X-ray_20kV_850V_46V_12dB_3090V"] = std::pair<double, double> (31.5, 44);
-S1_times["220203_X-ray_20kV_850V_46V_12dB_2648V"] = std::pair<double, double> (31.5, 44);
-S1_times["220203_X-ray_20kV_850V_46V_12dB_2206V"] = std::pair<double, double> (31.5, 44);
-S1_times["220203_X-ray_20kV_850V_46V_12dB_1765V"] = std::pair<double, double> (31.5, 44);
-S1_times["220203_X-ray_20kV_850V_46V_12dB_0V_6180V"] = std::pair<double, double> (31.5, 44);
-S1_times["220203_X-ray_20kV_850V_46V_12dB_0V_5736V"] = std::pair<double, double> (31.5, 44);
-S1_times["220203_X-ray_20kV_850V_46V_12dB_0V"] = std::pair<double, double> (31.5, 44);
+S1_times["220804_X-ray_Q1.00_20kV_850V_46V_12dB_6169V"] = std::pair<double, double> (31.3, 44);
+S1_times["220804_X-ray_Q1.00_20kV_850V_46V_12dB_5728V"] = std::pair<double, double> (31.3, 44);
+S1_times["220804_X-ray_Q1.00_20kV_850V_46V_12dB_5288V"] = std::pair<double, double> (31.3, 44);
+S1_times["220804_X-ray_Q1.00_20kV_850V_46V_12dB_4847V"] = std::pair<double, double> (31.3, 44);
+S1_times["220804_X-ray_Q1.00_20kV_850V_46V_12dB_3966V"] = std::pair<double, double> (31.3, 44);
+S1_times["220804_X-ray_Q1.00_20kV_850V_46V_12dB_3525V"] = std::pair<double, double> (31.3, 44);
+S1_times["220804_X-ray_Q1.00_20kV_850V_46V_12dB_2644V"] = std::pair<double, double> (31.3, 44);
+S1_times["220804_X-ray_Q1.00_20kV_850V_46V_12dB_1762V"] = std::pair<double, double> (31.3, 44);
+S1_times["220804_X-ray_Q1.00_20kV_850V_46V_12dB_0V"] = std::pair<double, double> (31.3, 44);
+
+S1_times["220804_X-ray_Q0.20_20kV_850V_46V_12dB_6169V"] = std::pair<double, double> (31.3, 44);
+S1_times["220804_X-ray_Q0.20_20kV_850V_46V_12dB_5728V"] = std::pair<double, double> (31.3, 44);
+S1_times["220804_X-ray_Q0.20_20kV_850V_46V_12dB_5288V"] = std::pair<double, double> (31.3, 44);
+S1_times["220804_X-ray_Q0.20_20kV_850V_46V_12dB_4847V"] = std::pair<double, double> (31.3, 44);
+S1_times["220804_X-ray_Q0.20_20kV_850V_46V_12dB_3966V"] = std::pair<double, double> (31.3, 44);
+S1_times["220804_X-ray_Q0.20_20kV_850V_46V_12dB_3525V"] = std::pair<double, double> (31.3, 44);
+S1_times["220804_X-ray_Q0.20_20kV_850V_46V_12dB_2644V"] = std::pair<double, double> (31.3, 44);
+S1_times["220804_X-ray_Q0.20_20kV_850V_46V_12dB_1762V"] = std::pair<double, double> (31.3, 44);
+S1_times["220804_X-ray_Q0.20_20kV_850V_46V_12dB_0V"] = std::pair<double, double> (31.3, 44);
+
+S1_times["220804_X-ray_Q0.04_20kV_850V_46V_12dB_6169V"] = std::pair<double, double> (31.3, 44);
+S1_times["220804_X-ray_Q0.04_20kV_850V_46V_12dB_5288V"] = std::pair<double, double> (31.3, 44);
+S1_times["220804_X-ray_Q0.04_20kV_850V_46V_12dB_3966V"] = std::pair<double, double> (31.3, 44);
+S1_times["220804_X-ray_Q0.04_20kV_850V_46V_12dB_2644V"] = std::pair<double, double> (31.3, 44);
+S1_times["220804_X-ray_Q0.04_20kV_850V_46V_12dB_0V"] = std::pair<double, double> (31.3, 44);
 
 std::map<std::string, std::string> exp_folders;
-exp_folders["220203_X-ray_20kV_850V_46V_12dB_6180V"] = "X-ray_46_20kV_850V_6180V";
-exp_folders["220203_X-ray_20kV_850V_46V_12dB_5993V"] = "X-ray_46_20kV_850V_5993V";
-exp_folders["220203_X-ray_20kV_850V_46V_12dB_5738V"] = "X-ray_46_20kV_850V_5738V";
-exp_folders["220203_X-ray_20kV_850V_46V_12dB_5297V"] = "X-ray_46_20kV_850V_5297V";
-exp_folders["220203_X-ray_20kV_850V_46V_12dB_4856V"] = "X-ray_46_20kV_850V_4856V";
-exp_folders["220203_X-ray_20kV_850V_46V_12dB_4413V"] = "X-ray_46_20kV_850V_4413V";
-exp_folders["220203_X-ray_20kV_850V_46V_12dB_3972V"] = "X-ray_46_20kV_850V_3972V";
-exp_folders["220203_X-ray_20kV_850V_46V_12dB_3531V"] = "X-ray_46_20kV_850V_3531V";
-exp_folders["220203_X-ray_20kV_850V_46V_12dB_3090V"] = "X-ray_46_20kV_850V_3090V";
-exp_folders["220203_X-ray_20kV_850V_46V_12dB_2648V"] = "X-ray_46_20kV_850V_2648V";
-exp_folders["220203_X-ray_20kV_850V_46V_12dB_2206V"] = "X-ray_46_20kV_850V_2206V";
-exp_folders["220203_X-ray_20kV_850V_46V_12dB_1765V"] = "X-ray_46_20kV_850V_1765V";
-exp_folders["220203_X-ray_20kV_850V_46V_12dB_0V_6180V"] = "X-ray_46_20kV_850V_0V_6180V";
-exp_folders["220203_X-ray_20kV_850V_46V_12dB_0V_5736V"] = "X-ray_46_20kV_850V_0V_5736V";
-exp_folders["220203_X-ray_20kV_850V_46V_12dB_0V"] = "X-ray_46_20kV_850V_0V";
+exp_folders["220804_X-ray_Q1.00_20kV_850V_46V_12dB_6169V"] = "X-ray_Q1.00_20kV_46V_850V_6169V";
+exp_folders["220804_X-ray_Q1.00_20kV_850V_46V_12dB_5728V"] = "X-ray_Q1.00_20kV_46V_850V_5728V";
+exp_folders["220804_X-ray_Q1.00_20kV_850V_46V_12dB_5288V"] = "X-ray_Q1.00_20kV_46V_850V_5288V";
+exp_folders["220804_X-ray_Q1.00_20kV_850V_46V_12dB_4847V"] = "X-ray_Q1.00_20kV_46V_850V_4847V";
+exp_folders["220804_X-ray_Q1.00_20kV_850V_46V_12dB_3966V"] = "X-ray_Q1.00_20kV_46V_850V_3966V";
+exp_folders["220804_X-ray_Q1.00_20kV_850V_46V_12dB_3525V"] = "X-ray_Q1.00_20kV_46V_850V_3525V";
+exp_folders["220804_X-ray_Q1.00_20kV_850V_46V_12dB_2644V"] = "X-ray_Q1.00_20kV_46V_850V_2644V";
+exp_folders["220804_X-ray_Q1.00_20kV_850V_46V_12dB_1762V"] = "X-ray_Q1.00_20kV_46V_850V_1762V";
+exp_folders["220804_X-ray_Q1.00_20kV_850V_46V_12dB_0V"] = "X-ray_Q1.00_20kV_46V_850V_0000V";
+
+exp_folders["220804_X-ray_Q0.20_20kV_850V_46V_12dB_6169V"] = "X-ray_Q0.20_20kV_46V_850V_6169V";
+exp_folders["220804_X-ray_Q0.20_20kV_850V_46V_12dB_5728V"] = "X-ray_Q0.20_20kV_46V_850V_5728V";
+exp_folders["220804_X-ray_Q0.20_20kV_850V_46V_12dB_5288V"] = "X-ray_Q0.20_20kV_46V_850V_5288V";
+exp_folders["220804_X-ray_Q0.20_20kV_850V_46V_12dB_4847V"] = "X-ray_Q0.20_20kV_46V_850V_4847V";
+exp_folders["220804_X-ray_Q0.20_20kV_850V_46V_12dB_3966V"] = "X-ray_Q0.20_20kV_46V_850V_3966V";
+exp_folders["220804_X-ray_Q0.20_20kV_850V_46V_12dB_3525V"] = "X-ray_Q0.20_20kV_46V_850V_3525V";
+exp_folders["220804_X-ray_Q0.20_20kV_850V_46V_12dB_2644V"] = "X-ray_Q0.20_20kV_46V_850V_2644V";
+exp_folders["220804_X-ray_Q0.20_20kV_850V_46V_12dB_1762V"] = "X-ray_Q0.20_20kV_46V_850V_1762V";
+exp_folders["220804_X-ray_Q0.20_20kV_850V_46V_12dB_0V"] = "X-ray_Q0.20_20kV_46V_850V_0V";
+
+exp_folders["220804_X-ray_Q0.04_20kV_850V_46V_12dB_6169V"] = "X-ray_Q0.04_20kV_46V_850V_6169V";
+exp_folders["220804_X-ray_Q0.04_20kV_850V_46V_12dB_5288V"] = "X-ray_Q0.04_20kV_46V_850V_5288V";
+exp_folders["220804_X-ray_Q0.04_20kV_850V_46V_12dB_3966V"] = "X-ray_Q0.04_20kV_46V_850V_3966V";
+exp_folders["220804_X-ray_Q0.04_20kV_850V_46V_12dB_2644V"] = "X-ray_Q0.04_20kV_46V_850V_2644V";
+exp_folders["220804_X-ray_Q0.04_20kV_850V_46V_12dB_0V"] = "X-ray_Q0.04_20kV_46V_850V_0V";
 
 std::map<std::string, double> pre_trigger_max_S; //for calibration only
-pre_trigger_max_S["220203_X-ray_20kV_850V_46V_12dB_6180V"] = 0.06;
-pre_trigger_max_S["220203_X-ray_20kV_850V_46V_12dB_5993V"] = 0.06;
-pre_trigger_max_S["220203_X-ray_20kV_850V_46V_12dB_5738V"] = 0.06;
-pre_trigger_max_S["220203_X-ray_20kV_850V_46V_12dB_5297V"] = 0.06;
-pre_trigger_max_S["220203_X-ray_20kV_850V_46V_12dB_4856V"] = 0.06;
-pre_trigger_max_S["220203_X-ray_20kV_850V_46V_12dB_4413V"] = 0.06;
-pre_trigger_max_S["220203_X-ray_20kV_850V_46V_12dB_3972V"] = 0.06;
-pre_trigger_max_S["220203_X-ray_20kV_850V_46V_12dB_3531V"] = 0.06;
-pre_trigger_max_S["220203_X-ray_20kV_850V_46V_12dB_3090V"] = 0.06;
-pre_trigger_max_S["220203_X-ray_20kV_850V_46V_12dB_2648V"] = 0.06;
-pre_trigger_max_S["220203_X-ray_20kV_850V_46V_12dB_2206V"] = 0.06;
-pre_trigger_max_S["220203_X-ray_20kV_850V_46V_12dB_1765V"] = 0.06;
-pre_trigger_max_S["220203_X-ray_20kV_850V_46V_12dB_0V_6180V"] = 0.06;
-pre_trigger_max_S["220203_X-ray_20kV_850V_46V_12dB_0V_5736V"] = 0.06;
-pre_trigger_max_S["220203_X-ray_20kV_850V_46V_12dB_0V"] = 0.06;
+pre_trigger_max_S["220804_X-ray_Q1.00_20kV_850V_46V_12dB_6169V"] = 0.06;
+pre_trigger_max_S["220804_X-ray_Q1.00_20kV_850V_46V_12dB_5728V"] = 0.06;
+pre_trigger_max_S["220804_X-ray_Q1.00_20kV_850V_46V_12dB_5288V"] = 0.06;
+pre_trigger_max_S["220804_X-ray_Q1.00_20kV_850V_46V_12dB_4847V"] = 0.06;
+pre_trigger_max_S["220804_X-ray_Q1.00_20kV_850V_46V_12dB_3966V"] = 0.06;
+pre_trigger_max_S["220804_X-ray_Q1.00_20kV_850V_46V_12dB_3525V"] = 0.06;
+pre_trigger_max_S["220804_X-ray_Q1.00_20kV_850V_46V_12dB_2644V"] = 0.06;
+pre_trigger_max_S["220804_X-ray_Q1.00_20kV_850V_46V_12dB_1762V"] = 0.06;
+pre_trigger_max_S["220804_X-ray_Q1.00_20kV_850V_46V_12dB_0V"] = 0.06;
+
+pre_trigger_max_S["220804_X-ray_Q0.20_20kV_850V_46V_12dB_6169V"] = 0.06;
+pre_trigger_max_S["220804_X-ray_Q0.20_20kV_850V_46V_12dB_5728V"] = 0.06;
+pre_trigger_max_S["220804_X-ray_Q0.20_20kV_850V_46V_12dB_5288V"] = 0.06;
+pre_trigger_max_S["220804_X-ray_Q0.20_20kV_850V_46V_12dB_4847V"] = 0.06;
+pre_trigger_max_S["220804_X-ray_Q0.20_20kV_850V_46V_12dB_3966V"] = 0.06;
+pre_trigger_max_S["220804_X-ray_Q0.20_20kV_850V_46V_12dB_3525V"] = 0.06;
+pre_trigger_max_S["220804_X-ray_Q0.20_20kV_850V_46V_12dB_2644V"] = 0.06;
+pre_trigger_max_S["220804_X-ray_Q0.20_20kV_850V_46V_12dB_1762V"] = 0.06;
+pre_trigger_max_S["220804_X-ray_Q0.20_20kV_850V_46V_12dB_0V"] = 0.06;
+
+pre_trigger_max_S["220804_X-ray_Q0.04_20kV_850V_46V_12dB_6169V"] = 0.06;
+pre_trigger_max_S["220804_X-ray_Q0.04_20kV_850V_46V_12dB_5288V"] = 0.06;
+pre_trigger_max_S["220804_X-ray_Q0.04_20kV_850V_46V_12dB_3966V"] = 0.06;
+pre_trigger_max_S["220804_X-ray_Q0.04_20kV_850V_46V_12dB_2644V"] = 0.06;
+pre_trigger_max_S["220804_X-ray_Q0.04_20kV_850V_46V_12dB_0V"] = 0.06;
 
 
 bool forms = !calibrate;
@@ -997,42 +1045,126 @@ else {
     first_run = -10000;
 }
 //zcxv
-if (exp == "220203_X-ray_20kV_850V_46V_12dB_6180V"
-		|| exp == "220203_X-ray_20kV_850V_46V_12dB_5993V"
-		|| exp == "220203_X-ray_20kV_850V_46V_12dB_5738V"
-		|| exp == "220203_X-ray_20kV_850V_46V_12dB_5297V"
-		|| exp == "220203_X-ray_20kV_850V_46V_12dB_4856V"
-		|| exp == "220203_X-ray_20kV_850V_46V_12dB_4413V"
-		|| exp == "220203_X-ray_20kV_850V_46V_12dB_3972V"
-		|| exp == "220203_X-ray_20kV_850V_46V_12dB_3531V"
-		|| exp == "220203_X-ray_20kV_850V_46V_12dB_3090V"
-		|| exp == "220203_X-ray_20kV_850V_46V_12dB_2648V"
-		|| exp == "220203_X-ray_20kV_850V_46V_12dB_2206V"
-		|| exp == "220203_X-ray_20kV_850V_46V_12dB_1765V"
-		|| exp == "220203_X-ray_20kV_850V_46V_12dB_0V_6180V"
-		|| exp == "220203_X-ray_20kV_850V_46V_12dB_0V_5736V"
-		|| exp == "220203_X-ray_20kV_850V_46V_12dB_0V") {
+if (exp == "220804_X-ray_Q1.00_20kV_850V_46V_12dB_6169V"
+		|| exp == "220804_X-ray_Q1.00_20kV_850V_46V_12dB_5728V"
+		|| exp == "220804_X-ray_Q1.00_20kV_850V_46V_12dB_5288V"
+		|| exp == "220804_X-ray_Q1.00_20kV_850V_46V_12dB_4847V"
+		|| exp == "220804_X-ray_Q1.00_20kV_850V_46V_12dB_3966V"
+		|| exp == "220804_X-ray_Q1.00_20kV_850V_46V_12dB_3525V"
+		|| exp == "220804_X-ray_Q1.00_20kV_850V_46V_12dB_2644V"
+		|| exp == "220804_X-ray_Q1.00_20kV_850V_46V_12dB_1762V"
+		|| exp == "220804_X-ray_Q1.00_20kV_850V_46V_12dB_0V"
+		|| exp == "220804_X-ray_Q0.20_20kV_850V_46V_12dB_6169V"
+		|| exp == "220804_X-ray_Q0.20_20kV_850V_46V_12dB_5728V"
+		|| exp == "220804_X-ray_Q0.20_20kV_850V_46V_12dB_5288V"
+		|| exp == "220804_X-ray_Q0.20_20kV_850V_46V_12dB_4847V"
+		|| exp == "220804_X-ray_Q0.20_20kV_850V_46V_12dB_3966V"
+		|| exp == "220804_X-ray_Q0.20_20kV_850V_46V_12dB_3525V"
+		|| exp == "220804_X-ray_Q0.20_20kV_850V_46V_12dB_2644V"
+		|| exp == "220804_X-ray_Q0.20_20kV_850V_46V_12dB_1762V"
+		|| exp == "220804_X-ray_Q0.20_20kV_850V_46V_12dB_0V"
+		|| exp == "220804_X-ray_Q0.04_20kV_850V_46V_12dB_6169V"
+		|| exp == "220804_X-ray_Q0.04_20kV_850V_46V_12dB_5288V"
+		|| exp == "220804_X-ray_Q0.04_20kV_850V_46V_12dB_3966V"
+		|| exp == "220804_X-ray_Q0.04_20kV_850V_46V_12dB_2644V"
+		|| exp == "220804_X-ray_Q0.04_20kV_850V_46V_12dB_0V") {
 	std::vector<std::string> cuts;
 	int no = 0; //picture number
 	std::string Num = int_to_str(++no, 2); //="01" //picture number as string
 	std::string FOLDER = data_output_path + folder + "/";
 
-	if (exp == "220203_X-ray_20kV_850V_46V_12dB_6180V" || exp == "220203_X-ray_20kV_850V_46V_12dB_5993V") {
-		ty(AStates::PMT_Npe_sum);
-		slow_PMTs_only();
-		cut_PMT_noise(PMT_state);
-		set_bins(0, 200);
-		time_zoom_sPMTs(1, d_S1_start); update();
-		draw_limits(0, 22);
-		saveaspng(FOLDER + Num+"_slowPMTs_Npe_1.0-"+S1_start+"us_"+cuts_str(cuts));
-		set_as_run_cut("no_discharge"); cuts.push_back(Num);
-		unset_draw_limits();
-		Num = int_to_str(++no, 2);
-	}
+	ty(AStates::PMT_Npe_sum);
+	slow_PMTs_only();
+	cut_PMT_noise(PMT_state);
+	set_bins(0, 200);
+	time_zoom_sPMTs(1, d_S1_start); update();
+	draw_limits(0, 22);
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_1.0-"+S1_start+"us_"+cuts_str(cuts));
+	set_as_run_cut("no_discharge"); cuts.push_back(Num);
+	unset_draw_limits();
+	Num = int_to_str(++no, 2);
 
-	std::string form_n = "forms_X-ray/";
-	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
-	print_accepted_events(FOLDER + form_n + "_events.txt", first_run);
+ty(AStates::MPPC_Npe_sum);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		noise_cut(chan, 0, SiPM_state, false);
+	}
+	set_bins(0, 200);
+	if (exp == "220804_X-ray_Q1.00_20kV_850V_46V_12dB_6169V")
+		set_bins(0, 400);
+	if (exp == "220804_X-ray_Q1.00_20kV_850V_46V_12dB_5728V")
+		set_bins(0, 350);
+	if (exp == "220804_X-ray_Q1.00_20kV_850V_46V_12dB_5288V")
+		set_bins(0, 300);
+	if (exp == "220804_X-ray_Q1.00_20kV_850V_46V_12dB_4847V")
+		set_bins(0, 300);
+	if (exp.find("Q0.04") != std::string::npos)
+		set_bins(0, 100);
+
+	unset_draw_limits();
+	if (exp == "220804_X-ray_Q1.00_20kV_850V_46V_12dB_6169V")
+		draw_limits(0, 320);
+	if (exp == "220804_X-ray_Q1.00_20kV_850V_46V_12dB_5728V")
+		draw_limits(0, 250);
+	if (exp == "220804_X-ray_Q1.00_20kV_850V_46V_12dB_5288V")
+		draw_limits(0, 209);
+	if (exp == "220804_X-ray_Q1.00_20kV_850V_46V_12dB_4847V")
+		draw_limits(0, 190);
+	if (exp == "220804_X-ray_Q0.20_20kV_850V_46V_12dB_6169V")
+		draw_limits(0, 130);
+	if (exp == "220804_X-ray_Q0.20_20kV_850V_46V_12dB_5728V")
+		draw_limits(0, 110);
+	if (exp == "220804_X-ray_Q0.20_20kV_850V_46V_12dB_5288V")
+		draw_limits(0, 110);
+	if (exp == "220804_X-ray_Q0.04_20kV_850V_46V_12dB_6169V")
+		draw_limits(2, 50);
+	set_as_run_cut("no_discharge_2"); cuts.push_back(Num);
+	unset_draw_limits();
+
+	time_zoom_SiPMs(d_S2_start, d_S2_finish); update();
+	unset_draw_limits();
+	if (exp == "220804_X-ray_Q1.00_20kV_850V_46V_12dB_6169V")
+		draw_limits(0, 218);
+	if (exp == "220804_X-ray_Q1.00_20kV_850V_46V_12dB_5728V")
+		draw_limits(0, 185);
+	if (exp == "220804_X-ray_Q1.00_20kV_850V_46V_12dB_5288V")
+		draw_limits(0, 150);
+	if (exp == "220804_X-ray_Q1.00_20kV_850V_46V_12dB_4847V")
+		draw_limits(0, 119);
+	if (exp == "220804_X-ray_Q0.20_20kV_850V_46V_12dB_5728V")
+		draw_limits(0, 59);
+	if (exp == "220804_X-ray_Q0.20_20kV_850V_46V_12dB_5288V")
+		draw_limits(0, 53);
+	if (exp == "220804_X-ray_Q0.04_20kV_850V_46V_12dB_6169V")
+		draw_limits(1, 50);
+	set_as_run_cut("no_discharge_3"); cuts.push_back(Num);
+	unset_draw_limits();
+
+	time_zoom_SiPMs(1, d_S1_start); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_1.0-"+S1_start+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+
+	time_zoom_SiPMs(d_S1_start, d_S1_finish); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+S1_start+"-"+S1_finish+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+
+	time_zoom_SiPMs(d_S2_start, d_S2_finish); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+S2_start+"-"+S2_finish+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+
+	off_ch(44); off_ch(43);
+	time_zoom_SiPMs(1, d_S1_start); update();
+	saveaspng(FOLDER + Num+"_SiPMs23_Npe_1.0-"+S1_start+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+
+	time_zoom_SiPMs(d_S1_start, d_S1_finish); update();
+	saveaspng(FOLDER + Num+"_SiPMs23_Npe_"+S1_start+"-"+S1_finish+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+
+	time_zoom_SiPMs(d_S2_start, d_S2_finish); update();
+	saveaspng(FOLDER + Num+"_SiPMs23_Npe_"+S2_start+"-"+S2_finish+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	on_ch(44); on_ch(43);
 
 ty(AStates::PMT_Npe_sum);
 	slow_PMTs_only();
@@ -1051,48 +1183,12 @@ ty(AStates::PMT_Npe_sum);
 	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+S2_start+"-"+S2_finish+"us_"+cuts_str(cuts));
 	Num = int_to_str(++no, 2);
 
-ty(AStates::MPPC_Npe_sum);
-	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
-		int chan = post_processor->MPPC_channels[ich];
-		noise_cut(chan, 0, SiPM_state, false);
-	}
-	set_bins(0, 300);
-
-	time_zoom_SiPMs(1, d_S1_start); update();
-	saveaspng(FOLDER + Num+"_SiPMs_Npe_1.0-"+S1_start+"us_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	time_zoom_SiPMs(d_S1_start, d_S1_finish); update();
-	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+S1_start+"-"+S1_finish+"us_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	time_zoom_SiPMs(d_S2_start, d_S2_finish); update();
-	if (exp == "220203_X-ray_20kV_850V_46V_12dB_6180V"
-			|| exp == "220203_X-ray_20kV_850V_46V_12dB_5993V"
-			|| exp == "220203_X-ray_20kV_850V_46V_12dB_5738V") {
-		set_bins(0, 400);
-		draw_limits(0, 400);
-		set_as_run_cut("no_discharge_2"); cuts.push_back(Num);
-		unset_draw_limits();
-	}
-	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+S2_start+"-"+S2_finish+"us_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	off_ch(44); off_ch(43);
-	time_zoom_SiPMs(1, d_S1_start); update();
-	saveaspng(FOLDER + Num+"_SiPMs23_Npe_1.0-"+S1_start+"us_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	time_zoom_SiPMs(d_S1_start, d_S1_finish); update();
-	saveaspng(FOLDER + Num+"_SiPMs23_Npe_"+S1_start+"-"+S1_finish+"us_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-
-	time_zoom_SiPMs(d_S2_start, d_S2_finish); update();
-	saveaspng(FOLDER + Num+"_SiPMs23_Npe_"+S2_start+"-"+S2_finish+"us_"+cuts_str(cuts));
-	Num = int_to_str(++no, 2);
-	on_ch(44); on_ch(43);
+	std::string form_n = "forms_X-ray/";
+	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
+	print_accepted_events(FOLDER + form_n + "_events.txt", first_run);
 
 	// Too many parameters for this to be worth made into function.
+	ty(AStates::MPPC_Npe_sum);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		ch(chan);

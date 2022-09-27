@@ -1,4 +1,15 @@
 {
+  struct SiPM_Npe_data {
+    std::pair<double, double> t_pre_trigger;
+    std::pair<double, double> t_S1;
+    std::pair<double, double> t_S2;
+    double Npe_pre_trigger;
+    double Npe_pre_S1;
+    double Npe_S1;
+    double Npe_S2;
+    double Npe_S2_only;
+  };
+  
   gStyle->SetCanvasDefH(800);
 	gStyle->SetCanvasDefW(1000);
   gErrorIgnoreLevel = 1001; //To shut up minuit output during failed(?) fitting
@@ -29,7 +40,7 @@
   exp_area.experiments.clear();
   exp_area.experiments.push_back("220203_X-ray_20kV_850V_46V_12dB_6180V");
   exp_area.experiments.push_back("220203_X-ray_20kV_850V_46V_12dB_5993V");
-  /*exp_area.experiments.push_back("220203_X-ray_20kV_850V_46V_12dB_5738V");
+  exp_area.experiments.push_back("220203_X-ray_20kV_850V_46V_12dB_5738V");
   exp_area.experiments.push_back("220203_X-ray_20kV_850V_46V_12dB_5297V");
   exp_area.experiments.push_back("220203_X-ray_20kV_850V_46V_12dB_4856V");
   exp_area.experiments.push_back("220203_X-ray_20kV_850V_46V_12dB_4413V");
@@ -41,7 +52,7 @@
   exp_area.experiments.push_back("220203_X-ray_20kV_850V_46V_12dB_1765V");
   exp_area.experiments.push_back("220203_X-ray_20kV_850V_46V_12dB_0V_6180V");
   exp_area.experiments.push_back("220203_X-ray_20kV_850V_46V_12dB_0V_5736V");
-  exp_area.experiments.push_back("220203_X-ray_20kV_850V_46V_12dB_0V");*/
+  exp_area.experiments.push_back("220203_X-ray_20kV_850V_46V_12dB_0V");
 
   PMT_V.clear();
   MPPC_V.clear();
@@ -59,21 +70,21 @@
   }
 
   experiment_fields.clear();
-  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_6180V"] = 20.0;
-  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_5993V"] = 20.0;
-  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_5738V"] = 20.0;
-  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_5297V"] = 20.0;
-  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_4856V"] = 20.0;
-  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_4413V"] = 20.0;
-  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_3972V"] = 20.0;
-  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_3531V"] = 20.0;
-  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_3090V"] = 20.0;
-  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_2648V"] = 20.0;
-  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_2206V"] = 20.0;
-  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_1765V"] = 20.0;
-  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_0V_6180V"] = 20.0;
-  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_0V_5736V"] = 20.0;
-  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_0V"] = 20.0;
+  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_6180V"] = 6180;
+  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_5993V"] = 5993;
+  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_5738V"] = 5738;
+  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_5297V"] = 5297;
+  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_4856V"] = 4856;
+  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_4413V"] = 4413;
+  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_3972V"] = 3972;
+  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_3531V"] = 3531;
+  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_3090V"] = 3090;
+  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_2648V"] = 2648;
+  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_2206V"] = 2206;
+  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_1765V"] = 1765;
+  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_0V_6180V"] = 2;
+  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_0V_5736V"] = 1;
+  experiment_fields["220203_X-ray_20kV_850V_46V_12dB_0V"] = 0;
 
   std::map<std::string, int> experiment_runs; //required for printing accpeted/rejected events
   experiment_runs["220203_X-ray_20kV_850V_46V_12dB_6180V"] = 564;
@@ -117,4 +128,24 @@
   for (int ch=32; ch!=64; ++ch) {
     calib_channels.push_back(ch);
   }
+
+  channel_info<std::vector<SiPM_Npe_data>> gSiPM_Npe_data; // channel->experiment
+  for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+    std::vector<SiPM_Npe_data> vec;
+    for (auto i = exp_area.experiments.begin(), i_end_ = exp_area.experiments.end(); i != i_end_; ++i) {
+      SiPM_Npe_data data;
+      data.t_pre_trigger = std::pair<double, double> (0,0);
+      data.t_S1 = std::pair<double, double> (0,0);
+      data.t_S2 = std::pair<double, double> (0,0);
+      data.Npe_pre_trigger = 0;
+      data.Npe_pre_S1 = 0;
+      data.Npe_S1 = 0;
+      data.Npe_S2 = 0;
+      data.Npe_S2_only = 0;
+      vec.push_back(data);
+    }
+    gSiPM_Npe_data.push(chan, vec);
+	}
+
 }

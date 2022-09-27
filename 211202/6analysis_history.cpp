@@ -574,6 +574,7 @@ bool forms = !calibrate;
 //CALIBRATION (slow PMT and SiPMs)
 if (calibrate) {
 	std::cout<<"Use 5analysis_history.cpp for calibration! Doing nothing."<<std::endl;
+	return;
 }
 //END OF CALIBRATION
 

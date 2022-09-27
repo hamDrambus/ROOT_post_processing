@@ -999,7 +999,7 @@ ty(AStates::MPPC_Npe_sum);
 std::string form_n = "forms_Pu_left/";
 ty(AStates::MPPC_Npe_sum);
 	time_zoom_SiPMs(d_S2_start, 160);
-	draw_limits(308, 365);
+	draw_limits(242, 295);
 	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
 	set_as_run_cut("En_spec"); cuts.push_back(Num);
 	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
@@ -1011,7 +1011,7 @@ ty(AStates::MPPC_Npe_sum);
 
 form_n = "forms_Pu_peak/";
 ty(AStates::MPPC_Npe_sum);
-	draw_limits(308, 413);
+	draw_limits(242, 337);
 	saveaspng(FOLDER + Num + "_SiPMs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events");
 	set_as_run_cut("En_spec"); cuts.push_back(Num);
 	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
