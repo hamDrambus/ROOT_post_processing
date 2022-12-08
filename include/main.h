@@ -105,7 +105,7 @@ void set_calib_N(int from, int to);//in order to set default use invalid values
 void Exit(Bool_t save = kTRUE); //It's better do not call it and save all relevant info manually
 
 //Often used cutting functions: (in order to decrease code in ROOT's macros)
-void draw_limits(double left, double right);	//2 tier method
+void draw_limits(double left, double right, std::string name = ""); //2 tier method
 void set_limits(double left, double right);		//2 tier method
 void unset_limits(void);						//2 tier method
 void unset_draw_limits(void);					//2 tier method
@@ -133,6 +133,7 @@ void remcut_A_S_rect_exclude(int channel = -1, std::string name = "");
 void cut_S(double S_min, double S_max, bool drawn, int channel = -1, std::string name = "");
 void remcut_S(int channel = -1, std::string name = "");
 void cut_t(double t_min, double t_max, bool drawn, int channel = -1, std::string name = "");
+void cut_t_S1_S2(double t_min_S1, double t_max_S1, double t_min_S2, double t_max_S2, bool drawn, int channel = -1, std::string name = "");
 void remcut_t(int channel = -1, std::string name = "");
 void remcut(int channel, std::string name);
 void remcut(std::string name);

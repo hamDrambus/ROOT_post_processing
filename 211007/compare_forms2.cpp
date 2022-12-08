@@ -1,7 +1,7 @@
 //Created on 2022.02.10
 //For 211007/results_v5
 //9.2 mm with 238Pu set on the cathode. (Mesh instead of THGEM0, 28% CERN #8 as THEGEM1, PMT#1 malfunctions due to mixed signal wires)
-//2650 on THGEM1 (gain~40), charge signal and SiPMs forms only
+//2650 on THGEM1 (gain~20), charge signal and SiPMs forms only
 //Charge with restored baseline
 #define PAIR std::pair<double, double>
 
@@ -574,7 +574,7 @@ define->folder = std::string("../Data/211007/results_v2/211007_Pu_20.0kV_800V_46
 define->fnames.push_back("Charge211007_Pu_20.0kV_800V_46V_12dB_2650V_ch_10_AVR_0");
 define->file_type = ShapeFileType::RawNoError;
 define->Td = "8.5";
-define->device = "Charge, 2650V, raw";
+define->device = "V_{T}=2650V";
 define->fast_t_center = 30.9;
 define->fast_t = PAIR(29.7, 2*30.94 - 29.70);
 define->S1_t_center = 0;
@@ -815,9 +815,9 @@ define->fit_option = "NRWE";
 	//adsf - for fast Crtl + F
 	std::string framename;
 	if (SiPMs)
-    framename = std::string("Results for SiPM-matrix (no WLS), ")+(Cd_peak ? "" : "< ")+"5.6 MeV #alpha ^{238}Pu";
+    framename = std::string("Results for SiPM-matrix (no WLS), ")+(Cd_peak ? "" : "< ")+"5.5 MeV #alpha ^{238}Pu";
 	else
-    framename = std::string("Results for charge (no WLS), ")+(Cd_peak ? "" : "< ")+"5.6 MeV #alpha ^{238}Pu";
+    framename = std::string("Charge signal in THGEM1 from ")+(Cd_peak ? "" : "< ")+"5.5 MeV #alpha (^{238}Pu)";
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {
 		std::string hist_name = (pulses[hh].file_type == ShapeFileType::Histogram ? "hist" : "graph") + std::to_string(hh);
 		pulses[hh].hist = (pulses[hh].file_type == ShapeFileType::Histogram ? new TH1D (hist_name.c_str(), hist_name.c_str(), Nbins, time_left, time_right) : NULL);
@@ -1253,16 +1253,16 @@ define->fit_option = "NRWE";
 			std::vector<std::string> Slow_title = {"Slow component", "contribution:"};
 			std::vector<std::string> Long_title;// = {"Long"};
 			add_text(40, 0.15, no_title, tau1, palette_major);
-			add_text(70, 0.15, Slow_title, frsS, palette_major);
+			add_text(55, 0.15, Slow_title, frsS, palette_major);
 			//add_text(52, 0.08, Long_title, frsL, palette_text);
 			//add_text(58, 0.08, no_title, tau2, palette_text);
 		}
 	}
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {
     if (ShapeFileType::Histogram == pulses[hh].file_type)
-      legend->AddEntry(pulses[hh].hist, (std::string("E/N = ") + pulses[hh].Td + " Td, " + pulses[hh].device).c_str(), "l");
+      legend->AddEntry(pulses[hh].hist, (std::string("E_{EL}/N = ") + pulses[hh].Td + " Td, " + pulses[hh].device).c_str(), "l");
     else
-      legend->AddEntry(pulses[hh].graph, (std::string("E/N = ") + pulses[hh].Td + " Td, " + pulses[hh].device).c_str(), "l");
+      legend->AddEntry(pulses[hh].graph, (std::string("E_{EL}/N = ") + pulses[hh].Td + " Td, " + pulses[hh].device).c_str(), "l");
   }
 
 	frame->Draw("sameaxis");

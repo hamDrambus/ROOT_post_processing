@@ -28,13 +28,13 @@
 
   exp_area.experiments.clear();
   exp_area.experiments.push_back("191107_U_20kV_850V_46V_12dB");
-  /*exp_area.experiments.push_back("191107_U_18kV_850V_46V_12dB");
+  exp_area.experiments.push_back("191107_U_18kV_850V_46V_12dB");
   exp_area.experiments.push_back("191107_U_16kV_850V_46V_12dB");
   exp_area.experiments.push_back("191107_U_14kV_850V_46V_12dB");
   exp_area.experiments.push_back("191107_U_12kV_850V_46V_12dB");
   exp_area.experiments.push_back("191107_U_10kV_850V_46V_12dB");
   exp_area.experiments.push_back("191107_U_8kV_850V_46V_12dB");
-  exp_area.experiments.push_back("191107_U_6kV_850V_46V_12dB");*/
+  exp_area.experiments.push_back("191107_U_6kV_850V_46V_12dB");
 
   PMT_V.clear();
   MPPC_V.clear();
@@ -47,7 +47,7 @@
   dBs.clear();
   for (auto i = exp_area.experiments.begin(), i_end_ = exp_area.experiments.end(); i != i_end_; ++i) {
 	  PMT_V[*i] = 850;
-      dBs[*i] = atten0;
+    dBs[*i] = atten0;
 	  MPPC_V[*i] = 46;
   }
 

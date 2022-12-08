@@ -1,5 +1,5 @@
 {
-	if (true) { //requires .L ncompare_forms.cpp
+	if (false) { //requires .L ncompare_forms.cpp
 		std::vector<std::string> kVs = {"20","18","16","14","12","10","08","06"};
 			for (std::size_t i =0, i_end_ = kVs.size(); i!=i_end_; ++i) {
 			ncompare_forms(kVs[i], "lin", "peak", 1800, "NRE", "comb");
@@ -39,26 +39,12 @@ if (false) {
 		cut_A_S_upper(0.0255, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
 		cut_A_S_upper(0.0107, 0.00172, 0.0255, 0.00364, display, channel, "2pe_merged");
-}
+} */
 if (true) {
-	bool calibrate = false;
-	unsigned int iteration = 0;
-	analysis_history(calibrate, iteration); //20
-	nex();
-	analysis_history(calibrate, iteration); //18
-	nex();
-	analysis_history(calibrate, iteration); //16
-	nex();
-	analysis_history(calibrate, iteration); //14
-	nex();
-	analysis_history(calibrate, iteration); //12
-	nex();
-	analysis_history(calibrate, iteration); //10
-	nex();
-	analysis_history(calibrate, iteration);	//8
-	nex();
-	analysis_history(calibrate, iteration);	//6
-	nex();
+	for (int e = 0; e != exp_area.experiments.size(); ++e) {
+		analysis_history(0);
+		nex();
+	}
 }
-*/
+
 }

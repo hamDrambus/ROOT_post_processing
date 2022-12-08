@@ -113,9 +113,15 @@ void SetParLimits(TF1* f, int n, double value) {
 }
 
 void subtract_baseline(TH1D *hist, double baseline) {
-    for (int bin = 1, bin_end = hist->GetNbinsX()+1; bin!=bin_end; ++bin) {
-		hist->SetBinContent(bin, std::max(hist->GetBinContent(bin) - baseline, 0.0));
-    }
+	for (int bin = 1, bin_end = hist->GetNbinsX()+1; bin!=bin_end; ++bin) {
+		hist->SetBinContent(bin, hist->GetBinContent(bin) - baseline);
+	}
+}
+
+void trim_histogram(TH1D *hist) {
+	for (int bin = 1, bin_end = hist->GetNbinsX()+1; bin!=bin_end; ++bin) {
+		hist->SetBinContent(bin, std::max(hist->GetBinContent(bin), 0.0));
+	}
 }
 
 void read_hist (TH1D *hist, std::string fname) {
@@ -287,8 +293,8 @@ int ncompare_forms (void) {
 	std::string def_fit_option = "NRE";
 	bool combined = true;
 	bool Cd_peak = true;
-	int Nbins = 600;
-	bool linear = 0;
+	int Nbins = 1000;
+	bool linear = 1;
 	bool PMTs = false;
 #ifdef FAST_FIGURES_MODE
 	linear = (in_is_linear == "lin");
@@ -300,18 +306,19 @@ int ncompare_forms (void) {
 
 	bool do_fit = false;
 	bool fit_bad_forms = false;
-	bool subtact_baseline = false;
+	bool subtact_baseline = true;
 	bool center_pulses = false;
 	bool center_at_S1 = false;
 	bool normalize_by_S1 = false;
-	bool normalize = false;
+	bool normalize = true;
 	bool print_errors = false;
 	double time_pretrigger_left = 4, time_pretrigger_right = 32;
 	double time_left = 0, time_right = 160;//us
 	double max_val = 0;
 	double trigger_at = center_at_S1 ? 50 : 90;
-	double y_min = 1e3;
-	double time_offset = 30.0-93;
+	double y_min = 1e-3;
+	double time_offset = 0;//30.0-93;
+	double y_offset = 5e-3;
 	Nbins *= (time_right - time_left)/160.0;
 
 	pulse_shape* define = NULL, *copy = NULL;
@@ -342,28 +349,10 @@ define->fit_option = def_fit_option;
 
 pulse_shape SiPM_20kV_no_trigger_v3;
 define = &SiPM_20kV_no_trigger_v3;
+copy = &SiPM_20kV_no_trigger;
+*define = *copy;
 define->folder = "191107/results_v7/Alpha_46V_20kV_850V/";
 define->folder += Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/";
-define->fnames = {"SiPMs_form_by_Npe.hdata"};
-define->Td = "8.3";
-define->device = "SiPM-matrix";
-define->fast_t_center = 93;
-define->fast_t = PAIR(90, 94.3);
-define->S1_t_center = 63.8;
-define->S1_t = PAIR(62.4, 64.8);
-define->scale = 1;
-define->subtract_baseline = subtact_baseline;
-define->renormalize = normalize;
-define->slow_fit_t = PAIR(95.4, 160);
-define->long_fit_t = PAIR(95.4, 160);
-define->baseline_bound = PAIR(1e-6, 2e-4);
-define->slow_ampl_bound = PAIR(1e-3, 1);
-define->slow_tau_bound = PAIR(2, 10);
-define->long_ampl_bound = PAIR(3e-4, 1e-1);
-define->long_tau_bound = PAIR(15, 200);
-define->simultaneous_fit = true;
-define->do_fit = do_fit;
-define->fit_option = def_fit_option;
 
 pulse_shape SiPM_18kV_no_trigger;
 define = &SiPM_18kV_no_trigger;
@@ -390,6 +379,13 @@ define->simultaneous_fit = true;
 define->do_fit = do_fit;
 define->fit_option = def_fit_option;
 
+pulse_shape SiPM_18kV_no_trigger_v3;
+define = &SiPM_18kV_no_trigger_v3;
+copy = &SiPM_18kV_no_trigger;
+*define = *copy;
+define->folder = "191107/results_v7/Alpha_46V_18kV_850V/";
+define->folder += Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/";
+
 pulse_shape SiPM_16kV_no_trigger;
 define = &SiPM_16kV_no_trigger;
 define->folder = "191107/results_v5/Alpha_46V_16kV_850V/iteration_00/";
@@ -414,6 +410,13 @@ define->long_tau_bound = PAIR(20, 200);
 define->simultaneous_fit = true;
 define->do_fit = do_fit;
 define->fit_option = def_fit_option;
+
+pulse_shape SiPM_16kV_no_trigger_v3;
+define = &SiPM_16kV_no_trigger_v3;
+copy = &SiPM_16kV_no_trigger;
+*define = *copy;
+define->folder = "191107/results_v7/Alpha_46V_16kV_850V/";
+define->folder += Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/";
 
 pulse_shape SiPM_14kV_no_trigger;
 define = &SiPM_14kV_no_trigger;
@@ -440,6 +443,13 @@ define->simultaneous_fit = true;
 define->do_fit = do_fit;
 define->fit_option = def_fit_option;
 
+pulse_shape SiPM_14kV_no_trigger_v3;
+define = &SiPM_14kV_no_trigger_v3;
+copy = &SiPM_14kV_no_trigger;
+*define = *copy;
+define->folder = "191107/results_v7/Alpha_46V_14kV_850V/";
+define->folder += Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/";
+
 pulse_shape SiPM_12kV_no_trigger;
 define = &SiPM_12kV_no_trigger;
 define->folder = "191107/results_v5/Alpha_46V_12kV_850V/iteration_00/";
@@ -464,6 +474,13 @@ define->long_tau_bound = PAIR(15, 200);
 define->simultaneous_fit = true;
 define->do_fit = do_fit;
 define->fit_option = def_fit_option;
+
+pulse_shape SiPM_12kV_no_trigger_v3;
+define = &SiPM_12kV_no_trigger_v3;
+copy = &SiPM_12kV_no_trigger;
+*define = *copy;
+define->folder = "191107/results_v7/Alpha_46V_12kV_850V/";
+define->folder += Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/";
 
 pulse_shape SiPM_10kV_no_trigger;
 define = &SiPM_10kV_no_trigger;
@@ -490,6 +507,13 @@ define->simultaneous_fit = true;
 define->do_fit = do_fit&&fit_bad_forms;
 define->fit_option = def_fit_option;
 
+pulse_shape SiPM_10kV_no_trigger_v3;
+define = &SiPM_10kV_no_trigger_v3;
+copy = &SiPM_10kV_no_trigger;
+*define = *copy;
+define->folder = "191107/results_v7/Alpha_46V_10kV_850V/";
+define->folder += Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/";
+
 pulse_shape SiPM_8kV_no_trigger;
 define = &SiPM_8kV_no_trigger;
 define->folder = "191107/results_v5/Alpha_46V_8kV_850V/iteration_00/";
@@ -515,6 +539,13 @@ define->simultaneous_fit = true;
 define->do_fit = do_fit&&fit_bad_forms;
 define->fit_option = def_fit_option;
 
+pulse_shape SiPM_8kV_no_trigger_v3;
+define = &SiPM_8kV_no_trigger_v3;
+copy = &SiPM_8kV_no_trigger;
+*define = *copy;
+define->folder = "191107/results_v7/Alpha_46V_8kV_850V/";
+define->folder += Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/";
+
 pulse_shape SiPM_6kV_no_trigger;
 define = &SiPM_6kV_no_trigger;
 define->folder = "191107/results_v5/Alpha_46V_6kV_850V/iteration_00/";
@@ -539,6 +570,13 @@ define->long_tau_bound = PAIR(15, 200);
 define->simultaneous_fit = true;
 define->do_fit = do_fit&&fit_bad_forms;
 define->fit_option = def_fit_option;
+
+pulse_shape SiPM_6kV_no_trigger_v3;
+define = &SiPM_6kV_no_trigger_v3;
+copy = &SiPM_6kV_no_trigger;
+*define = *copy;
+define->folder = "191107/results_v7/Alpha_46V_6kV_850V/";
+define->folder += Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/";
 
 pulse_shape SiPM_20kV_no_trigger_v2;
 define = &SiPM_20kV_no_trigger_v2;
@@ -1255,7 +1293,7 @@ define->fit_option = def_fit_option;
 	//std::vector<pulse_shape> pulses = {PMT4_20kV_no_trigger, PMT4_18kV_no_trigger, PMT4_14kV_no_trigger, PMT4_10kV_no_trigger};
 	//std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger, SiPM_18kV_no_trigger, SiPM_14kV_no_trigger, SiPM_10kV_no_trigger};
 	//std::vector<pulse_shape> pulses = {PMT4_20kV_no_trigger_v3};
-	std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger_v3};
+	std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger_v3, SiPM_16kV_no_trigger_v3, SiPM_12kV_no_trigger_v3, SiPM_8kV_no_trigger_v3};
 #endif //FAST_FIGURES_MODE
 
 	std::vector<Color_t> palette_major = {kBlack, kRed, kBlue, kGreen, kYellow + 2, kMagenta, kOrange + 7};
@@ -1288,7 +1326,7 @@ define->fit_option = def_fit_option;
 			pulses[hh].baseline = 0;
 		}
 		if (pulses[hh].renormalize) {
-				double integral = 0;
+			double integral = 0;
 				if (normalize_by_S1)
 		    	integral = integrate(pulses[hh].hist, pulses[hh].S1_t.first + pulses[hh].t_offset, pulses[hh].S1_t.second + pulses[hh].t_offset);
 				else
@@ -1300,11 +1338,16 @@ define->fit_option = def_fit_option;
 			pulses[hh].baseline_bound = PAIR(0.8*pulses[hh].baseline, 1.2*pulses[hh].baseline);
 			pulses[hh].long_baseline_bound = PAIR(0.8*pulses[hh].baseline, 1.2*pulses[hh].baseline);
 		}
+		subtract_baseline(pulses[hh].hist, -y_offset);
+		pulses[hh].baseline += y_offset;
+		pulses[hh].baseline_bound.first += y_offset; pulses[hh].baseline_bound.second += y_offset;
+		pulses[hh].long_baseline_bound.first += y_offset; pulses[hh].long_baseline_bound.second += y_offset;
+		trim_histogram(pulses[hh].hist);
 		pulses[hh].max_val = pulses[hh].hist->GetBinContent(pulses[hh].hist->GetMaximumBin());
 		max_val = std::max(max_val, pulses[hh].max_val);
-    }
+  }
 
-    max_val*= linear ? 1.2 : 2;
+  max_val*= linear ? 1.2 : 2;
 	gStyle->SetGridStyle(3);
 	gStyle->SetGridColor(14);
 	gStyle->SetGridWidth(1);
@@ -1320,9 +1363,9 @@ define->fit_option = def_fit_option;
 	frame->GetXaxis()->SetTitle("Time (#mus)");
 	//=====================================
 	if (!linear)
-		frame->GetXaxis()->SetRangeUser(-62, 96);
+		frame->GetXaxis()->SetRangeUser(2, 158);
 	else
-		frame->GetXaxis()->SetRangeUser(85, 125);
+		frame->GetXaxis()->SetRangeUser(30, 130);
 	//=====================================
 	frame->GetYaxis()->SetTitle("PE peak count");
 	frame->Draw();
@@ -1579,8 +1622,10 @@ define->fit_option = def_fit_option;
 		//add_text(58, 0.08, no_title, tau2, palette_text);
 	}*/
 
-	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh)
-		legend->AddEntry(pulses[hh].hist, (std::string("E/N = ") + pulses[hh].Td + " Td, " + pulses[hh].device).c_str(), "l");
+	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {
+		//legend->AddEntry(pulses[hh].hist, (std::string("E/N = ") + pulses[hh].Td + " Td, " + pulses[hh].device).c_str(), "l");
+		legend->AddEntry(pulses[hh].hist, (std::string("E/N = ") + pulses[hh].Td + " Td").c_str(), "l");
+	}
 
 	frame->Draw("sameaxis");
 	legend->Draw("same");

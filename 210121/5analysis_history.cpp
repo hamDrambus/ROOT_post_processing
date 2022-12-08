@@ -524,6 +524,7 @@ void analysis_history(bool calibrate, unsigned int method = 0) {
 //Created on 27.01.2021
 //Standard analysis, event selection using only SiPM-matrix (forms_Alpha_peak)
 //Not using trigger adjustement or trigger-related cuts.
+// Modified on 2022.10.10. Added Npe for backround and S2. Also moved calibration to separate folder.
 data_output_path = "210121/results_v5/";
 calibration_file = data_output_path + "210121_calibration.dat";
 post_processor->calibr_info.Load(calibration_file);
@@ -608,7 +609,7 @@ time_zoom_sPMTs(0, d_S2_start);
 set_zoom(0, 2);
 set_bins(500); set_log_y();
 draw_limits(0, d_S_max);
-saveas(data_output_path + folder +"/calibration/sPMTs_pre-trigger_cut");
+saveaspng(data_output_path + "calibration/" + folder +"/sPMTs_pre-trigger_cut");
 set_as_run_cut("small_pre-trigger");
 
 for (std::size_t chi = 0, chi_end_ = calib_channels.size(); calibrate && chi!=chi_end_; ++chi) {
@@ -623,18 +624,18 @@ ty(AStates::MPPC_A_S);
     set_zoom(0, 0.06, 0, 0.01);
     set_bins(500);
     noise_cut(channel, 1, SiPM_state, true);
-    saveas(data_output_path + folder + "/calibration/"+ch_str+"_A_S_zoom");
+    saveaspng(data_output_path + "calibration/" + folder + "/"+ch_str+"_A_S_zoom");
 ty(AStates::MPPC_Ss);
     set_zoom(0, 0.025);
     set_bins(800);
-    saveas(data_output_path + folder +"/calibration/"+ch_str+"_Ss");
+    saveaspng(data_output_path + "calibration/" + folder +"/"+ch_str+"_Ss");
     noise_cut(channel, 1, SiPM_state, false);
 		cut_t(0, d_S2_start, false, channel);
     draw_limits(0.0005, 0.012);
     set_use_mean(); //overwrites old info from calibration file!
     unset_1peS(); //updates calibration if it was loaded from file
     update();
-    saveas(data_output_path + folder +"/calibration/"+ch_str+"_Ss_single_pe_w_0-"+S2_start+"us");
+    saveaspng(data_output_path + "calibration/" + folder +"/"+ch_str+"_Ss_single_pe_w_0-"+S2_start+"us");
 }
 if (channel==1) {
 ty(AStates::PMT_A_S);
@@ -642,20 +643,20 @@ ty(AStates::PMT_A_S);
     set_zoom(0, 1.1, 0, 2.5);
     set_bins(1500);
     noise_cut(channel, 1, PMT_state, true);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S");
     set_zoom(0, 0.12, 0, 0.04); set_log_z();
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom_log");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S_zoom_log");
 		set_bins(500);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom2_log");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S_zoom2_log");
 ty(AStates::PMT_Ss);
     set_zoom(0, 0.08);
     set_bins(600);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_Ss");
     noise_cut(channel, 0, PMT_state, false);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss_w_cuts");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_Ss_w_cuts");
     cut_t(0, d_S2_start, false, channel);
     draw_limits(0.0, 0.030);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss_w_0-"+S2_start+"us");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_Ss_w_0-"+S2_start+"us");
     set_use_mean(); //overwrites old info from calibration file!
     unset_1peS(); //updates calibration if it was loaded from file
     update();
@@ -666,24 +667,24 @@ ty(AStates::PMT_A_S);
     set_zoom(0, 1.2, 0, 2.5);
     set_bins(1500);
     noise_cut(channel, 1, PMT_state, true);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S");
     set_zoom(0, 0.15, 0, 0.05);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S_zoom");
 	 	set_log_z();
-		saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom_log");
+		saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S_zoom_log");
     set_bins(200);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom2_log");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S_zoom2_log");
 		unset_log_z();
-		saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom2");
+		saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S_zoom2");
 ty(AStates::PMT_Ss);
     set_zoom(0, 0.1);
     set_bins(600);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_Ss");
     noise_cut(channel, 0, PMT_state, false);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss_w_cuts");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_Ss_w_cuts");
     cut_t(0, d_S2_start, false, channel);
     draw_limits(0.0, 0.08);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss_w_0-"+S2_start+"us");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_Ss_w_0-"+S2_start+"us");
     set_use_mean(); //overwrites old info from calibration file!
     unset_1peS(); //updates calibration if it was loaded from file
     update();
@@ -694,20 +695,20 @@ ty(AStates::PMT_A_S);
     set_zoom(0, 1.2, 0, 2.5);
     set_bins(1000);
     noise_cut(channel, 1, PMT_state, true);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S");
 		set_zoom(0, 0.12, 0, 0.04); set_log_z();
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom_log");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S_zoom_log");
     set_bins(300);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom2_log");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S_zoom2_log");
 ty(AStates::PMT_Ss);
     set_zoom(0, 0.08);
     set_bins(600);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_Ss");
     noise_cut(channel, 0, PMT_state, false);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss_w_cuts");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_Ss_w_cuts");
     cut_t(0, d_S2_start, false, channel);
     draw_limits(0.0, 0.03);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss_w_0-"+S2_start+"us");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_Ss_w_0-"+S2_start+"us");
     set_use_mean(); //overwrites old info from calibration file!
     unset_1peS(); //updates calibration if it was loaded from file
     update();
@@ -718,20 +719,20 @@ ty(AStates::PMT_A_S);
     set_zoom(0, 1.2, 0, 2.5);
     set_bins(1500);
     noise_cut(channel, 1, PMT_state, true);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S");
     set_zoom(0, 0.12, 0, 0.04); set_log_z();
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom_log");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S_zoom_log");
     set_bins(300);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom2_log");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S_zoom2_log");
 ty(AStates::PMT_Ss);
     set_zoom(0, 0.16);
     set_bins(600);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_Ss");
     noise_cut(channel, 0, PMT_state, false);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss_w_cuts");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_Ss_w_cuts");
     cut_t(0, d_S2_start, false, channel);
     draw_limits(0.0, 0.08);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss_w_0-"+S2_start+"us");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_Ss_w_0-"+S2_start+"us");
     set_use_mean(); //overwrites old info from calibration file!
     unset_1peS(); //updates calibration if it was loaded from file
     update();
@@ -742,19 +743,19 @@ ty(AStates::PMT_A_S);
     set_zoom(0, 0.35, 0, 0.015);
     set_bins(1500);
     noise_cut(channel, 1, PMT_state, true);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S");
     set_zoom(0, 0.06, 0, 0.006);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S_zoom");
     set_bins(120);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom2");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S_zoom2");
 ty(AStates::PMT_Ss);
     set_zoom(0, 0.001);
     set_bins(800);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_Ss");
     noise_cut(channel, 0, PMT_state, false);
     cut_t(0, d_S2_start, false, channel);
     draw_limits(0.0, 0.0004);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss_w_0-"+S2_start+"us");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_Ss_w_0-"+S2_start+"us");
     set_use_mean(); //overwrites old info from calibration file!
     unset_1peS(); //updates calibration if it was loaded from file
     update();
@@ -765,21 +766,21 @@ ty(AStates::PMT_A_S);
     set_zoom(0, 0.35, 0, 0.015);
     set_bins(1500);
     noise_cut(channel, 1, PMT_state, true);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S");
   	set_zoom(0, 0.06, 0, 0.004);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S_zoom");
     set_bins(120);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom2");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S_zoom2");
 		set_log_z();
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom2_log");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S_zoom2_log");
 ty(AStates::PMT_Ss);
     set_zoom(0, 0.002);
     set_bins(800);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_Ss");
     noise_cut(channel, 0, PMT_state, false);
     cut_t(0, d_S2_start, false, channel);
     draw_limits(0.0, 0.0012);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss_w_0-"+S2_start+"us");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_Ss_w_0-"+S2_start+"us");
     set_use_mean(); //overwrites old info from calibration file!
     unset_1peS(); //updates calibration if it was loaded from file
     update();
@@ -790,21 +791,21 @@ ty(AStates::PMT_A_S);
     set_zoom(0, 0.35, 0, 0.015);
     set_bins(1500);
     noise_cut(channel, 1, PMT_state, true);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S");
   	set_zoom(0, 0.03, 0, 0.003);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S_zoom");
     set_bins(60);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom2");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S_zoom2");
 		set_log_z();
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom2_log");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S_zoom2_log");
 ty(AStates::PMT_Ss);
     set_zoom(0, 0.001);
     set_bins(800);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_Ss");
     noise_cut(channel, 0, PMT_state, false);
     cut_t(0, d_S2_start, false, channel);
     draw_limits(0.0, 0.0005);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss_w_0-"+S2_start+"us");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_Ss_w_0-"+S2_start+"us");
     set_use_mean(); //overwrites old info from calibration file!
     unset_1peS(); //updates calibration if it was loaded from file
     update();
@@ -815,21 +816,21 @@ ty(AStates::PMT_A_S);
     set_zoom(0, 0.35, 0, 0.015);
     set_bins(1500);
     noise_cut(channel, 1, PMT_state, true);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S");
     set_zoom(0, 0.08, 0, 0.004);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S_zoom");
     set_bins(180);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom2");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S_zoom2");
 		set_log_z();
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_A_S_zoom2_log");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_A_S_zoom2_log");
 ty(AStates::PMT_Ss);
     set_zoom(0, 0.002);
     set_bins(800);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_Ss");
     noise_cut(channel, 0, PMT_state, false);
     cut_t(0, d_S2_start, false, channel);
     draw_limits(0.0, 0.0016);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss_w_0-"+S2_start+"us");
+    saveaspng(data_output_path+"calibration/"+folder+"/"+ch_str+"_Ss_w_0-"+S2_start+"us");
     set_use_mean(); //overwrites old info from calibration file!
     unset_1peS(); //updates calibration if it was loaded from file
     update();
@@ -991,8 +992,24 @@ ty(AStates::MPPC_Npe_sum);
 	Num = int_to_str(++no, 2);
 
 	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
+ty(AStates::PMT_Npe_sum);
+	time_zoom_sPMTs(4, d_S2_start); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_4-"+S2_start+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_sPMTs(d_S2_start, 160); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+S2_start+"-160us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+ty(AStates::MPPC_Npe_sum);
+	time_zoom_SiPMs(4, d_S2_start); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_4-"+S2_start+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_SiPMs(d_S2_start, 160); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+S2_start+"-160us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+
 	unset_as_run_cut("En_spec");
 	cuts.pop_back();
+
 }
 if (exp == "210121_Pu_18kV_850V_46V_12dB") {
 	std::vector<std::string> cuts;
@@ -1109,6 +1126,21 @@ ty(AStates::MPPC_Npe_sum);
 	Num = int_to_str(++no, 2);
 
 	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
+ty(AStates::PMT_Npe_sum);
+	time_zoom_sPMTs(4, d_S2_start); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_4-"+S2_start+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_sPMTs(d_S2_start, 160); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+S2_start+"-160us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+ty(AStates::MPPC_Npe_sum);
+	time_zoom_SiPMs(4, d_S2_start); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_4-"+S2_start+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_SiPMs(d_S2_start, 160); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+S2_start+"-160us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+
 	unset_as_run_cut("En_spec");
 	cuts.pop_back();
 }
@@ -1225,6 +1257,21 @@ if (exp == "210121_Pu_16kV_850V_46V_12dB") {
 	Num = int_to_str(++no, 2);
 
 	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
+ty(AStates::PMT_Npe_sum);
+	time_zoom_sPMTs(4, d_S2_start); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_4-"+S2_start+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_sPMTs(d_S2_start, 160); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+S2_start+"-160us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+ty(AStates::MPPC_Npe_sum);
+	time_zoom_SiPMs(4, d_S2_start); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_4-"+S2_start+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_SiPMs(d_S2_start, 160); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+S2_start+"-160us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+
 	unset_as_run_cut("En_spec");
 	cuts.pop_back();
 }
@@ -1341,6 +1388,21 @@ if (exp == "210121_Pu_15kV_850V_46V_12dB") {
 	Num = int_to_str(++no, 2);
 
 	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
+ty(AStates::PMT_Npe_sum);
+	time_zoom_sPMTs(4, d_S2_start); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_4-"+S2_start+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_sPMTs(d_S2_start, 160); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+S2_start+"-160us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+ty(AStates::MPPC_Npe_sum);
+	time_zoom_SiPMs(4, d_S2_start); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_4-"+S2_start+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_SiPMs(d_S2_start, 160); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+S2_start+"-160us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+
 	unset_as_run_cut("En_spec");
 	cuts.pop_back();
 }
@@ -1457,6 +1519,21 @@ if (exp == "210121_Pu_14kV_850V_46V_12dB") {
 	Num = int_to_str(++no, 2);
 
 	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
+ty(AStates::PMT_Npe_sum);
+	time_zoom_sPMTs(4, d_S2_start); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_4-"+S2_start+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_sPMTs(d_S2_start, 160); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+S2_start+"-160us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+ty(AStates::MPPC_Npe_sum);
+	time_zoom_SiPMs(4, d_S2_start); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_4-"+S2_start+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_SiPMs(d_S2_start, 160); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+S2_start+"-160us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+
 	unset_as_run_cut("En_spec");
 	cuts.pop_back();
 }
@@ -1573,6 +1650,21 @@ if (exp == "210121_Pu_13kV_850V_46V_12dB") {
 	Num = int_to_str(++no, 2);
 
 	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
+ty(AStates::PMT_Npe_sum);
+	time_zoom_sPMTs(4, d_S2_start); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_4-"+S2_start+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_sPMTs(d_S2_start, 160); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+S2_start+"-160us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+ty(AStates::MPPC_Npe_sum);
+	time_zoom_SiPMs(4, d_S2_start); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_4-"+S2_start+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_SiPMs(d_S2_start, 160); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+S2_start+"-160us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+
 	unset_as_run_cut("En_spec");
 	cuts.pop_back();
 }
@@ -1692,6 +1784,21 @@ if (exp == "210121_Pu_12kV_850V_46V_12dB") {
 	Num = int_to_str(++no, 2);
 
 	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
+ty(AStates::PMT_Npe_sum);
+	time_zoom_sPMTs(4, d_S2_start); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_4-"+S2_start+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_sPMTs(d_S2_start, 160); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+S2_start+"-160us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+ty(AStates::MPPC_Npe_sum);
+	time_zoom_SiPMs(4, d_S2_start); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_4-"+S2_start+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_SiPMs(d_S2_start, 160); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+S2_start+"-160us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+
 	unset_as_run_cut("En_spec");
 	cuts.pop_back();
 }
@@ -1811,6 +1918,21 @@ if (exp == "210121_Pu_11kV_850V_46V_12dB") {
 	Num = int_to_str(++no, 2);
 
 	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
+ty(AStates::PMT_Npe_sum);
+	time_zoom_sPMTs(4, d_S2_start); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_4-"+S2_start+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_sPMTs(d_S2_start, 160); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+S2_start+"-160us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+ty(AStates::MPPC_Npe_sum);
+	time_zoom_SiPMs(4, d_S2_start); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_4-"+S2_start+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_SiPMs(d_S2_start, 160); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+S2_start+"-160us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+
 	unset_as_run_cut("En_spec");
 	cuts.pop_back();
 }
@@ -1930,6 +2052,21 @@ if (exp == "210121_Pu_10kV_850V_46V_12dB") {
 	Num = int_to_str(++no, 2);
 
 	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
+ty(AStates::PMT_Npe_sum);
+	time_zoom_sPMTs(4, d_S2_start); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_4-"+S2_start+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_sPMTs(d_S2_start, 160); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+S2_start+"-160us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+ty(AStates::MPPC_Npe_sum);
+	time_zoom_SiPMs(4, d_S2_start); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_4-"+S2_start+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_SiPMs(d_S2_start, 160); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+S2_start+"-160us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+
 	unset_as_run_cut("En_spec");
 	cuts.pop_back();
 }
@@ -2049,6 +2186,21 @@ if (exp == "210121_Pu_8.9kV_850V_46V_12dB") {
 	Num = int_to_str(++no, 2);
 
 	save_forms(FOLDER + form_n, false, PMT_state, SiPM_state);
+ty(AStates::PMT_Npe_sum);
+	time_zoom_sPMTs(4, d_S2_start); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_4-"+S2_start+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_sPMTs(d_S2_start, 160); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+S2_start+"-160us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+ty(AStates::MPPC_Npe_sum);
+	time_zoom_SiPMs(4, d_S2_start); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_4-"+S2_start+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_SiPMs(d_S2_start, 160); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+S2_start+"-160us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+
 	unset_as_run_cut("En_spec");
 	cuts.pop_back();
 }

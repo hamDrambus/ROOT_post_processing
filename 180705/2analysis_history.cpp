@@ -14,7 +14,7 @@ void central_SiPMs(bool on) {
 	if (on) {
 		on_ch(50); on_ch(51); on_ch(36);
 		on_ch(53); on_ch(38); on_ch(39);
-		on_ch(40); on_ch(41); on_ch(56);	
+		on_ch(40); on_ch(41); on_ch(56);
 	} else {
 		off_ch(50); off_ch(51); off_ch(36);
 		off_ch(53); off_ch(38); off_ch(39);
@@ -25,7 +25,7 @@ void central_SiPMs(bool on) {
 void save_forms (std::string path, bool N_only)
 {
 	ty(AStates::MPPC_tbNpe_sum);
-	central_SiPMs(true);	
+	central_SiPMs(true);
 	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
 		int chan = post_processor->MPPC_channels[ich];
 		noise_cut(chan, 0, false);
@@ -53,7 +53,7 @@ void save_forms (std::string path, bool N_only)
 	set_zoom(20, 90);
 	set_bins(800);
 	saveas(path + "10_form_by_Npeaks");
-    ch(11);
+  ch(11);
 	noise_cut(11, 1, false);
 	set_zoom(20, 90);
 	set_bins(800);
@@ -108,7 +108,7 @@ void save_forms (std::string path, bool N_only)
 
 //Even it is hard to read the whole analysis, it is better to move all A-S cuts for PMTs in one
 //place. These cuts are used multiple times: during calibration - for A-S histogram and for Ss, the parameters are
-//selected at that stage at 20kV; during Npe plots (for Cd peak selection, which is required during signal forms) and during 
+//selected at that stage at 20kV; during Npe plots (for Cd peak selection, which is required during signal forms) and during
 //plotting PMT signal forms themselves. Without this function changing cut parameters would have to take place in several places
 //which is very error-prone. Besides, it is easier to re-use this file for other analyzes.
 void noise_cut(int channel, int aggressiveness, bool display) { //Same as
@@ -167,7 +167,7 @@ if (channel==8) {
 if (channel==32) {
     x_y_regions = {0.018, 0.018, 0.0010, 0.03, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.046, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -176,7 +176,7 @@ if (channel==32) {
 if (channel==33) {
 	x_y_regions = {0.016, 0.016, 0.0010, 0.03, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.038, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -185,7 +185,7 @@ if (channel==33) {
 if (channel==34) {
 	x_y_regions = {0.016, 0.016, 0.0010, 0.03, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.048, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -194,7 +194,7 @@ if (channel==34) {
 if (channel==35) {
 	x_y_regions = {0.018, 0.018, 0.0010, 0.04, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.049, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -203,7 +203,7 @@ if (channel==35) {
 if (channel==36) {
 	x_y_regions = {0.018, 0.018, 0.0010, 0.04, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.042, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -215,7 +215,7 @@ if (channel==37 && post_processor->isMultichannel(post_processor->current_type))
 if (channel==38) {
 	x_y_regions = {0.018, 0.018, 0.0010, 0.04, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.046, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -224,7 +224,7 @@ if (channel==38) {
 if (channel==39) {
 	x_y_regions = {0.018, 0.018, 0.0012, 0.05, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.043, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -233,7 +233,7 @@ if (channel==39) {
 if (channel==40) {
 	x_y_regions = {0.018, 0.018, 0.0012, 0.04, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.047, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -242,7 +242,7 @@ if (channel==40) {
 if (channel==41) {
 	x_y_regions = {0.020, 0.020, 0.00125, 0.05, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.047, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -251,7 +251,7 @@ if (channel==41) {
 if (channel==42) {
 	x_y_regions = {0.018, 0.018, 0.00125, 0.05, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.045, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -260,7 +260,7 @@ if (channel==42) {
 if (channel == 43) {
 	x_y_regions = {0.018, 0.018, 0.0010, 0.04, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.045, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -272,7 +272,7 @@ if (channel==44 && post_processor->isMultichannel(post_processor->current_type))
 if (channel==48) {
 	x_y_regions = {0.018, 0.018, 0.0010, 0.04, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.047, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -281,7 +281,7 @@ if (channel==48) {
 if (channel==49) {
 	x_y_regions = {0.015, 0.015, 0.0010, 0.04, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.037, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -290,7 +290,7 @@ if (channel==49) {
 if (channel==50) {
 	x_y_regions = {0.015, 0.015, 0.0010, 0.04, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.037, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -299,7 +299,7 @@ if (channel==50) {
 if (channel==51) {
 	x_y_regions = {0.016, 0.016, 0.0010, 0.04, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.045, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -308,7 +308,7 @@ if (channel==51) {
 if (channel==52) {
 	x_y_regions = {0.017, 0.017, 0.0010, 0.04, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.043, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -317,7 +317,7 @@ if (channel==52) {
 if (channel==53) {
 	x_y_regions = {0.018, 0.018, 0.0010, 0.04, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.046, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -326,7 +326,7 @@ if (channel==53) {
 if (channel==54) {
 	x_y_regions = {0.018, 0.018, 0.0010, 0.04, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.042, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -335,7 +335,7 @@ if (channel==54) {
 if (channel==55) {
 	x_y_regions = {0.018, 0.018, 0.0014, 0.04, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.04, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -344,7 +344,7 @@ if (channel==55) {
 if (channel==56) {
 	x_y_regions = {0.020, 0.020, 0.0012, 0.05, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.046, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -353,7 +353,7 @@ if (channel==56) {
 if (channel==57) {
 	x_y_regions = {0.020, 0.020, 0.0012, 0.05, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.046, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -362,7 +362,7 @@ if (channel==57) {
 if (channel==58) {
 	x_y_regions = {0.020, 0.020, 0.0012, 0.05, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.043, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -371,7 +371,7 @@ if (channel==58) {
 if (channel==59) {
 	x_y_regions = {0.020, 0.020, 0.0012, 0.05, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.044, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -439,7 +439,7 @@ if (S2_times_entry != S2_times.end()) {
     nex();
     continue;
 }
-for (std::size_t chi = 0, chi_end_ = calib_channels.size(); calibrate && chi!=chi_end_; ++chi) { 
+for (std::size_t chi = 0, chi_end_ = calib_channels.size(); calibrate && chi!=chi_end_; ++chi) {
 int channel = calib_channels[chi];
 std::string ch_str = int_to_str(channel);
 //parameters set by Cd_20kV_800V_48V.
@@ -453,7 +453,7 @@ ch(channel);
     ty(AStates::MPPC_Ss);
     set_zoom(0, 0.025);
     set_bins(800);
-    saveas(data_output_path + folder +"/calibration/"+ch_str+"_Ss");    
+    saveas(data_output_path + folder +"/calibration/"+ch_str+"_Ss");
     noise_cut(channel, 1, false);
     draw_limits(0.0005, 0.012);
     set_use_mean(); //overwrites old info from calibration file!
@@ -467,7 +467,7 @@ ch(channel);
 	ty(AStates::PMT_A_S);
     noise_cut(channel, 0, true);
 	set_bins(1000);
-    saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");    
+    saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");
 	set_zoom(0, 0.02, 0, 0.05);
     set_bins(300);
     saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S_zoom");
@@ -477,7 +477,7 @@ ch(channel);
 	ty(AStates::PMT_A_S);
     noise_cut(channel, 0, true);
 	set_bins(2000);
-    saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");    
+    saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");
 	set_zoom(0, 0.1, 0, 0.005);
     set_bins(600);
     saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S_zoom");
@@ -487,7 +487,7 @@ ch(channel);
 	ty(AStates::PMT_A_S);
     noise_cut(channel, 0, true);
 	set_bins(1500);
-    saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");    
+    saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");
 	set_zoom(0, 0.07, 0, 0.002);
     set_bins(300);
     saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S_zoom");
@@ -497,7 +497,7 @@ ch(channel);
 	ty(AStates::PMT_A_S);
     noise_cut(channel, 0, true);
 	set_bins(2000);
-    saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");    
+    saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");
 	set_zoom(0, 0.07, 0, 0.002);
     set_bins(800);
     saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S_zoom");
@@ -507,7 +507,7 @@ ch(channel);
 	ty(AStates::PMT_A_S);
     noise_cut(channel, 0, true);
 	set_bins(3000);
-    saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");    
+    saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");
 	set_zoom(0, 0.07, 0, 0.002);
     set_bins(100);
     saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S_zoom");
@@ -545,7 +545,7 @@ if (S2_times_entry != S2_times.end()) {
     std::cout<<"Could not find S2 time limits for '"<<exp<<"'! Skipping building signal forms"<<std::endl;
     return;
 }
-if (exp == "180705_Cd_20kV_800V_12bB_48V" && method == 1) { 	
+if (exp == "180705_Cd_20kV_800V_12bB_48V" && method == 1) {
 	std::string meth = "";
 	std::string path = "";
 	double dt_shaping = 1.5;
@@ -586,7 +586,7 @@ if (exp == "180705_Cd_20kV_800V_12bB_48V" && method == 1) {
 	set_bins(300);
 	saveaspng(FOLDER + Num+"_slowPMTs_trigger_"+cuts+"_"+dt+"_zoom");
 	Num = int_to_str(++no, 2);
-	
+
 	ty(AStates::PMT_trigger_bNpeaks); //Very poor results because of merged peaks
 	off_ch(0); off_ch(1); off_ch(12);
 	noise_cut(8, 0, 0);
@@ -641,7 +641,7 @@ set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	set_as_run_cut("good_sPMTs_ZxZy");	cuts = "cuts_"+Num;
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1"); remcut(-1, "2"); remcut(-1, "3"); remcut(-1, "4");
-	
+
 set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bS, -1, -1);
 	ty(AStates::Correlation);
 	set_zoom(20, 45, 20, 45);
@@ -661,7 +661,7 @@ ty(AStates::PMT_Npe_sum);
 	std::vector<std::pair<double, double> > sPMT_trigger_lims;
 	std::vector<double> shapinngs = {1.5, 2.0, 2.5, 3.0, 3.5, 4.5};
 	fPMT_trigger_lims.push_back(std::pair<double, double> (32, 35.5)); //1.5 us shaping
-	sPMT_trigger_lims.push_back(std::pair<double, double> (33.5, 36.5));	
+	sPMT_trigger_lims.push_back(std::pair<double, double> (33.5, 36.5));
 	fPMT_trigger_lims.push_back(std::pair<double, double> (32, 35.5)); //2.0 us shaping
 	sPMT_trigger_lims.push_back(std::pair<double, double> (33.5, 36.5));
 	fPMT_trigger_lims.push_back(std::pair<double, double> (32, 35.5)); //2.5 us shaping
@@ -735,7 +735,7 @@ ty(AStates::PMT_Npe_sum);
 	}
 }
 
-if (exp == "180705_Cd_16kV_800V_12bB_48V" && method == 1) { 	
+if (exp == "180705_Cd_16kV_800V_12bB_48V" && method == 1) {
 	std::string meth = "";
 	std::string path = "";
 	double dt_shaping = 3.0;
@@ -776,7 +776,7 @@ if (exp == "180705_Cd_16kV_800V_12bB_48V" && method == 1) {
 	set_bins(300);
 	saveaspng(FOLDER + Num+"_slowPMTs_trigger_"+cuts+"_"+dt+"_zoom");
 	Num = int_to_str(++no, 2);
-	
+
 	ty(AStates::PMT_trigger_bNpeaks); //Poor results because of merged peaks
 	off_ch(0); off_ch(1); off_ch(12);
 	noise_cut(8, 0, 0);
@@ -817,7 +817,7 @@ set_corr(AStates::PMT_Npe_sum, AStates::PMT_Npe_sum, -1, -1);
 	set_as_run_cut("good_sPMTs_ZxZy");	cuts = "cuts_"+Num;
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1"); remcut(-1, "2"); remcut(-1, "3");
-	
+
 set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bS, -1, -1);
 	ty(AStates::Correlation);
 	set_zoom(20, 45, 20, 45);
@@ -882,7 +882,7 @@ ty(AStates::PMT_Npe_sum);
 	}
 }
 
-if (exp == "180705_Cd_12kV_800V_6bB_48V" && method == 1) { 	
+if (exp == "180705_Cd_12kV_800V_6bB_48V" && method == 1) {
 	std::string meth = "";
 	std::string path = "";
 	double dt_shaping;
@@ -951,7 +951,7 @@ ty(AStates::PMT_sum_N);
 	fPMT_trigger_lims.push_back(std::pair<double, double> (30.3, 35.5));
 	fPMT_trigger_lims.push_back(std::pair<double, double> (30.3, 35.5));
 	fPMT_trigger_lims.push_back(std::pair<double, double> (30.3, 35.5));
-	
+
 	for (std::size_t sh = 0, sh_end_ = shapinngs.size(); sh != sh_end_; ++sh) {
 		dt_shaping = shapinngs[sh];
 		dt = "dt="+dbl_to_str(dt_shaping, 1) + "us";
@@ -966,11 +966,11 @@ ty(AStates::PMT_sum_N);
 		set_zoom(25, 45);
 		set_bins(300);
 		set_trigger_shaping(dt_shaping);
-		draw_limits(fPMT_trigger_lims[sh].first, fPMT_trigger_lims[sh].second); 
+		draw_limits(fPMT_trigger_lims[sh].first, fPMT_trigger_lims[sh].second);
 		saveaspng(FOLDER + Num+"_fastPMTs_Strigger_"+dt+"_"+cuts+"_zoom");
 		set_as_run_cut("good_trigger");	cuts += "+" + Num;
 		set_trigger_offsets(trigger_at);
-	
+
 	save_forms(FOLDER + Num + "_fastPMTs_Strigger_"+dt+"_"+cuts+"/", false);
 		Num = int_to_str(++no, 2);
 
@@ -980,7 +980,7 @@ ty(AStates::PMT_sum_N);
 	}
 }
 
-if (exp == "180705_Cd_11kV_800V_6bB_48V" && method == 1) { 	
+if (exp == "180705_Cd_11kV_800V_6bB_48V" && method == 1) {
 	std::string meth = "";
 	std::string path = "";
 	double dt_shaping;
@@ -1049,7 +1049,7 @@ ty(AStates::PMT_sum_N);
 	fPMT_trigger_lims.push_back(std::pair<double, double> (29.7, 34.3));
 	fPMT_trigger_lims.push_back(std::pair<double, double> (29.6, 34.2));
 	fPMT_trigger_lims.push_back(std::pair<double, double> (29.5, 34.5));
-	
+
 	for (std::size_t sh = 0, sh_end_ = shapinngs.size(); sh != sh_end_; ++sh) {
 		dt_shaping = shapinngs[sh];
 		dt = "dt="+dbl_to_str(dt_shaping, 1) + "us";
@@ -1064,11 +1064,11 @@ ty(AStates::PMT_sum_N);
 		set_zoom(25, 45);
 		set_bins(300);
 		set_trigger_shaping(dt_shaping);
-		draw_limits(fPMT_trigger_lims[sh].first, fPMT_trigger_lims[sh].second); 
+		draw_limits(fPMT_trigger_lims[sh].first, fPMT_trigger_lims[sh].second);
 		saveaspng(FOLDER + Num+"_fastPMTs_Strigger_"+dt+"_"+cuts+"_zoom");
 		set_as_run_cut("good_trigger");	cuts += "+" + Num;
 		set_trigger_offsets(trigger_at);
-	
+
 	save_forms(FOLDER + Num + "_fastPMTs_Strigger_"+dt+"_"+cuts+"/", false);
 		Num = int_to_str(++no, 2);
 
@@ -1078,7 +1078,7 @@ ty(AStates::PMT_sum_N);
 	}
 }
 
-if (exp == "180705_Cd_10kV_800V_6bB_48V" && method == 1) { 	
+if (exp == "180705_Cd_10kV_800V_6bB_48V" && method == 1) {
 	std::string meth = "";
 	std::string path = "";
 	double dt_shaping;
@@ -1147,7 +1147,7 @@ ty(AStates::PMT_sum_N);
 	fPMT_trigger_lims.push_back(std::pair<double, double> (29.5, 34.2));
 	fPMT_trigger_lims.push_back(std::pair<double, double> (29.5, 34.3));
 	fPMT_trigger_lims.push_back(std::pair<double, double> (29.6, 34.5));
-	
+
 	for (std::size_t sh = 0, sh_end_ = shapinngs.size(); sh != sh_end_; ++sh) {
 		dt_shaping = shapinngs[sh];
 		dt = "dt="+dbl_to_str(dt_shaping, 1) + "us";
@@ -1162,11 +1162,11 @@ ty(AStates::PMT_sum_N);
 		set_zoom(25, 45);
 		set_bins(300);
 		set_trigger_shaping(dt_shaping);
-		draw_limits(fPMT_trigger_lims[sh].first, fPMT_trigger_lims[sh].second); 
+		draw_limits(fPMT_trigger_lims[sh].first, fPMT_trigger_lims[sh].second);
 		saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+dt+"_"+cuts+"_zoom");
 		set_as_run_cut("good_trigger");	cuts += "+" + Num;
 		set_trigger_offsets(trigger_at);
-	
+
 	save_forms(FOLDER + Num + "_fastPMTs_Ntrigger_"+dt+"_"+cuts+"/", false);
 		Num = int_to_str(++no, 2);
 
@@ -1176,7 +1176,7 @@ ty(AStates::PMT_sum_N);
 	}
 }
 
-if (exp == "180705_Cd_9kV_800V_0bB_48V" && method == 1) { 	
+if (exp == "180705_Cd_9kV_800V_0bB_48V" && method == 1) {
 	std::string meth = "";
 	std::string path = "";
 	double dt_shaping;
@@ -1245,7 +1245,7 @@ ty(AStates::PMT_sum_N);
 	fPMT_trigger_lims.push_back(std::pair<double, double> (29.5, 34.3));
 	fPMT_trigger_lims.push_back(std::pair<double, double> (29.6, 34.6));
 	fPMT_trigger_lims.push_back(std::pair<double, double> (29.6, 34.7));
-	
+
 	for (std::size_t sh = 0, sh_end_ = shapinngs.size(); sh != sh_end_; ++sh) {
 		dt_shaping = shapinngs[sh];
 		dt = "dt="+dbl_to_str(dt_shaping, 1) + "us";
@@ -1260,11 +1260,11 @@ ty(AStates::PMT_sum_N);
 		set_zoom(25, 45);
 		set_bins(300);
 		set_trigger_shaping(dt_shaping);
-		draw_limits(fPMT_trigger_lims[sh].first, fPMT_trigger_lims[sh].second); 
+		draw_limits(fPMT_trigger_lims[sh].first, fPMT_trigger_lims[sh].second);
 		saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+dt+"_"+cuts+"_zoom");
 		set_as_run_cut("good_trigger");	cuts += "+" + Num;
 		set_trigger_offsets(trigger_at);
-	
+
 	save_forms(FOLDER + Num + "_fastPMTs_Ntrigger_"+dt+"_"+cuts+"/", false);
 		Num = int_to_str(++no, 2);
 
@@ -1274,7 +1274,7 @@ ty(AStates::PMT_sum_N);
 	}
 }
 
-if (exp == "180705_Cd_8kV_800V_0bB_48V" && method == 1) { 	
+if (exp == "180705_Cd_8kV_800V_0bB_48V" && method == 1) {
 	std::string meth = "";
 	std::string path = "";
 	double dt_shaping;
@@ -1342,7 +1342,7 @@ ty(AStates::PMT_sum_N);
 	fPMT_trigger_lims.push_back(std::pair<double, double> (29.5, 34.5));
 	fPMT_trigger_lims.push_back(std::pair<double, double> (29.0, 35.0));
 	fPMT_trigger_lims.push_back(std::pair<double, double> (29.0, 35.0));
-	
+
 	for (std::size_t sh = 0, sh_end_ = shapinngs.size(); sh != sh_end_; ++sh) {
 		dt_shaping = shapinngs[sh];
 		dt = "dt="+dbl_to_str(dt_shaping, 1) + "us";
@@ -1357,11 +1357,11 @@ ty(AStates::PMT_sum_N);
 		set_zoom(25, 45);
 		set_bins(300);
 		set_trigger_shaping(dt_shaping);
-		draw_limits(fPMT_trigger_lims[sh].first, fPMT_trigger_lims[sh].second); 
+		draw_limits(fPMT_trigger_lims[sh].first, fPMT_trigger_lims[sh].second);
 		saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+dt+"_"+cuts+"_zoom");
 		set_as_run_cut("good_trigger");	cuts += "+" + Num;
 		set_trigger_offsets(trigger_at);
-	
+
 	save_forms(FOLDER + Num + "_fastPMTs_Ntrigger_"+dt+"_"+cuts+"/", false);
 		Num = int_to_str(++no, 2);
 
@@ -1371,4 +1371,4 @@ ty(AStates::PMT_sum_N);
 	}
 }
 //END OF FORMS
-} 
+}

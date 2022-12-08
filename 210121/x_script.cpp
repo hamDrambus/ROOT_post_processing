@@ -56,27 +56,9 @@ if (false) {
 	}
 }
 if (true) {
-	bool calibrate = false;
-	unsigned int method = 0;
-	/*analysis_history(calibrate, method); //20
-	nex();
-	analysis_history(calibrate, method); //18
-	nex();
-	analysis_history(calibrate, method); //16
-	nex();
-	analysis_history(calibrate, method); //15
-	nex();
-	analysis_history(calibrate, method); //14
-	nex();
-	analysis_history(calibrate, method); //13
-	nex();*/
-	analysis_history(calibrate, method); //12
-	nex();
-	analysis_history(calibrate, method); //11
-	nex();
-	analysis_history(calibrate, method); //10
-	nex();
-	analysis_history(calibrate, method); //8.9
-	nex();
+	for (int e = 0; e != exp_area.experiments.size(); ++e) {
+		analysis_history(0);
+		nex();
+	}
 }
 }

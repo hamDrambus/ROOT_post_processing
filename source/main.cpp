@@ -800,13 +800,13 @@ void set_limits(double left, double right) //2 tier method
 	update();
 }
 
-void draw_limits(double left, double right) //2 tier method
+void draw_limits(double left, double right, std::string _name) //2 tier method. To draw several vertical lines
 {
 	if (NULL == g_data) {
 		status();
 		return;
 	}
-	std::string name = "_histogram_drawn_limits_";
+	std::string name = _name.empty() ? "_histogram_drawn_limits_" : _name;
 	double _left = std::min(left, right);
 	double _right = std::max(left, right);
 	FunctionWrapper *picker = create_vertical_lines_cut(_left, _right);
@@ -1205,6 +1205,32 @@ void cut_S_t_rect_select(std::vector<double> region, bool drawn, int channel, st
 		update();
 }
 
+
+//region is {t_min_0, t_max_0, t_min_1, t_max_1, ...}
+void cut_times_select(std::vector<double> region, bool drawn, int channel, std::string _name)
+{
+	if (NULL == g_data) {
+		status();
+		return;
+	}
+	if (-1 == channel) {
+		if (post_processor->isMultichannel(post_processor->current_type)) {
+			std::cout << "Can't use -1 channel for this cut and multichannel type" << std::endl;
+			return;
+		}
+		std::cout << "Using default channel : " << (channel = post_processor->current_channel) << std::endl;
+	}
+	std::string name = ((_name == "") ? "_times_select_" : _name);
+	FunctionWrapper *picker = create_S_t_rect_select_cut(region);
+	if (NULL == picker) {
+		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
+		return;
+	}
+	post_processor->add_hist_cut(picker, name, channel, !drawn);
+	if (!post_processor->isMultichannel(post_processor->current_type))
+		update();
+}
+
 void remcut_S_t_rect_select(int channel, std::string _name)
 {
 	if (NULL == g_data) {
@@ -1401,11 +1427,16 @@ void remcut(std::string name)
 		status();
 		return;
 	}
-	if (post_processor->isMultichannel(post_processor->current_type)) {
-		std::cout<<"Cut not removed: must specify channel for multichannel type"<<std::endl;
-		return;
+	if (post_processor->isComposite(post_processor->current_type))
+		post_processor->remove_hist_cut(name, -1);
+	else {
+		if (post_processor->isMultichannel(post_processor->current_type)) {
+			for (int chi=0, ch=0; post_processor->loop_channels(post_processor->current_type, ch, chi);)
+				post_processor->remove_hist_cut(name, -1);
+		} else {
+			post_processor->remove_hist_cut(name);
+		}
 	}
-	post_processor->remove_hist_cut(name, post_processor->current_channel);
 }
 
 void cut_S(double S_min, double S_max, bool drawn, int channel, std::string _name)
@@ -1424,6 +1455,21 @@ void cut_t(double t_min, double t_max, bool drawn, int channel, std::string _nam
 {
 	std::string name = ((_name == "") ? "_t_cut_" : _name);
 	cut_S_t_rect_select(t_min, t_max, -DBL_MAX, DBL_MAX, drawn, channel, name);
+}
+
+void cut_t_S1_S2(double t_min_S1, double t_max_S1, double t_min_S2, double t_max_S2, bool drawn, int channel, std::string _name)
+{
+	std::string name = ((_name == "") ? "_t_cut_S1_S2_" : _name);
+	std::vector<double> region;
+	region.push_back(t_min_S1);
+	region.push_back(t_max_S1);
+	region.push_back(-DBL_MAX);
+	region.push_back(DBL_MAX);
+	region.push_back(t_min_S2);
+	region.push_back(t_max_S2);
+	region.push_back(-DBL_MAX);
+	region.push_back(DBL_MAX);
+	cut_S_t_rect_select(region, drawn, channel, name);
 }
 
 void remcut_t(int channel, std::string _name)

@@ -14,7 +14,7 @@ void central_SiPMs(bool on) {
 	if (on) {
 		on_ch(50); on_ch(51); on_ch(36);
 		on_ch(53); on_ch(38); on_ch(39);
-		on_ch(40); on_ch(41); on_ch(56);	
+		on_ch(40); on_ch(41); on_ch(56);
 	} else {
 		off_ch(50); off_ch(51); off_ch(36);
 		off_ch(53); off_ch(38); off_ch(39);
@@ -108,7 +108,7 @@ void save_forms (std::string path, bool N_only, int PMT_condition, int SiPM_cond
 
 //Even it is hard to read the whole analysis, it is better to move all A-S cuts for PMTs in one
 //place. These cuts are used multiple times: during calibration - for A-S histogram and for Ss, the parameters are
-//selected at that stage at 20kV; during Npe plots (for Cd peak selection, which is required during signal forms) and during 
+//selected at that stage at 20kV; during Npe plots (for Cd peak selection, which is required during signal forms) and during
 //plotting PMT signal forms themselves. Without this function changing cut parameters would have to take place in several places
 //which is very error-prone. Besides, it is easier to re-use this file for other analyzes.
 void noise_cut(int channel, int aggressiveness, int device_condition, bool display) {
@@ -174,7 +174,7 @@ if (channel==8) {
 if (channel==32) {
    x_y_regions = {0.018, 0.018, 0.0010, 0.03, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.046, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -183,7 +183,7 @@ if (channel==32) {
 if (channel==33) {
 	x_y_regions = {0.0177, 0.0177, 0.00115, 0.03, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.038, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -192,7 +192,7 @@ if (channel==33) {
 if (channel==34) {
 	x_y_regions = {0.02, 0.02, 0.0014, 0.03, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.048, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -201,7 +201,7 @@ if (channel==34) {
 if (channel==35) {
 	x_y_regions = {0.020, 0.020, 0.0011, 0.05, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.049, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -210,7 +210,7 @@ if (channel==35) {
 if (channel==36) {
 	x_y_regions = {0.018, 0.018, 0.0010, 0.04, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.042, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -222,7 +222,7 @@ if (channel==37 && post_processor->isMultichannel(post_processor->current_type))
 if (channel==38) {
 	x_y_regions = {0.02, 0.02, 0.0012, 0.04, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.046, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -231,7 +231,7 @@ if (channel==38) {
 if (channel==39) {
 	x_y_regions = {0.0185, 0.0185, 0.00138, 0.09, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.043, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -240,7 +240,7 @@ if (channel==39) {
 if (channel==40) {
 	x_y_regions = {0.018, 0.018, 0.0012, 0.04, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.047, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -249,7 +249,7 @@ if (channel==40) {
 if (channel==41) {
 	x_y_regions = {0.0160, 0.0160, 0.00107, 0.07, 0.0060, 0.07};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1"); 
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	cut_A_S_upper(0.0160, 0.00154, 0.0212, 0.00330, display, channel, "rem_smallA_largeS");
 	if (aggressiveness>=1) {//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.0423, 0.0001, 1, 0.0001, display, channel, "2pe");
@@ -261,7 +261,7 @@ if (channel==41) {
 if (channel==42) {
 	x_y_regions = {0.018, 0.018, 0.00125, 0.05, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.045, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -270,7 +270,7 @@ if (channel==42) {
 if (channel == 43) {
 	x_y_regions = {0.020, 0.020, 0.00115, 0.04, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.045, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -282,7 +282,7 @@ if (channel==44 && post_processor->isMultichannel(post_processor->current_type))
 if (channel==48) {
 	x_y_regions = {0.020, 0.020, 0.00128, 0.04, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.047, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -291,7 +291,7 @@ if (channel==48) {
 if (channel==49) {
 	x_y_regions = {0.0163, 0.0163, 0.00103, 0.04, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.037, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -300,7 +300,7 @@ if (channel==49) {
 if (channel==50) {
 	x_y_regions = {0.015, 0.015, 0.0010, 0.04, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.037, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -309,7 +309,7 @@ if (channel==50) {
 if (channel==51) {
 	x_y_regions = {0.0186, 0.0186, 0.00103, 0.04, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.045, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -318,7 +318,7 @@ if (channel==51) {
 if (channel==52) {
 	x_y_regions = {0.0188, 0.0188, 0.00103, 0.04, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.043, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -327,7 +327,7 @@ if (channel==52) {
 if (channel==53) {
 	x_y_regions = {0.020, 0.020, 0.00119, 0.04, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.046, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -336,7 +336,7 @@ if (channel==53) {
 if (channel==54) {
 	x_y_regions = {0.019, 0.019, 0.0015, 0.06, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.0406, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -345,7 +345,7 @@ if (channel==54) {
 if (channel==55) {
 	x_y_regions = {0.0193, 0.0193, 0.00123, 0.09, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.04, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -354,7 +354,7 @@ if (channel==55) {
 if (channel==56) {
 	x_y_regions = {0.0161, 0.0161, 0.00120, 0.07, 0.00624, 0.07};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	cut_A_S_left(0.014, 0.00063, 0.0224, 0.0038, display, channel, "rem_smallA_largeS");
 	if (aggressiveness>=1) {//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.0426, 0.0001, 1, 0.0001, display, channel, "2pe");
@@ -366,7 +366,7 @@ if (channel==56) {
 if (channel==57) {
 	x_y_regions = {0.0169, 0.0169, 0.0012, 0.07, 0.0046, 0.07};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.042, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -375,7 +375,7 @@ if (channel==57) {
 if (channel==58) {
 	x_y_regions = {0.020, 0.020, 0.0012, 0.05, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.043, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -384,7 +384,7 @@ if (channel==58) {
 if (channel==59) {
 	x_y_regions = {0.021, 0.021, 0.0015, 0.05, 0.0, 1e3};
 	cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise");
-	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");  
+	cut_A_S_upper(0, 0.1, 1, 0.1, display, channel, "rem_S>0.1");
 	if (aggressiveness>=1)//select only 1 photoelectron for calibration
 		cut_A_S_upper(0.044, 0.0001, 1, 0.0001, display, channel, "2pe");
 	if (aggressiveness>=2)//remove afterimpulses
@@ -398,7 +398,7 @@ void analysis_history(bool calibrate, unsigned int method = 0) {
 //method = 0 - use fast PMTs for trigger_v2 (byNpe for large fields/byNpeaks for low) with
 //optimal dt determined as
 //dt_trigger_optimal[us] = 0.3923 + 0.9728*Tdrift(18mm)[us] (for previous analysis)
-//method = 1 - same as 0 but not using trigger adjustment (raw signals, but with same event selection as 0) 
+//method = 1 - same as 0 but not using trigger adjustment (raw signals, but with same event selection as 0)
 data_output_path = "180705/results_v4/";
 calibration_file = data_output_path+"180705_calibration.dat";
 trigger_version = TriggerVersion::trigger_v2;
@@ -468,7 +468,7 @@ if (S2_times_entry != S2_times.end()) {
     nex();
     continue;
 }
-for (std::size_t chi = 0, chi_end_ = calib_channels.size(); calibrate && chi!=chi_end_; ++chi) { 
+for (std::size_t chi = 0, chi_end_ = calib_channels.size(); calibrate && chi!=chi_end_; ++chi) {
 int channel = calib_channels[chi];
 std::string ch_str = int_to_str(channel);
 //parameters set by Cd_20kV_800V_48V.
@@ -484,7 +484,7 @@ ty(AStates::MPPC_A_S);
 ty(AStates::MPPC_Ss);
     set_zoom(0, 0.025);
     set_bins(800);
-    saveas(data_output_path + folder +"/calibration/"+ch_str+"_Ss");    
+    saveas(data_output_path + folder +"/calibration/"+ch_str+"_Ss");
     noise_cut(channel, 1, SiPM_state, false);
     draw_limits(0.0005, 0.012);
     set_use_mean(); //overwrites old info from calibration file!
@@ -496,21 +496,21 @@ ty(AStates::MPPC_Ss);
 if (channel==0) {
 	ty(AStates::PMT_A_S);
 	ch(channel);
-    noise_cut(channel, 0, PMT_state, true);
+  noise_cut(channel, 0, PMT_state, true);
 	set_bins(1000);
-    saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");
+  saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");
 	if (2 == PMT_state)
 		set_zoom(0, 0.35, 0, 0.06);
 	else
 		set_zoom(0, 0.25, 0, 0.04);
-    set_bins(1000);
-    saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S_zoom");
+  set_bins(1000);
+  saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S_zoom");
 	ty(AStates::PMT_Ss);
-    set_zoom(0, 0.2);
-    noise_cut(channel, 0, PMT_state, false);
-    set_bins(600);
-    saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss");
-    cut_t(0, d_S2_start, false, channel);
+  set_zoom(0, 0.2);
+  noise_cut(channel, 0, PMT_state, false);
+  set_bins(600);
+  saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss");
+  cut_t(0, d_S2_start, false, channel);
 	if (0 == PMT_state)
  		draw_limits(0.0015, 0.04);
 	if (1 == PMT_state)
@@ -550,7 +550,7 @@ if (channel==8) {
 	ch(channel);
     noise_cut(channel, 1, PMT_state, true);
 	set_bins(2000);
-    saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");    
+    saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");
 	set_zoom(0, 0.15, 0, 0.01);
     set_bins(500);
     saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S_zoom");
@@ -561,7 +561,7 @@ ty(AStates::PMT_Ss);
     saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss");
     cut_t(0, d_S2_start, false, channel);
 	draw_limits(0.0, 0.001);
-	set_use_mean(); //Not for actual Npe, but for correct trigger adjustment using fastPMT channels (correct weights for channels) 
+	set_use_mean(); //Not for actual Npe, but for correct trigger adjustment using fastPMT channels (correct weights for channels)
     unset_1peS(); //updates calibration if it was loaded from file
     update();
     saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss_w_0-"+S2_start+"us");
@@ -571,7 +571,7 @@ if (channel==9) {
 	ch(channel);
     noise_cut(channel, 1, PMT_state, true);
 	set_bins(2000);
-    saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");    
+    saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");
 	set_zoom(0, 0.15, 0, 0.01);
     set_bins(500);
     saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S_zoom");
@@ -582,7 +582,7 @@ ty(AStates::PMT_Ss);
     saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss");
     cut_t(0, d_S2_start, false, channel);
 	draw_limits(0.0, 0.001);
-	set_use_mean(); //Not for actual Npe, but for correct trigger adjustment using fastPMT channels (correct weights for channels) 
+	set_use_mean(); //Not for actual Npe, but for correct trigger adjustment using fastPMT channels (correct weights for channels)
     unset_1peS(); //updates calibration if it was loaded from file
     update();
     saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss_w_0-"+S2_start+"us");
@@ -592,7 +592,7 @@ if (channel==10) {
 	ch(channel);
     noise_cut(channel, 1, PMT_state, true);
 	set_bins(2000);
-    saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");    
+    saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");
 	set_zoom(0, 0.15, 0, 0.01);
     set_bins(500);
     saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S_zoom");
@@ -603,7 +603,7 @@ ty(AStates::PMT_Ss);
     saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss");
     cut_t(0, d_S2_start, false, channel);
 	draw_limits(0.0, 0.001);
-	set_use_mean(); //Not for actual Npe, but for correct trigger adjustment using fastPMT channels (correct weights for channels) 
+	set_use_mean(); //Not for actual Npe, but for correct trigger adjustment using fastPMT channels (correct weights for channels)
     unset_1peS(); //updates calibration if it was loaded from file
     update();
     saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss_w_0-"+S2_start+"us");
@@ -613,7 +613,7 @@ ty(AStates::PMT_A_S);
 	ch(channel);
     noise_cut(channel, 1, PMT_state, true);
 	set_bins(2000);
-    saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");    
+    saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");
 	set_zoom(0, 0.15, 0, 0.01);
     set_bins(500);
     saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S_zoom");
@@ -624,7 +624,7 @@ ty(AStates::PMT_Ss);
     saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss");
     cut_t(0, d_S2_start, false, channel);
 	draw_limits(0.0, 0.001);
-	set_use_mean(); //Not for actual Npe, but for correct trigger adjustment using fastPMT channels (correct weights for channels) 
+	set_use_mean(); //Not for actual Npe, but for correct trigger adjustment using fastPMT channels (correct weights for channels)
     unset_1peS(); //updates calibration if it was loaded from file
     update();
     saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss_w_0-"+S2_start+"us");
@@ -634,7 +634,7 @@ ty(AStates::PMT_A_S);
 	ch(channel);
     noise_cut(channel, 1, PMT_state, true);
 	set_bins(2000);
-    saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");    
+    saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S");
 	set_zoom(0, 0.15, 0, 0.01);
     set_bins(500);
     saveas(data_output_path + folder +"/calibration/"+ch_str+"_A_S_zoom");
@@ -645,7 +645,7 @@ ty(AStates::PMT_Ss);
     saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss");
     cut_t(0, d_S2_start, false, channel);
 	draw_limits(0.0, 0.001);
-	set_use_mean(); //Not for actual Npe, but for correct trigger adjustment using fastPMT channels (correct weights for channels) 
+	set_use_mean(); //Not for actual Npe, but for correct trigger adjustment using fastPMT channels (correct weights for channels)
     unset_1peS(); //updates calibration if it was loaded from file
     update();
     saveas(data_output_path+folder+"/calibration/"+ch_str+"_Ss_w_0-"+S2_start+"us");
@@ -744,7 +744,7 @@ if (exp == "180705_Cd_20kV_800V_12bB_48V") {
 	saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
 	Num = int_to_str(++no, 2);
 
-	ty(AStates::PMT_trigger_bS); //Poor results because it favours PMT channel with larges gain (S of 1phe) 
+	ty(AStates::PMT_trigger_bS); //Poor results because it favours PMT channel with larges gain (S of 1phe)
 	off_ch(0); off_ch(1); off_ch(12);
 	noise_cut(8, 0, PMT_state, 0);
 	noise_cut(9, 0, PMT_state, 0);
@@ -803,7 +803,7 @@ ty(AStates::Correlation_y);
 	set_as_run_cut("good_sPMTs_ZxZy2");	cuts = "cuts_"+Num;
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1"); remcut(-1, "2"); remcut(-1, "3");
-	
+
 set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bS, -1, -1);
 	ty(AStates::Correlation);
 	set_zoom(27, 37, 27, 37);
@@ -815,7 +815,7 @@ set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bS, -1, -1);
 	cut_x_y_left(27.13, 27.26, 36.39, 36.68, true, "5");
 	cut_x_y_right(27.72, 27.58, 36.40, 36.18, true, "6");
 	set_titles("t by fastPMTs by Npe " + DT, "t by fastPMTs by S" + DT);
-	update();	
+	update();
 	set_as_run_cut("good_trigger_fPMTs"); cuts += "+" + Num;
 	saveaspng(FOLDER + Num+"_fastPMTs_S_vs_Npe_trigger_"+cuts+"_"+dt+"_zoom");
 	print_rejected_events(FOLDER + Num + "_rejected_events.txt", first_run);
@@ -925,7 +925,7 @@ if (exp == "180705_Cd_18kV_800V_12bB_48V") {
 	saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
 	Num = int_to_str(++no, 2);
 
-	ty(AStates::PMT_trigger_bS); //Poor results because it favours PMT channel with larges gain (S of 1phe) 
+	ty(AStates::PMT_trigger_bS); //Poor results because it favours PMT channel with larges gain (S of 1phe)
 	off_ch(0); off_ch(1); off_ch(12);
 	noise_cut(8, 0, PMT_state, 0);
 	noise_cut(9, 0, PMT_state, 0);
@@ -984,7 +984,7 @@ ty(AStates::Correlation_y);
 	set_as_run_cut("good_sPMTs_ZxZy2");	cuts = "cuts_"+Num;
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1"); remcut(-1, "2"); remcut(-1, "3");
-	
+
 set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bS, -1, -1);
 	ty(AStates::Correlation);
 	set_zoom(27, 37, 27, 37);
@@ -996,7 +996,7 @@ set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bS, -1, -1);
 	cut_x_y_left(27.54, 27.68, 36.07, 36.36, true, "5");
 	cut_x_y_right(27.76, 27.50, 36.42, 36.13, true, "6");
 	set_titles("t by fastPMTs by Npe " + DT, "t by fastPMTs by S" + DT);
-	update();	
+	update();
 	set_as_run_cut("good_trigger_fPMTs"); cuts += "+" + Num;
 	saveaspng(FOLDER + Num+"_fastPMTs_S_vs_Npe_trigger_"+cuts+"_"+dt+"_zoom");
 	print_rejected_events(FOLDER + Num + "_rejected_events.txt", first_run);
@@ -1106,7 +1106,7 @@ if (exp == "180705_Cd_16kV_800V_12bB_48V") {
 	saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
 	Num = int_to_str(++no, 2);
 
-	ty(AStates::PMT_trigger_bS); //Poor results because it favours PMT channel with largest gain (S of 1phe) 
+	ty(AStates::PMT_trigger_bS); //Poor results because it favours PMT channel with largest gain (S of 1phe)
 	off_ch(0); off_ch(1); off_ch(12);
 	noise_cut(8, 0, PMT_state, 0);
 	noise_cut(9, 0, PMT_state, 0);
@@ -1165,7 +1165,7 @@ ty(AStates::Correlation_y);
 	set_as_run_cut("good_sPMTs_ZxZy2");	cuts = "cuts_"+Num;
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1"); remcut(-1, "2"); remcut(-1, "3");
-	
+
 set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bS, -1, -1);
 	ty(AStates::Correlation);
 	set_zoom(27, 37, 27, 37);
@@ -1177,7 +1177,7 @@ set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bS, -1, -1);
 	cut_x_y_left(27.54, 27.72, 36.07, 36.40, true, "5");
 	cut_x_y_right(27.76, 27.50, 36.42, 36.13, true, "6");
 	set_titles("t by fastPMTs by Npe " + DT, "t by fastPMTs by S" + DT);
-	update();	
+	update();
 	set_as_run_cut("good_trigger_fPMTs"); cuts += "+" + Num;
 	saveaspng(FOLDER + Num+"_fastPMTs_S_vs_Npe_trigger_"+cuts+"_"+dt+"_zoom");
 	print_rejected_events(FOLDER + Num + "_rejected_events.txt", first_run);
@@ -1287,7 +1287,7 @@ if (exp == "180705_Cd_14kV_800V_12bB_48V") {
 	saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
 	Num = int_to_str(++no, 2);
 
-	ty(AStates::PMT_trigger_bS); //Poor results because it favours PMT channel with largest gain (S of 1phe) 
+	ty(AStates::PMT_trigger_bS); //Poor results because it favours PMT channel with largest gain (S of 1phe)
 	off_ch(0); off_ch(1); off_ch(12);
 	noise_cut(8, 0, PMT_state, 0);
 	noise_cut(9, 0, PMT_state, 0);
@@ -1346,7 +1346,7 @@ ty(AStates::Correlation_y);
 	set_as_run_cut("good_sPMTs_ZxZy2");	cuts = "cuts_"+Num;
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1"); remcut(-1, "2"); remcut(-1, "3");
-	
+
 set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bS, -1, -1);
 	ty(AStates::Correlation);
 	set_zoom(27, 37, 27, 37);
@@ -1358,7 +1358,7 @@ set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bS, -1, -1);
 	cut_x_y_left(27.54, 27.80, 36.07, 36.48, true, "5");
 	cut_x_y_right(27.76, 27.50, 36.42, 36.13, true, "6");
 	set_titles("t by fastPMTs by Npe " + DT, "t by fastPMTs by S" + DT);
-	update();	
+	update();
 	set_as_run_cut("good_trigger_fPMTs"); cuts += "+" + Num;
 	saveaspng(FOLDER + Num+"_fastPMTs_S_vs_Npe_trigger_"+cuts+"_"+dt+"_zoom");
 	print_rejected_events(FOLDER + Num + "_rejected_events.txt", first_run);
@@ -1468,7 +1468,7 @@ if (exp == "180705_Cd_13kV_800V_12bB_48V") {
 	saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
 	Num = int_to_str(++no, 2);
 
-	ty(AStates::PMT_trigger_bS); //Poor results because it favours PMT channel with largest gain (S of 1phe) 
+	ty(AStates::PMT_trigger_bS); //Poor results because it favours PMT channel with largest gain (S of 1phe)
 	off_ch(0); off_ch(1); off_ch(12);
 	noise_cut(8, 0, PMT_state, 0);
 	noise_cut(9, 0, PMT_state, 0);
@@ -1527,7 +1527,7 @@ ty(AStates::Correlation_y);
 	set_as_run_cut("good_sPMTs_ZxZy2");	cuts = "cuts_"+Num;
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1"); remcut(-1, "2"); remcut(-1, "3");
-	
+
 set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bS, -1, -1);
 	ty(AStates::Correlation);
 	set_zoom(27, 37, 27, 37);
@@ -1539,7 +1539,7 @@ set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bS, -1, -1);
 	cut_x_y_left(27.54, 27.95, 36.07, 36.63, true, "5");
 	cut_x_y_right(27.76, 27.50, 36.42, 36.13, true, "6");
 	set_titles("t by fastPMTs by Npe " + DT, "t by fastPMTs by S" + DT);
-	update();	
+	update();
 	set_as_run_cut("good_trigger_fPMTs"); cuts += "+" + Num;
 	saveaspng(FOLDER + Num+"_fastPMTs_S_vs_Npe_trigger_"+cuts+"_"+dt+"_zoom");
 	print_rejected_events(FOLDER + Num + "_rejected_events.txt", first_run);
@@ -1649,7 +1649,7 @@ if (exp == "180705_Cd_12kV_800V_6bB_48V") {
 	saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
 	Num = int_to_str(++no, 2);
 
-	ty(AStates::PMT_trigger_bS); //Poor results because it favours PMT channel with largest gain (S of 1phe) 
+	ty(AStates::PMT_trigger_bS); //Poor results because it favours PMT channel with largest gain (S of 1phe)
 	off_ch(0); off_ch(1); off_ch(12);
 	noise_cut(8, 0, PMT_state, 0);
 	noise_cut(9, 0, PMT_state, 0);
@@ -1708,7 +1708,7 @@ ty(AStates::Correlation_y);
 	set_as_run_cut("good_sPMTs_ZxZy2");	cuts = "cuts_"+Num;
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1"); remcut(-1, "2"); remcut(-1, "3");
-	
+
 set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bNpeaks, -1, -1);
 	ty(AStates::Correlation);
 	set_zoom(27, 40, 27, 40);
@@ -1720,7 +1720,7 @@ set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bNpeaks, -1, -1);
 	cut_x_y_left(27.41, 28.04, 35.92, 36.68, true, "5");
 	cut_x_y_right(28.08, 27.45, 36.73, 36.10, true, "6");
 	set_titles("t by fastPMTs by Npe " + DT, "t by fastPMTs by Npeaks" + DT);
-	update();	
+	update();
 	set_as_run_cut("good_trigger_fPMTs"); cuts += "+" + Num;
 	saveaspng(FOLDER + Num+"_fastPMTs_Npeaks_vs_Npe_trigger_"+cuts+"_"+dt+"_zoom");
 	print_rejected_events(FOLDER + Num + "_rejected_events.txt", first_run);
@@ -1830,7 +1830,7 @@ if (exp == "180705_Cd_11kV_800V_6bB_48V") {
 	saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
 	Num = int_to_str(++no, 2);
 
-	ty(AStates::PMT_trigger_bS); //Poor results because it favours PMT channel with largest gain (S of 1phe) 
+	ty(AStates::PMT_trigger_bS); //Poor results because it favours PMT channel with largest gain (S of 1phe)
 	off_ch(0); off_ch(1); off_ch(12);
 	noise_cut(8, 0, PMT_state, 0);
 	noise_cut(9, 0, PMT_state, 0);
@@ -1889,7 +1889,7 @@ ty(AStates::Correlation_y);
 	set_as_run_cut("good_sPMTs_ZxZy2");	cuts = "cuts_"+Num;
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1"); remcut(-1, "2"); remcut(-1, "3");
-	
+
 set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bNpeaks, -1, -1);
 	ty(AStates::Correlation);
 	set_zoom(27, 40, 27, 40);
@@ -1901,7 +1901,7 @@ set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bNpeaks, -1, -1);
 	cut_x_y_left(27.41, 28.34, 35.78, 37.10, true, "5");
 	cut_x_y_right(28.08, 27.10, 36.73, 35.75, true, "6");
 	set_titles("t by fastPMTs by Npe " + DT, "t by fastPMTs by Npeaks" + DT);
-	update();	
+	update();
 	set_as_run_cut("good_trigger_fPMTs"); cuts += "+" + Num;
 	saveaspng(FOLDER + Num+"_fastPMTs_Npeaks_vs_Npe_trigger_"+cuts+"_"+dt+"_zoom");
 	print_rejected_events(FOLDER + Num + "_rejected_events.txt", first_run);
@@ -2011,7 +2011,7 @@ if (exp == "180705_Cd_10kV_800V_6bB_48V") {
 	saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
 	Num = int_to_str(++no, 2);
 
-	ty(AStates::PMT_trigger_bS); //Poor results because it favours PMT channel with largest gain (S of 1phe) 
+	ty(AStates::PMT_trigger_bS); //Poor results because it favours PMT channel with largest gain (S of 1phe)
 	off_ch(0); off_ch(1); off_ch(12);
 	noise_cut(8, 0, PMT_state, 0);
 	noise_cut(9, 0, PMT_state, 0);
@@ -2070,7 +2070,7 @@ ty(AStates::Correlation_y);
 	set_as_run_cut("good_sPMTs_ZxZy2");	cuts = "cuts_"+Num;
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1"); remcut(-1, "2"); remcut(-1, "3");
-	
+
 set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bNpeaks, -1, -1);
 	ty(AStates::Correlation);
 	set_zoom(27, 40, 27, 40);
@@ -2082,7 +2082,7 @@ set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bNpeaks, -1, -1);
 	cut_x_y_left(27.62, 28.11, 35.99, 36.93, true, "5");
 	cut_x_y_right(27.84, 27.11, 36.55, 35.82, true, "6");
 	set_titles("t by fastPMTs by Npe " + DT, "t by fastPMTs by Npeaks" + DT);
-	update();	
+	update();
 	set_as_run_cut("good_trigger_fPMTs"); cuts += "+" + Num;
 	saveaspng(FOLDER + Num+"_fastPMTs_Npeaks_vs_Npe_trigger_"+cuts+"_"+dt+"_zoom");
 	print_rejected_events(FOLDER + Num + "_rejected_events.txt", first_run);
@@ -2192,7 +2192,7 @@ if (exp == "180705_Cd_9kV_800V_0bB_48V") {
 	saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
 	Num = int_to_str(++no, 2);
 
-	ty(AStates::PMT_trigger_bS); //Poor results because it favours PMT channel with largest gain (S of 1phe) 
+	ty(AStates::PMT_trigger_bS); //Poor results because it favours PMT channel with largest gain (S of 1phe)
 	off_ch(0); off_ch(1); off_ch(12);
 	noise_cut(8, 0, PMT_state, 0);
 	noise_cut(9, 0, PMT_state, 0);
@@ -2246,7 +2246,7 @@ ty(AStates::Correlation_y);
 	set_as_run_cut("good_sPMTs_ZxZy2");	cuts = "cuts_"+Num;
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1");
-	
+
 set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bNpeaks, -1, -1);
 	ty(AStates::Correlation);
 	set_zoom(27, 40, 27, 40);
@@ -2258,7 +2258,7 @@ set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bNpeaks, -1, -1);
 	cut_x_y_left(28.03, 28.66, 35.83, 37.06, true, "5");
 	cut_x_y_right(28.76, 27.73, 36.64, 35.71, true, "6");
 	set_titles("t by fastPMTs by Npe " + DT, "t by fastPMTs by Npeaks" + DT);
-	update();	
+	update();
 	set_as_run_cut("good_trigger_fPMTs"); cuts += "+" + Num;
 	saveaspng(FOLDER + Num+"_fastPMTs_Npeaks_vs_Npe_trigger_"+cuts+"_"+dt+"_zoom");
 	print_rejected_events(FOLDER + Num + "_rejected_events.txt", first_run);
@@ -2368,7 +2368,7 @@ if (exp == "180705_Cd_8kV_800V_0bB_48V") {
 	saveaspng(FOLDER + Num+"_fastPMTs_Ntrigger_"+cuts+"_"+dt+"_zoom");
 	Num = int_to_str(++no, 2);
 
-	ty(AStates::PMT_trigger_bS); //Poor results because it favours PMT channel with largest gain (S of 1phe) 
+	ty(AStates::PMT_trigger_bS); //Poor results because it favours PMT channel with largest gain (S of 1phe)
 	off_ch(0); off_ch(1); off_ch(12);
 	noise_cut(8, 0, PMT_state, 0);
 	noise_cut(9, 0, PMT_state, 0);
@@ -2422,7 +2422,7 @@ ty(AStates::Correlation_y);
 	set_as_run_cut("good_sPMTs_ZxZy2");	cuts = "cuts_"+Num;
 	Num = int_to_str(++no, 2);
 	remcut(-1, "1");
-	
+
 set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bNpeaks, -1, -1);
 	ty(AStates::Correlation);
 	set_zoom(27, 40, 27, 40);
@@ -2434,7 +2434,7 @@ set_corr(AStates::PMT_trigger_bNpe, AStates::PMT_trigger_bNpeaks, -1, -1);
 	cut_x_y_left(28.17, 28.49, 35.66, 36.96, true, "5");
 	cut_x_y_right(28.87, 27.83, 36.22, 35.68, true, "6");
 	set_titles("t by fastPMTs by Npe " + DT, "t by fastPMTs by Npeaks" + DT);
-	update();	
+	update();
 	set_as_run_cut("good_trigger_fPMTs"); cuts += "+" + Num;
 	saveaspng(FOLDER + Num+"_fastPMTs_Npeaks_vs_Npe_trigger_"+cuts+"_"+dt+"_zoom");
 	print_rejected_events(FOLDER + Num + "_rejected_events.txt", first_run);
@@ -2498,4 +2498,4 @@ save_forms(FOLDER + "forms_cosmic/", false, PMT_state, SiPM_state);
 	cuts.erase(cuts.end()-3, cuts.end());
 }
 //END OF FORMS
-} 
+}
