@@ -1,4 +1,15 @@
 {
+  struct SiPM_Npe_data {
+    std::pair<double, double> t_pre_trigger;
+    std::pair<double, double> t_S1;
+    std::pair<double, double> t_S2; // Here S2 is S2 in LAr
+    double Npe_pre_trigger;
+    double Npe_pre_S1;
+    double Npe_S1;
+    double Npe_S2;
+    double Npe_S2_only;
+  };
+
   gStyle->SetCanvasDefH(800);
 	gStyle->SetCanvasDefW(1000);
   gErrorIgnoreLevel = 1001; //To shut up minuit output during failed(?) fitting
@@ -56,6 +67,18 @@
   }
 
   experiment_fields.clear();
+  experiment_fields["221020_S2_LAr_Pu_WLS_18.5kV_0V"] = 18.5;
+  experiment_fields["221020_S2_LAr_Pu_WLS_18.0kV_338V"] = 18.0;
+  experiment_fields["221020_S2_LAr_Pu_WLS_17.5kV_563V"] = 17.5;
+  experiment_fields["221020_S2_LAr_Pu_WLS_17.0kV_917V"] = 17.0;
+  experiment_fields["221020_S2_LAr_Pu_WLS_16.5kV_1238V"] = 16.5;
+  experiment_fields["221020_S2_LAr_Pu_WLS_16.0kV_1238V"] = 16.0;
+  experiment_fields["221020_S2_LAr_Pu_WLS_15.5kV_1238V"] = 15.5;
+  experiment_fields["221020_S2_LAr_Pu_WLS_15.0kV_1238V"] = 15.0;
+  experiment_fields["221020_S2_LAr_Pu_WLS_14.0kV_1688V"] = 14.0;
+  experiment_fields["221020_S2_LAr_Pu_WLS_13.0kV_2250V"] = 13.0;
+  experiment_fields["221020_S2_LAr_Pu_WLS_12.0kV_2250V"] = 12.0;
+  experiment_fields["221020_S2_LAr_Pu_WLS_11.0kV_2025V"] = 11.0;
 
   std::map<std::string, int> experiment_runs; //required for printing accpeted/rejected events
   experiment_runs["221020_S2_LAr_Pu_WLS_18.5kV_0V"] = 5;
@@ -96,4 +119,23 @@
   for (int ch=32; ch!=64; ++ch) {
     calib_channels.push_back(ch);
   }
+
+  channel_info<std::vector<SiPM_Npe_data>> gSiPM_Npe_data; // channel->experiment
+  for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+    std::vector<SiPM_Npe_data> vec;
+    for (auto i = exp_area.experiments.begin(), i_end_ = exp_area.experiments.end(); i != i_end_; ++i) {
+      SiPM_Npe_data data;
+      data.t_pre_trigger = std::pair<double, double> (0,0);
+      data.t_S1 = std::pair<double, double> (0,0);
+      data.t_S2 = std::pair<double, double> (0,0);
+      data.Npe_pre_trigger = 0;
+      data.Npe_pre_S1 = 0;
+      data.Npe_S1 = 0;
+      data.Npe_S2 = 0;
+      data.Npe_S2_only = 0;
+      vec.push_back(data);
+    }
+    gSiPM_Npe_data.push(chan, vec);
+	}
 }

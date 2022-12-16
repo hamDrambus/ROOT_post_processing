@@ -1,7 +1,7 @@
 //Created on 2021.10.15
 //For 211007/results_v5
 //9.2 mm with 238Pu set on the cathode. (Mesh instead of THGEM0, 28% CERN #8 as THEGEM1, PMT#1 malfunctions due to mixed signal wires)
-//2650 on THGEM1 (gain~40), charge signal and SiPMs forms only
+//2650 on THGEM1 (gain~20), charge signal and SiPMs forms only
 #define PAIR std::pair<double, double>
 
 std::string strtoken(std::string &in, std::string break_symbs)

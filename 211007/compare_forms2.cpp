@@ -574,7 +574,7 @@ define->folder = std::string("../Data/211007/results_v2/211007_Pu_20.0kV_800V_46
 define->fnames.push_back("Charge211007_Pu_20.0kV_800V_46V_12dB_2650V_ch_10_AVR_0");
 define->file_type = ShapeFileType::RawNoError;
 define->Td = "8.5";
-define->device = "V_{T}=2650V";
+define->device = "V_{THGEM1}=2110V";
 define->fast_t_center = 30.9;
 define->fast_t = PAIR(29.7, 2*30.94 - 29.70);
 define->S1_t_center = 0;

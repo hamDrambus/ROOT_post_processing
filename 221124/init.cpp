@@ -38,7 +38,7 @@
 	str.close();
 
   exp_area.experiments.clear();
-  exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_785V_850V_46V_14mm_coll_filt3_2");
+  //exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_785V_850V_46V_14mm_coll_filt3_2");
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_831V_850V_46V_14mm_coll_filt3");
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_785V_850V_46V_14mm_coll_filt3");
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_739V_850V_46V_14mm_coll_filt3");
@@ -75,6 +75,26 @@
   }
 
   experiment_fields.clear();
+  experiment_fields["221124_X-ray_S2_LAr_20kV_785V_850V_46V_14mm_coll_filt3_2"] = 785;
+  experiment_fields["221124_X-ray_S2_LAr_20kV_831V_850V_46V_14mm_coll_filt3"] = 831;
+  experiment_fields["221124_X-ray_S2_LAr_20kV_785V_850V_46V_14mm_coll_filt3"] = 785;
+  experiment_fields["221124_X-ray_S2_LAr_20kV_739V_850V_46V_14mm_coll_filt3"] = 739;
+  experiment_fields["221124_X-ray_S2_LAr_20kV_693V_850V_46V_14mm_coll_filt3"] = 693;
+  experiment_fields["221124_X-ray_S2_LAr_20kV_646V_850V_46V_14mm_coll_filt3"] = 646;
+  experiment_fields["221124_X-ray_S2_LAr_20kV_600V_850V_46V_14mm_coll_filt3"] = 600;
+  experiment_fields["221124_X-ray_S2_LAr_20kV_554V_850V_46V_14mm_coll_filt3"] = 554;
+  experiment_fields["221124_X-ray_S2_LAr_20kV_508V_850V_46V_14mm_coll_filt3"] = 508;
+  experiment_fields["221124_X-ray_S2_LAr_20kV_462V_850V_46V_14mm_coll_filt3"] = 462;
+  experiment_fields["221124_X-ray_S2_LAr_20kV_416V_850V_46V_14mm_coll_filt3"] = 416;
+  experiment_fields["221124_X-ray_S2_LAr_20kV_369V_850V_46V_14mm_coll_filt3"] = 369;
+  experiment_fields["221124_X-ray_S2_LAr_20kV_323V_850V_46V_14mm_coll_filt3"] = 323;
+  experiment_fields["221124_X-ray_S2_LAr_20kV_277V_850V_46V_14mm_coll_filt3"] = 277;
+  experiment_fields["221124_X-ray_S2_LAr_20kV_231V_850V_46V_14mm_coll_filt3"] = 231;
+  experiment_fields["221124_X-ray_S2_LAr_20kV_185V_850V_46V_14mm_coll_filt3"] = 185;
+  experiment_fields["221124_X-ray_S2_LAr_20kV_139V_850V_46V_14mm_coll_filt3"] = 139;
+  experiment_fields["221124_X-ray_S2_LAr_20kV_92V_850V_46V_14mm_coll_filt3"] = 92;
+  experiment_fields["221124_X-ray_S2_LAr_20kV_46V_850V_46V_14mm_coll_filt3"] = 46;
+  experiment_fields["221124_X-ray_S2_LAr_20kV_0V_850V_46V_14mm_coll_filt3"] = 0;
 
   std::map<std::string, int> experiment_runs; //required for printing accpeted/rejected events
   experiment_runs["221124_X-ray_S2_LAr_20kV_785V_850V_46V_14mm_coll_filt3_2"] = 357;

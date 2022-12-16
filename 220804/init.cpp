@@ -36,7 +36,7 @@
     Vdrift.use_rightmost(true);
   }
 	str.close();
-/*
+
   exp_area.experiments.clear();
   exp_area.experiments.push_back("220804_X-ray_Q1.00_20kV_850V_46V_12dB_6169V");
   exp_area.experiments.push_back("220804_X-ray_Q1.00_20kV_850V_46V_12dB_5728V");
@@ -47,7 +47,7 @@
   exp_area.experiments.push_back("220804_X-ray_Q1.00_20kV_850V_46V_12dB_2644V");
   exp_area.experiments.push_back("220804_X-ray_Q1.00_20kV_850V_46V_12dB_1762V");
   exp_area.experiments.push_back("220804_X-ray_Q1.00_20kV_850V_46V_12dB_0V");
-
+  /*
   exp_area.experiments.push_back("220804_X-ray_Q0.20_20kV_850V_46V_12dB_6169V");
   exp_area.experiments.push_back("220804_X-ray_Q0.20_20kV_850V_46V_12dB_5728V");
   exp_area.experiments.push_back("220804_X-ray_Q0.20_20kV_850V_46V_12dB_5288V");
@@ -56,14 +56,14 @@
   exp_area.experiments.push_back("220804_X-ray_Q0.20_20kV_850V_46V_12dB_3525V");
   exp_area.experiments.push_back("220804_X-ray_Q0.20_20kV_850V_46V_12dB_2644V");
   exp_area.experiments.push_back("220804_X-ray_Q0.20_20kV_850V_46V_12dB_1762V");
-  exp_area.experiments.push_back("220804_X-ray_Q0.20_20kV_850V_46V_12dB_0V");
-*/
-  exp_area.experiments.push_back("220804_X-ray_Q0.04_20kV_850V_46V_12dB_6169V");
+  exp_area.experiments.push_back("220804_X-ray_Q0.20_20kV_850V_46V_12dB_0V");*/
+
+  /*exp_area.experiments.push_back("220804_X-ray_Q0.04_20kV_850V_46V_12dB_6169V");
   exp_area.experiments.push_back("220804_X-ray_Q0.04_20kV_850V_46V_12dB_5288V");
   exp_area.experiments.push_back("220804_X-ray_Q0.04_20kV_850V_46V_12dB_3966V");
   exp_area.experiments.push_back("220804_X-ray_Q0.04_20kV_850V_46V_12dB_2644V");
-  exp_area.experiments.push_back("220804_X-ray_Q0.04_20kV_850V_46V_12dB_0V");
-  
+  exp_area.experiments.push_back("220804_X-ray_Q0.04_20kV_850V_46V_12dB_0V");*/
+
   PMT_V.clear();
   MPPC_V.clear();
   channel_info<dB_info> atten0;

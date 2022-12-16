@@ -1515,7 +1515,7 @@ void Init_globals(bool full)
 	MPPC_coords[59]= std::pair<double,double>(1,2);
 	for (auto i = MPPC_coords.begin();i!=MPPC_coords.end();++i){
 		i->second.first *=SiPM_size;
-		i->second.second*=SiPM_size;
+		i->second.second*= -SiPM_size;
 	}
 
 	if (!full)

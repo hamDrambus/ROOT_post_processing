@@ -566,23 +566,31 @@ void save_SiPM_Npe_table(std::string fname) {
 		str<<chan<<"\t";
 	}
 	str<<std::endl;
-	auto ref = experiment_fields.end();
+	std::vector<std::string> ref_candidates;
 	for (auto i = experiment_fields.begin(); i != experiment_fields.end(); ++i)
-		if (i->second == 0) {
-			ref = i;
-			break;
-		}
-	if (ref == experiment_fields.end())
+		if (i->second == 0)
+			ref_candidates.push_back(i->first);
+	if (ref_candidates.empty()) {
+		std::cerr<<"Error:save_SiPM_Npe_table: Could not find reference experiment (0 field). Aborting."<<std::endl;
 		return;
-	std::string exp = ref->first;
-	std::size_t ref_ind = exp_area.experiments.size();
-	for (std::size_t i = 0, i_end_ = exp_area.experiments.size(); i != i_end_; ++i)
-		if (exp_area.experiments[i] == exp) {
-			ref_ind = i;
-			break;
-		}
-	if (ref_ind == exp_area.experiments.size())
+	}
+	std::vector<std::size_t> ref_indices;
+	for (std::size_t c = 0; c!=ref_candidates.size(); ++c) {
+		for (std::size_t i = 0, i_end_ = exp_area.experiments.size(); i != i_end_; ++i)
+			if (exp_area.experiments[i] == ref_candidates[c]) {
+				ref_indices.push_back(i);
+				break;
+			}
+	}
+	if (ref_indices.empty()) {
+		std::cerr<<"Error:save_SiPM_Npe_table: Could not find index of reference experiment (0 field). Aborting."<<std::endl;
 		return;
+	}
+	if (ref_indices.size() > 1) {
+		std::cerr<<"Error:save_SiPM_Npe_table: Found several indices of reference experiment (0 field). Aborting."<<std::endl;
+		return;
+	}
+	std::size_t ref_ind = ref_indices[0];
 
 	struct reference_data {
 		double ref_S1;

@@ -19,6 +19,7 @@ if (true) {
 		analysis_history(0);
 		nex();
 	}
+	//save_SiPM_Npe_table(data_output_path + "SiPM_Npes.txt");
 }
 //Checking new cuts. UPD: turned out to be useless, not finished or used
 if (false) {

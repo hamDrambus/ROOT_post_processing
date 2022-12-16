@@ -2990,26 +2990,57 @@ void PostProcessor::default_hist_setups(HistogramSetups* setups)//does not affec
 		return;
 	}
 
+	int SiPM_n = std::round(std::sqrt(MPPC_coords.size()));
+	double SiPM_x_min = 0, SiPM_x_max = 0, SiPM_y_min = 0, SiPM_y_max = 0;
+	for (auto i = MPPC_coords.begin(); i!=MPPC_coords.end(); ++i) {
+		SiPM_x_min = std::min(SiPM_x_min, i->second.first);
+		SiPM_x_max = std::max(SiPM_x_max, i->second.first);
+		SiPM_y_min = std::min(SiPM_y_min, i->second.second);
+		SiPM_y_max = std::max(SiPM_y_max, i->second.second);
+	}
+
 	setups->use_default_setups = false;
 	int _N_ = numOfFills(false);
 	setups->N_bins = _N_;
 	setups->N_bins = std::max(4,(int)std::round(std::sqrt(setups->N_bins)));
 	setups->N_bins_y = setups->N_bins;
-	std::pair<double, double> x_lims = hist_x_limits();
-	x_lims.second+=(x_lims.second-x_lims.first)/setups->N_bins;
 
 	setups->use_fit = false;
 	setups->fitted = false;
 	setups->is_valid_fit_function = false;
 	setups->filled_hist = false;
+
+	setups->N_gauss = 0;
+	setups->par_val.resize(0, 0);
+	setups->par_left_limits.resize(0, 0);
+	setups->par_right_limits.resize(0, 0);
 	switch (current_type)
 	{
-	default:
-	{
-		setups->N_gauss = 0;
-		setups->par_val.resize(0, 0);
-		setups->par_left_limits.resize(0, 0);
-		setups->par_right_limits.resize(0, 0);
+	case MPPC_Npe_profile: {
+		double bin_size_x = (SiPM_x_max - SiPM_x_min) / (2*SiPM_n - 2);
+		double bin_size_y = (SiPM_y_max - SiPM_y_min) / (2*SiPM_n - 2);
+		setups->N_bins = 2*SiPM_n + 1;
+		setups->N_bins_y = setups->N_bins;
+		setups->x_zoom = std::pair<double, double> (SiPM_x_min - bin_size_x * 1.5, SiPM_x_max + bin_size_x * 1.5);
+		setups->y_zoom = std::pair<double, double> (SiPM_y_min - bin_size_y * 1.5, SiPM_y_max + bin_size_y * 1.5);
+		setups->is_zoomed = std::pair<bool, bool> (true, true);
+		break;
+	}
+	case MPPC_Npe_profile_y: {
+		double bin_size_x = (SiPM_y_max - SiPM_y_min) / (2*SiPM_n - 2);
+		setups->N_bins = 2*SiPM_n + 1;
+		setups->x_zoom = std::pair<double, double> (SiPM_y_min - bin_size_x * 1.5, SiPM_y_max + bin_size_x * 1.5);
+		setups->is_zoomed.first = true;
+		break;
+	}
+	case MPPC_Npe_profile_x: {
+		double bin_size_x = (SiPM_x_max - SiPM_x_min) / (2*SiPM_n - 2);
+		setups->N_bins = 2*SiPM_n + 1;
+		setups->x_zoom = std::pair<double, double> (SiPM_x_min - bin_size_x * 1.5, SiPM_x_max + bin_size_x * 1.5);
+		setups->is_zoomed.first = true;
+		break;
+	}
+	default: {
 	}
 	}
 }
