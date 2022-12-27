@@ -631,13 +631,14 @@ void analysis_history(bool calibrate, unsigned int method = 0) {
 //Output is signal pulse-shapes and Npe for S2
 //Based on 221124/1analysis_history.cpp
 
-//Setup: sinle-phase, X-ray with 14-mm collimator and copper filter (plate) #3,
+//Setup: single-phase, X-ray with 14-mm collimator and copper filter (plate) #3,
 //75% Electroconnect's THGEM used for cathode and THGEM0,
 //Polish standard thin GEM (PL 2022 #1) is used as GEM1, all PMTs with high gain (3 old PMTs which we in use
 //till ~ May 2019 and new PMTs as #4). 600 MOhm part of V0 divider is inside EL gap, covers PMT#1 and PMT#2(?).
 //No WLS. 1.0 atm pressures of argon in EL gap.
 //Setup was tilted by sin(angle) = 8mm/330mm => 1.4 degrees to avoid gas pocket under GEM1
 
+//adsf
 data_output_path = "221124/results_v2/";
 calibration_file = "221124/results_v1/221124_calibration.dat";
 post_processor->calibr_info.Load(calibration_file);

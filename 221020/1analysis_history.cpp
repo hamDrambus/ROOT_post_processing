@@ -614,6 +614,20 @@ S2_times["221020_S2_LAr_Pu_WLS_13.0kV_2250V"] = std::pair<double, double> (88.0,
 S2_times["221020_S2_LAr_Pu_WLS_12.0kV_2250V"] = std::pair<double, double> (89.2, 94.0);
 S2_times["221020_S2_LAr_Pu_WLS_11.0kV_2025V"] = std::pair<double, double> (90.3, 95.2);
 
+std::map<std::string, std::pair<double, double> > S2_times_for_XY; // Fast+slow component where signal > ~2*backgroud
+S2_times_for_XY["221020_S2_LAr_Pu_WLS_18.5kV_0V"] = std::pair<double, double> (85.0, 100);
+S2_times_for_XY["221020_S2_LAr_Pu_WLS_18.0kV_338V"] = std::pair<double, double> (85.0, 100);
+S2_times_for_XY["221020_S2_LAr_Pu_WLS_17.5kV_563V"] = std::pair<double, double> (85.4, 100);
+S2_times_for_XY["221020_S2_LAr_Pu_WLS_17.0kV_917V"] = std::pair<double, double> (85.5, 100);
+S2_times_for_XY["221020_S2_LAr_Pu_WLS_16.5kV_1238V"] = std::pair<double, double> (85.7, 100);
+S2_times_for_XY["221020_S2_LAr_Pu_WLS_16.0kV_1238V"] = std::pair<double, double> (86.0, 101);
+S2_times_for_XY["221020_S2_LAr_Pu_WLS_15.5kV_1238V"] = std::pair<double, double> (86.3, 102);
+S2_times_for_XY["221020_S2_LAr_Pu_WLS_15.0kV_1238V"] = std::pair<double, double> (86.7, 102);
+S2_times_for_XY["221020_S2_LAr_Pu_WLS_14.0kV_1688V"] = std::pair<double, double> (87.3, 105);
+S2_times_for_XY["221020_S2_LAr_Pu_WLS_13.0kV_2250V"] = std::pair<double, double> (88.0, 104);
+S2_times_for_XY["221020_S2_LAr_Pu_WLS_12.0kV_2250V"] = std::pair<double, double> (89.2, 110);
+S2_times_for_XY["221020_S2_LAr_Pu_WLS_11.0kV_2025V"] = std::pair<double, double> (90.3, 116);
+
 std::map<std::string, std::pair<double, double> > S2_LAr_times;
 S2_LAr_times["221020_S2_LAr_Pu_WLS_18.5kV_0V"] = std::pair<double, double> (81.2, 82.8);
 S2_LAr_times["221020_S2_LAr_Pu_WLS_18.0kV_338V"] = std::pair<double, double> (81.7, 82.8);
@@ -980,8 +994,8 @@ if (calibrate) {
 //SIGNAL FORMS
 if (!forms)
 	return;
-std::string folder, S2_start, S2_finish, S1_start, S1_finish, S2_LAr_start, S2_LAr_finish, Bkg_start, Bkg_finish;
-double d_S2_LAr_start, d_S2_LAr_finish, d_Bkg_start, d_Bkg_finish;
+std::string folder, S2_start, S2_finish, S1_start, S1_finish, S2_LAr_start, S2_LAr_finish, S2_XY_start, S2_XY_finish, Bkg_start, Bkg_finish;
+double d_S2_LAr_start, d_S2_LAr_finish, d_S2_XY_start, d_S2_XY_finish, d_Bkg_start, d_Bkg_finish;
 int first_run = 0;
 std::string exp = post_processor->experiments[post_processor->current_exp_index];
 int PMT_state = 0; //850V, 12 dB
@@ -1000,6 +1014,14 @@ if (S2_times_entry != S2_times.end()) {
 } else {
     std::cout<<"Could not find S2 time limits for '"<<exp<<"'! Skipping this experiment"<<std::endl;
     return;
+}
+auto S2_XY_times_entry = S2_times_for_XY.find(exp);
+if (S2_XY_times_entry != S2_times_for_XY.end()) {
+    d_S2_XY_start = S2_XY_times_entry->second.first; d_S2_XY_finish = S2_XY_times_entry->second.second;
+		S2_XY_start = dbl_to_str(d_S2_XY_start, 1); S2_XY_finish = dbl_to_str(d_S2_XY_finish, 1);
+} else {
+    std::cout<<"Could not find S2 XY time limits for '"<<exp<<"'! Skipping this experiment"<<std::endl;
+  return;
 }
 auto S1_times_entry = S1_times.find(exp);
 if (S1_times_entry != S1_times.end()) {
@@ -1051,6 +1073,11 @@ auto tabulate_SiPM_results = [=]() {
 		(*gSiPM_Npe_data.info(chan))[post_processor->current_exp_index].t_S2 = std::pair<double, double>(d_S2_LAr_start, d_S2_LAr_finish);
 		(*gSiPM_Npe_data.info(chan))[post_processor->current_exp_index].Npe_S2 = get_mean();
 	}
+	// Turn on all channels back.
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		on_ch(chan);
+	}
 };
 auto print_PMTs_results = [=](std::string& FOLDER, std::string& Num, int& no, std::vector<std::string>& cuts) {
 	time_zoom_PMTs(d_Bkg_start, d_Bkg_finish); update();
@@ -1079,6 +1106,49 @@ auto print_SiPMs_results = [=](std::string& FOLDER, std::string& Num, int& no, s
 	time_zoom_SiPMs(d_S2_start, 160); update();
 	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+S2_start+"-160us_"+cuts_str(cuts));
 	Num = int_to_str(++no, 2);
+};
+auto print_SiPMs_xy = [=](std::string& FOLDER, std::string& Num, int& no, std::vector<std::string>& cuts) {
+	ty(AStates::MPPC_coord);
+		time_zoom_SiPMs(d_S2_XY_start, d_S2_XY_finish);
+		set_zoom(-25, 25, -25, 25); set_bins(180);
+		update();
+		saveaspng(FOLDER + Num + "_SiPMs_xy_"+cuts_str(cuts)+"_"+S2_XY_start+"-"+S2_XY_finish+"us");
+		Num = int_to_str(++no, 2);
+
+	ty(AStates::MPPC_Npe_profile_x);
+		time_zoom_SiPMs(d_S2_XY_start, d_S2_XY_finish);
+		update();
+		saveaspng(FOLDER + Num + "_SiPMs_S2_x_profile_"+cuts_str(cuts)+"_"+S2_XY_start+"-"+S2_XY_finish+"us");
+		Num = int_to_str(++no, 2);
+
+	ty(AStates::MPPC_Npe_profile_y);
+		time_zoom_SiPMs(d_S2_XY_start, d_S2_XY_finish);
+		update();
+		saveaspng(FOLDER + Num + "_SiPMs_S2_y_profile_"+cuts_str(cuts)+"_"+S2_XY_start+"-"+S2_XY_finish+"us");
+		Num = int_to_str(++no, 2);
+
+	ty(AStates::MPPC_coord);
+		x_y_regions = {-2, -2, 2, -2, 2, 2, -2, 2};
+		cut_x_y_poly_select(x_y_regions, true, "1");
+		update();
+		saveaspng(FOLDER + Num + "_SiPMs_xy_"+cuts_str(cuts)+"_"+S2_XY_start+"-"+S2_XY_finish+"us");
+		set_as_run_cut("Central"); cuts.push_back(Num);
+		print_accepted_events(FOLDER + Num + "_central_events.txt", first_run);
+		Num = int_to_str(++no, 2);
+
+	ty(AStates::MPPC_Npe_profile_x);
+		time_zoom_SiPMs(d_S2_XY_start, d_S2_XY_finish);
+		update();
+		saveaspng(FOLDER + Num + "_SiPMs_S2_x_profile_"+cuts_str(cuts)+"_"+S2_XY_start+"-"+S2_XY_finish+"us");
+		Num = int_to_str(++no, 2);
+
+	ty(AStates::MPPC_Npe_profile_y);
+		time_zoom_SiPMs(d_S2_XY_start, d_S2_XY_finish);
+		update();
+		saveaspng(FOLDER + Num + "_SiPMs_S2_y_profile_"+cuts_str(cuts)+"_"+S2_XY_start+"-"+S2_XY_finish+"us");
+		Num = int_to_str(++no, 2);
+
+	unset_as_run_cut("Central");
 };
 //zcxv
 if (exp == "221020_S2_LAr_Pu_WLS_18.5kV_0V") {
@@ -1216,6 +1286,7 @@ ty(AStates::MPPC_Npe_sum);
 	print_SiPMs_results(FOLDER, Num, no, cuts);
 
 	tabulate_SiPM_results();
+	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 if (exp == "221020_S2_LAr_Pu_WLS_18.0kV_338V") {
 	std::vector<std::string> cuts;
@@ -1352,6 +1423,7 @@ ty(AStates::MPPC_Npe_sum);
 	print_SiPMs_results(FOLDER, Num, no, cuts);
 
 	tabulate_SiPM_results();
+	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 if (exp == "221020_S2_LAr_Pu_WLS_17.5kV_563V") {
 	std::vector<std::string> cuts;
@@ -1488,6 +1560,7 @@ ty(AStates::MPPC_Npe_sum);
 	print_SiPMs_results(FOLDER, Num, no, cuts);
 
 	tabulate_SiPM_results();
+	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 if (exp == "221020_S2_LAr_Pu_WLS_17.0kV_917V") {
 	std::vector<std::string> cuts;
@@ -1624,6 +1697,7 @@ ty(AStates::MPPC_Npe_sum);
 	print_SiPMs_results(FOLDER, Num, no, cuts);
 
 	tabulate_SiPM_results();
+	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 if (exp == "221020_S2_LAr_Pu_WLS_16.5kV_1238V") {
 	std::vector<std::string> cuts;
@@ -1760,6 +1834,7 @@ ty(AStates::MPPC_Npe_sum);
 	print_SiPMs_results(FOLDER, Num, no, cuts);
 
 	tabulate_SiPM_results();
+	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 if (exp == "221020_S2_LAr_Pu_WLS_16.0kV_1238V") {
 	std::vector<std::string> cuts;
@@ -1896,6 +1971,7 @@ ty(AStates::MPPC_Npe_sum);
 	print_SiPMs_results(FOLDER, Num, no, cuts);
 
 	tabulate_SiPM_results();
+	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 if (exp == "221020_S2_LAr_Pu_WLS_15.5kV_1238V") {
 	std::vector<std::string> cuts;
@@ -2032,6 +2108,7 @@ ty(AStates::MPPC_Npe_sum);
 	print_SiPMs_results(FOLDER, Num, no, cuts);
 
 	tabulate_SiPM_results();
+	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 if (exp == "221020_S2_LAr_Pu_WLS_15.0kV_1238V") {
 	std::vector<std::string> cuts;
@@ -2168,6 +2245,7 @@ ty(AStates::MPPC_Npe_sum);
 	print_SiPMs_results(FOLDER, Num, no, cuts);
 
 	tabulate_SiPM_results();
+	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 if (exp == "221020_S2_LAr_Pu_WLS_14.0kV_1688V") {
 	std::vector<std::string> cuts;
@@ -2304,6 +2382,7 @@ ty(AStates::MPPC_Npe_sum);
 	print_SiPMs_results(FOLDER, Num, no, cuts);
 
 	tabulate_SiPM_results();
+	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 if (exp == "221020_S2_LAr_Pu_WLS_13.0kV_2250V") {
 	std::vector<std::string> cuts;
@@ -2440,6 +2519,7 @@ ty(AStates::MPPC_Npe_sum);
 	print_SiPMs_results(FOLDER, Num, no, cuts);
 
 	tabulate_SiPM_results();
+	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 if (exp == "221020_S2_LAr_Pu_WLS_12.0kV_2250V") {
 	std::vector<std::string> cuts;
@@ -2576,6 +2656,7 @@ ty(AStates::MPPC_Npe_sum);
 	print_SiPMs_results(FOLDER, Num, no, cuts);
 
 	tabulate_SiPM_results();
+	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 if (exp == "221020_S2_LAr_Pu_WLS_11.0kV_2025V") {
 	std::vector<std::string> cuts;
@@ -2712,6 +2793,7 @@ ty(AStates::MPPC_Npe_sum);
 	print_SiPMs_results(FOLDER, Num, no, cuts);
 
 	tabulate_SiPM_results();
+	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 //END OF FORMS
 }

@@ -590,8 +590,8 @@ void analysis_history(bool calibrate, unsigned int method = 0) {
 //For the same reason, Pu/Cd peaks are now selected using 0-160us.
 //Based on 220922/7analysis_history.cpp
 
-//1analysis_history.cpp was to get S2 in LAr photoelectrons and pulse-shape
-//This script is to study X-Y S2 (gas) distribution, light response function and source position.
+//UPD: this script's functionality is fully added to 1analysis_history.cpp
+//So it is useless ATM.
 
 //Setup: ~6mm gap, alphas from 238Pu, 75% Electroconnect's THGEM used for cathode and THGEM1,
 //28% CERN's THGEM as THGEM0 with 260 MOhm, all PMTs with high gain (3 old PMTs which we in use
@@ -748,6 +748,30 @@ else {
     first_run = -10000;
 }
 // These lambda functions are to shorten the code only.
+auto tabulate_SiPM_results = [=]() {
+	ty(AStates::MPPC_Npe_sum);
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		ch(chan);
+		cut_t(d_Bkg_start, d_S1_start, false, chan);
+		update();
+		(*gSiPM_Npe_data.info(chan))[post_processor->current_exp_index].t_pre_trigger = std::pair<double, double>(d_Bkg_start, d_S1_start);
+		(*gSiPM_Npe_data.info(chan))[post_processor->current_exp_index].Npe_pre_trigger = get_mean();
+		cut_t(d_S1_start, d_S1_finish, false, chan);
+		update();
+		(*gSiPM_Npe_data.info(chan))[post_processor->current_exp_index].t_S1 = std::pair<double, double>(d_S1_start, d_S1_finish);
+		(*gSiPM_Npe_data.info(chan))[post_processor->current_exp_index].Npe_S1 = get_mean();
+		cut_t(d_S2_LAr_start, d_S2_LAr_finish, false, chan);
+		update();
+		(*gSiPM_Npe_data.info(chan))[post_processor->current_exp_index].t_S2 = std::pair<double, double>(d_S2_LAr_start, d_S2_LAr_finish);
+		(*gSiPM_Npe_data.info(chan))[post_processor->current_exp_index].Npe_S2 = get_mean();
+	}
+	// Turn on all channels back.
+	for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
+		int chan = post_processor->MPPC_channels[ich];
+		on_ch(chan);
+	}
+};
 auto print_SiPMs_xy = [=](std::string& FOLDER, std::string& Num, int& no, std::vector<std::string>& cuts) {
 	ty(AStates::MPPC_coord);
 		time_zoom_SiPMs(d_S2_XY_start, d_S2_XY_finish);
@@ -788,6 +812,8 @@ auto print_SiPMs_xy = [=](std::string& FOLDER, std::string& Num, int& no, std::v
 		update();
 		saveaspng(FOLDER + Num + "_SiPMs_S2_y_profile_"+cuts_str(cuts)+"_"+S2_XY_start+"-"+S2_XY_finish+"us");
 		Num = int_to_str(++no, 2);
+
+	unset_as_run_cut("Central");
 };
 //zcxv
 if (exp == "221020_S2_LAr_Pu_WLS_18.5kV_0V") {
