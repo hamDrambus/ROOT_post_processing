@@ -304,10 +304,10 @@ int compare_forms1 (void) {
 
 	std::string def_fit_option = "NRE";
 	bool combined = true;
-	bool Cd_peak = false;
+	bool Cd_peak = true;
 	int Nbins = 150;
 	bool linear = 0;
-	bool PMTs = true;
+	bool PMTs = false;
 
 	bool fast_PMTs = true;
 	unsigned int PMT_used = 0x1 | 0x4 | 0x8;
@@ -317,13 +317,13 @@ int compare_forms1 (void) {
 	bool center_pulses = false;
 	bool center_at_S1 = false; //Not used
 	bool normalize_by_S1 = false; //Not used
-	bool print_errors = true;
+	bool print_errors = false;
 	bool print_results = true;
 	double time_pretrigger_left = 4.0, time_pretrigger_right = 20.0;
 	double time_left = 0, time_right = 160;//us
 	double max_val = 0;
 	double trigger_at = center_at_S1 ? 0 : 32; //Not used
-	double y_min = 1e-5;
+	double y_min = 1e-4;
 
 	pulse_shape* define = NULL, *copy = NULL;
 
@@ -331,7 +331,7 @@ int compare_forms1 (void) {
 	define = &SiPM_17_3kV_no_trigger;
 define->folder = std::string("211202/results_v5/Pu_10mm_46V_17.3kV_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
-define->Td = "8.7";
+define->Td = "8.5";
 define->device = "SiPM-matrix";
 define->fast_t_center = 28.5;
 define->fast_t = PAIR(24.0, 30.3);
@@ -369,7 +369,7 @@ define->simultaneous_fit = false;
   define = &SiPM_15_6kV_no_trigger;
 define->folder = std::string("211202/results_v5/Pu_10mm_46V_15.6kV_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
-define->Td = "7.8";
+define->Td = "7.7";
 define->device = "SiPM-matrix";
 define->fast_t_center = 28.5;
 define->fast_t = PAIR(24.0, 30.3);
@@ -407,7 +407,7 @@ define->simultaneous_fit = false;
   define = &SiPM_13_8kV_no_trigger;
 define->folder = std::string("211202/results_v5/Pu_10mm_46V_13.8kV_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
-define->Td = "6.9";
+define->Td = "6.8";
 define->device = "SiPM-matrix";
 define->fast_t_center = 28.6;
 define->fast_t = PAIR(25.0, 30.6);
@@ -445,7 +445,7 @@ define->simultaneous_fit = false;
   define = &SiPM_12_1kV_no_trigger;
 define->folder = std::string("211202/results_v5/Pu_10mm_46V_12.1kV_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
-define->Td = "6.1";
+define->Td = "6.0";
 define->device = "SiPM-matrix";
 define->fast_t_center = 28.7;
 define->fast_t = PAIR(24.5, 30.9);
@@ -483,7 +483,7 @@ define->simultaneous_fit = false;
   define = &SiPM_11_2kV_no_trigger;
 define->folder = std::string("211202/results_v5/Pu_10mm_46V_11.2kV_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
-define->Td = "5.6";
+define->Td = "5.5";
 define->device = "SiPM-matrix";
 define->fast_t_center = 28.7;
 define->fast_t = PAIR(24.5, 31.1);
@@ -521,7 +521,7 @@ define->simultaneous_fit = false;
   define = &SiPM_10_4kV_no_trigger;
 define->folder = std::string("211202/results_v5/Pu_10mm_46V_10.4kV_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
-define->Td = "5.2";
+define->Td = "5.1";
 define->device = "SiPM-matrix";
 define->fast_t_center = 28.7;
 define->fast_t = PAIR(24.5, 31.4);
@@ -559,7 +559,7 @@ define->simultaneous_fit = false;
   define = &SiPM_09_5kV_no_trigger;
 define->folder = std::string("211202/results_v5/Pu_10mm_46V_09.5kV_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
-define->Td = "4.8";
+define->Td = "4.7";
 define->device = "SiPM-matrix";
 define->fast_t_center = 28.8;
 define->fast_t = PAIR(24.5, 31.9);
@@ -597,7 +597,7 @@ define->simultaneous_fit = false;
   define = &SiPM_08_6kV_no_trigger;
 define->folder = std::string("211202/results_v5/Pu_10mm_46V_08.6kV_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
-define->Td = "4.3";
+define->Td = "4.2";
 define->device = "SiPM-matrix";
 define->fast_t_center = 28.8;
 define->fast_t = PAIR(24.5, 32.1);
@@ -635,7 +635,7 @@ define->simultaneous_fit = false;
   define = &SiPM_07_8kV_no_trigger;
 define->folder = std::string("211202/results_v5/Pu_10mm_46V_07.8kV_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
-define->Td = "3.9";
+define->Td = "3.8";
 define->device = "SiPM-matrix";
 define->fast_t_center = 28.6;
 define->fast_t = PAIR(24.5, 32.0);
@@ -1859,11 +1859,12 @@ std::string folder = PMTs ? std::string("211202/results_v5/v1_PMTs/")
   //std::vector<pulse_shape> pulses = {PMT4_16kV_no_trigger, PMT4_15kV_no_trigger, PMT4_14kV_no_trigger, PMT4_13kV_no_trigger, PMT4_12kV_no_trigger};
   //std::vector<pulse_shape> pulses = {PMT4_11kV_no_trigger, PMT4_10kV_no_trigger, PMT4_09kV_no_trigger, PMT4_08kV_no_trigger};
   //std::vector<pulse_shape> pulses = {PMT4_16kV_no_trigger_v2, PMT4_15kV_no_trigger_v2, PMT4_14kV_no_trigger_v2, PMT4_13kV_no_trigger_v2, PMT4_12kV_no_trigger_v2};
-  std::vector<pulse_shape> pulses = {PMT4_11kV_no_trigger_v2, PMT4_10kV_no_trigger_v2, PMT4_09kV_no_trigger_v2, PMT4_08kV_no_trigger_v2};
+  //std::vector<pulse_shape> pulses = {PMT4_11kV_no_trigger_v2, PMT4_10kV_no_trigger_v2, PMT4_09kV_no_trigger_v2, PMT4_08kV_no_trigger_v2};
 
 	//std::vector<pulse_shape> pulses = {PMT4_08kV_no_trigger};
 	//For paper and reports:
-
+  //std::vector<pulse_shape> pulses = {SiPM_09kV_no_trigger};
+  std::vector<pulse_shape> pulses = {SiPM_17_3kV_no_trigger, SiPM_13_8kV_no_trigger, SiPM_11_2kV_no_trigger};
 	std::vector<Color_t> palette_major = {kBlack, kRed, kBlue, kGreen, kYellow + 2, kMagenta, kOrange + 7};
 	std::vector<Color_t> palette_minor = {kGray + 1, kRed-3, kAzure + 6, kGreen -2, kMagenta+3, kOrange - 7, kOrange + 6};
 	int contribution_est_method = 2; //0 - use fit of slow/long components at fast component range;
@@ -1871,9 +1872,9 @@ std::string folder = PMTs ? std::string("211202/results_v5/v1_PMTs/")
 	//adsf - for fast Crtl + F
 	std::string framename;
 	if (PMTs)
-		framename = std::string("Results for 4PMT (no WLS), ")+(Cd_peak ? "" : "< ")+"5.6 MeV #alpha ^{238}Pu";
+		framename = std::string("Results for 4PMT (1.0 atm, no WLS), ")+(Cd_peak ? "" : "< ")+"5.6 MeV #alpha ^{238}Pu";
 	else
-		framename = std::string("Results for SiPM-matrix (no WLS), ")+(Cd_peak ? "" : "< ")+"5.6 MeV #alpha ^{238}Pu";
+		framename = std::string("Results for SiPM-matrix (1.0 atm, no WLS), ")+(Cd_peak ? "" : "< ")+"5.6 MeV #alpha ^{238}Pu";
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {
 		std::string hist_name = "hist" + std::to_string(hh);
 		pulses[hh].hist = new TH1D (hist_name.c_str(), hist_name.c_str(), Nbins, time_left, time_right);
@@ -1921,14 +1922,14 @@ std::string folder = PMTs ? std::string("211202/results_v5/v1_PMTs/")
 	//legend->SetHeader("");
 	legend->SetMargin(0.25);
 	TH2F* frame = new TH2F("frame", framename.c_str(), 500, time_left, time_right, 500, linear ? 0 : y_min, max_val);
-	frame->GetXaxis()->SetTitle("Time [#mus]");
+	frame->GetXaxis()->SetTitle("Time (#mus)");
 	//=====================================
 	if (!linear)
 		frame->GetXaxis()->SetRangeUser(0, 160);
 	else
 		frame->GetXaxis()->SetRangeUser(10, 70);
 	//=====================================
-	frame->GetYaxis()->SetTitle("PE peak count");
+	frame->GetYaxis()->SetTitle("PE peak count (arb. u.)");
 	frame->Draw();
 
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {
@@ -2155,17 +2156,17 @@ std::string folder = PMTs ? std::string("211202/results_v5/v1_PMTs/")
 			std::vector<std::string> no_title;
 			std::vector<std::string> Slow_title = {"Contribution:", "Slow"};
 			std::vector<std::string> Long_title = {"","Long"};
-			if (print_errors) {
+      if (print_errors) {
 				//zcxv
 				add_text(46, 0.02, no_title, tau1, palette_major);
-				add_text(76, 0.005, Slow_title, frsS, palette_major);
-				add_text(100, 0.005, Long_title, frsL, palette_major);
+				add_text(84, 0.005, Slow_title, frsS, palette_major);
+				add_text(102, 0.005, Long_title, frsL, palette_major);
 				add_text(129, 0.005, no_title, tau2, palette_major);
 			} else {
 				add_text(55, 0.01, no_title, tau1, palette_major);
-				add_text(80, 0.006, Slow_title, frsS, palette_major);
-				add_text(92, 0.006, Long_title, frsL, palette_major);
-				add_text(110, 0.006, no_title, tau2, palette_major);
+				add_text(84, 0.006, Slow_title, frsS, palette_major);
+				add_text(102, 0.006, Long_title, frsL, palette_major);
+				add_text(122, 0.006, no_title, tau2, palette_major);
 			}
 			std::cout<<"tau1:"<<std::endl;
 			for (std::size_t i = tau1.size() - 1; i!=-1; --i) {
@@ -2210,7 +2211,8 @@ std::string folder = PMTs ? std::string("211202/results_v5/v1_PMTs/")
 		}
 	}
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh)
-		legend->AddEntry(pulses[hh].hist, (std::string("E/N = ") + pulses[hh].Td + " Td, " + pulses[hh].device).c_str(), "l");
+		//legend->AddEntry(pulses[hh].hist, (std::string("E/N = ") + pulses[hh].Td + " Td, " + pulses[hh].device).c_str(), "l");
+    legend->AddEntry(pulses[hh].hist, (std::string("E/N_{EL} = ") + pulses[hh].Td + " Td, #DeltaV_{THGEM} = 0").c_str(), "l");
 
 	frame->Draw("sameaxis");
 	legend->Draw("same");

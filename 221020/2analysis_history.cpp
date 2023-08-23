@@ -579,19 +579,8 @@ void noise_cut(int channel, int aggressiveness, int device_condition, bool displ
 }
 
 void analysis_history(bool calibrate, unsigned int method = 0) {
-//Created on 2022.12.16
-//New standard-ish analysis for NBrS in LAr measurements
-//Valid events and Pu peak events are selected from both SiPM matrix and 4 sPMTs
-//Not using trigger adjustement or trigger-related cuts.
-//Removed pre-trigger cut, using 2D cut on whole 0-160us range instead vs S1+S2 range
-//Also cut on S1 vs S2 is present.
-//bacause previous approach (separate cut for pre-trigger region) may systematically increase or decrease baseline.
-//Thus all non-signal areas must be treated in the same manner.
-//For the same reason, Pu/Cd peaks are now selected using 0-160us.
-//Based on 220922/7analysis_history.cpp
-
-//UPD: this script's functionality is fully added to 1analysis_history.cpp
-//So it is useless ATM.
+//Created on 2023.02.07
+//Same as 221020/1analysis_history.cpp but using only first ~1k (selected) events
 
 //Setup: ~6mm gap, alphas from 238Pu, 75% Electroconnect's THGEM used for cathode and THGEM1,
 //28% CERN's THGEM as THGEM0 with 260 MOhm, all PMTs with high gain (3 old PMTs which we in use
@@ -617,7 +606,7 @@ S2_times["221020_S2_LAr_Pu_WLS_13.0kV_2250V"] = std::pair<double, double> (88.0,
 S2_times["221020_S2_LAr_Pu_WLS_12.0kV_2250V"] = std::pair<double, double> (89.2, 94.0);
 S2_times["221020_S2_LAr_Pu_WLS_11.0kV_2025V"] = std::pair<double, double> (90.3, 95.2);
 
-std::map<std::string, std::pair<double, double> > S2_times_for_XY;
+std::map<std::string, std::pair<double, double> > S2_times_for_XY; // Fast+slow component where signal > ~2*backgroud
 S2_times_for_XY["221020_S2_LAr_Pu_WLS_18.5kV_0V"] = std::pair<double, double> (85.0, 100);
 S2_times_for_XY["221020_S2_LAr_Pu_WLS_18.0kV_338V"] = std::pair<double, double> (85.0, 100);
 S2_times_for_XY["221020_S2_LAr_Pu_WLS_17.5kV_563V"] = std::pair<double, double> (85.4, 100);
@@ -630,6 +619,20 @@ S2_times_for_XY["221020_S2_LAr_Pu_WLS_14.0kV_1688V"] = std::pair<double, double>
 S2_times_for_XY["221020_S2_LAr_Pu_WLS_13.0kV_2250V"] = std::pair<double, double> (88.0, 104);
 S2_times_for_XY["221020_S2_LAr_Pu_WLS_12.0kV_2250V"] = std::pair<double, double> (89.2, 110);
 S2_times_for_XY["221020_S2_LAr_Pu_WLS_11.0kV_2025V"] = std::pair<double, double> (90.3, 116);
+
+std::map<std::string, std::pair<double, double> > S2_LAr_times;
+S2_LAr_times["221020_S2_LAr_Pu_WLS_18.5kV_0V"] = std::pair<double, double> (81.2, 82.8);
+S2_LAr_times["221020_S2_LAr_Pu_WLS_18.0kV_338V"] = std::pair<double, double> (81.7, 82.8);
+S2_LAr_times["221020_S2_LAr_Pu_WLS_17.5kV_563V"] = std::pair<double, double> (81.6, 83.0);
+S2_LAr_times["221020_S2_LAr_Pu_WLS_17.0kV_917V"] = std::pair<double, double> (82.0, 83.1);
+S2_LAr_times["221020_S2_LAr_Pu_WLS_16.5kV_1238V"] = std::pair<double, double> (82.3, 83.4);
+S2_LAr_times["221020_S2_LAr_Pu_WLS_16.0kV_1238V"] = std::pair<double, double> (82.6, 83.7);
+S2_LAr_times["221020_S2_LAr_Pu_WLS_15.5kV_1238V"] = std::pair<double, double> (82.8, 83.9);
+S2_LAr_times["221020_S2_LAr_Pu_WLS_15.0kV_1238V"] = std::pair<double, double> (83.3, 84.4);
+S2_LAr_times["221020_S2_LAr_Pu_WLS_14.0kV_1688V"] = std::pair<double, double> (84.0, 85.0);
+S2_LAr_times["221020_S2_LAr_Pu_WLS_13.0kV_2250V"] = std::pair<double, double> (84.7, 85.6);
+S2_LAr_times["221020_S2_LAr_Pu_WLS_12.0kV_2250V"] = std::pair<double, double> (85.9, 86.7);
+S2_LAr_times["221020_S2_LAr_Pu_WLS_11.0kV_2025V"] = std::pair<double, double> (86.6, 87.6);
 
 std::map<std::string, std::pair<double, double> > S1_times;
 S1_times["221020_S2_LAr_Pu_WLS_18.5kV_0V"] = std::pair<double, double> (58, 63.5);
@@ -673,20 +676,6 @@ exp_folders["221020_S2_LAr_Pu_WLS_13.0kV_2250V"] = "Pu_13.0kV_46V_850V";
 exp_folders["221020_S2_LAr_Pu_WLS_12.0kV_2250V"] = "Pu_12.0kV_46V_850V";
 exp_folders["221020_S2_LAr_Pu_WLS_11.0kV_2025V"] = "Pu_11.0kV_46V_850V";
 
-std::map<std::string, double> pre_trigger_max_S; //for calibration only
-pre_trigger_max_S["221020_S2_LAr_Pu_WLS_18.5kV_0V"] = 0.70;
-pre_trigger_max_S["221020_S2_LAr_Pu_WLS_18.0kV_338V"] = 0.70;
-pre_trigger_max_S["221020_S2_LAr_Pu_WLS_17.5kV_563V"] = 0.73;
-pre_trigger_max_S["221020_S2_LAr_Pu_WLS_17.0kV_917V"] = 0.65;
-pre_trigger_max_S["221020_S2_LAr_Pu_WLS_16.5kV_1238V"] = 0.78;
-pre_trigger_max_S["221020_S2_LAr_Pu_WLS_16.0kV_1238V"] = 0.36;
-pre_trigger_max_S["221020_S2_LAr_Pu_WLS_15.5kV_1238V"] = 0.40;
-pre_trigger_max_S["221020_S2_LAr_Pu_WLS_15.0kV_1238V"] = 0.54;
-pre_trigger_max_S["221020_S2_LAr_Pu_WLS_14.0kV_1688V"] = 0.23;
-pre_trigger_max_S["221020_S2_LAr_Pu_WLS_13.0kV_2250V"] = 0.21;
-pre_trigger_max_S["221020_S2_LAr_Pu_WLS_12.0kV_2250V"] = 0.30;
-pre_trigger_max_S["221020_S2_LAr_Pu_WLS_11.0kV_2025V"] = 0.30;
-
 bool forms = !calibrate;
 if (calibrate) {
 	std::cout<<"Use 5analysis_history.cpp for calibration! Doing nothing."<<std::endl;
@@ -695,8 +684,8 @@ if (calibrate) {
 //SIGNAL FORMS
 if (!forms)
 	return;
-std::string folder, S2_start, S2_finish, S1_start, S1_finish, S2_XY_start, S2_XY_finish, Bkg_start, Bkg_finish;
-double d_S2_XY_start, d_S2_XY_finish, d_Bkg_start, d_Bkg_finish;
+std::string folder, S2_start, S2_finish, S1_start, S1_finish, S2_LAr_start, S2_LAr_finish, S2_XY_start, S2_XY_finish, Bkg_start, Bkg_finish;
+double d_S2_LAr_start, d_S2_LAr_finish, d_S2_XY_start, d_S2_XY_finish, d_Bkg_start, d_Bkg_finish;
 int first_run = 0;
 std::string exp = post_processor->experiments[post_processor->current_exp_index];
 int PMT_state = 0; //850V, 12 dB
@@ -716,6 +705,14 @@ if (S2_times_entry != S2_times.end()) {
     std::cout<<"Could not find S2 time limits for '"<<exp<<"'! Skipping this experiment"<<std::endl;
     return;
 }
+auto S2_XY_times_entry = S2_times_for_XY.find(exp);
+if (S2_XY_times_entry != S2_times_for_XY.end()) {
+    d_S2_XY_start = S2_XY_times_entry->second.first; d_S2_XY_finish = S2_XY_times_entry->second.second;
+		S2_XY_start = dbl_to_str(d_S2_XY_start, 1); S2_XY_finish = dbl_to_str(d_S2_XY_finish, 1);
+} else {
+    std::cout<<"Could not find S2 XY time limits for '"<<exp<<"'! Skipping this experiment"<<std::endl;
+  return;
+}
 auto S1_times_entry = S1_times.find(exp);
 if (S1_times_entry != S1_times.end()) {
     d_S1_start = S1_times_entry->second.first; d_S1_finish = S1_times_entry->second.second;
@@ -724,12 +721,12 @@ if (S1_times_entry != S1_times.end()) {
     std::cout<<"Could not find S1 time limits for '"<<exp<<"'! Skipping this experiment"<<std::endl;
     return;
 }
-auto S2_XY_times_entry = S2_times_for_XY.find(exp);
-if (S2_XY_times_entry != S2_times_for_XY.end()) {
-    d_S2_XY_start = S2_XY_times_entry->second.first; d_S2_XY_finish = S2_XY_times_entry->second.second;
-		S2_XY_start = dbl_to_str(d_S2_XY_start, 1); S2_XY_finish = dbl_to_str(d_S2_XY_finish, 1);
+auto S2_LAr_times_entry = S2_LAr_times.find(exp);
+if (S2_LAr_times_entry != S2_LAr_times.end()) {
+    d_S2_LAr_start = S2_LAr_times_entry->second.first; d_S2_LAr_finish = S2_LAr_times_entry->second.second;
+		S2_LAr_start = dbl_to_str(d_S2_LAr_start, 1); S2_LAr_finish = dbl_to_str(d_S2_LAr_finish, 1);
 } else {
-    std::cout<<"Could not find S2 XY time limits for '"<<exp<<"'! Skipping this experiment"<<std::endl;
+    std::cout<<"Could not find S2 LAr time limits for '"<<exp<<"'! Skipping this experiment"<<std::endl;
   return;
 }
 auto Bkg_times_entry = Bkg_times.find(exp);
@@ -744,7 +741,7 @@ auto first_run_entry = experiment_runs.find(exp);
 if (first_run_entry != experiment_runs.end())
     first_run = first_run_entry->second;
 else {
-    std::cout<<"Warning: Could not find starting run index for '"<<exp<<"'! Will print invalid event indexes."<<std::endl;
+    std::cout<<"Could not find starting run index for '"<<exp<<"'! Will print invalid event indexes."<<std::endl;
     first_run = -10000;
 }
 // These lambda functions are to shorten the code only.
@@ -771,6 +768,34 @@ auto tabulate_SiPM_results = [=]() {
 		int chan = post_processor->MPPC_channels[ich];
 		on_ch(chan);
 	}
+};
+auto print_PMTs_results = [=](std::string& FOLDER, std::string& Num, int& no, std::vector<std::string>& cuts) {
+	time_zoom_PMTs(d_Bkg_start, d_Bkg_finish); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+Bkg_start+"-"+Bkg_finish+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_PMTs(d_S1_start, d_S1_finish); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+S1_start+"-"+S1_finish+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_PMTs(d_S2_LAr_start, d_S2_LAr_finish); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+S2_LAr_start+"-"+S2_LAr_finish+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_PMTs(d_S2_start, 160); update();
+	saveaspng(FOLDER + Num+"_slowPMTs_Npe_"+S2_start+"-160us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+};
+auto print_SiPMs_results = [=](std::string& FOLDER, std::string& Num, int& no, std::vector<std::string>& cuts) {
+	time_zoom_SiPMs(d_Bkg_start, d_Bkg_finish); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+Bkg_start+"-"+Bkg_finish+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_SiPMs(d_S1_start, d_S1_finish); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+S1_start+"-"+S1_finish+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_SiPMs(d_S2_LAr_start, d_S2_LAr_finish); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+S2_LAr_start+"-"+S2_LAr_finish+"us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
+	time_zoom_SiPMs(d_S2_start, 160); update();
+	saveaspng(FOLDER + Num+"_SiPMs_Npe_"+S2_start+"-160us_"+cuts_str(cuts));
+	Num = int_to_str(++no, 2);
 };
 auto print_SiPMs_xy = [=](std::string& FOLDER, std::string& Num, int& no, std::vector<std::string>& cuts) {
 	ty(AStates::MPPC_coord);
@@ -925,10 +950,34 @@ set_corr(AStates::PMT_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
 	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events_log");
 	unset_log_z();
 
+	std::string form_n = "forms_Pu_peak/";
 	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + Num + "_events.txt", first_run);
+	cut_runs(1850, "first_events");
+	set_as_run_cut("first_events");
+	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
+	save_forms(FOLDER + form_n, true, PMT_state, SiPM_state);
 	Num = int_to_str(++no, 2);
 
+ty(AStates::MPPC_tbNpe_sum);
+	central_SiPMs(true); cut_SiPM_noise(SiPM_state);
+	set_zoom(40, 120); set_bins(1200);
+	draw_limits(d_Bkg_start, d_Bkg_finish, "draw0");
+	draw_limits(d_S1_start, d_S1_finish, "draw1");
+	draw_limits(d_S2_LAr_start, d_S2_LAr_finish, "draw2");
+	draw_limits(d_S2_start, 160, "draw3");
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe");
+	set_log_y(); set_zoom(0, 160); set_bins(1200);
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe_log");
+	remcut("draw0"); remcut("draw1"); remcut("draw2"); remcut("draw3");
+	Num = int_to_str(++no, 2);
+
+ty(AStates::PMT_Npe_sum);
+	slow_PMTs_only(); set_bins(0, 200);
+	print_PMTs_results(FOLDER, Num, no, cuts);
+ty(AStates::MPPC_Npe_sum);
+	print_SiPMs_results(FOLDER, Num, no, cuts);
+
+	tabulate_SiPM_results();
 	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 if (exp == "221020_S2_LAr_Pu_WLS_18.0kV_338V") {
@@ -1040,10 +1089,34 @@ set_corr(AStates::PMT_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
 	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events_log");
 	unset_log_z();
 
+	std::string form_n = "forms_Pu_peak/";
 	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + Num + "_events.txt", first_run);
+	cut_runs(1850, "first_events");
+	set_as_run_cut("first_events");
+	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
+	save_forms(FOLDER + form_n, true, PMT_state, SiPM_state);
 	Num = int_to_str(++no, 2);
 
+ty(AStates::MPPC_tbNpe_sum);
+	central_SiPMs(true); cut_SiPM_noise(SiPM_state);
+	set_zoom(40, 120); set_bins(1200);
+	draw_limits(d_Bkg_start, d_Bkg_finish, "draw0");
+	draw_limits(d_S1_start, d_S1_finish, "draw1");
+	draw_limits(d_S2_LAr_start, d_S2_LAr_finish, "draw2");
+	draw_limits(d_S2_start, 160, "draw3");
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe");
+	set_log_y(); set_zoom(0, 160); set_bins(1200);
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe_log");
+	remcut("draw0"); remcut("draw1"); remcut("draw2"); remcut("draw3");
+	Num = int_to_str(++no, 2);
+
+ty(AStates::PMT_Npe_sum);
+	slow_PMTs_only(); set_bins(0, 200);
+	print_PMTs_results(FOLDER, Num, no, cuts);
+ty(AStates::MPPC_Npe_sum);
+	print_SiPMs_results(FOLDER, Num, no, cuts);
+
+	tabulate_SiPM_results();
 	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 if (exp == "221020_S2_LAr_Pu_WLS_17.5kV_563V") {
@@ -1155,10 +1228,34 @@ set_corr(AStates::PMT_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
 	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events_log");
 	unset_log_z();
 
+	std::string form_n = "forms_Pu_peak/";
 	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + Num + "_events.txt", first_run);
+	cut_runs(1850, "first_events");
+	set_as_run_cut("first_events");
+	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
+	save_forms(FOLDER + form_n, true, PMT_state, SiPM_state);
 	Num = int_to_str(++no, 2);
 
+ty(AStates::MPPC_tbNpe_sum);
+	central_SiPMs(true); cut_SiPM_noise(SiPM_state);
+	set_zoom(40, 120); set_bins(1200);
+	draw_limits(d_Bkg_start, d_Bkg_finish, "draw0");
+	draw_limits(d_S1_start, d_S1_finish, "draw1");
+	draw_limits(d_S2_LAr_start, d_S2_LAr_finish, "draw2");
+	draw_limits(d_S2_start, 160, "draw3");
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe");
+	set_log_y(); set_zoom(0, 160); set_bins(1200);
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe_log");
+	remcut("draw0"); remcut("draw1"); remcut("draw2"); remcut("draw3");
+	Num = int_to_str(++no, 2);
+
+ty(AStates::PMT_Npe_sum);
+	slow_PMTs_only(); set_bins(0, 200);
+	print_PMTs_results(FOLDER, Num, no, cuts);
+ty(AStates::MPPC_Npe_sum);
+	print_SiPMs_results(FOLDER, Num, no, cuts);
+
+	tabulate_SiPM_results();
 	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 if (exp == "221020_S2_LAr_Pu_WLS_17.0kV_917V") {
@@ -1270,10 +1367,34 @@ set_corr(AStates::PMT_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
 	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events_log");
 	unset_log_z();
 
+	std::string form_n = "forms_Pu_peak/";
 	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + Num + "_events.txt", first_run);
+	cut_runs(1850, "first_events");
+	set_as_run_cut("first_events");
+	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
+	save_forms(FOLDER + form_n, true, PMT_state, SiPM_state);
 	Num = int_to_str(++no, 2);
 
+ty(AStates::MPPC_tbNpe_sum);
+	central_SiPMs(true); cut_SiPM_noise(SiPM_state);
+	set_zoom(40, 120); set_bins(1200);
+	draw_limits(d_Bkg_start, d_Bkg_finish, "draw0");
+	draw_limits(d_S1_start, d_S1_finish, "draw1");
+	draw_limits(d_S2_LAr_start, d_S2_LAr_finish, "draw2");
+	draw_limits(d_S2_start, 160, "draw3");
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe");
+	set_log_y(); set_zoom(0, 160); set_bins(1200);
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe_log");
+	remcut("draw0"); remcut("draw1"); remcut("draw2"); remcut("draw3");
+	Num = int_to_str(++no, 2);
+
+ty(AStates::PMT_Npe_sum);
+	slow_PMTs_only(); set_bins(0, 200);
+	print_PMTs_results(FOLDER, Num, no, cuts);
+ty(AStates::MPPC_Npe_sum);
+	print_SiPMs_results(FOLDER, Num, no, cuts);
+
+	tabulate_SiPM_results();
 	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 if (exp == "221020_S2_LAr_Pu_WLS_16.5kV_1238V") {
@@ -1385,10 +1506,34 @@ set_corr(AStates::PMT_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
 	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events_log");
 	unset_log_z();
 
+	std::string form_n = "forms_Pu_peak/";
 	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + Num + "_events.txt", first_run);
+	cut_runs(1850, "first_events");
+	set_as_run_cut("first_events");
+	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
+	save_forms(FOLDER + form_n, true, PMT_state, SiPM_state);
 	Num = int_to_str(++no, 2);
 
+ty(AStates::MPPC_tbNpe_sum);
+	central_SiPMs(true); cut_SiPM_noise(SiPM_state);
+	set_zoom(40, 120); set_bins(1200);
+	draw_limits(d_Bkg_start, d_Bkg_finish, "draw0");
+	draw_limits(d_S1_start, d_S1_finish, "draw1");
+	draw_limits(d_S2_LAr_start, d_S2_LAr_finish, "draw2");
+	draw_limits(d_S2_start, 160, "draw3");
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe");
+	set_log_y(); set_zoom(0, 160); set_bins(1200);
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe_log");
+	remcut("draw0"); remcut("draw1"); remcut("draw2"); remcut("draw3");
+	Num = int_to_str(++no, 2);
+
+ty(AStates::PMT_Npe_sum);
+	slow_PMTs_only(); set_bins(0, 200);
+	print_PMTs_results(FOLDER, Num, no, cuts);
+ty(AStates::MPPC_Npe_sum);
+	print_SiPMs_results(FOLDER, Num, no, cuts);
+
+	tabulate_SiPM_results();
 	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 if (exp == "221020_S2_LAr_Pu_WLS_16.0kV_1238V") {
@@ -1500,10 +1645,34 @@ set_corr(AStates::PMT_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
 	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events_log");
 	unset_log_z();
 
+	std::string form_n = "forms_Pu_peak/";
 	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + Num + "_events.txt", first_run);
+	cut_runs(1850, "first_events");
+	set_as_run_cut("first_events");
+	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
+	save_forms(FOLDER + form_n, true, PMT_state, SiPM_state);
 	Num = int_to_str(++no, 2);
 
+ty(AStates::MPPC_tbNpe_sum);
+	central_SiPMs(true); cut_SiPM_noise(SiPM_state);
+	set_zoom(40, 120); set_bins(1200);
+	draw_limits(d_Bkg_start, d_Bkg_finish, "draw0");
+	draw_limits(d_S1_start, d_S1_finish, "draw1");
+	draw_limits(d_S2_LAr_start, d_S2_LAr_finish, "draw2");
+	draw_limits(d_S2_start, 160, "draw3");
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe");
+	set_log_y(); set_zoom(0, 160); set_bins(1200);
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe_log");
+	remcut("draw0"); remcut("draw1"); remcut("draw2"); remcut("draw3");
+	Num = int_to_str(++no, 2);
+
+ty(AStates::PMT_Npe_sum);
+	slow_PMTs_only(); set_bins(0, 200);
+	print_PMTs_results(FOLDER, Num, no, cuts);
+ty(AStates::MPPC_Npe_sum);
+	print_SiPMs_results(FOLDER, Num, no, cuts);
+
+	tabulate_SiPM_results();
 	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 if (exp == "221020_S2_LAr_Pu_WLS_15.5kV_1238V") {
@@ -1615,10 +1784,34 @@ set_corr(AStates::PMT_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
 	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events_log");
 	unset_log_z();
 
+	std::string form_n = "forms_Pu_peak/";
 	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + Num + "_events.txt", first_run);
+	cut_runs(1850, "first_events");
+	set_as_run_cut("first_events");
+	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
+	save_forms(FOLDER + form_n, true, PMT_state, SiPM_state);
 	Num = int_to_str(++no, 2);
 
+ty(AStates::MPPC_tbNpe_sum);
+	central_SiPMs(true); cut_SiPM_noise(SiPM_state);
+	set_zoom(40, 120); set_bins(1200);
+	draw_limits(d_Bkg_start, d_Bkg_finish, "draw0");
+	draw_limits(d_S1_start, d_S1_finish, "draw1");
+	draw_limits(d_S2_LAr_start, d_S2_LAr_finish, "draw2");
+	draw_limits(d_S2_start, 160, "draw3");
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe");
+	set_log_y(); set_zoom(0, 160); set_bins(1200);
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe_log");
+	remcut("draw0"); remcut("draw1"); remcut("draw2"); remcut("draw3");
+	Num = int_to_str(++no, 2);
+
+ty(AStates::PMT_Npe_sum);
+	slow_PMTs_only(); set_bins(0, 200);
+	print_PMTs_results(FOLDER, Num, no, cuts);
+ty(AStates::MPPC_Npe_sum);
+	print_SiPMs_results(FOLDER, Num, no, cuts);
+
+	tabulate_SiPM_results();
 	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 if (exp == "221020_S2_LAr_Pu_WLS_15.0kV_1238V") {
@@ -1730,10 +1923,34 @@ set_corr(AStates::PMT_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
 	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events_log");
 	unset_log_z();
 
+	std::string form_n = "forms_Pu_peak/";
 	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + Num + "_events.txt", first_run);
+	cut_runs(1850, "first_events");
+	set_as_run_cut("first_events");
+	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
+	save_forms(FOLDER + form_n, true, PMT_state, SiPM_state);
 	Num = int_to_str(++no, 2);
 
+ty(AStates::MPPC_tbNpe_sum);
+	central_SiPMs(true); cut_SiPM_noise(SiPM_state);
+	set_zoom(40, 120); set_bins(1200);
+	draw_limits(d_Bkg_start, d_Bkg_finish, "draw0");
+	draw_limits(d_S1_start, d_S1_finish, "draw1");
+	draw_limits(d_S2_LAr_start, d_S2_LAr_finish, "draw2");
+	draw_limits(d_S2_start, 160, "draw3");
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe");
+	set_log_y(); set_zoom(0, 160); set_bins(1200);
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe_log");
+	remcut("draw0"); remcut("draw1"); remcut("draw2"); remcut("draw3");
+	Num = int_to_str(++no, 2);
+
+ty(AStates::PMT_Npe_sum);
+	slow_PMTs_only(); set_bins(0, 200);
+	print_PMTs_results(FOLDER, Num, no, cuts);
+ty(AStates::MPPC_Npe_sum);
+	print_SiPMs_results(FOLDER, Num, no, cuts);
+
+	tabulate_SiPM_results();
 	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 if (exp == "221020_S2_LAr_Pu_WLS_14.0kV_1688V") {
@@ -1845,10 +2062,34 @@ set_corr(AStates::PMT_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
 	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events_log");
 	unset_log_z();
 
+	std::string form_n = "forms_Pu_peak/";
 	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + Num + "_events.txt", first_run);
+	cut_runs(1850, "first_events");
+	set_as_run_cut("first_events");
+	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
+	save_forms(FOLDER + form_n, true, PMT_state, SiPM_state);
 	Num = int_to_str(++no, 2);
 
+ty(AStates::MPPC_tbNpe_sum);
+	central_SiPMs(true); cut_SiPM_noise(SiPM_state);
+	set_zoom(40, 120); set_bins(1200);
+	draw_limits(d_Bkg_start, d_Bkg_finish, "draw0");
+	draw_limits(d_S1_start, d_S1_finish, "draw1");
+	draw_limits(d_S2_LAr_start, d_S2_LAr_finish, "draw2");
+	draw_limits(d_S2_start, 160, "draw3");
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe");
+	set_log_y(); set_zoom(0, 160); set_bins(1200);
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe_log");
+	remcut("draw0"); remcut("draw1"); remcut("draw2"); remcut("draw3");
+	Num = int_to_str(++no, 2);
+
+ty(AStates::PMT_Npe_sum);
+	slow_PMTs_only(); set_bins(0, 200);
+	print_PMTs_results(FOLDER, Num, no, cuts);
+ty(AStates::MPPC_Npe_sum);
+	print_SiPMs_results(FOLDER, Num, no, cuts);
+
+	tabulate_SiPM_results();
 	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 if (exp == "221020_S2_LAr_Pu_WLS_13.0kV_2250V") {
@@ -1960,10 +2201,34 @@ set_corr(AStates::PMT_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
 	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events_log");
 	unset_log_z();
 
+	std::string form_n = "forms_Pu_peak/";
 	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + Num + "_events.txt", first_run);
+	cut_runs(1850, "first_events");
+	set_as_run_cut("first_events");
+	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
+	save_forms(FOLDER + form_n, true, PMT_state, SiPM_state);
 	Num = int_to_str(++no, 2);
 
+ty(AStates::MPPC_tbNpe_sum);
+	central_SiPMs(true); cut_SiPM_noise(SiPM_state);
+	set_zoom(40, 120); set_bins(1200);
+	draw_limits(d_Bkg_start, d_Bkg_finish, "draw0");
+	draw_limits(d_S1_start, d_S1_finish, "draw1");
+	draw_limits(d_S2_LAr_start, d_S2_LAr_finish, "draw2");
+	draw_limits(d_S2_start, 160, "draw3");
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe");
+	set_log_y(); set_zoom(0, 160); set_bins(1200);
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe_log");
+	remcut("draw0"); remcut("draw1"); remcut("draw2"); remcut("draw3");
+	Num = int_to_str(++no, 2);
+
+ty(AStates::PMT_Npe_sum);
+	slow_PMTs_only(); set_bins(0, 200);
+	print_PMTs_results(FOLDER, Num, no, cuts);
+ty(AStates::MPPC_Npe_sum);
+	print_SiPMs_results(FOLDER, Num, no, cuts);
+
+	tabulate_SiPM_results();
 	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 if (exp == "221020_S2_LAr_Pu_WLS_12.0kV_2250V") {
@@ -2075,10 +2340,34 @@ set_corr(AStates::PMT_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
 	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events_log");
 	unset_log_z();
 
+	std::string form_n = "forms_Pu_peak/";
 	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + Num + "_events.txt", first_run);
+	cut_runs(1850, "first_events");
+	set_as_run_cut("first_events");
+	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
+	save_forms(FOLDER + form_n, true, PMT_state, SiPM_state);
 	Num = int_to_str(++no, 2);
 
+ty(AStates::MPPC_tbNpe_sum);
+	central_SiPMs(true); cut_SiPM_noise(SiPM_state);
+	set_zoom(40, 120); set_bins(1200);
+	draw_limits(d_Bkg_start, d_Bkg_finish, "draw0");
+	draw_limits(d_S1_start, d_S1_finish, "draw1");
+	draw_limits(d_S2_LAr_start, d_S2_LAr_finish, "draw2");
+	draw_limits(d_S2_start, 160, "draw3");
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe");
+	set_log_y(); set_zoom(0, 160); set_bins(1200);
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe_log");
+	remcut("draw0"); remcut("draw1"); remcut("draw2"); remcut("draw3");
+	Num = int_to_str(++no, 2);
+
+ty(AStates::PMT_Npe_sum);
+	slow_PMTs_only(); set_bins(0, 200);
+	print_PMTs_results(FOLDER, Num, no, cuts);
+ty(AStates::MPPC_Npe_sum);
+	print_SiPMs_results(FOLDER, Num, no, cuts);
+
+	tabulate_SiPM_results();
 	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 if (exp == "221020_S2_LAr_Pu_WLS_11.0kV_2025V") {
@@ -2190,10 +2479,34 @@ set_corr(AStates::PMT_Npe_sum, AStates::MPPC_Npe_sum, -1, -1);
 	saveaspng(FOLDER + Num + "_SiPMs_vs_slowPMTs_Npe_"+cuts_str(cuts)+"_N="+int_to_str(post_processor->numOfFills(true))+"events_log");
 	unset_log_z();
 
+	std::string form_n = "forms_Pu_peak/";
 	set_as_run_cut("En_spec"); cuts.push_back(Num);
-	print_accepted_events(FOLDER + Num + "_events.txt", first_run);
+	cut_runs(1850, "first_events");
+	set_as_run_cut("first_events");
+	print_accepted_events(FOLDER + form_n + "events.txt", first_run);
+	save_forms(FOLDER + form_n, true, PMT_state, SiPM_state);
 	Num = int_to_str(++no, 2);
 
+ty(AStates::MPPC_tbNpe_sum);
+	central_SiPMs(true); cut_SiPM_noise(SiPM_state);
+	set_zoom(40, 120); set_bins(1200);
+	draw_limits(d_Bkg_start, d_Bkg_finish, "draw0");
+	draw_limits(d_S1_start, d_S1_finish, "draw1");
+	draw_limits(d_S2_LAr_start, d_S2_LAr_finish, "draw2");
+	draw_limits(d_S2_start, 160, "draw3");
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe");
+	set_log_y(); set_zoom(0, 160); set_bins(1200);
+	saveaspng(FOLDER + Num + "_SiPMs_form_by_Npe_log");
+	remcut("draw0"); remcut("draw1"); remcut("draw2"); remcut("draw3");
+	Num = int_to_str(++no, 2);
+
+ty(AStates::PMT_Npe_sum);
+	slow_PMTs_only(); set_bins(0, 200);
+	print_PMTs_results(FOLDER, Num, no, cuts);
+ty(AStates::MPPC_Npe_sum);
+	print_SiPMs_results(FOLDER, Num, no, cuts);
+
+	tabulate_SiPM_results();
 	print_SiPMs_xy(FOLDER, Num, no, cuts);
 }
 //END OF FORMS

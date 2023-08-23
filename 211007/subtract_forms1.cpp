@@ -1,4 +1,4 @@
-//Created on 2021.10.15
+//Created on 2023.01.16
 //For 211007/results_v5
 //9.2 mm with 238Pu set on the cathode. (Mesh instead of THGEM0, 28% CERN #8 as THEGEM1, PMT#1 malfunctions due to mixed signal wires)
 //2650 on THGEM1 (gain~20), charge signal and SiPMs forms only
@@ -240,6 +240,12 @@ void SubtractBaseline(TH1D *hist, double baseline) {
     }
 }
 
+TH1D* SubtractHists(TH1D *hist1, TH1D *hist2) {
+  TH1D *res = new TH1D(*hist1);
+  res->Add(hist2, -1.0);
+  return res;
+}
+
 void SubtractBaseline(TGraphErrors* graph, double baseline) {
   for (int i = 0, i_end_ = graph->GetN(); i!=i_end_; ++i) {
     graph->GetY()[i] = graph->GetY()[i] - baseline;
@@ -278,7 +284,7 @@ double get_max_y(TH1D *hist) {
 }
 
 double get_min_y(TH1D *hist) {
-  return 0;
+  return hist->GetBinContent(hist->GetMinimumBin());;
 }
 
 void read_hist (TH1D *hist, std::string fname) {
@@ -503,90 +509,19 @@ struct pulse_shape {
 	std::string FrLost;
 };
 
-class FileExporter {
-public:
-  FileExporter(std::string filename) : _filename(filename)
-  {}
-  std::vector<PAIR> TabulateFunction (TF1* func) {
-    std::vector<PAIR> out;
-    if (func==NULL)
-      return out;
-    double from, to;
-    func->GetRange(from, to);
-    for (std::size_t i = 0, i_end_ = 2000; i!=i_end_; ++i) {
-      double x = from + (to-from)*((double)i/(i_end_-1));
-      out.push_back(PAIR(x, func->Eval(x)));
-    }
-    return out;
-  }
-  std::vector<PAIR> TabulateShape (pulse_shape* shape) {
-    std::vector<PAIR> out;
-    if (shape == NULL || shape->hist == NULL)
-      return out;
-    for (int bin = 1, bin_end = shape->hist->GetNbinsX()+1; bin!=bin_end; ++bin)
-      out.push_back(PAIR(shape->hist->GetBinCenter(bin), shape->hist->GetBinContent(bin)));
-    return out;
-  }
-  void AddToPrint(TF1* func, pulse_shape* shape, std::size_t index) {
-    if (index < xy_table.size()/2) {
-      std::vector<PAIR> new_f = TabulateFunction(func);
-      std::size_t f_ind = index * 2 + 1;
-      xy_table[f_ind].push_back(PAIR(DBL_MAX, DBL_MAX)); //separate new fit function from the previous ones
-      xy_table[f_ind].insert(xy_table[f_ind].end(), new_f.begin(), new_f.end());
-    } else {
-      std::vector<PAIR> new_f = TabulateFunction(func);
-      std::vector<PAIR> new_h = TabulateShape(shape);
-      xy_table.push_back(new_h);
-      xy_table.push_back(new_f);
-    }
-  }
-  void Print(void) {
-    std::ofstream str;
-    str.open(_filename, std::ios_base::trunc);
-    if (!str.is_open()) {
-      std::cerr<<"FileExporter:Print: Failed to open file"<<std::endl;
-      std::cerr<<"\t\""<<_filename<<"\""<<std::endl;
-      return;
-    }
-    std::cout<<"FileExporter: printing to file"<<std::endl;
-    std::cout<<"\t\""<<_filename<<"\""<<std::endl;
-    std::size_t n_rows = 0;
-    for (std::size_t c = 0, c_end_ = xy_table.size(); c!=c_end_; ++c) {
-      n_rows = std::max(n_rows, xy_table[c].size());
-    }
-    for (std::size_t r = 0; r!=n_rows; ++r) {
-      for (std::size_t c = 0, c_end_ = xy_table.size(); c!=c_end_; ++c) {
-        str << (c == 0 ? "" : "\t");
-        if (r < xy_table[c].size() && xy_table[c][r].first != DBL_MAX)
-          str<< xy_table[c][r].first;
-        else
-          str<< "--";
-        str<<"\t";
-        if (r < xy_table[c].size() && xy_table[c][r].second != DBL_MAX)
-          str<< xy_table[c][r].second;
-        else
-          str<< "--";
-      }
-      str<<std::endl;
-    }
-    str.close();
-  }
-  std::deque<std::vector<PAIR>> xy_table; //stores both histogram and fit function.
-  std::string _filename;
+struct pulse_shape_subtraction {
+  pulse_shape* subtracted_from;
+  pulse_shape* subtracted;
+  pulse_shape res;
 };
 
-FileExporter* file_exporter = NULL;
-
-void draw_slow_component(TF1* fit_f, pulse_shape* shape, std::size_t index)
+void draw_slow_component(TF1* fit_f, pulse_shape& shape)
 {
 	fit_f->SetNpx(800);
-	//fit_f->Draw("same");
-  if (file_exporter) {
-    file_exporter->AddToPrint(fit_f, shape, index);
-  }
+	fit_f->Draw("same");
 }
 
-int compare_forms1 (void) {
+int subtract_forms1 (void) {
 	std::cout<<"COMPARISON_MODE"<<std::endl;
 
 	gStyle->SetStatY(0.9);
@@ -600,21 +535,22 @@ int compare_forms1 (void) {
 	bool linear = 1;
 	bool SiPMs = true;
 
-	bool fast_PMTs = false;
+	bool fast_PMTs = true;
 	unsigned int PMT_used = 0x2 | 0x4 | 0x8;
 	bool do_fit = true;
 	bool fit_bad_forms = true;
-	bool subtract_baseline = false;
+	bool subtract_baseline = true;
 	bool center_pulses = true;
+  const unsigned int Normalize_by_fast = 0x1, Normalize_by_area = 0x2, Normalize_by_S1 = 0x4;
 	bool center_at_S1 = false; //Not used
-	bool normalize_by_S1 = false; //Not used
+	unsigned int normalize_by = Normalize_by_fast;
 	bool print_errors = false;
 	bool print_results = true;
 	//double time_pretrigger_left = 51.0, time_pretrigger_right = 62.0;
   double time_pretrigger_left = 6.0, time_pretrigger_right = 22.0;
 	double time_left = 0, time_right = 160;//us
 	double max_val = 0;
-	double trigger_at = center_at_S1 ? 0 : 32; //Not used
+	double trigger_at = center_at_S1 ? 0 : 28.4; //Not used
 	double y_min = 1e-5;
 
 	pulse_shape* define = NULL, *copy = NULL;
@@ -703,7 +639,7 @@ define->folder = std::string("211007/results_v5/Pu_46V_20.0kV_800V_2650V/") + (C
 define->fnames = {"SiPMs_edge_form_by_Npe.hdata"};
 define->file_type = ShapeFileType::Histogram;
 define->Td = "8.3";
-define->device = "#DeltaV_{THGEM}=2110V";
+define->device = "V_{THGEM}=2110V";
 define->fast_t_center = 28.4;
 define->fast_t = PAIR(24.5, 29.6);
 define->S1_t_center = 0;
@@ -728,8 +664,8 @@ define->fit_option = def_fit_option;
 define->folder = std::string("211007/results_v5/Pu_46V_18.8kV_800V_2650V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_edge_form_by_Npe.hdata"};
 define->file_type = ShapeFileType::Histogram;
-define->Td = "7.7";
-define->device = "#DeltaV_{THGEM}=2110V";
+define->Td = "7.9";
+define->device = "SiPM-matrix, 2650V";
 define->fast_t_center = 28.5;
 define->fast_t = PAIR(24.5, 29.8);
 define->S1_t_center = 0;
@@ -754,8 +690,8 @@ define->fit_option = def_fit_option;
 define->folder = std::string("211007/results_v5/Pu_46V_17.0kV_800V_2650V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_edge_form_by_Npe.hdata"};
 define->file_type = ShapeFileType::Histogram;
-define->Td = "6.8";
-define->device = "#DeltaV_{THGEM}=2110V";
+define->Td = "7.0";
+define->device = "SiPM-matrix, 2650V";
 define->fast_t_center = 28.5;
 define->fast_t = PAIR(24.5, 29.9);
 define->S1_t_center = 0;
@@ -780,8 +716,8 @@ define->fit_option = def_fit_option;
 define->folder = std::string("211007/results_v5/Pu_46V_15.3kV_800V_2650V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_edge_form_by_Npe.hdata"};
 define->file_type = ShapeFileType::Histogram;
-define->Td = "6.0";
-define->device = "#DeltaV_{THGEM}=2110V";
+define->Td = "6.1";
+define->device = "SiPM-matrix, 2650V";
 define->fast_t_center = 28.6;
 define->fast_t = PAIR(24.5, 30.2);
 define->S1_t_center = 0;
@@ -806,7 +742,7 @@ define->fit_option = def_fit_option;
 define->folder = std::string("211007/results_v5/Pu_46V_14.4kV_800V_2650V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_edge_form_by_Npe.hdata"};
 define->file_type = ShapeFileType::Histogram;
-define->Td = "5.5";
+define->Td = "5.7";
 define->device = "SiPM-matrix, 2650V";
 define->fast_t_center = 28.6;
 define->fast_t = PAIR(24.5, 30.4);
@@ -832,8 +768,8 @@ define->fit_option = def_fit_option;
 define->folder = std::string("211007/results_v5/Pu_46V_13.6kV_800V_2650V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_edge_form_by_Npe.hdata"};
 define->file_type = ShapeFileType::Histogram;
-define->Td = "5.1";
-define->device = "#DeltaV_{THGEM}=2110V";
+define->Td = "5.3";
+define->device = "SiPM-matrix, 2650V";
 define->fast_t_center = 28.6;
 define->fast_t = PAIR(24.5, 30.5);
 define->S1_t_center = 0;
@@ -858,8 +794,8 @@ define->fit_option = def_fit_option;
 define->folder = std::string("211007/results_v5/Pu_46V_12.7kV_800V_2650V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_edge_form_by_Npe.hdata"};
 define->file_type = ShapeFileType::Histogram;
-define->Td = "4.7";
-define->device = "#DeltaV_{THGEM}=2110V";
+define->Td = "4.8";
+define->device = "SiPM-matrix, 2650V";
 define->fast_t_center = 28.7;
 define->fast_t = PAIR(24.5, 30.6);
 define->S1_t_center = 0;
@@ -884,8 +820,8 @@ define->fit_option = def_fit_option;
 define->folder = std::string("211007/results_v5/Pu_46V_11.8kV_800V_2650V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_edge_form_by_Npe.hdata"};
 define->file_type = ShapeFileType::Histogram;
-define->Td = "4.2";
-define->device = "#DeltaV_{THGEM}=2110V";
+define->Td = "4.4";
+define->device = "SiPM-matrix, 2650V";
 define->fast_t_center = 28.7;
 define->fast_t = PAIR(24.5, 30.7);
 define->S1_t_center = 0;
@@ -910,8 +846,8 @@ define->fit_option = def_fit_option;
 define->folder = std::string("211007/results_v5/Pu_46V_11.0kV_800V_2650V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_edge_form_by_Npe.hdata"};
 define->file_type = ShapeFileType::Histogram;
-define->Td = "3.8";
-define->device = "#DeltaV_{THGEM}=2110V";
+define->Td = "4.0";
+define->device = "V_{THGEM}=2110V";
 define->fast_t_center = 28.8;
 define->fast_t = PAIR(24.5, 30.8);
 define->S1_t_center = 0;
@@ -919,7 +855,7 @@ define->S1_t = PAIR(0, 0);
 define->scale = 1;
 define->subtract_baseline = subtract_baseline;
 define->renormalize = true;
-define->slow_fit_t = PAIR(32.0, 46.2);
+define->slow_fit_t = PAIR(35.0, 46.2);
 define->long_fit_t = PAIR(87, 154);
 define->baseline_bound = PAIR(1e-6, 1.0e-3);
 define->long_baseline_bound = PAIR(1e-6, 1e-6);
@@ -1233,7 +1169,6 @@ define->fit_option = "NRWE";
 
 	std::string folder = SiPMs ? std::string("211007/results_v5/SiPMs_v1/")
 					: std::string("211007/results_v5/Charge_v1/");
-  file_exporter = new FileExporter("211007/results_v5/temp.txt");
 	//std::vector<pulse_shape> pulses = {SiPM_20_0kV_no_trigger, SiPM_20_0kV_no_trigger_1, SiPM_20_0kV_no_trigger_2, SiPM_20_0kV_no_trigger_3};
   //std::vector<pulse_shape> pulses = {SiPM_20_0kV_no_trigger, SiPM_18_8kV_no_trigger, SiPM_17_0kV_no_trigger, SiPM_15_3kV_no_trigger, SiPM_14_4kV_no_trigger};
   //std::vector<pulse_shape> pulses = {SiPM_13_6kV_no_trigger, SiPM_12_7kV_no_trigger, SiPM_11_8kV_no_trigger, SiPM_11_0kV_no_trigger};
@@ -1247,10 +1182,19 @@ define->fit_option = "NRWE";
   //std::vector<pulse_shape> pulses = {Q_20_0kV_no_trigger, Q_17_0kV_no_trigger};
   //std::vector<pulse_shape> pulses = {Q_20_0kV_no_trigger};
   std::vector<pulse_shape> pulses = {SiPM_20_0kV_no_trigger, SiPM_11_0kV_no_trigger};
+  pulse_shape_subtraction SiPM_20_0kV_11_0kV;
+  SiPM_20_0kV_11_0kV.subtracted_from = &pulses[0];
+  SiPM_20_0kV_11_0kV.subtracted = &pulses[1];
+  define = &SiPM_20_0kV_11_0kV.res;
+  define->slow_fit_t = PAIR(33.0, 56);
+  define->baseline_bound = PAIR(1e-3, 1e-3);
+  define->slow_ampl_bound = PAIR(6e-2, 6e-1);
+  define->slow_tau_bound = PAIR(2.0, 10);
+  std::vector<pulse_shape_subtraction> subtractions = {SiPM_20_0kV_11_0kV};
 
-  std::vector<std::string> forced_taus1 = {"6.34", "5.91"}; //SiPMs: 20kV & 2650V, 11.0kV & 2650V
-  std::vector<std::string> forced_Frs1 = {"0.63", "0.32"}; //SiPMs: 20kV & 2650V, 11.0kV & 2650V
-  //std::vector<std::string> forced_taus1, forced_Frs1;
+  //std::vector<std::string> forced_taus1 = {"6.34"}; //SiPMs: 20kV & 2650V
+  //std::vector<std::string> forced_Frs1 = {"0.63"}; //SiPMs: 20kV & 2650V
+  std::vector<std::string> forced_taus1, forced_Frs1;
 	std::vector<Color_t> palette_major = {kBlack, kRed, kBlue, kGreen, kYellow + 2, kMagenta, kOrange + 7};
 	std::vector<Color_t> palette_minor = {kGray + 1, kRed-3, kAzure + 6, kGreen -2, kMagenta+3, kOrange - 7, kOrange + 6};
 	int contribution_est_method = 2; //0 - use fit of slow/long components at fast component range;
@@ -1297,11 +1241,15 @@ define->fit_option = "NRWE";
 		}
 		if (pulses[hh].renormalize) {
 				double integral = 0;
-				if (normalize_by_S1)
+				if (normalize_by & Normalize_by_S1)
 		    	integral = (ShapeFileType::Histogram == pulses[hh].file_type ?
             integrate(pulses[hh].hist, pulses[hh].S1_t.first + toff, pulses[hh].S1_t.second + toff) :
             integrate(pulses[hh].graph, pulses[hh].S1_t.first + toff, pulses[hh].S1_t.second + toff));
-				else
+        if (normalize_by & Normalize_by_area)
+  	    	integral = (ShapeFileType::Histogram == pulses[hh].file_type ?
+            integrate(pulses[hh].hist, pulses[hh].S1_t.first + toff, time_pretrigger_right + toff) :
+            integrate(pulses[hh].graph, pulses[hh].S1_t.first + toff, time_pretrigger_right + toff));
+				if (normalize_by & Normalize_by_fast)
 					integral = (ShapeFileType::Histogram == pulses[hh].file_type ?
             integrate(pulses[hh].hist, pulses[hh].fast_t.first + toff, pulses[hh].fast_t.second + toff) :
             integrate(pulses[hh].graph, pulses[hh].fast_t.first + toff, pulses[hh].fast_t.second + toff));
@@ -1342,7 +1290,7 @@ define->fit_option = "NRWE";
 	else
 		frame->GetXaxis()->SetRangeUser(20, 80);
 	//=====================================
-	frame->GetYaxis()->SetTitle(SiPMs ? "PE peak count (arb. u.)" : "Amplitude (V)");
+	frame->GetYaxis()->SetTitle("Amplitude (V)");
 	frame->Draw();
 
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {
@@ -1363,7 +1311,7 @@ define->fit_option = "NRWE";
     }
   }
 
-	int precision1 = 2, precision2 = 0, precision3 = 2, precision4 = 3;
+	int precision1 = 2, precision2 = 0, precision3 = 2, precision4 = 3; // tau_S, tau_L, contr_S, contr_L
 	int line_width = 3;
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {
 		pulses[hh].total_integral = 0;
@@ -1416,7 +1364,7 @@ define->fit_option = "NRWE";
           pulses[hh].hist->Fit(fit_f, pulses[hh].fit_option.c_str());
         else
           pulses[hh].graph->Fit(fit_f, pulses[hh].fit_option.c_str());
-				draw_slow_component(fit_f, &pulses[hh], hh);
+				draw_slow_component(fit_f, pulses[hh]);
 				pulses[hh].baseline = fit_f->GetParameter(1);
 				pulses[hh].tau2 = dbl_to_str(fit_f->GetParameter(3), precision2);
 				pulses[hh].tau2_err = dbl_to_str(fit_f->GetParError(3), precision2);
@@ -1453,7 +1401,7 @@ define->fit_option = "NRWE";
         pulses[hh].hist->Fit(fit_f, pulses[hh].fit_option.c_str());
       else
         pulses[hh].graph->Fit(fit_f, pulses[hh].fit_option.c_str());
-			draw_slow_component(fit_f, &pulses[hh], hh);
+			draw_slow_component(fit_f, pulses[hh]);
 			pulses[hh].tau1 = dbl_to_str(fit_f->GetParameter(3), precision1);
 			pulses[hh].tau1_err = dbl_to_str(fit_f->GetParError(3), precision1);
 			if (!long_exist) {
@@ -1504,7 +1452,7 @@ define->fit_option = "NRWE";
           pulses[hh].hist->Fit(fit_f, pulses[hh].fit_option.c_str());
         else
           pulses[hh].graph->Fit(fit_f, pulses[hh].fit_option.c_str());
-				draw_slow_component(fit_f, &pulses[hh], hh);
+				draw_slow_component(fit_f, pulses[hh]);
 				pulses[hh].tau1 = dbl_to_str(fit_f->GetParameter(3), precision1);
 				pulses[hh].tau1_err = dbl_to_str(fit_f->GetParError(3), precision1);
 				pulses[hh].tau2 = "--";
@@ -1557,7 +1505,7 @@ define->fit_option = "NRWE";
           pulses[hh].hist->Fit(fit_f, pulses[hh].fit_option.c_str());
         else
           pulses[hh].graph->Fit(fit_f, pulses[hh].fit_option.c_str());
-				draw_slow_component(fit_f, &pulses[hh], hh);
+				draw_slow_component(fit_f, pulses[hh]);
 				pulses[hh].baseline = fit_f->GetParameter(1);
 				pulses[hh].total_integral = (ShapeFileType::Histogram == pulses[hh].file_type) ?
           integrate(pulses[hh].hist, pulses[hh].fast_t.first + Toff, DBL_MAX, pulses[hh].baseline) :
@@ -1717,23 +1665,101 @@ define->fit_option = "NRWE";
 	}
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {
     if (ShapeFileType::Histogram == pulses[hh].file_type)
-      legend->AddEntry(pulses[hh].hist, (std::string("E/N_{EL} = ") + pulses[hh].Td + " Td, " + pulses[hh].device).c_str(), "l");
+      legend->AddEntry(pulses[hh].hist, (std::string("E_{EL}/N = ") + pulses[hh].Td + " Td, " + pulses[hh].device).c_str(), "l");
     else
-      legend->AddEntry(pulses[hh].graph, (std::string("E/N_{EL} = ") + pulses[hh].Td + " Td, " + pulses[hh].device).c_str(), "l");
+      legend->AddEntry(pulses[hh].graph, (std::string("E_{EL}/N = ") + pulses[hh].Td + " Td, " + pulses[hh].device).c_str(), "l");
   }
 
 	frame->Draw("sameaxis");
 	legend->Draw("same");
 	c_->Update();
-#ifdef FAST_FIGURES_MODE
-	std::string filename = in_kV + (PMTs ?"kV_4PMT_" :"kV_SiPMs_")+ (linear ? "lin":"log") + (Cd_peak ? "" : "_slope")
-	 		+ "_Nb" + int_to_str(Nbins, 4) + "_" + def_fit_option + (combined ? "" : "sep") + ".png";
-	c_->SaveAs((folder + filename).c_str(), "png");
-#endif //FAST_FIGURES_MODE
-  if (file_exporter) {
-    file_exporter->Print();
-    delete file_exporter;
-    file_exporter = NULL;
+
+  //linear = true;
+  for (int hh = 0, hh_end_ = subtractions.size(); hh!=hh_end_; ++hh) {
+    subtractions[hh].res.hist = SubtractHists(subtractions[hh].subtracted_from->hist, subtractions[hh].subtracted->hist);
+    double max_val = (linear ? 1.2 : 2) * get_max_y(subtractions[hh].res.hist);
+    double min_val = (linear ? 1.2 * get_min_y(subtractions[hh].res.hist) : y_min);
+
+  	TCanvas *c_ = new TCanvas ((std::string(" ") + std::to_string(hh) + framename).c_str(), (std::string(" ") + std::to_string(hh) + framename).c_str(), DEF_W, DEF_H);
+  	c_->SetGrid(); c_->SetTicks(); c_->ToggleEventStatus(); c_->ToggleToolBar();
+  	if (!linear)
+  		c_->SetLogy();
+  	TLegend *legend = new TLegend(0.52, 0.8, 0.9, 0.9);
+  	//legend->SetHeader("");
+  	legend->SetMargin(0.25);
+  	TH2F* frame = new TH2F("frame", framename.c_str(), 500, time_left, time_right, 500, min_val, max_val);
+  	frame->GetXaxis()->SetTitle("Time (#mus)");
+  	//=====================================
+  	if (!linear)
+  		frame->GetXaxis()->SetRangeUser(0, 160);
+  	else
+  		frame->GetXaxis()->SetRangeUser(20, 80);
+  	//=====================================
+  	frame->GetYaxis()->SetTitle("PE peak count");
+  	frame->Draw();
+
+    subtractions[hh].res.hist->SetLineWidth(2);
+    subtractions[hh].res.hist->SetLineColor(palette_major[hh]);
+    subtractions[hh].res.hist->Draw("hist Lsame");
+
+		subtractions[hh].res.total_integral = 0;
+		subtractions[hh].res.fast_integral = 0;
+		subtractions[hh].res.restored_integral = 0;
+		subtractions[hh].res.slow_integral = 0;
+		subtractions[hh].res.long_integral = 0;
+		subtractions[hh].res.slow_on_fast = 0;
+		subtractions[hh].res.long_on_fast = 0;
+
+		TF1 * fit_f = new TF1("fit1", FittingF_exp, subtractions[hh].res.slow_fit_t.first, subtractions[hh].res.slow_fit_t.second, 4);
+		subtractions[hh].res.fit_fs.push_back(fit_f);
+		fit_f->SetParNames("start_time", "y0", "amplitude", "#tau");
+		SetParLimits(fit_f, 0, subtractions[hh].res.slow_fit_t.first);
+		SetParLimits(fit_f, 1, subtractions[hh].res.baseline_bound.first, subtractions[hh].res.baseline_bound.second);
+		SetParLimits(fit_f, 2, subtractions[hh].res.slow_ampl_bound.first, subtractions[hh].res.slow_ampl_bound.second);
+		SetParLimits(fit_f, 3, subtractions[hh].res.slow_tau_bound.first, subtractions[hh].res.slow_tau_bound.second);
+		fit_f->SetLineColor(palette_minor[hh]);
+		fit_f->SetLineWidth(line_width);
+    subtractions[hh].res.hist->Fit(fit_f, pulses[hh].fit_option.c_str());
+    draw_slow_component(fit_f, subtractions[hh].res);
+		subtractions[hh].res.tau1 = dbl_to_str(fit_f->GetParameter(3), precision1);
+		subtractions[hh].res.tau1_err = dbl_to_str(fit_f->GetParError(3), precision1);
+
+    std::vector<std::string> tau1, tau2, frsS, frsL;
+		std::string emp = "";
+		std::string unit = "#mus";
+		if (subtractions[hh].res.tau1.empty() || subtractions[hh].res.tau1 == "--")
+			tau1.push_back(emp);
+		else
+			tau1.push_back("#tau_{S} = " + subtractions[hh].res.tau1 + (print_errors ? "#pm" + subtractions[hh].res.tau1_err : unit));
+		if (subtractions[hh].res.Fr1.empty() || subtractions[hh].res.Fr1 == "--")
+			frsS.push_back("");
+		else
+			frsS.push_back(subtractions[hh].res.Fr1 + (print_errors ? "#pm" + subtractions[hh].res.err1 : emp));
+
+    if (print_results) {
+      if (!linear) {
+        std::vector<std::string> no_title;
+        std::vector<std::string> Slow_title = {"Slow component", "contribution:"};
+        if (print_errors) {
+          //zcxv
+          add_text(44, 0.06, no_title, tau1, palette_major);
+          //add_text(76, 0.009, Slow_title, frsS, palette_major);
+        } else {
+          add_text(44, 0.06, no_title, tau1, palette_major);
+          //add_text(76, 0.008, Slow_title, frsS, palette_major);
+        }
+      } else { //linear
+        std::vector<std::string> no_title;
+        std::vector<std::string> Slow_title = {"Slow component", "contribution:"};
+        std::vector<std::string> Long_title;// = {"Long"};
+        add_text(40, 0.06, no_title, tau1, palette_major);
+        //add_text(52, 0.06, Slow_title, frsS, palette_major);
+        //add_text(52, 0.08, Long_title, frsL, palette_text);
+        //add_text(58, 0.08, no_title, tau2, palette_text);
+      }
+    }
+
+
   }
   return 0;
 }

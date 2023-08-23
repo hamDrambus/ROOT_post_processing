@@ -133,6 +133,7 @@ struct pulse_shape {
 	int event_n;
 	double t_offset;
 	double jitter;
+	double lambda;
 
 	PAIR fast_t; //fast component start&finish time, used for signal normalization
 	double scale;
@@ -274,27 +275,29 @@ int e_trapping_simulation (void) {
 
 	std::string def_fit_option = "NRE";
 	bool combined = true;
-	int Nbins = 1800;
-	bool linear = 0;
+	int Nbins = 5000;
+	bool linear = 1;
 	double def_jitter = 0.0;
 	int event_n = 100000;
 	int seed = 42;
 
 	bool draw_n_delays = false;
 	bool do_renormalize = true;
-	bool do_fit = true;
+	bool do_fit = false;
 	bool fit_bad_forms = true;
 	bool print_errors = false;
+	bool print_results = false;
 	double time_pretrigger = 10;
 	double time_left = 0, time_right = 60;//us
 	double max_val = 0;
 	double y_min = 1e-4;
 
 	double L_0 = 18; //mm - project gap thickness, corresponds to the data_Fr
-	double L_simulation = 10; //mm
+	double L_simulation = 18; //mm
+	double lambda = 20.0; //mm Wpass = exp(-lambda/L_simulation);
 
-	int W_precision = 3;
-	int tau_precision = 2;
+	int W_precision = 1;
+	int tau_precision = 1;
 	int L_precision = 0;
 
 	std::vector<Color_t> palette_major = {kBlack, kRed, kBlue, kGreen, kYellow + 2, kMagenta, kOrange + 7};
@@ -595,9 +598,9 @@ define = &_12kV_00;
 	define->event_n = event_n;
 	if (L_simulation==L_0)
 		define->name = define->Td + " Td, W="+dbl_to_str(define->W_pass, W_precision) +
-				", #tau="+dbl_to_str(define->decay_tau, tau_precision) + "#mus";
+				", #tau="+dbl_to_str(define->decay_tau, tau_precision) + " #mus";
 	else
-		define->name = define->Td + " Td, EL gap="+dbl_to_str(L_simulation, L_precision) + "mm";
+		define->name = define->Td + " Td, EL gap="+dbl_to_str(L_simulation, L_precision) + " mm";
 	define->fast_t = PAIR(9.9, 10.01 + define->T_drift);
 	define->scale = 1.0;
 	define->renormalize = do_renormalize;
@@ -605,6 +608,169 @@ define = &_12kV_00;
 	define->baseline_bound = PAIR(1e-7, 1e-7);
 	define->slow_ampl_bound = PAIR(1e-3, 1);
 	define->slow_tau_bound = PAIR(2.5, 8);
+	define->do_fit = do_fit;
+	define->fit_option = def_fit_option;
+	define->W_pass = std::exp(std::log(define->W_pass)*L_simulation/L_0);
+
+// 210128 data
+pulse_shape _19_0kV_new_00;
+define = &_19_0kV_new_00;
+	define->Td = "8.0";
+	define->kV = 19;
+	define->T_drift = 2.3 * L_simulation / L_0;
+	define->lambda = 17.0;
+	define->W_pass = exp(-L_simulation/define->lambda);
+	define->decay_tau = 3.1;
+	define->t_offset = time_pretrigger;
+	define->jitter = 0;
+	define->event_n = event_n;
+	if (L_simulation==L_0)
+		define->name = "E/N = "+ define->Td + " Td, l = "+dbl_to_str(define->lambda, W_precision) +
+				", #tau = "+dbl_to_str(define->decay_tau, tau_precision) + " #mus";
+	else
+		define->name = define->Td + " Td, EL gap="+dbl_to_str(L_simulation, L_precision) + " mm";
+	define->fast_t = PAIR(9.9, 10.01 + define->T_drift);
+	define->scale = 1.0;
+	define->renormalize = do_renormalize;
+	define->slow_fit_t = PAIR(10.11 + define->T_drift, 32);
+	define->baseline_bound = PAIR(1e-7, 1e-7);
+	define->slow_ampl_bound = PAIR(1e-3, 1);
+	define->slow_tau_bound = PAIR(2, 9);
+	define->do_fit = do_fit;
+	define->fit_option = def_fit_option;
+	define->W_pass = std::exp(std::log(define->W_pass)*L_simulation/L_0);
+
+pulse_shape _19_0kV_new_01;
+define = &_19_0kV_new_01;
+	define->Td = "8.0";
+	define->kV = 19;
+	define->T_drift = 2.3 * L_simulation / L_0;
+	define->lambda = 17.0;
+	define->W_pass = exp(-L_simulation/define->lambda);
+	define->decay_tau = 3.1;
+	define->t_offset = time_pretrigger;
+	define->jitter = 0.5;
+	define->event_n = event_n;
+	if (L_simulation==L_0)
+		define->name = "E/N = "+ define->Td + " Td, l = "+dbl_to_str(define->lambda, W_precision) +
+				", #tau = "+dbl_to_str(define->decay_tau, tau_precision) + " #mus";
+	else
+		define->name = define->Td + " Td, EL gap="+dbl_to_str(1, L_precision) + " mm";
+	define->fast_t = PAIR(9.9, 10.91 + define->T_drift);
+	define->scale = 1.0;
+	define->renormalize = do_renormalize;
+	define->slow_fit_t = PAIR(10.91 + define->T_drift, 32);
+	define->baseline_bound = PAIR(1e-7, 1e-7);
+	define->slow_ampl_bound = PAIR(1e-3, 1);
+	define->slow_tau_bound = PAIR(2, 9);
+	define->do_fit = do_fit;
+	define->fit_option = def_fit_option;
+	define->W_pass = std::exp(std::log(define->W_pass)*L_simulation/L_0);
+
+pulse_shape _16_0kV_new_00;
+define = &_16_0kV_new_00;
+	define->Td = "6.7";
+	define->kV = 16;
+	define->T_drift = 2.8 * L_simulation / L_0;
+	define->lambda = 27.0;
+	define->W_pass = exp(-L_simulation/define->lambda);
+	define->decay_tau = 3.1;
+	define->t_offset = time_pretrigger;
+	define->jitter = 0;
+	define->event_n = event_n;
+	if (L_simulation==L_0)
+		define->name = "E/N = "+ define->Td + " Td, l = "+dbl_to_str(define->lambda, W_precision) +
+				", #tau = "+dbl_to_str(define->decay_tau, tau_precision) + " #mus";
+	else
+		define->name = define->Td + " Td, EL gap="+dbl_to_str(L_simulation, L_precision) + " mm";
+	define->fast_t = PAIR(9.9, 10.01 + define->T_drift);
+	define->scale = 1.0;
+	define->renormalize = do_renormalize;
+	define->slow_fit_t = PAIR(10.11 + define->T_drift, 32);
+	define->baseline_bound = PAIR(1e-7, 1e-7);
+	define->slow_ampl_bound = PAIR(1e-3, 1);
+	define->slow_tau_bound = PAIR(2, 9);
+	define->do_fit = do_fit;
+	define->fit_option = def_fit_option;
+	define->W_pass = std::exp(std::log(define->W_pass)*L_simulation/L_0);
+
+pulse_shape _16_0kV_new_01;
+define = &_16_0kV_new_01;
+	define->Td = "6.7";
+	define->kV = 16;
+	define->T_drift = 2.8 * L_simulation / L_0;
+	define->lambda = 27.0;
+	define->W_pass = exp(-L_simulation/define->lambda);
+	define->decay_tau = 3.1;
+	define->t_offset = time_pretrigger;
+	define->jitter = 0.5;
+	define->event_n = event_n;
+	if (L_simulation==L_0)
+		define->name = "E/N = "+ define->Td + " Td, l = "+dbl_to_str(define->lambda, W_precision) +
+				", #tau = "+dbl_to_str(define->decay_tau, tau_precision) + " #mus";
+	else
+		define->name = define->Td + " Td, EL gap="+dbl_to_str(L_simulation, L_precision) + " mm";
+	define->fast_t = PAIR(9.9, 10.91 + define->T_drift);
+	define->scale = 1.1956; //1.1956;
+	define->renormalize = do_renormalize;
+	define->slow_fit_t = PAIR(10.91 + define->T_drift, 32);
+	define->baseline_bound = PAIR(1e-7, 1e-7);
+	define->slow_ampl_bound = PAIR(1e-3, 1);
+	define->slow_tau_bound = PAIR(2, 9);
+	define->do_fit = do_fit;
+	define->fit_option = def_fit_option;
+	define->W_pass = std::exp(std::log(define->W_pass)*L_simulation/L_0);
+
+pulse_shape _13_0kV_new_00;
+define = &_13_0kV_new_00;
+	define->Td = "5.5";
+	define->kV = 16;
+	define->T_drift = 3.4 * L_simulation / L_0;
+	define->lambda = 57.0;
+	define->W_pass = exp(-L_simulation/define->lambda);
+	define->decay_tau = 3.1;
+	define->t_offset = time_pretrigger;
+	define->jitter = 0;
+	define->event_n = event_n;
+	if (L_simulation==L_0)
+		define->name = "E/N = "+ define->Td + " Td, l = "+dbl_to_str(define->lambda, W_precision) +
+				", #tau = "+dbl_to_str(define->decay_tau, tau_precision) + " #mus";
+	else
+		define->name = define->Td + " Td, EL gap="+dbl_to_str(L_simulation, L_precision) + " mm";
+	define->fast_t = PAIR(9.9, 10.01 + define->T_drift);
+	define->scale = 1.0;
+	define->renormalize = do_renormalize;
+	define->slow_fit_t = PAIR(10.11 + define->T_drift, 32);
+	define->baseline_bound = PAIR(1e-7, 1e-7);
+	define->slow_ampl_bound = PAIR(1e-3, 1);
+	define->slow_tau_bound = PAIR(2, 9);
+	define->do_fit = do_fit;
+	define->fit_option = def_fit_option;
+	define->W_pass = std::exp(std::log(define->W_pass)*L_simulation/L_0);
+
+pulse_shape _13_0kV_new_01;
+define = &_13_0kV_new_01;
+	define->Td = "5.5";
+	define->kV = 16;
+	define->T_drift = 3.4 * L_simulation / L_0;
+	define->lambda = 57.0;
+	define->W_pass = exp(-L_simulation/define->lambda);
+	define->decay_tau = 3.1;
+	define->t_offset = time_pretrigger;
+	define->jitter = 0.5;
+	define->event_n = event_n;
+	if (L_simulation==L_0)
+		define->name = "E/N = "+ define->Td + " Td, l = "+dbl_to_str(define->lambda, W_precision) +
+					", #tau = "+dbl_to_str(define->decay_tau, tau_precision) + " #mus";
+		else
+			define->name = define->Td + " Td, EL gap="+dbl_to_str(L_simulation, L_precision) + " mm";
+	define->fast_t = PAIR(9.9, 10.91 + define->T_drift);
+	define->scale = 1.4376; //1.4376;
+	define->renormalize = do_renormalize;
+	define->slow_fit_t = PAIR(10.91 + define->T_drift, 32);
+	define->baseline_bound = PAIR(1e-7, 1e-7);
+	define->slow_ampl_bound = PAIR(1e-3, 1);
+	define->slow_tau_bound = PAIR(2, 9);
 	define->do_fit = do_fit;
 	define->fit_option = def_fit_option;
 	define->W_pass = std::exp(std::log(define->W_pass)*L_simulation/L_0);
@@ -619,7 +785,11 @@ define = &_12kV_00;
 	//std::vector<pulse_shape> pulses = {_16kV_00};
 	//std::vector<pulse_shape> pulses = {_14kV_00};
 	//std::vector<pulse_shape> pulses = {_12kV_00};
-	std::vector<pulse_shape> pulses = {_20kV_05, _18kV_00, _16kV_00, _14kV_00, _12kV_00};
+	//std::vector<pulse_shape> pulses = {_20kV_05, _18kV_00, _16kV_00, _14kV_00, _12kV_00};
+
+	// 210128
+	std::vector<pulse_shape> pulses = {_19_0kV_new_01, _16_0kV_new_01, _13_0kV_new_01};
+	//std::vector<pulse_shape> pulses = {_19_0kV_new_00, _16_0kV_new_00, _13_0kV_new_00};
 
 	std::string framename = std::string("S2 pulse-shapes in simple simulation, Nevents=") + int_to_str(event_n);
 	std::string framename2 = std::string("Number of delays during drift, Nevents=") + int_to_str(event_n);
@@ -658,8 +828,10 @@ define = &_12kV_00;
 	//legend->SetHeader("");
 	legend->SetMargin(0.25);
 	TH2F* frame = new TH2F("frame", framename.c_str(), 500, time_left, time_right, 500, linear ? 0 : y_min, max_val);
-	frame->GetXaxis()->SetTitle("Time [#mus]");
-	frame->GetYaxis()->SetTitle("Amplitude [arb.]");
+	frame->GetXaxis()->SetTitle("Time (#mus)");
+	if (linear)
+		frame->GetXaxis()->SetRangeUser(5, 25);
+	frame->GetYaxis()->SetTitle("Amplitude (arb. u.)");
 	frame->Draw();
 
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {
@@ -668,7 +840,7 @@ define = &_12kV_00;
 		pulses[hh].hist->Draw("hist Lsame");
   }
 
-	int precision1 = 2, precision2 = 4;
+	int precision1 = 2, precision2 = 3;
 	int line_width = 2;
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {
 		pulses[hh].total_integral = 0;
@@ -738,21 +910,23 @@ define = &_12kV_00;
 		else
 			frsS.push_back(pulses[hh].Fr1 + (print_errors ? "#pm" + pulses[hh].err1 : emp));
 	}
-	if (!linear) {
-		std::vector<std::string> no_title;
-		std::vector<std::string> Slow_title = {"Slow component", "contribution:"};
-		if (print_errors) {
-			add_text(25, 0.025, no_title, tau1, palette_major);
-			add_text(35, 0.025, Slow_title, frsS, palette_major);
+	if (print_results) {
+		if (!linear) {
+			std::vector<std::string> no_title;
+			std::vector<std::string> Slow_title = {"Slow component", "contribution:"};
+			if (print_errors) {
+				add_text(25, 0.025, no_title, tau1, palette_major);
+				add_text(35, 0.025, Slow_title, frsS, palette_major);
+			} else {
+				add_text(35, 0.010, no_title, tau1, palette_major);
+				add_text(45, 0.010, Slow_title, frsS, palette_major);
+			}
 		} else {
-			add_text(35, 0.010, no_title, tau1, palette_major);
-			add_text(45, 0.010, Slow_title, frsS, palette_major);
+			std::vector<std::string> no_title;
+			std::vector<std::string> Slow_title = {"Slow component", "contribution:"};
+			add_text(15, 0.3, no_title, tau1, palette_major);
+			add_text(20, 0.3, Slow_title, frsS, palette_major);
 		}
-	} else {
-		std::vector<std::string> no_title;
-		std::vector<std::string> Slow_title = {"Slow component", "contribution:"};
-		add_text(25, 0.3, no_title, tau1, palette_major);
-		add_text(35, 0.3, Slow_title, frsS, palette_major);
 	}
 
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh)

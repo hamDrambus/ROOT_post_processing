@@ -12,6 +12,6 @@ if (true) {
 		analysis_history(0);
 		nex();
 	}
-	save_SiPM_Npe_table(data_output_path + "SiPM_Npes_Q1.00.txt");
+	save_SiPM_Npe_table(data_output_path + "SiPM_Npes_Q0.20.txt");
 }
 }

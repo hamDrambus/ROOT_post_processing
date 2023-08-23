@@ -162,20 +162,20 @@ void read_hist_w (TH1D *hist, std::string fname, double offset = 0) {
 	std::ifstream str;
 	str.open(fname, std::ios_base::binary);
 	if (!str.is_open()) {
-        std::cerr<<"Failed to open file '"<<fname<<"'"<<std::endl;
-        return;
-    }
+      std::cerr<<"Failed to open file '"<<fname<<"'"<<std::endl;
+      return;
+  }
 	std::size_t real_size = 0;
 	str.read((char*)&real_size, sizeof(std::size_t));
 	std::cout<<"File '"<<fname<<"': "<<real_size<<" events"<<std::endl;
 	double val1;
-    double val2;
+  double val2;
 	while (!str.eof()) {
 		str.read((char*)&val1, sizeof(double));
 		if (str.eof())
 			break;
-        str.read((char*)&val2, sizeof(double));
-        hist->Fill(val1 + offset, val2);
+    str.read((char*)&val2, sizeof(double));
+    hist->Fill(val1 + offset, val2);
 	}
 	str.close();
 }
@@ -290,7 +290,7 @@ struct pulse_shape {
 void draw_slow_component(TF1* fit_f, pulse_shape& shape)
 {
 	fit_f->SetNpx(800);
-	fit_f->Draw("same");
+	//fit_f->Draw("same");
 }
 
 
@@ -303,21 +303,21 @@ int compare_forms1 (void) {
 
 	std::string def_fit_option = "NRE";
 	bool combined = true;
-	bool Cd_peak = false;
-	int Nbins = 300;
-	bool linear = 0;
-	bool PMTs = true;
+	bool Cd_peak = true;
+	int Nbins = 1200;
+	bool linear = 1;
+	bool PMTs = false;
 
 	bool fast_PMTs = true;
 	unsigned int PMT_used = 0x1 | 0x2 | 0x4 | 0x8;
-	bool do_fit = true;
+	bool do_fit = false;
 	bool fit_bad_forms = true;
-	bool subtact_baseline = true;
+	bool subtact_baseline = false;
 	bool center_pulses = false;
 	bool center_at_S1 = false; //Not used
 	bool normalize_by_S1 = false; //Not used
-	bool print_errors = true;
-	bool print_results = true;
+	bool print_errors = false;
+	bool print_results = false;
 	double time_pretrigger_left = 8.0, time_pretrigger_right = 22.0;
 	double time_left = 0, time_right = 160;//us
 	double max_val = 0;
@@ -331,7 +331,7 @@ int compare_forms1 (void) {
 define->folder = std::string("220922/results_v7/Pu_1.25atm_22.0kV_46V_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
 define->Td = "7.6";
-define->device = "SiPM-matrix";
+define->device = "SiPM matrix";
 define->fast_t_center = 28.5;
 define->fast_t = PAIR(25.0, 30.3);
 define->S1_t_center = 0;
@@ -369,7 +369,7 @@ define->simultaneous_fit = false;
 define->folder = std::string("220922/results_v7/Pu_1.25atm_20.9kV_46V_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
 define->Td = "7.3";
-define->device = "SiPM-matrix";
+define->device = "SiPM matrix";
 define->fast_t_center = 28.5;
 define->fast_t = PAIR(25.0, 30.4);
 define->S1_t_center = 0;
@@ -407,7 +407,7 @@ define->simultaneous_fit = false;
 define->folder = std::string("220922/results_v7/Pu_1.25atm_20.2kV_46V_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
 define->Td = "7.0";
-define->device = "SiPM-matrix";
+define->device = "SiPM matrix";
 define->fast_t_center = 28.5;
 define->fast_t = PAIR(25.0, 30.4);
 define->S1_t_center = 0;
@@ -445,7 +445,7 @@ define->simultaneous_fit = false;
 define->folder = std::string("220922/results_v7/Pu_1.25atm_19.6kV_46V_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
 define->Td = "6.8";
-define->device = "SiPM-matrix";
+define->device = "SiPM matrix";
 define->fast_t_center = 28.5;
 define->fast_t = PAIR(25.0, 30.8);
 define->S1_t_center = 0;
@@ -486,7 +486,7 @@ define = &SiPM_125atm_xxxkV;
 define->folder = std::string("220922/results_v7/Pu_1.25atm_19.0kV_46V_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
 define->Td = "6.6";
-define->device = "SiPM-matrix";
+define->device = "SiPM matrix";
 define->fast_t_center = 28.8;
 define->fast_t = PAIR(25.0, 31.0);
 define->S1_t_center = 0;
@@ -524,7 +524,7 @@ define->simultaneous_fit = false;
 define->folder = std::string("220922/results_v7/Pu_1.25atm_18.4kV_46V_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
 define->Td = "6.4";
-define->device = "SiPM-matrix";
+define->device = "SiPM matrix";
 define->fast_t_center = 28.9;
 define->fast_t = PAIR(25.0, 31.1);
 define->S1_t_center = 0;
@@ -562,7 +562,7 @@ define->simultaneous_fit = false;
 define->folder = std::string("220922/results_v7/Pu_1.25atm_17.2kV_46V_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
 define->Td = "6.0";
-define->device = "SiPM-matrix";
+define->device = "SiPM matrix";
 define->fast_t_center = 28.9;
 define->fast_t = PAIR(25.0, 31.4);
 define->S1_t_center = 0;
@@ -600,7 +600,7 @@ define->simultaneous_fit = false;
 define->folder = std::string("220922/results_v7/Pu_1.25atm_16.0kV_46V_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
 define->Td = "5.6";
-define->device = "SiPM-matrix";
+define->device = "SiPM matrix";
 define->fast_t_center = 28.9;
 define->fast_t = PAIR(24.5, 31.5);
 define->S1_t_center = 0;
@@ -641,7 +641,7 @@ define = &SiPM_125atm_xxkV;
 define->folder = std::string("220922/results_v7/Pu_1.25atm_14.7kV_46V_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
 define->Td = "5.1";
-define->device = "SiPM-matrix";
+define->device = "SiPM matrix";
 define->fast_t_center = 29.1;
 define->fast_t = PAIR(24.0, 31.9);
 define->S1_t_center = 0;
@@ -679,7 +679,7 @@ define->simultaneous_fit = false;
 define->folder = std::string("220922/results_v7/Pu_1.25atm_13.5kV_46V_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
 define->Td = "4.7";
-define->device = "SiPM-matrix";
+define->device = "SiPM matrix";
 define->fast_t_center = 29.3;
 define->fast_t = PAIR(24.0, 32.4);
 define->S1_t_center = 0;
@@ -717,7 +717,7 @@ define->simultaneous_fit = false;
 define->folder = std::string("220922/results_v7/Pu_1.25atm_12.3kV_46V_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
 define->Td = "4.3";
-define->device = "SiPM-matrix";
+define->device = "SiPM matrix";
 define->fast_t_center = 29.9;
 define->fast_t = PAIR(24.0, 33.4);
 define->S1_t_center = 0;
@@ -755,7 +755,7 @@ define->simultaneous_fit = false;
 define->folder = std::string("220922/results_v7/Pu_1.25atm_11.0kV_46V_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
 define->Td = "3.8";
-define->device = "SiPM-matrix";
+define->device = "SiPM matrix";
 define->fast_t_center = 29.9;
 define->fast_t = PAIR(24.0, 33.6);
 define->S1_t_center = 0;
@@ -1237,7 +1237,7 @@ define->simultaneous_fit = false;
 
 std::string folder = PMTs ? std::string("220922/results_v7/PMTs_v1/")
 					: std::string("220922/results_v7/SiPMs_v1/");
-	//std::vector<pulse_shape> pulses = {SiPM_125atm_220kV, SiPM_125atm_209kV, SiPM_125atm_202kV, SiPM_125atm_196kV, SiPM_125atm_190kV, SiPM_125atm_184kV};
+	std::vector<pulse_shape> pulses = {SiPM_125atm_220kV, SiPM_125atm_209kV, SiPM_125atm_202kV, SiPM_125atm_196kV, SiPM_125atm_190kV, SiPM_125atm_184kV};
 	//std::vector<pulse_shape> pulses = {SiPM_125atm_172kV, SiPM_125atm_160kV, SiPM_125atm_147kV, SiPM_125atm_135kV, SiPM_125atm_123kV, SiPM_125atm_110kV};
   //std::vector<pulse_shape> pulses = {SiPM_125atm_220kV_v2, SiPM_125atm_209kV_v2, SiPM_125atm_202kV_v2, SiPM_125atm_196kV_v2, SiPM_125atm_190kV_v2, SiPM_125atm_184kV_v2};
 	//std::vector<pulse_shape> pulses = {SiPM_125atm_172kV_v2, SiPM_125atm_160kV_v2, SiPM_125atm_147kV_v2, SiPM_125atm_135kV_v2, SiPM_125atm_123kV_v2, SiPM_125atm_110kV_v2};
@@ -1245,10 +1245,11 @@ std::string folder = PMTs ? std::string("220922/results_v7/PMTs_v1/")
   //std::vector<pulse_shape> pulses = {PMT4_125atm_220kV, PMT4_125atm_209kV, PMT4_125atm_202kV, PMT4_125atm_196kV, PMT4_125atm_190kV, PMT4_125atm_184kV};
 	//std::vector<pulse_shape> pulses = {PMT4_125atm_172kV, PMT4_125atm_160kV, PMT4_125atm_147kV, PMT4_125atm_135kV, PMT4_125atm_123kV, PMT4_125atm_110kV};
   //std::vector<pulse_shape> pulses = {PMT4_125atm_220kV_v2, PMT4_125atm_209kV_v2, PMT4_125atm_202kV_v2, PMT4_125atm_196kV_v2, PMT4_125atm_190kV_v2, PMT4_125atm_184kV_v2};
-	std::vector<pulse_shape> pulses = {PMT4_125atm_172kV_v2, PMT4_125atm_160kV_v2, PMT4_125atm_147kV_v2, PMT4_125atm_135kV_v2, PMT4_125atm_123kV_v2, PMT4_125atm_110kV_v2};
+	//std::vector<pulse_shape> pulses = {PMT4_125atm_172kV_v2, PMT4_125atm_160kV_v2, PMT4_125atm_147kV_v2, PMT4_125atm_135kV_v2, PMT4_125atm_123kV_v2, PMT4_125atm_110kV_v2};
 
   //std::vector<pulse_shape> pulses = {PMT4_125atm_110kV};
 	//For paper and reports:
+  //std::vector<pulse_shape> pulses = {SiPM_125atm_110kV};
 
   std::vector<std::string> forced_taus1, forced_Frs1;
 	std::vector<Color_t> palette_major = {kBlack, kRed, kBlue, kGreen, kYellow + 2, kMagenta, kOrange + 7};
@@ -1313,9 +1314,9 @@ std::string folder = PMTs ? std::string("220922/results_v7/PMTs_v1/")
 	if (!linear)
 		frame->GetXaxis()->SetRangeUser(0, 160);
 	else
-		frame->GetXaxis()->SetRangeUser(20, 50);
+		frame->GetXaxis()->SetRangeUser(22, 37);
 	//=====================================
-	frame->GetYaxis()->SetTitle("PE peak count");
+	frame->GetYaxis()->SetTitle("PE peak count (arb. u.)");
 	frame->Draw();
 
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {

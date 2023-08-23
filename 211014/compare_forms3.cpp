@@ -287,10 +287,87 @@ struct pulse_shape {
 	std::string FrLost;
 };
 
-void draw_slow_component(TF1* fit_f, pulse_shape& shape)
+class FileExporter {
+public:
+  FileExporter(std::string filename) : _filename(filename)
+  {}
+  std::vector<PAIR> TabulateFunction (TF1* func) {
+    std::vector<PAIR> out;
+    if (func==NULL)
+      return out;
+    double from, to;
+    func->GetRange(from, to);
+    for (std::size_t i = 0, i_end_ = 2000; i!=i_end_; ++i) {
+      double x = from + (to-from)*((double)i/(i_end_-1));
+      out.push_back(PAIR(x, func->Eval(x)));
+    }
+    return out;
+  }
+  std::vector<PAIR> TabulateShape (pulse_shape& shape) {
+    std::vector<PAIR> out;
+    if (shape.hist == NULL)
+      return out;
+    for (int bin = 1, bin_end = shape.hist->GetNbinsX()+1; bin!=bin_end; ++bin)
+      out.push_back(PAIR(shape.hist->GetBinCenter(bin), shape.hist->GetBinContent(bin)));
+    return out;
+  }
+  void AddToPrint(TF1* func, pulse_shape& shape, std::size_t index) {
+    if (index < xy_table.size()/2) {
+      std::vector<PAIR> new_f = TabulateFunction(func);
+      std::size_t f_ind = index * 2 + 1;
+      xy_table[f_ind].push_back(PAIR(DBL_MAX, DBL_MAX)); //separate new fit function from the previous ones
+      xy_table[f_ind].insert(xy_table[f_ind].end(), new_f.begin(), new_f.end());
+    } else {
+      std::vector<PAIR> new_f = TabulateFunction(func);
+      std::vector<PAIR> new_h = TabulateShape(shape);
+      xy_table.push_back(new_h);
+      xy_table.push_back(new_f);
+    }
+  }
+  void Print(void) {
+    std::ofstream str;
+    str.open(_filename, std::ios_base::trunc);
+    if (!str.is_open()) {
+      std::cerr<<"FileExporter:Print: Failed to open file"<<std::endl;
+      std::cerr<<"\t\""<<_filename<<"\""<<std::endl;
+      return;
+    }
+    std::cout<<"FileExporter: printing to file"<<std::endl;
+    std::cout<<"\t\""<<_filename<<"\""<<std::endl;
+    std::size_t n_rows = 0;
+    for (std::size_t c = 0, c_end_ = xy_table.size(); c!=c_end_; ++c) {
+      n_rows = std::max(n_rows, xy_table[c].size());
+    }
+    for (std::size_t r = 0; r!=n_rows; ++r) {
+      for (std::size_t c = 0, c_end_ = xy_table.size(); c!=c_end_; ++c) {
+        str << (c == 0 ? "" : "\t");
+        if (r < xy_table[c].size() && xy_table[c][r].first != DBL_MAX)
+          str<< xy_table[c][r].first;
+        else
+          str<< "--";
+        str<<"\t";
+        if (r < xy_table[c].size() && xy_table[c][r].second != DBL_MAX)
+          str<< xy_table[c][r].second;
+        else
+          str<< "--";
+      }
+      str<<std::endl;
+    }
+    str.close();
+  }
+  std::deque<std::vector<PAIR>> xy_table; //stores both histogram and fit function.
+  std::string _filename;
+};
+
+FileExporter* file_exporter = NULL;
+
+void draw_slow_component(TF1* fit_f, pulse_shape& shape, std::size_t index)
 {
 	fit_f->SetNpx(800);
 	fit_f->Draw("same");
+  if (file_exporter) {
+    file_exporter->AddToPrint(fit_f, shape, index);
+  }
 }
 
 
@@ -303,10 +380,10 @@ int compare_forms3 (void) {
 
 	std::string def_fit_option = "NRE";
 	bool combined = true;
-	bool Cd_peak = false;
+	bool Cd_peak = true;
 	int Nbins = 150;
 	bool linear = 0;
-	bool PMTs = true;
+	bool PMTs = false;
 
 	bool fast_PMTs = true;
 	unsigned int PMT_used = 0x2 | 0x4 | 0x8;
@@ -316,13 +393,13 @@ int compare_forms3 (void) {
 	bool center_pulses = false;
 	bool center_at_S1 = false; //Not used
 	bool normalize_by_S1 = false; //Not used
-	bool print_errors = true;
+	bool print_errors = false;
 	bool print_results = true;
 	double time_pretrigger_left = 4.6, time_pretrigger_right = 20.0;
 	double time_left = 0, time_right = 160;//us
 	double max_val = 0;
 	double trigger_at = center_at_S1 ? 0 : 32; //Not used
-	double y_min = 1e-5;
+	double y_min = 3e-5;
 
 	pulse_shape* define = NULL, *copy = NULL;
 
@@ -330,7 +407,7 @@ int compare_forms3 (void) {
 	define = &SiPM_20_7kV_no_trigger;
 define->folder = std::string("211014/results_v6/Pu_46V_20.7kV_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
-define->Td = "7.4";
+define->Td = "7.1";
 define->device = "SiPM-matrix";
 define->fast_t_center = 28.1;
 define->fast_t = PAIR(25.0, 29.9);
@@ -368,7 +445,7 @@ define->simultaneous_fit = false;
   define = &SiPM_18_2kV_no_trigger;
 define->folder = std::string("211014/results_v6/Pu_46V_18.2kV_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
-define->Td = "6.5";
+define->Td = "6.2";
 define->device = "SiPM-matrix";
 define->fast_t_center = 28.0;
 define->fast_t = PAIR(25.0, 30.0);
@@ -406,7 +483,7 @@ define->simultaneous_fit = false;
   define = &SiPM_16_8kV_no_trigger;
 define->folder = std::string("211014/results_v6/Pu_46V_16.8kV_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
-define->Td = "6.0";
+define->Td = "5.7";
 define->device = "SiPM-matrix";
 define->fast_t_center = 28.1;
 define->fast_t = PAIR(25.0, 30.3);
@@ -444,7 +521,7 @@ define->simultaneous_fit = false;
   define = &SiPM_15_5kV_no_trigger;
 define->folder = std::string("211014/results_v6/Pu_46V_15.5kV_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
-define->Td = "5.6";
+define->Td = "5.3";
 define->device = "SiPM-matrix";
 define->fast_t_center = 28.1;
 define->fast_t = PAIR(25.0, 30.6);
@@ -482,7 +559,7 @@ define->simultaneous_fit = false;
   define = &SiPM_14_3kV_no_trigger;
 define->folder = std::string("211014/results_v6/Pu_46V_14.3kV_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
-define->Td = "5.1";
+define->Td = "4.9";
 define->device = "SiPM-matrix";
 define->fast_t_center = 28.2;
 define->fast_t = PAIR(25.0, 31.0);
@@ -520,7 +597,7 @@ define->simultaneous_fit = false;
   define = &SiPM_12_9kV_no_trigger;
 define->folder = std::string("211014/results_v6/Pu_46V_12.9kV_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
-define->Td = "4.6";
+define->Td = "4.4";
 define->device = "SiPM-matrix";
 define->fast_t_center = 28.2;
 define->fast_t = PAIR(25.0, 31.3);
@@ -558,7 +635,7 @@ define->simultaneous_fit = false;
   define = &SiPM_11_7kV_no_trigger;
 define->folder = std::string("211014/results_v6/Pu_46V_11.7kV_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
-define->Td = "4.2";
+define->Td = "4.0";
 define->device = "SiPM-matrix";
 define->fast_t_center = 28.2;
 define->fast_t = PAIR(24.0, 31.5);
@@ -596,7 +673,7 @@ define->simultaneous_fit = false;
   define = &SiPM_10_4kV_no_trigger;
 define->folder = std::string("211014/results_v6/Pu_46V_10.4kV_850V/") + (Cd_peak ? "forms_Pu_peak/" : "forms_Pu_left/");
 define->fnames = {"SiPMs_form_by_Npe.hdata"};
-define->Td = "3.7";
+define->Td = "3.5";
 define->device = "SiPM-matrix";
 define->fast_t_center = 28.2;
 define->fast_t = PAIR(24.0, 32.0);
@@ -638,7 +715,7 @@ if(PMT_used&0x1) define->fnames.push_back(fast_PMTs ? "5_form_by_Npe.hdata" : "1
 if(PMT_used&0x2) define->fnames.push_back(fast_PMTs ? "6_form_by_Npe.hdata" : "2_form_by_Npe.hdata");
 if(PMT_used&0x4) define->fnames.push_back(fast_PMTs ? "7_form_by_Npe.hdata" : "3_form_by_Npe.hdata");
 if(PMT_used&0x8) define->fnames.push_back(fast_PMTs ? "8_form_by_Npe.hdata" : "4_form_by_Npe.hdata");
-define->Td = "7.4";
+define->Td = "7.1";
 if(PMT_used == (0x1|0x2|0x4|0x8))
 define->device = "4PMT ";
 else
@@ -684,7 +761,7 @@ if(PMT_used&0x1) define->fnames.push_back(fast_PMTs ? "5_form_by_Npe.hdata" : "1
 if(PMT_used&0x2) define->fnames.push_back(fast_PMTs ? "6_form_by_Npe.hdata" : "2_form_by_Npe.hdata");
 if(PMT_used&0x4) define->fnames.push_back(fast_PMTs ? "7_form_by_Npe.hdata" : "3_form_by_Npe.hdata");
 if(PMT_used&0x8) define->fnames.push_back(fast_PMTs ? "8_form_by_Npe.hdata" : "4_form_by_Npe.hdata");
-define->Td = "6.5";
+define->Td = "6.2";
 if(PMT_used == (0x1|0x2|0x4|0x8))
 define->device = "4PMT ";
 else
@@ -730,7 +807,7 @@ if(PMT_used&0x1) define->fnames.push_back(fast_PMTs ? "5_form_by_Npe.hdata" : "1
 if(PMT_used&0x2) define->fnames.push_back(fast_PMTs ? "6_form_by_Npe.hdata" : "2_form_by_Npe.hdata");
 if(PMT_used&0x4) define->fnames.push_back(fast_PMTs ? "7_form_by_Npe.hdata" : "3_form_by_Npe.hdata");
 if(PMT_used&0x8) define->fnames.push_back(fast_PMTs ? "8_form_by_Npe.hdata" : "4_form_by_Npe.hdata");
-define->Td = "6.0";
+define->Td = "5.7";
 if(PMT_used == (0x1|0x2|0x4|0x8))
 define->device = "4PMT ";
 else
@@ -776,7 +853,7 @@ if(PMT_used&0x1) define->fnames.push_back(fast_PMTs ? "5_form_by_Npe.hdata" : "1
 if(PMT_used&0x2) define->fnames.push_back(fast_PMTs ? "6_form_by_Npe.hdata" : "2_form_by_Npe.hdata");
 if(PMT_used&0x4) define->fnames.push_back(fast_PMTs ? "7_form_by_Npe.hdata" : "3_form_by_Npe.hdata");
 if(PMT_used&0x8) define->fnames.push_back(fast_PMTs ? "8_form_by_Npe.hdata" : "4_form_by_Npe.hdata");
-define->Td = "5.6";
+define->Td = "5.3";
 if(PMT_used == (0x1|0x2|0x4|0x8))
 define->device = "4PMT ";
 else
@@ -822,7 +899,7 @@ if(PMT_used&0x1) define->fnames.push_back(fast_PMTs ? "5_form_by_Npe.hdata" : "1
 if(PMT_used&0x2) define->fnames.push_back(fast_PMTs ? "6_form_by_Npe.hdata" : "2_form_by_Npe.hdata");
 if(PMT_used&0x4) define->fnames.push_back(fast_PMTs ? "7_form_by_Npe.hdata" : "3_form_by_Npe.hdata");
 if(PMT_used&0x8) define->fnames.push_back(fast_PMTs ? "8_form_by_Npe.hdata" : "4_form_by_Npe.hdata");
-define->Td = "5.1";
+define->Td = "4.9";
 if(PMT_used == (0x1|0x2|0x4|0x8))
 define->device = "4PMT ";
 else
@@ -868,7 +945,7 @@ if(PMT_used&0x1) define->fnames.push_back(fast_PMTs ? "5_form_by_Npe.hdata" : "1
 if(PMT_used&0x2) define->fnames.push_back(fast_PMTs ? "6_form_by_Npe.hdata" : "2_form_by_Npe.hdata");
 if(PMT_used&0x4) define->fnames.push_back(fast_PMTs ? "7_form_by_Npe.hdata" : "3_form_by_Npe.hdata");
 if(PMT_used&0x8) define->fnames.push_back(fast_PMTs ? "8_form_by_Npe.hdata" : "4_form_by_Npe.hdata");
-define->Td = "4.6";
+define->Td = "4.4";
 if(PMT_used == (0x1|0x2|0x4|0x8))
 define->device = "4PMT ";
 else
@@ -914,7 +991,7 @@ if(PMT_used&0x1) define->fnames.push_back(fast_PMTs ? "5_form_by_Npe.hdata" : "1
 if(PMT_used&0x2) define->fnames.push_back(fast_PMTs ? "6_form_by_Npe.hdata" : "2_form_by_Npe.hdata");
 if(PMT_used&0x4) define->fnames.push_back(fast_PMTs ? "7_form_by_Npe.hdata" : "3_form_by_Npe.hdata");
 if(PMT_used&0x8) define->fnames.push_back(fast_PMTs ? "8_form_by_Npe.hdata" : "4_form_by_Npe.hdata");
-define->Td = "4.2";
+define->Td = "4.0";
 if(PMT_used == (0x1|0x2|0x4|0x8))
 define->device = "4PMT ";
 else
@@ -960,7 +1037,7 @@ if(PMT_used&0x1) define->fnames.push_back(fast_PMTs ? "5_form_by_Npe.hdata" : "1
 if(PMT_used&0x2) define->fnames.push_back(fast_PMTs ? "6_form_by_Npe.hdata" : "2_form_by_Npe.hdata");
 if(PMT_used&0x4) define->fnames.push_back(fast_PMTs ? "7_form_by_Npe.hdata" : "3_form_by_Npe.hdata");
 if(PMT_used&0x8) define->fnames.push_back(fast_PMTs ? "8_form_by_Npe.hdata" : "4_form_by_Npe.hdata");
-define->Td = "3.7";
+define->Td = "3.5";
 if(PMT_used == (0x1|0x2|0x4|0x8))
 define->device = "4PMT ";
 else
@@ -1001,6 +1078,7 @@ define->simultaneous_fit = false;
 
 	std::string folder = PMTs ? std::string("211014/results_v6/PMTs_v1/")
 					: std::string("211014/results_v6/SiPMs_v1/");
+  file_exporter = new FileExporter("211014/results_v6/temp.txt");
 	//std::vector<pulse_shape> pulses = {SiPM_20_7kV_no_trigger, SiPM_18_2kV_no_trigger, SiPM_16_8kV_no_trigger, SiPM_15_5kV_no_trigger};
 	//std::vector<pulse_shape> pulses = {SiPM_14_3kV_no_trigger, SiPM_12_9kV_no_trigger, SiPM_11_7kV_no_trigger, SiPM_10_4kV_no_trigger};
 	//std::vector<pulse_shape> pulses = {SiPM_20_7kV_no_trigger_v2, SiPM_18_2kV_no_trigger_v2, SiPM_16_8kV_no_trigger_v2, SiPM_15_5kV_no_trigger_v2};
@@ -1009,12 +1087,16 @@ define->simultaneous_fit = false;
 	//std::vector<pulse_shape> pulses = {PMT4_20_7kV_no_trigger, PMT4_18_2kV_no_trigger, PMT4_16_8kV_no_trigger, PMT4_15_5kV_no_trigger};
 	//std::vector<pulse_shape> pulses = {PMT4_14_3kV_no_trigger, PMT4_12_9kV_no_trigger, PMT4_11_7kV_no_trigger, PMT4_10_4kV_no_trigger};
 	//std::vector<pulse_shape> pulses = {PMT4_20_7kV_no_trigger_v2, PMT4_18_2kV_no_trigger_v2, PMT4_16_8kV_no_trigger_v2, PMT4_15_5kV_no_trigger_v2};
-	std::vector<pulse_shape> pulses = {PMT4_14_3kV_no_trigger_v2, PMT4_12_9kV_no_trigger_v2, PMT4_11_7kV_no_trigger_v2, PMT4_10_4kV_no_trigger_v2};
+	//std::vector<pulse_shape> pulses = {PMT4_14_3kV_no_trigger_v2, PMT4_12_9kV_no_trigger_v2, PMT4_11_7kV_no_trigger_v2, PMT4_10_4kV_no_trigger_v2};
 
 	//std::vector<pulse_shape> pulses = {PMT4_10_4kV_no_trigger};
 	//For paper and reports:
   //std::vector<pulse_shape> pulses = {SiPM_20_7kV_no_trigger, SiPM_16_8kV_no_trigger, SiPM_14_3kV_no_trigger, SiPM_10_4kV_no_trigger};
   //std::vector<pulse_shape> pulses = {PMT4_20_7kV_no_trigger, PMT4_16_8kV_no_trigger, PMT4_14_3kV_no_trigger, PMT4_10_4kV_no_trigger};
+  //std::vector<pulse_shape> pulses = {SiPM_20_7kV_no_trigger, SiPM_16_8kV_no_trigger, SiPM_14_3kV_no_trigger};
+  std::vector<pulse_shape> pulses = {SiPM_20_7kV_no_trigger, SiPM_15_5kV_no_trigger};
+  //std::vector<pulse_shape> pulses = {SiPM_20_7kV_no_trigger, SiPM_16_8kV_no_trigger};
+  //std::vector<pulse_shape> pulses = {SiPM_20_7kV_no_trigger_v2, SiPM_16_8kV_no_trigger_v2, SiPM_14_3kV_no_trigger_v2};
 
 	std::vector<Color_t> palette_major = {kBlack, kRed, kBlue, kGreen, kYellow + 2, kMagenta, kOrange + 7};
 	std::vector<Color_t> palette_minor = {kGray + 1, kRed-3, kAzure + 6, kGreen -2, kMagenta+3, kOrange - 7, kOrange + 6};
@@ -1136,7 +1218,7 @@ define->simultaneous_fit = false;
 				fit_f->SetLineColor(palette_minor[hh]);
 				fit_f->SetLineWidth(line_width);
 				pulses[hh].hist->Fit(fit_f, pulses[hh].fit_option.c_str());
-				draw_slow_component(fit_f, pulses[hh]);
+				draw_slow_component(fit_f, pulses[hh], hh);
 				pulses[hh].baseline = fit_f->GetParameter(1);
 				pulses[hh].tau2 = dbl_to_str(fit_f->GetParameter(3), precision2);
 				pulses[hh].tau2_err = dbl_to_str(fit_f->GetParError(3), precision2);
@@ -1162,7 +1244,7 @@ define->simultaneous_fit = false;
 			fit_f->SetLineColor(palette_minor[hh]);
 			fit_f->SetLineWidth(line_width);
     	pulses[hh].hist->Fit(fit_f, pulses[hh].fit_option.c_str());
-			draw_slow_component(fit_f, pulses[hh]);
+			draw_slow_component(fit_f, pulses[hh], hh);
 			pulses[hh].tau1 = dbl_to_str(fit_f->GetParameter(3), precision1);
 			pulses[hh].tau1_err = dbl_to_str(fit_f->GetParError(3), precision1);
 			if (!long_exist) {
@@ -1200,7 +1282,7 @@ define->simultaneous_fit = false;
 				fit_f->SetLineColor(palette_minor[hh]);
 				fit_f->SetLineWidth(line_width);
 	    	pulses[hh].hist->Fit(fit_f, pulses[hh].fit_option.c_str());
-				draw_slow_component(fit_f, pulses[hh]);
+				draw_slow_component(fit_f, pulses[hh], hh);
 				pulses[hh].tau1 = dbl_to_str(fit_f->GetParameter(3), precision1);
 				pulses[hh].tau1_err = dbl_to_str(fit_f->GetParError(3), precision1);
 				pulses[hh].tau2 = "--";
@@ -1238,7 +1320,7 @@ define->simultaneous_fit = false;
 				fit_f->SetLineColor(palette_minor[hh]);
 				fit_f->SetLineWidth(line_width);
 				pulses[hh].hist->Fit(fit_f, pulses[hh].fit_option.c_str());
-				draw_slow_component(fit_f, pulses[hh]);
+				draw_slow_component(fit_f, pulses[hh], hh);
 				pulses[hh].baseline = fit_f->GetParameter(1);
 				pulses[hh].total_integral = integrate(pulses[hh].hist, pulses[hh].fast_t.first + Toff, DBL_MAX, pulses[hh].baseline);
 				pulses[hh].fast_integral = integrate(pulses[hh].hist, pulses[hh].fast_t.first + Toff, pulses[hh].fast_t.second + Toff, pulses[hh].baseline);
@@ -1307,17 +1389,17 @@ define->simultaneous_fit = false;
 			std::vector<std::string> no_title;
 			std::vector<std::string> Slow_title = {"Contribution:", "Slow"};
 			std::vector<std::string> Long_title = {"","Long"};
-			if (print_errors) {
+      if (print_errors) {
 				//zcxv
 				add_text(46, 0.02, no_title, tau1, palette_major);
-				add_text(76, 0.005, Slow_title, frsS, palette_major);
-				add_text(100, 0.005, Long_title, frsL, palette_major);
+				add_text(84, 0.005, Slow_title, frsS, palette_major);
+				add_text(102, 0.005, Long_title, frsL, palette_major);
 				add_text(129, 0.005, no_title, tau2, palette_major);
 			} else {
-				add_text(42, 0.01, no_title, tau1, palette_major);
-				add_text(71, 0.004, Slow_title, frsS, palette_major);
-				add_text(89, 0.004, Long_title, frsL, palette_major);
-				add_text(110, 0.001, no_title, tau2, palette_major);
+				add_text(55, 0.01, no_title, tau1, palette_major);
+				add_text(84, 0.006, Slow_title, frsS, palette_major);
+				add_text(102, 0.006, Long_title, frsL, palette_major);
+				add_text(122, 0.006, no_title, tau2, palette_major);
 			}
 			std::cout<<"tau1:"<<std::endl;
 			for (std::size_t i = tau1.size() - 1; i!=-1; --i) {
@@ -1362,7 +1444,8 @@ define->simultaneous_fit = false;
 		}
 	}
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh)
-		legend->AddEntry(pulses[hh].hist, (std::string("E/N = ") + pulses[hh].Td + " Td, " + pulses[hh].device).c_str(), "l");
+		//legend->AddEntry(pulses[hh].hist, (std::string("E/N = ") + pulses[hh].Td + " Td, " + pulses[hh].device).c_str(), "l");
+    legend->AddEntry(pulses[hh].hist, (std::string("E/N_{EL} = ") + pulses[hh].Td + " Td, #DeltaV_{THGEM} = 0").c_str(), "l");
 
 	frame->Draw("sameaxis");
 	legend->Draw("same");
@@ -1372,5 +1455,10 @@ define->simultaneous_fit = false;
 	 		+ "_Nb" + int_to_str(Nbins, 4) + "_" + def_fit_option + (combined ? "" : "sep") + ".png";
 	c_->SaveAs((folder + filename).c_str(), "png");
 #endif //FAST_FIGURES_MODE
+  if (file_exporter) {
+    file_exporter->Print();
+    delete file_exporter;
+    file_exporter = NULL;
+  }
   return 0;
 }

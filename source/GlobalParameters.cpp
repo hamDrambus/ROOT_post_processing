@@ -353,7 +353,7 @@ void ensure_folder(std::string folder)
 		case (ENOTDIR): {
 			int code = system(("mkdir -p \"" + folder + "\"").c_str());
 			if (code)
-				std::cout << "mkdir -p error: " << code << std::endl;
+				std::cout << "mkdir -p error: " << code << ", " << errno << std::endl;
 			break;
 		}
 		default:{

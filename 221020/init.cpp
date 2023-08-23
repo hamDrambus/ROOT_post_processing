@@ -38,12 +38,12 @@
 	str.close();
 
   exp_area.experiments.clear();
-  exp_area.experiments.push_back("221020_S2_LAr_Pu_WLS_18.5kV_0V");
+  /*exp_area.experiments.push_back("221020_S2_LAr_Pu_WLS_18.5kV_0V");
   exp_area.experiments.push_back("221020_S2_LAr_Pu_WLS_18.0kV_338V");
   exp_area.experiments.push_back("221020_S2_LAr_Pu_WLS_17.5kV_563V");
   exp_area.experiments.push_back("221020_S2_LAr_Pu_WLS_17.0kV_917V");
   exp_area.experiments.push_back("221020_S2_LAr_Pu_WLS_16.5kV_1238V");
-  exp_area.experiments.push_back("221020_S2_LAr_Pu_WLS_16.0kV_1238V");
+  exp_area.experiments.push_back("221020_S2_LAr_Pu_WLS_16.0kV_1238V");*/
   exp_area.experiments.push_back("221020_S2_LAr_Pu_WLS_15.5kV_1238V");
   exp_area.experiments.push_back("221020_S2_LAr_Pu_WLS_15.0kV_1238V");
   exp_area.experiments.push_back("221020_S2_LAr_Pu_WLS_14.0kV_1688V");

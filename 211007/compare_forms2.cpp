@@ -504,10 +504,95 @@ struct pulse_shape {
 	std::string FrLost;
 };
 
-void draw_slow_component(TF1* fit_f, pulse_shape& shape)
+class FileExporter {
+public:
+  FileExporter(std::string filename) : _filename(filename)
+  {}
+  std::vector<PAIR> TabulateFunction (TF1* func) {
+    std::vector<PAIR> out;
+    if (func==NULL)
+      return out;
+    double from, to;
+    func->GetRange(from, to);
+    for (std::size_t i = 0, i_end_ = 2000; i!=i_end_; ++i) {
+      double x = from + (to-from)*((double)i/(i_end_-1));
+      out.push_back(PAIR(x, func->Eval(x)));
+    }
+    return out;
+  }
+  std::vector<PAIR> TabulateShape (pulse_shape* shape) {
+    std::vector<PAIR> out;
+    if (shape == NULL || (shape->hist == NULL && shape->graph == NULL))
+      return out;
+    if (shape->hist != NULL) {
+      for (int bin = 1, bin_end = shape->hist->GetNbinsX()+1; bin!=bin_end; ++bin)
+        out.push_back(PAIR(shape->hist->GetBinCenter(bin), shape->hist->GetBinContent(bin)));
+    } else {
+      double x, y;
+      for (int p = 0, p_end = shape->graph->GetN(); p!=p_end; ++p) {
+        if (shape->graph->GetPoint(p, x, y) != -1)
+          out.push_back(PAIR(x, y));
+      }
+    }
+    return out;
+  }
+  void AddToPrint(TF1* func, pulse_shape* shape, std::size_t index) {
+    if (index < xy_table.size()/2) {
+      std::vector<PAIR> new_f = TabulateFunction(func);
+      std::size_t f_ind = index * 2 + 1;
+      xy_table[f_ind].push_back(PAIR(DBL_MAX, DBL_MAX)); //separate new fit function from the previous ones
+      xy_table[f_ind].insert(xy_table[f_ind].end(), new_f.begin(), new_f.end());
+    } else {
+      std::vector<PAIR> new_f = TabulateFunction(func);
+      std::vector<PAIR> new_h = TabulateShape(shape);
+      xy_table.push_back(new_h);
+      xy_table.push_back(new_f);
+    }
+  }
+  void Print(void) {
+    std::ofstream str;
+    str.open(_filename, std::ios_base::trunc);
+    if (!str.is_open()) {
+      std::cerr<<"FileExporter:Print: Failed to open file"<<std::endl;
+      std::cerr<<"\t\""<<_filename<<"\""<<std::endl;
+      return;
+    }
+    std::cout<<"FileExporter: printing to file"<<std::endl;
+    std::cout<<"\t\""<<_filename<<"\""<<std::endl;
+    std::size_t n_rows = 0;
+    for (std::size_t c = 0, c_end_ = xy_table.size(); c!=c_end_; ++c) {
+      n_rows = std::max(n_rows, xy_table[c].size());
+    }
+    for (std::size_t r = 0; r!=n_rows; ++r) {
+      for (std::size_t c = 0, c_end_ = xy_table.size(); c!=c_end_; ++c) {
+        str << (c == 0 ? "" : "\t");
+        if (r < xy_table[c].size() && xy_table[c][r].first != DBL_MAX)
+          str<< xy_table[c][r].first;
+        else
+          str<< "--";
+        str<<"\t";
+        if (r < xy_table[c].size() && xy_table[c][r].second != DBL_MAX)
+          str<< xy_table[c][r].second;
+        else
+          str<< "--";
+      }
+      str<<std::endl;
+    }
+    str.close();
+  }
+  std::deque<std::vector<PAIR>> xy_table; //stores both histogram and fit function.
+  std::string _filename;
+};
+
+FileExporter* file_exporter = NULL;
+
+void draw_slow_component(TF1* fit_f, pulse_shape* shape, std::size_t index)
 {
 	fit_f->SetNpx(800);
 	//fit_f->Draw("same");
+  if (file_exporter) {
+    file_exporter->AddToPrint(fit_f, shape, index);
+  }
 }
 
 
@@ -543,13 +628,13 @@ int compare_forms2 (void) {
 
 	pulse_shape* define = NULL, *copy = NULL;
 
-  pulse_shape Q_20_0kV_restored;
-  define = &Q_20_0kV_restored;
-define->folder = std::string("211007/results_v5/restored_Q/");
-define->fnames.push_back("211007_Pu_20.0kV_800V_46V_12dB_2650V");
+  pulse_shape Q_20_0kV_raw;
+  define = &Q_20_0kV_raw;
+define->folder = std::string("../Data/211007/results_v2/211007_Pu_20.0kV_800V_46V_12dB_2650V/Charge_10/");
+define->fnames.push_back("Charge211007_Pu_20.0kV_800V_46V_12dB_2650V_ch_10_AVR_0");
 define->file_type = ShapeFileType::RawNoError;
-define->Td = "8.5";
-define->device = "Charge, 2650V, restored";
+define->Td = "8.3";
+define->device = "#DeltaV_{THGEM}=2110V";
 define->fast_t_center = 30.9;
 define->fast_t = PAIR(29.7, 2*30.94 - 29.70);
 define->S1_t_center = 0;
@@ -559,7 +644,7 @@ define->subtract_baseline = subtract_baseline;
 define->renormalize = true;
 define->slow_fit_t = PAIR(2*30.94 - 29.70, 100);
 define->long_fit_t = PAIR(0, 0);
-define->baseline_bound = PAIR(-0.3, 0.3);
+define->baseline_bound = PAIR(-0.2, 0.2);
 define->slow_ampl_bound = PAIR(1e-1, 2.9e-1);
 define->slow_tau_bound = PAIR(2.0, 10);
 define->long_ampl_bound = PAIR(2e-4, 2e-3);
@@ -568,13 +653,101 @@ define->simultaneous_fit = true;
 define->do_fit = do_fit;
 define->fit_option = "NRWE";
 
-  pulse_shape Q_20_0kV_raw;
-  define = &Q_20_0kV_raw;
-define->folder = std::string("../Data/211007/results_v2/211007_Pu_20.0kV_800V_46V_12dB_2650V/Charge_10/");
-define->fnames.push_back("Charge211007_Pu_20.0kV_800V_46V_12dB_2650V_ch_10_AVR_0");
+  pulse_shape Q_18_8kV_raw;
+  define = &Q_18_8kV_raw;
+  copy = &Q_20_0kV_raw;
+*define = *copy;
+define->fnames.clear();
+define->folder = std::string("../Data/211007/results_v2/211007_Pu_18.8kV_800V_46V_12dB_2650V/Charge_10/");
+define->fnames.push_back("Charge211007_Pu_18.8kV_800V_46V_12dB_2650V_ch_10_AVR_0");
+define->Td = "7.7";
+define->device = "V_{THGEM}=2110V";
+define->slow_ampl_bound = PAIR(1e-1, 3e-1);
+
+  pulse_shape Q_17_0kV_raw;
+  define = &Q_17_0kV_raw;
+  copy = &Q_18_8kV_raw;
+*define = *copy;
+define->fnames.clear();
+define->folder = std::string("../Data/211007/results_v2/211007_Pu_17.0kV_800V_46V_12dB_2650V/Charge_10/");
+define->fnames.push_back("Charge211007_Pu_17.0kV_800V_46V_12dB_2650V_ch_10_AVR_0");
+define->Td = "6.8";
+define->device = "V_{THGEM}=2110V";
+define->slow_ampl_bound = PAIR(1e-1, 1);
+
+  pulse_shape Q_15_3kV_raw;
+  define = &Q_15_3kV_raw;
+  copy = &Q_17_0kV_raw;
+*define = *copy;
+define->fnames.clear();
+define->folder = std::string("../Data/211007/results_v2/211007_Pu_15.3kV_800V_46V_12dB_2650V/Charge_10/");
+define->fnames.push_back("Charge211007_Pu_15.3kV_800V_46V_12dB_2650V_ch_10_AVR_0");
+define->Td = "6.0";
+define->device = "V_{THGEM}=2110V";
+define->slow_ampl_bound = PAIR(1e-1, 1);
+
+  pulse_shape Q_14_4kV_raw;
+  define = &Q_14_4kV_raw;
+  copy = &Q_15_3kV_raw;
+*define = *copy;
+define->fnames.clear();
+define->folder = std::string("../Data/211007/results_v2/211007_Pu_14.4kV_800V_46V_12dB_2650V/Charge_10/");
+define->fnames.push_back("Charge211007_Pu_14.4kV_800V_46V_12dB_2650V_ch_10_AVR_0");
+define->Td = "5.5";
+define->device = "V_{THGEM}=2110V";
+define->slow_ampl_bound = PAIR(1e-1, 1);
+
+  pulse_shape Q_13_6kV_raw;
+  define = &Q_13_6kV_raw;
+  copy = &Q_14_4kV_raw;
+*define = *copy;
+define->fnames.clear();
+define->folder = std::string("../Data/211007/results_v2/211007_Pu_13.6kV_800V_46V_12dB_2650V/Charge_10/");
+define->fnames.push_back("Charge211007_Pu_13.6kV_800V_46V_12dB_2650V_ch_10_AVR_0");
+define->Td = "5.1";
+define->device = "V_{THGEM}=2110V";
+define->slow_ampl_bound = PAIR(1e-1, 1);
+
+  pulse_shape Q_12_7kV_raw;
+  define = &Q_12_7kV_raw;
+  copy = &Q_13_6kV_raw;
+*define = *copy;
+define->fnames.clear();
+define->folder = std::string("../Data/211007/results_v2/211007_Pu_12.7kV_800V_46V_12dB_2650V/Charge_10/");
+define->fnames.push_back("Charge211007_Pu_12.7kV_800V_46V_12dB_2650V_ch_10_AVR_0");
+define->Td = "4.7";
+define->device = "V_{THGEM}=2110V";
+define->slow_ampl_bound = PAIR(1e-1, 1);
+
+  pulse_shape Q_11_8kV_raw;
+  define = &Q_11_8kV_raw;
+  copy = &Q_12_7kV_raw;
+*define = *copy;
+define->fnames.clear();
+define->folder = std::string("../Data/211007/results_v2/211007_Pu_11.8kV_800V_46V_12dB_2650V/Charge_10/");
+define->fnames.push_back("Charge211007_Pu_11.8kV_800V_46V_12dB_2650V_ch_10_AVR_0");
+define->Td = "4.2";
+define->device = "V_{THGEM}=2110V";
+define->slow_ampl_bound = PAIR(1e-1, 1);
+
+  pulse_shape Q_11_0kV_raw;
+  define = &Q_11_0kV_raw;
+  copy = &Q_11_8kV_raw;
+*define = *copy;
+define->fnames.clear();
+define->folder = std::string("../Data/211007/results_v2/211007_Pu_11.0kV_800V_46V_12dB_2650V/Charge_10/");
+define->fnames.push_back("Charge211007_Pu_11.0kV_800V_46V_12dB_2650V_ch_10_AVR_0");
+define->Td = "3.8";
+define->device = "V_{THGEM}=2110V";
+define->slow_ampl_bound = PAIR(1e-1, 1);
+
+  pulse_shape Q_20_0kV_restored;
+  define = &Q_20_0kV_restored;
+define->folder = std::string("211007/results_v5/restored_Q/");
+define->fnames.push_back("211007_Pu_20.0kV_800V_46V_12dB_2650V");
 define->file_type = ShapeFileType::RawNoError;
 define->Td = "8.5";
-define->device = "V_{THGEM1}=2110V";
+define->device = "Charge, 2650V, restored";
 define->fast_t_center = 30.9;
 define->fast_t = PAIR(29.7, 2*30.94 - 29.70);
 define->S1_t_center = 0;
@@ -795,6 +968,7 @@ define->fit_option = "NRWE";
 
 	std::string folder = SiPMs ? std::string("211007/results_v5/SiPMs_v1/")
 					: std::string("211007/results_v5/Charge_v1/");
+  file_exporter = new FileExporter("211007/results_v5/temp.txt");
 	//std::vector<pulse_shape> pulses = {SiPM_20_0kV_no_trigger, SiPM_20_0kV_no_trigger_1, SiPM_20_0kV_no_trigger_2, SiPM_20_0kV_no_trigger_3};
   //std::vector<pulse_shape> pulses = {SiPM_20_0kV_no_trigger, SiPM_18_8kV_no_trigger, SiPM_17_0kV_no_trigger, SiPM_15_3kV_no_trigger, SiPM_14_4kV_no_trigger};
   //std::vector<pulse_shape> pulses = {SiPM_13_6kV_no_trigger, SiPM_12_7kV_no_trigger, SiPM_11_8kV_no_trigger, SiPM_11_0kV_no_trigger};
@@ -803,11 +977,14 @@ define->fit_option = "NRWE";
   //std::vector<pulse_shape> pulses = {Q_20_0kV_no_trigger, Q_18_8kV_no_trigger, Q_17_0kV_no_trigger, Q_15_3kV_no_trigger, Q_14_4kV_no_trigger};
   //std::vector<pulse_shape> pulses = {Q_13_6kV_no_trigger, Q_12_7kV_no_trigger, Q_11_8kV_no_trigger, Q_11_0kV_no_trigger};
 
+  //std::vector<pulse_shape> pulses = {Q_20_0kV_raw, Q_18_8kV_raw, Q_17_0kV_raw, Q_15_3kV_raw, Q_14_4kV_raw};
+  //std::vector<pulse_shape> pulses = {Q_13_6kV_raw, Q_12_7kV_raw, Q_11_8kV_raw, Q_11_0kV_raw};
+
 	//std::vector<pulse_shape> pulses = {SiPM_11_0kV_no_trigger};
 	//For paper and reports:
   //std::vector<pulse_shape> pulses = {Q_20_0kV_restored, Q_20_0kV_raw};
-  //std::vector<pulse_shape> pulses = {Q_20_0kV_raw};
-  std::vector<pulse_shape> pulses = {Q_20_0kV_restored, Q_18_8kV_restored, Q_17_0kV_restored, Q_15_3kV_restored, Q_14_4kV_restored};
+  std::vector<pulse_shape> pulses = {Q_20_0kV_raw};
+  //std::vector<pulse_shape> pulses = {Q_20_0kV_restored, Q_18_8kV_restored, Q_17_0kV_restored, Q_15_3kV_restored, Q_14_4kV_restored};
 
 	std::vector<Color_t> palette_major = {kBlack, kRed, kBlue, kGreen, kYellow + 2, kMagenta, kOrange + 7};
 	std::vector<Color_t> palette_minor = {kGray + 1, kRed-3, kAzure + 6, kGreen -2, kMagenta+3, kOrange - 7, kOrange + 6};
@@ -974,7 +1151,7 @@ define->fit_option = "NRWE";
           pulses[hh].hist->Fit(fit_f, pulses[hh].fit_option.c_str());
         else
           pulses[hh].graph->Fit(fit_f, pulses[hh].fit_option.c_str());
-				draw_slow_component(fit_f, pulses[hh]);
+				draw_slow_component(fit_f, &pulses[hh], hh);
 				pulses[hh].baseline = fit_f->GetParameter(1);
 				pulses[hh].tau2 = dbl_to_str(fit_f->GetParameter(3), precision2);
 				pulses[hh].tau2_err = dbl_to_str(fit_f->GetParError(3), precision2);
@@ -1011,7 +1188,7 @@ define->fit_option = "NRWE";
         pulses[hh].hist->Fit(fit_f, pulses[hh].fit_option.c_str());
       else
         pulses[hh].graph->Fit(fit_f, pulses[hh].fit_option.c_str());
-			draw_slow_component(fit_f, pulses[hh]);
+			draw_slow_component(fit_f, &pulses[hh], hh);
 			pulses[hh].tau1 = dbl_to_str(fit_f->GetParameter(3), precision1);
 			pulses[hh].tau1_err = dbl_to_str(fit_f->GetParError(3), precision1);
 			if (!long_exist) {
@@ -1062,7 +1239,7 @@ define->fit_option = "NRWE";
           pulses[hh].hist->Fit(fit_f, pulses[hh].fit_option.c_str());
         else
           pulses[hh].graph->Fit(fit_f, pulses[hh].fit_option.c_str());
-				draw_slow_component(fit_f, pulses[hh]);
+				draw_slow_component(fit_f, &pulses[hh], hh);
 				pulses[hh].tau1 = dbl_to_str(fit_f->GetParameter(3), precision1);
 				pulses[hh].tau1_err = dbl_to_str(fit_f->GetParError(3), precision1);
 				pulses[hh].tau2 = "--";
@@ -1115,7 +1292,7 @@ define->fit_option = "NRWE";
           pulses[hh].hist->Fit(fit_f, pulses[hh].fit_option.c_str());
         else
           pulses[hh].graph->Fit(fit_f, pulses[hh].fit_option.c_str());
-				draw_slow_component(fit_f, pulses[hh]);
+				draw_slow_component(fit_f, &pulses[hh], hh);
 				pulses[hh].baseline = fit_f->GetParameter(1);
 				pulses[hh].total_integral = (ShapeFileType::Histogram == pulses[hh].file_type) ?
           integrate(pulses[hh].hist, pulses[hh].fast_t.first + Toff, DBL_MAX, pulses[hh].baseline) :
@@ -1254,16 +1431,16 @@ define->fit_option = "NRWE";
 			std::vector<std::string> Slow_title = {"Slow component", "contribution:"};
 			std::vector<std::string> Long_title;// = {"Long"};
 			add_text(40, 0.15, no_title, tau1, palette_major);
-			add_text(70, 0.15, Slow_title, frsS, palette_major);
+			add_text(54, 0.15, Slow_title, frsS, palette_major);
 			//add_text(52, 0.08, Long_title, frsL, palette_text);
 			//add_text(58, 0.08, no_title, tau2, palette_text);
 		}
 	}
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {
     if (ShapeFileType::Histogram == pulses[hh].file_type)
-      legend->AddEntry(pulses[hh].hist, (std::string("E_{EL}/N = ") + pulses[hh].Td + " Td, " + pulses[hh].device).c_str(), "l");
+      legend->AddEntry(pulses[hh].hist, (std::string("E/N_{EL} = ") + pulses[hh].Td + " Td, " + pulses[hh].device).c_str(), "l");
     else
-      legend->AddEntry(pulses[hh].graph, (std::string("E_{EL}/N = ") + pulses[hh].Td + " Td, " + pulses[hh].device).c_str(), "l");
+      legend->AddEntry(pulses[hh].graph, (std::string("E/N_{EL} = ") + pulses[hh].Td + " Td, " + pulses[hh].device).c_str(), "l");
   }
 
 	frame->Draw("sameaxis");
@@ -1274,5 +1451,10 @@ define->fit_option = "NRWE";
 	 		+ "_Nb" + int_to_str(Nbins, 4) + "_" + def_fit_option + (combined ? "" : "sep") + ".png";
 	c_->SaveAs((folder + filename).c_str(), "png");
 #endif //FAST_FIGURES_MODE
+  if (file_exporter) {
+    file_exporter->Print();
+    delete file_exporter;
+    file_exporter = NULL;
+  }
   return 0;
 }
