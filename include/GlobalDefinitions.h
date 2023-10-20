@@ -356,10 +356,14 @@ public:
 };
 
 
+#define GET_MACRO(_1,_2, NAME,...) NAME
+#define INVOKE_GNUPLOT(...) GET_MACRO(__VA_ARGS__, INVOKE_GNUPLOT2, INVOKE_GNUPLOT1)(__VA_ARGS__)
+
 #if defined(__WIN32__)
-#define INVOKE_GNUPLOT(a) system(("start \"\" \"%GNUPLOT%\\gnuplot.exe\" -c \"" + a + "\"").c_str())
+#define INVOKE_GNUPLOT1(a) system(("start \"\" \"%GNUPLOT%\\gnuplot.exe\" --persist \"" + a + "\"").c_str())
 #else
-#define INVOKE_GNUPLOT(a) system(("konsole -e gnuplot \"" + a +"\"").c_str());
+#define INVOKE_GNUPLOT1(a) system(("gnome-terminal -- bash -c \"gnuplot \"" + a +"\"\"").c_str());
+#define INVOKE_GNUPLOT2(a, b) system(("gnome-terminal -- bash -c \"cd \""+b+"\"; gnuplot \"" + a +"\"\"").c_str());
 #endif //__WIN32__
 
 

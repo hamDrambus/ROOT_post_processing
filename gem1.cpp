@@ -1,5 +1,5 @@
- 
-//this is temprorary ROOT macro for writing multi-line code (such as lambda functions for cuts)
+// This code is for integrating and plotting charge signal from oscilloscope (LeCroy).
+// Use after .x init.cpp
 {
   SignalOperations::signal_from_file(xs,ys,"C2Trace00010.txt");
   SignalOperations::substract_baseline(ys,-0.0063);

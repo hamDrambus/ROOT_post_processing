@@ -371,7 +371,7 @@ int ncompare_forms (void) {
 	bool combined = true;
 	bool Cd_peak = true;
 	int Nbins = 600;
-	bool linear = 0;
+	bool linear = 1;
 	bool PMTs = false;
 #ifdef FAST_FIGURES_MODE
 	linear = (in_is_linear == "lin");
@@ -383,19 +383,19 @@ int ncompare_forms (void) {
 
 	bool do_fit = false;
 	bool fit_bad_forms = false;
-	bool subtact_baseline = false;
+	bool subtact_baseline = true;
 	bool center_pulses = false;
 	bool center_at_S1 = false;
 	bool normalize_by_S1 = false;
-	bool normalize = false;
+	bool normalize = true;
 	bool print_errors = false;
 	double time_pretrigger_left = 4, time_pretrigger_right = 32;
 	double time_left = 0, time_right = 160;//us
 	double max_val = 0;
 	double trigger_at = center_at_S1 ? 50 : 90;
-	double y_min = 1e3;
+	double y_min = 0;//1e-3;
 	double time_offset = 30.0-93;
-	double y_offset = 0; //5e-3;
+	double y_offset = 5e-3;
 	Nbins *= (time_right - time_left)/160.0;
 
 	pulse_shape* define = NULL, *copy = NULL;
@@ -1370,11 +1370,12 @@ define->fit_option = def_fit_option;
 	//std::vector<pulse_shape> pulses = {PMT4_12kV_no_trigger, PMT4_10kV_no_trigger, PMT4_8kV_no_trigger, PMT4_6kV_no_trigger};
 
 	//for paper:
-	std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger_v3};
+	//std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger_v3};
 	//std::vector<pulse_shape> pulses = {PMT4_20kV_no_trigger, PMT4_18kV_no_trigger, PMT4_14kV_no_trigger, PMT4_10kV_no_trigger};
 	//std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger, SiPM_18kV_no_trigger, SiPM_14kV_no_trigger, SiPM_10kV_no_trigger};
 	//std::vector<pulse_shape> pulses = {PMT4_20kV_no_trigger_v3};
 	//std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger_v3, SiPM_16kV_no_trigger_v3, SiPM_12kV_no_trigger_v3, SiPM_8kV_no_trigger_v3};
+	std::vector<pulse_shape> pulses = {SiPM_20kV_no_trigger_v3, SiPM_16kV_no_trigger_v3, SiPM_12kV_no_trigger_v3};
 #endif //FAST_FIGURES_MODE
 
 	std::vector<Color_t> palette_major = {kBlack, kRed, kBlue, kGreen, kYellow + 2, kMagenta, kOrange + 7};
@@ -1707,8 +1708,8 @@ define->fit_option = def_fit_option;
 	}*/
 
 	for (int hh = 0, hh_end_ = pulses.size(); hh!=hh_end_; ++hh) {
-		legend->AddEntry(pulses[hh].hist, (std::string("E/N_{EL} = ") + pulses[hh].Td + " Td, " + pulses[hh].device).c_str(), "l");
-		//legend->AddEntry(pulses[hh].hist, (std::string("E/N = ") + pulses[hh].Td + " Td").c_str(), "l");
+		//legend->AddEntry(pulses[hh].hist, (std::string("E/N_{EL} = ") + pulses[hh].Td + " Td, " + pulses[hh].device).c_str(), "l");
+		legend->AddEntry(pulses[hh].hist, (std::string("E/N_{EL} = ") + pulses[hh].Td + " Td").c_str(), "l");
 	}
 
 	frame->Draw("sameaxis");

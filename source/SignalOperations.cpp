@@ -2046,29 +2046,6 @@ namespace SignalOperations {
 				std::vector<double>::const_iterator x_left = i + shift;
 				coefs = fitter(xs, ys, (x_left - _begin_), N_trust, *x_left);
 
-				//#ifdef _TEMP_CODE
-				//				if ((*i <= 32.49) && (32.49 <= *(i + N_trust - 1))) {
-				//					GraphicOutputManager man;
-				//					Drawing *dr = man.GetDrawing("Peak find test "+std::to_string(*j), 0, ParameterPile::DrawEngine::Gnuplot);
-				//					std::vector<double> tmp_x, tmp_y;
-				//					for (auto ti = i, tj = j; (ti < (i + N_trust)) && (tj < (j + N_trust)); ++ti, ++tj) {
-				//						tmp_x.push_back(*ti);
-				//						tmp_y.push_back(*tj);
-				//					}
-				//					dr->AddToDraw(tmp_x, tmp_y, "peak " + std::to_string(*j));
-				//					TVectorD coefs;
-				//					fitter.getCoefs(coefs);
-				//					double a = coefs[2];
-				//					double b = coefs[1]-2**x_left*coefs[2];
-				//					double c = coefs[0] - coefs[1] * *x_left + coefs[2] * *x_left * *x_left;
-				//					std::stringstream aa, bb, cc;
-				//					aa << std::setprecision(12) << a;
-				//					bb << std::setprecision(12) << b;
-				//					cc << std::setprecision(12) << c;
-				//					dr->AddToDraw("a = " + aa.str() + "\nb = " + bb.str() + "\nc = " + cc.str() + "\nf(x) = a*x*x + b*x + c", "f(x)", "fit", "w l", 0);
-				//					man.Draw();
-				//				}
-				//#endif
 				std::vector<double>::const_iterator x_inter1, x_inter2;
 				double x_inter_exact1, x_inter_exact2;
 				fitter.Findintersection(x_inter1, x_inter2, x_inter_exact1, x_inter_exact2, threshold);

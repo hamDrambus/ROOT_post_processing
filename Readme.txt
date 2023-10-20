@@ -22,5 +22,6 @@ GenEclipseProject.sh script can be used to create Eclipse project for further de
 
 Open in eclipse as [File->Import->General->Existing project in folder]->browse to generated -build folder. Build via [Project Explorer->Build Targets]. Debug as 'C/C++ Attach to Application' or 'C/C++ Application', with set binary location and disabled auto build (if necessary). When any files or libraries are added to/removed from the project, it must be regenerated with GenEclipseProject.sh.
 
-
-
+=================================================
+TODO:
+1) Add loading pre-processed data (experiment/folder) on demand (in nex(), pex()) so that RAM is not overused.
