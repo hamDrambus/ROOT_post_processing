@@ -3,7 +3,7 @@
 
 #include "GlobalParameters.h"
 #include "AnalysisManager.h"
-#include "GraphicOutputManager.h"
+#include "GraphCollection.h"
 #include "PostProcessor.h"
 
 

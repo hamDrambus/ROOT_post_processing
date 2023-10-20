@@ -4,7 +4,7 @@
 #include <thread>
 #include "SignalOperations.h"
 #include "AllExperimentsResults.h"
-#include "GraphicOutputManager.h"
+#include "GraphCollection.h"
 #include "AnalysisStates.h"
 #include "HistogramSetups.h"
 #include "CalibrationInfo.h"
@@ -109,8 +109,6 @@ public:
 	
 	void clear(void);	//clear cuts for current histogram. Run cuts derived from it are not touched
 	void clearAll(void); //clear everything, return to initial state (leaves all existing histograms empty)
-
-	void plot_N_pe(int ch, GraphicOutputManager* gr_man);
 
 	//adding/removing cuts does not update histogram. This is done because adding of several cuts in succession is often necessary
 	void add_hist_cut(FunctionWrapper *picker, std::string name, bool affect_hist);

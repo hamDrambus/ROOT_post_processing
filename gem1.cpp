@@ -1,5 +1,5 @@
 // This code is for integrating and plotting charge signal from oscilloscope (LeCroy).
-// Use after .x init.cpp
+// Use after .x init.cpp and .x gem.cpp
 {
   SignalOperations::signal_from_file(xs,ys,"C2Trace00010.txt");
   SignalOperations::substract_baseline(ys,-0.0063);

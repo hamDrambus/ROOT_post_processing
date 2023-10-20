@@ -3,9 +3,47 @@
 #include "Math/BrentMinimizer1D.h"
 #include "TSpectrum.h"
 #include "Polynom2Order.h"
-#include "GraphicOutputManager.h"
+#include "GraphCollection.h"
 
 namespace SignalOperations {
+
+	void signal_from_lecroy_file(std::vector<double> &xs, std::vector<double> &ys, std::string fname, double x_scale, double y_scale)
+	{
+		xs.clear();
+		ys.clear();
+		std::ifstream str;
+		str.open(fname);
+		if (!str.is_open()) {
+			std::cerr<<"Error: signal_from_lecroy_file: could not open file \""<<fname<<"\"."<<std::endl;
+			return;
+		}
+		std::string line;
+		const std::size_t header_size = 5;
+		const std::string delimiter = ",";
+		std::size_t lines_read = 0;
+		while (std::getline(str, line)) {
+			++lines_read;
+			if (lines_read < header_size || line.empty())
+				continue;
+			if (line.back() == '\r')
+				line.pop_back();
+			std::size_t delim_pos;
+			delim_pos = line.find(delimiter);
+			if (delim_pos != std::string::npos) {
+				std::string word1 = line.substr(0, delim_pos);
+				line.erase(0, delim_pos + delimiter.size());
+				try {
+					double valx = std::stod(word1);
+					double valy = std::stod(line);
+					xs.push_back(valx * x_scale);
+					ys.push_back(valy * y_scale);
+				} catch (const std::exception & e) {
+					continue;
+				}
+			}
+		}
+		str.close();
+	}
 
 	void signal_from_file(std::vector<double> &xs, std::vector<double> &ys, std::string fname)
 	{
@@ -51,6 +89,15 @@ namespace SignalOperations {
 		auto _end_ = y_in_out.end();
 		for (auto i = y_in_out.begin(); i != _end_; ++i)
 			*i = -*i;
+	}
+
+	double find_baseline_by_median(const std::vector<double> &xs, const std::vector<double> &ys, double x_left, double x_right)
+	{
+		std::vector<double> xs_cp = xs;
+		std::vector<double> ys_cp = ys;
+		apply_time_limits(xs_cp, ys_cp, x_left, x_right);
+		std::deque<peak> pks;
+		return find_baseline_by_median(0, xs_cp, ys_cp, pks);
 	}
 
 	double find_baseline_by_median(double approx, const std::vector<double> &xs, const std::vector<double> &ys, std::deque<peak> &peaks)
@@ -109,6 +156,14 @@ namespace SignalOperations {
 			return approx;
 		Integrate(xs, ys, val, xs.begin(), --xs.end(), *(++xs.begin()) - *(xs.begin()), 0);
 		return val/dx;
+	}
+
+	double find_baseline_by_integral(const std::vector<double> &xs, const std::vector<double> &ys, double x_left, double x_right)
+	{
+		std::vector<double> xs_cp = xs;
+		std::vector<double> ys_cp = ys;
+		apply_time_limits(xs_cp, ys_cp, x_left, x_right);
+		return find_baseline_by_integral(0, xs_cp, ys_cp);
 	}
 
 	double find_baseline_by_integral(double approx, const std::vector<double> &xs, const std::vector<double> &ys, std::deque<peak> &peaks)
@@ -213,156 +268,12 @@ namespace SignalOperations {
 			f_ys[h] = ys[h];
 #endif
 		//TODO: ? ParameterPile and as input parameters?
-		ROOT_BL_CALL_V0
+		find_background_v_0(f_ys, ys.size(), 80, TSpectrum::kBackDecreasingWindow, TSpectrum::kBackOrder2, kTRUE, TSpectrum::kBackSmoothing3, kFALSE,2);
 #ifdef _USE_DEQUE
 			for (int h = 0; h != _size_; ++h)
 				ys_out[h] = f_ys[h];
 		delete[] f_ys;
 #endif
-	}
-
-	void find_baseline_by_ROOT_v2(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out)
-	{
-		int _size_ = ys.size();
-#ifndef _USE_DEQUE
-		ys_out = ys;
-		double *f_ys = &ys_out[0];
-#else
-		ys_out.resize(ys.size());
-		double *f_ys = new double[_size_];
-		for (int h = 0; h != _size_; ++h)
-			f_ys[h] = ys[h];
-#endif
-		//TODO: ? ParameterPile and as input parameters?
-		ROOT_BL_CALL_V2
-#ifdef _USE_DEQUE
-		for (int h = 0; h != _size_; ++h)
-			ys_out[h] = f_ys[h];
-		delete[] f_ys;
-#endif
-	}
-
-	void find_baseline_by_ROOT_v3(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out)
-	{
-		int _size_ = ys.size();
-#ifndef _USE_DEQUE
-		ys_out = ys;
-		double *f_ys = &ys_out[0];
-#else
-		ys_out.resize(ys.size());
-		double *f_ys = new double[_size_];
-		for (int h = 0; h != _size_; ++h)
-			f_ys[h] = ys[h];
-#endif
-		//TODO: ? ParameterPile and as input parameters?
-		ROOT_BL_CALL_V3
-#ifdef _USE_DEQUE
-			for (int h = 0; h != _size_; ++h)
-				ys_out[h] = f_ys[h];
-		delete[] f_ys;
-#endif
-	}
-
-	void find_baseline_by_ROOT_v4(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out)
-	{
-		int _size_ = ys.size();
-#ifndef _USE_DEQUE
-		ys_out = ys;
-		double *f_ys = &ys_out[0];
-#else
-		ys_out.resize(ys.size());
-		double *f_ys = new double[_size_];
-		for (int h = 0; h != _size_; ++h)
-			f_ys[h] = ys[h];
-#endif
-		//TODO: ? ParameterPile and as input parameters?
-		ROOT_BL_CALL_V4
-#ifdef _USE_DEQUE
-			for (int h = 0; h != _size_; ++h)
-				ys_out[h] = f_ys[h];
-		delete[] f_ys;
-#endif
-	}
-
-	void find_baseline_by_ROOT_v5(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out)
-	{
-		ys_out.resize(ys.size());
-
-		TSpectrum *spec = new TSpectrum();
-		double *f_ys = new double[ys.size()];
-		for (int h = 0; h != ys.size(); ++h)
-			f_ys[h] = ys[h];
-		//TODO: ? ParameterPile and as input parameters?
-		ROOT_BL_CALL_V5
-		for (int h = 0; h != ys.size(); ++h)
-			ys_out[h]=f_ys[h];
-		delete[] f_ys;
-		spec->Delete();
-	}
-
-	void find_baseline_by_ROOT_v6(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out)
-	{
-		ys_out.resize(ys.size());
-
-		TSpectrum *spec = new TSpectrum();
-		double *f_ys = new double[ys.size()];
-		for (int h = 0; h != ys.size(); ++h)
-			f_ys[h] = ys[h];
-		//TODO: ? ParameterPile and as input parameters?
-		ROOT_BL_CALL_V6
-		for (int h = 0; h != ys.size(); ++h)
-			ys_out[h] = f_ys[h];
-		delete[] f_ys;
-		spec->Delete();
-
-		std::vector<double>::const_iterator x_min;
-		double y_min;
-		SignalOperations::get_min(xs, ys_out, xs.begin(), xs.end(), x_min, y_min, 1);
-		if (x_min == xs.end())
-			return;
-		std::vector<double>::const_reverse_iterator x_prev_min(x_min);
-		SignalOperations::find_previous_extremum_faster(xs, ys_out, x_prev_min, 5);
-		if (x_prev_min == xs.rend())
-			return;
-		SignalOperations::find_previous_extremum_faster(xs, ys_out, x_prev_min, 5);
-		if (x_prev_min == xs.rend())
-			return;
-		std::vector<double>::const_iterator x_cut_from = x_prev_min.base();
-		double y_cut_from = ys_out[x_cut_from - xs.begin()];
-		for (auto xx = x_cut_from; xx != x_min; ++xx)
-			ys_out[xx - xs.begin()] = y_cut_from + (*xx - *x_cut_from)*(y_min - y_cut_from) / (*x_min - *x_cut_from);//line
-	}
-
-	void find_baseline_by_ROOT_v7(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out)
-	{
-		ys_out.resize(ys.size());
-
-		TSpectrum *spec = new TSpectrum();
-		double *f_ys = new double[ys.size()];
-		for (int h = 0; h != ys.size(); ++h)
-			f_ys[h] = ys[h];
-		//TODO: ? ParameterPile and as input parameters?
-		ROOT_BL_CALL_V7
-		for (int h = 0; h != ys.size(); ++h)
-			ys_out[h]=f_ys[h];
-		delete[] f_ys;
-		spec->Delete();
-	}
-
-	void find_baseline_by_ROOT_v8(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out)
-	{
-		ys_out.resize(ys.size());
-
-		TSpectrum *spec = new TSpectrum();
-		double *f_ys = new double[ys.size()];
-		for (int h = 0; h != ys.size(); ++h)
-			f_ys[h] = ys[h];
-		//TODO: ? ParameterPile and as input parameters?
-		ROOT_BL_CALL_V8
-		for (int h = 0; h != ys.size(); ++h)
-			ys_out[h]=f_ys[h];
-		delete[] f_ys;
-		spec->Delete();
 	}
 
 	const char *find_background_v_raw(double *spectrum, int ssize,

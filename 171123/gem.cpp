@@ -2,7 +2,7 @@
 {
   std::vector<double> xs,ys,ys_int;
   Init_globals();
-  GraphicOutputManager* GM = new GraphicOutputManager();
+  GraphCollection* GM = new GraphCollection();
   
   /*SignalOperations::signal_from_file(xs,ys,"C2Trace00021.txt");
   SignalOperations::Integrate(xs,ys,ys_int,0);

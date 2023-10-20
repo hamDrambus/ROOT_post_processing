@@ -5,14 +5,6 @@
 #include "ExperimentArea.h"
 #include "PolynomialFit.h"
 
-#define ROOT_BL_CALL_V0 find_background_v_0(f_ys, ys.size(), 80,	TSpectrum::kBackDecreasingWindow, TSpectrum::kBackOrder2, kTRUE, TSpectrum::kBackSmoothing3, kFALSE,2);
-#define ROOT_BL_CALL_V2 find_background_v_0(f_ys, ys.size(), 60,	TSpectrum::kBackDecreasingWindow, TSpectrum::kBackOrder2, kTRUE, TSpectrum::kBackSmoothing3, kFALSE,2);
-#define ROOT_BL_CALL_V3 find_background_v_0(f_ys, ys.size(), 70,	TSpectrum::kBackDecreasingWindow, TSpectrum::kBackOrder2, kTRUE, TSpectrum::kBackSmoothing3, kFALSE,2);
-#define ROOT_BL_CALL_V4 find_background_v_raw(f_ys, ys.size(), 60,	TSpectrum::kBackDecreasingWindow, TSpectrum::kBackOrder2, kTRUE, TSpectrum::kBackSmoothing3, kFALSE);
-#define ROOT_BL_CALL_V5 find_background_v_raw(f_ys, ys.size(), 20,	TSpectrum::kBackIncreasingWindow, TSpectrum::kBackOrder2, kFALSE, TSpectrum::kBackSmoothing3, kFALSE);
-#define ROOT_BL_CALL_V6 find_background_v_raw(f_ys, ys.size(), 20,	TSpectrum::kBackIncreasingWindow, TSpectrum::kBackOrder2, kFALSE, TSpectrum::kBackSmoothing3, kFALSE);
-#define ROOT_BL_CALL_V7 find_background_v_raw(f_ys, ys.size(), 20,	TSpectrum::kBackIncreasingWindow, TSpectrum::kBackOrder2, kFALSE, TSpectrum::kBackSmoothing3, kFALSE);
-#define ROOT_BL_CALL_V8 find_background_v_raw(f_ys, ys.size(), 20,	TSpectrum::kBackIncreasingWindow, TSpectrum::kBackOrder2, kFALSE, TSpectrum::kBackSmoothing3, kFALSE);
 
 bool IsInf(double val);
 class viewRegion { //helper class for drawing cuts (clipping lines to pad axes)
@@ -52,9 +44,9 @@ public:
 class AnalysisManager;
 class AllExperimentsResults;
 class PostProcessor;
-class GraphicOutputManager;
+class GraphCollection;
 
-extern GraphicOutputManager *gr_manager;
+extern GraphCollection *gr_manager;
 extern AnalysisManager *manager;
 extern AllExperimentsResults* g_data;
 extern PostProcessor* post_processor;
@@ -99,6 +91,7 @@ extern int threads_number;
 extern int gnuplot_pad_size;
 extern int gnuplot_max_size;
 extern int gnuplot_width;
+extern int gnuplot_max_pics_number;
 
 extern TriggerVersion trigger_version;
 extern NamingScheme name_scheme_version;

@@ -8,24 +8,5 @@
 	gSystem->Load("libpost_processing.so");
 	std::vector<double> x_y_regions;
 	double d_S2_start, d_S2_finish, d_S1_start, d_S1_finish;
-	/*gROOT->ProcessLine(".L source/ExperimentArea.cpp+");
-	gROOT->ProcessLine(".L source/GlobalParameters.cpp+");
-	gROOT->ProcessLine(".L source/SingleRunData.cpp+");
-	gROOT->ProcessLine(".L source/SingleRunResults.cpp+");
-	gROOT->ProcessLine(".L source/SignalOperations.cpp+");
-	gROOT->ProcessLine(".L source/Savitzky_Golay_filter.cpp+");
-	gROOT->ProcessLine(".L source/PostProcessor.cpp+");
-	gROOT->ProcessLine(".L source/PolynomialFit.cpp+");
-	gROOT->ProcessLine(".L source/Polynom2Order.cpp+");
-	gROOT->ProcessLine(".L source/main.cpp+");
-	gROOT->ProcessLine(".L source/HistogramSetups.cpp+");
-	gROOT->ProcessLine(".L source/GraphicOutputManger.cpp+");
-	gROOT->ProcessLine(".L source/FunctionWrapper.cpp+");
-	gROOT->ProcessLine(".L source/EventCut.cpp+");
-	gROOT->ProcessLine(".L source/CalibrationInfo.cpp+");
-	gROOT->ProcessLine(".L source/AnalysisStates.cpp+");
-	gROOT->ProcessLine(".L source/AnalysisManager.cpp+");
-	gROOT->ProcessLine(".L source/AllRunsResults.cpp+");
-	gROOT->ProcessLine(".L source/AllExperimnetsResults.cpp+");*/
 
  }

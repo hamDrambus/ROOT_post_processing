@@ -2,7 +2,6 @@
 #define SINGLE_RUN_RESULTS_H
 
 #include "GlobalParameters.h"
-#include "GraphicOutputManager.h"
 #include "SignalOperations.h"
 #include "SingleRunData.h"
 

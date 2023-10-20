@@ -28,7 +28,7 @@ peak_processed::peak_processed(const peak& pk, const int& iNpe)	:
 		Npe(iNpe)
 {}
 
-GraphicOutputManager *gr_manager = NULL;
+GraphCollection *gr_manager = NULL;
 AnalysisManager *manager = NULL;
 AllExperimentsResults* g_data = NULL;
 PostProcessor* post_processor = NULL;
@@ -1382,6 +1382,7 @@ int threads_number = 8; //obv. must be >=1
 int gnuplot_pad_size = 400;
 int gnuplot_max_size = 1600;
 int gnuplot_width = 900; //default for gnuplot is 640
+int gnuplot_max_pics_number = 20;
 
 TriggerVersion trigger_version;
 NamingScheme name_scheme_version;

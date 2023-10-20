@@ -1,4 +1,27 @@
 #include "main.h"
+
+//https://stackoverflow.com/questions/3046889/optional-parameters-with-c-macros
+#define QUIT_IF_NULL(...) GET_MACRO_2(__VA_ARGS__, QUIT_IF_NULL_2, QUIT_IF_NULL_1)(__VA_ARGS__)
+//https://stackoverflow.com/questions/163365/how-do-i-make-a-c-macro-behave-like-a-function
+#define QUIT_IF_NULL_2(ptr, ret)		\
+do {									\
+	auto MACRO_ptr = (ptr);				\
+    auto MACRO_ret = (ret);				\
+    if (NULL == MACRO_ptr) {			\
+		status();						\
+		return MACRO_ret;				\
+	}									\
+} while(0)
+
+#define QUIT_IF_NULL_1(ptr)				\
+do {									\
+	auto MACRO_ptr = (ptr);				\
+    if (NULL == MACRO_ptr) {			\
+		status();						\
+		return;							\
+	}									\
+} while(0)
+
 //interactive methods (interface)
 void Initialize(bool pars_in_script)
 {
@@ -8,7 +31,7 @@ void Initialize(bool pars_in_script)
 	manager->processAllExperiments();
 	g_data = manager->getAllExperimentsResults();
 	post_processor = new PostProcessor(g_data);
-	gr_manager = new GraphicOutputManager();
+	gr_manager = new GraphCollection();
 
 }
 
@@ -22,10 +45,7 @@ void GenTest(std::string prefix)
 //Go to channel. Does not save previous hist in file but does save parameters such as cuts
 void ch(int ch)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	if (post_processor->isMultichannel(post_processor->current_type)) {
 		int pmt_ind = post_processor->pmt_channel_to_index(ch);
 		int mppc_ind = post_processor->mppc_channel_to_index(ch);
@@ -53,82 +73,55 @@ void ch(int ch)
 
 void ty(AStates::Type to_type)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->GotoT(to_type);
 }
 
 void nex(void) //next experiment
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->NextExp();
 }
 
 void pex(void) //previous experiment
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->PrevExp();
 }
 
 void nch(void)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->NextCh();
 }
 
 void pch(void) //previous channel;
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->PrevCh();
 }
 
 void update(void)
 {
-	if (NULL == post_processor) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->update();
 }
 
 void saveas(std::string path) //"" - use default path: "Data/results/{PMT_v1|MPPC_v1}/experiment/{PMT_|MPPC_}ch/{pic&data}
 {
-	if (NULL == post_processor) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->saveAs(path, false);
 }
 
 void saveaspng(std::string path)
 {
-	if (NULL == post_processor) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->saveAs(path, true);
 }
 
 void calib_status(Bool_t uncalibrated_only)
 {
-	if (NULL == post_processor) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->calibr_info.status(!uncalibrated_only);
 }
 
@@ -151,37 +144,25 @@ void status(void) //displays current state
 
 void set_fit_gauss(int N)
 {
-	if (NULL == post_processor) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->set_fit_gauss(N);
 }
 
 void set_parameter_val(int index, double val)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->set_parameter_val(index, val);
 }
 
 void set_parameter_limits(int index, double left, double right)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->set_parameter_limits(index, left, right);
 }
 
 void do_fit(bool is_on) //always updates visuals
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->do_fit(is_on);
 }
 
@@ -205,100 +186,67 @@ void do_fit(bool is_on) //always updates visuals
 
 void unset_trigger_offsets(void)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->unset_trigger_offsets();
 }
 
 void set_trigger_offsets(double extra_offset)  //uses trigger type histogram only. extra_offset is in microseconds
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->set_trigger_offsets(extra_offset);
 }
 
 void set_bins(int n)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->set_N_bins(n);
 }
 
 void set_bins(int from, int to)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->set_N_bins(from, to);
 }
 
 void set_zoom (double xl, double xr)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->set_zoom(xl, xr);
 }
 
 void set_zoom_y (double yl, double yr)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->set_zoom_y(yl, yr);
 }
 
 void set_zoom (double xl, double xr, double yl, double yr)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->set_zoom(xl, xr, yl, yr);
 }
 
 void unset_zoom(void)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->unset_zoom();
 }
 
 void set_X_title(std::string text)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->set_X_title(text);
 }
 
 void set_Y_title(std::string text)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->set_Y_title(text);
 }
 
 void set_titles(std::string x_title, std::string y_title)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->set_X_title(x_title);
 	post_processor->set_Y_title(y_title);
 }
@@ -306,28 +254,19 @@ void set_titles(std::string x_title, std::string y_title)
 void next_canvas(void) //creates new canvas or goes to the next existing. The current one will stay unchanged.
 //Have independent cuts but the new one inherits the previous ones
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->next_canvas();
 }
 
 void prev_canvas(void)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->previous_canvas();
 }
 
 void set_corr (AStates::Type x_t, AStates::Type y_t, int chx, int chy)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->SetCorrelation(x_t, y_t, chx, chy);
 }
 
@@ -337,57 +276,39 @@ void add_hist_cut(FunctionWrapper *picker, std::string name, int ch, bool draw)
 //^In case there is no draw method do_replot is forced to true and warning is issued.
 //^In case "name" is present in existing cut list the old cut is replaced.
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->add_hist_cut(picker, name, ch, !draw);
 }
 
 void add_hist_cut(FunctionWrapper *picker, std::string name, bool draw)
 //same as above but ch is set automatically if possible.
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->add_hist_cut(picker, name, !draw);
 }
 
 int list_hist_cuts (void)//returns number of cuts
 {
-	if (NULL == g_data) {
-		status();
-		return 0;
-	}
+	QUIT_IF_NULL(g_data, 0);
 	return post_processor->list_hist_cuts();
 }
 
 void remove_hist_cut(int index)
 //if index is larger than number of cuts the last cut is removed (popped)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->remove_hist_cut(index);
 }
 
 void remove_hist_cut(std::string name, int ch)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->remove_hist_cut(name, ch);
 }
 
 void remove_hist_cut(std::string name) //same as above but for each channel possible
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->remove_hist_cut(name);
 }
 
@@ -396,83 +317,57 @@ void set_as_run_cut(std::string name)
 //^if not a single peak is accepted in the run then the run is excluded.
 //^In general such cuts are useless so the implementation of this case in not important.
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->set_as_run_cut(name);
 }
 
 int list_run_cuts (void) //returns number of cuts
 {
-	if (NULL == g_data) {
-		status();
-		return 0;
-	}
+	QUIT_IF_NULL(g_data, 0);
 	return post_processor->list_run_cuts();
 }
 
 void unset_as_run_cut(std::string name)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->unset_as_run_cut(name);
 }
 
 void print_accepted_events (std::string file, int run_offset, int sub_runs)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->print_events(file, run_offset, sub_runs, true);
 }
 
 void print_rejected_events (std::string file, int run_offset, int sub_runs)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->print_events(file, run_offset, sub_runs, false);
 }
 
 void clear(void)	//clear cuts for current histogram. Run cuts derived from it are not touched
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->clear();
 }
 
 void clearAll(void) //clear everything, return to initial state (leaves all existing histograms empty)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->clearAll();
 }
 
 //Calibration methods:
 void draw_Npe(void)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
-	post_processor->plot_N_pe(post_processor->current_channel, gr_manager);
+	QUIT_IF_NULL(g_data);
+	//post_processor->plot_N_pe(post_processor->current_channel, gr_manager);
+	std::cout<<"Warning! draw_Npe method is not implemented."<<std::endl;
 }
 
 void add_1peS(void)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	CalibrationInfo::S1pe_method prev_method = post_processor->calibr_info.get_method(post_processor->current_channel, post_processor->current_exp_index);
 	if (prev_method == CalibrationInfo::Using2pe)
 		prev_method = CalibrationInfo::Using1pe2pe;
@@ -483,10 +378,7 @@ void add_1peS(void)
 
 void add_2peS(void)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	CalibrationInfo::S1pe_method prev_method = post_processor->calibr_info.get_method(post_processor->current_channel, post_processor->current_exp_index);
 	if (prev_method == CalibrationInfo::Using1pe)
 		prev_method = CalibrationInfo::Using1pe2pe;
@@ -497,10 +389,7 @@ void add_2peS(void)
 
 void rem_1peS(void)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	CalibrationInfo::S1pe_method prev_method = post_processor->calibr_info.get_method(post_processor->current_channel, post_processor->current_exp_index);
 	if (prev_method == CalibrationInfo::Using1pe2pe)
 		prev_method = CalibrationInfo::Using2pe;
@@ -511,10 +400,7 @@ void rem_1peS(void)
 
 void rem_2peS(void)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	CalibrationInfo::S1pe_method prev_method = post_processor->calibr_info.get_method(post_processor->current_channel, post_processor->current_exp_index);
 	if (prev_method == CalibrationInfo::Using1pe2pe)
 		prev_method = CalibrationInfo::Using1pe;
@@ -525,10 +411,7 @@ void rem_2peS(void)
 
 void set_1peS(double val)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	if (post_processor->isMultichannel(post_processor->current_type)) {
 		std::cerr << "Can't set s1pe for multichannel type" << std::endl;
 		return;
@@ -551,10 +434,7 @@ void set_1peS(double val)
 
 void unset_1peS(void)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	if (post_processor->isMultichannel(post_processor->current_type)) {
 		std::cerr << "Can't set s1pe for multichannel type" << std::endl;
 		return;
@@ -577,10 +457,7 @@ void unset_1peS(void)
 
 void set_use_mean(Bool_t do_use) //uses mean value of data instead of gauss' mean. May be usefull for S2_S
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	CalibrationInfo::S1pe_method prev_method = post_processor->calibr_info.get_method(post_processor->current_channel, post_processor->current_exp_index);
 	if (do_use)
 		prev_method = CalibrationInfo::UsingMean;
@@ -592,10 +469,7 @@ void set_use_mean(Bool_t do_use) //uses mean value of data instead of gauss' mea
 
 void calib_load(std::string fname) //if fname=="" uses file location from global parameters
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	if (fname == "")
 		fname = calibration_file;
 	post_processor->calibr_info.Load(fname);
@@ -603,10 +477,7 @@ void calib_load(std::string fname) //if fname=="" uses file location from global
 
 void calib_save(std::string fname)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	if (fname == "")
 		fname = calibration_file;
 	post_processor->calibr_info.Save(fname); 
@@ -615,20 +486,14 @@ void calib_save(std::string fname)
 //TODO: remove?
 void set_calib_N(int from, int to)//in order to set default use invalid values
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->calibr_info.set_N_calib(post_processor->current_channel, from, to);
 	post_processor->update();
 }
 
 void Exit(Bool_t save)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	if (save)
 		post_processor->save_all();
 }
@@ -778,10 +643,7 @@ FunctionWrapper* create_vertical_lines_cut(double left, double right) //do not c
 
 void set_limits(double left, double right) //2 tier method
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	std::string name = "_histogram_limits_";
 	double _left = std::min(left, right);
 	double _right = std::max(left, right);
@@ -802,10 +664,7 @@ void set_limits(double left, double right) //2 tier method
 
 void draw_limits(double left, double right, std::string _name) //2 tier method. To draw several vertical lines
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	std::string name = _name.empty() ? "_histogram_drawn_limits_" : _name;
 	double _left = std::min(left, right);
 	double _right = std::max(left, right);
@@ -826,10 +685,7 @@ void draw_limits(double left, double right, std::string _name) //2 tier method. 
 
 void unset_limits(void) //2 tier method
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	std::string name = "_histogram_limits_";
 	post_processor->remove_hist_cut(name);
 	update();
@@ -837,10 +693,7 @@ void unset_limits(void) //2 tier method
 
 void unset_draw_limits(void) //2 tier method
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	std::string name = "_histogram_drawn_limits_";
 	post_processor->remove_hist_cut(name);
 	update();
@@ -848,58 +701,37 @@ void unset_draw_limits(void) //2 tier method
 
 void set_log_x(void)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->set_log_x(true);
 }
 void set_log_y(void)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->set_log_y(true);
 }
 void set_log_z(void)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->set_log_z(true);
 }
 void unset_log_x(void)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->set_log_x(false);
 }
 void unset_log_y(void)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->set_log_y(false);
 }
 void unset_log_z(void)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->set_log_z(false);
 }
 void set_draw_option(std::string option)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->set_draw_option(option);
 }
 
@@ -1047,10 +879,7 @@ void cut_S_t_rect_exclude(std::vector<double> region, bool drawn, int channel, s
 //remcut is for remove_cut
 void remcut_S_t_rect_exclude(int channel, std::string _name)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	if (-1 == channel) {
 		if (post_processor->isMultichannel(post_processor->current_type)) {
 			std::cout << "Can't use -1 channel for this cut and multichannel type" << std::endl;
@@ -1183,10 +1012,7 @@ void cut_S_t_rect_select(double t_min, double t_max, double S_min, double S_max,
 //region is {t_min0, t_max0, S_min0, S_max0, t_min1, t_max1 ...}
 void cut_S_t_rect_select(std::vector<double> region, bool drawn, int channel, std::string _name)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	if (-1 == channel) {
 		if (post_processor->isMultichannel(post_processor->current_type)) {
 			std::cout << "Can't use -1 channel for this cut and multichannel type" << std::endl;
@@ -1209,10 +1035,7 @@ void cut_S_t_rect_select(std::vector<double> region, bool drawn, int channel, st
 //region is {t_min_0, t_max_0, t_min_1, t_max_1, ...}
 void cut_times_select(std::vector<double> region, bool drawn, int channel, std::string _name)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	if (-1 == channel) {
 		if (post_processor->isMultichannel(post_processor->current_type)) {
 			std::cout << "Can't use -1 channel for this cut and multichannel type" << std::endl;
@@ -1233,10 +1056,7 @@ void cut_times_select(std::vector<double> region, bool drawn, int channel, std::
 
 void remcut_S_t_rect_select(int channel, std::string _name)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	if (-1 == channel) {
 		if (post_processor->isMultichannel(post_processor->current_type)) {
 			std::cout << "Can't use -1 channel for this cut and multichannel type" << std::endl;
@@ -1369,10 +1189,7 @@ void cut_A_S_rect_exclude(double A_min, double A_max, double S_min, double S_max
 //region is {A_min0, A_max0, S_min0, S_max0, A_min1, A_max1 ...}
 void cut_A_S_rect_exclude(std::vector<double> region, bool drawn, int channel, std::string _name)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	if (-1 == channel) {
 		if (post_processor->isMultichannel(post_processor->current_type)) {
 			std::cout << "Can't use -1 channel for this cut and multichannel type" << std::endl;
@@ -1393,10 +1210,7 @@ void cut_A_S_rect_exclude(std::vector<double> region, bool drawn, int channel, s
 
 void remcut_A_S_rect_exclude(int channel, std::string _name)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	if (-1 == channel) {
 		if (post_processor->isMultichannel(post_processor->current_type)) {
 			std::cout << "Can't use -1 channel for this cut and multichannel type" << std::endl;
@@ -1412,10 +1226,7 @@ void remcut_A_S_rect_exclude(int channel, std::string _name)
 
 void remcut(int channel, std::string name)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->remove_hist_cut(name, channel);
 	if (!post_processor->isMultichannel(post_processor->current_type))
 		update();
@@ -1423,10 +1234,7 @@ void remcut(int channel, std::string name)
 
 void remcut(std::string name)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	if (post_processor->isComposite(post_processor->current_type))
 		post_processor->remove_hist_cut(name, -1);
 	else {
@@ -1481,10 +1289,7 @@ void remcut_t(int channel, std::string _name)
 //for multichannel types (e.g. signal form of all SiPMs (MPPCs)). TODO: single channel case may be implemented with multichannel one - decrease the number of types
 void off_ch(int ch)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	if (!post_processor->isMultichannel(post_processor->current_type)) {
 		std::cout << "Error: can't use this functoin for single channel type" << std::endl;
 		return;
@@ -1494,10 +1299,7 @@ void off_ch(int ch)
 
 void on_ch(int ch)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->on_ch(ch);
 }
 
@@ -1737,10 +1539,7 @@ FunctionWrapper* create_A_S_polygon_cut(std::vector<double> region, unsigned int
 
 void cut_A_S_poly(std::vector<double> region, bool drawn, int channel, std::string _name)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	if (-1 == channel) {
 		if (post_processor->isMultichannel(post_processor->current_type)) {
 			std::cout << "Can't use -1 channel for this cut and multichannel type" << std::endl;
@@ -1760,10 +1559,7 @@ void cut_A_S_poly(std::vector<double> region, bool drawn, int channel, std::stri
 
 void cut_A_S_poly_select(std::vector<double> region, bool drawn, int channel, std::string _name)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	if (-1 == channel) {
 		if (post_processor->isMultichannel(post_processor->current_type)) {
 			std::cout << "Can't use -1 channel for this cut and multichannel type" << std::endl;
@@ -1889,10 +1685,7 @@ void cut_A_S_right(std::vector<double> region, bool drawn, int channel, std::str
 //ch(7); add_S_t_fast_PMT(region, true); //- will display cuts with red lines
 void cut_A_S_fast_PMT(std::vector<double> region, bool drawn, int channel, std::string _name)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	if (-1 == channel) {
 		if (post_processor->isMultichannel(post_processor->current_type)) {
 			std::cout << "Can't use -1 channel for this cut and multichannel type" << std::endl;
@@ -1973,10 +1766,7 @@ FunctionWrapper* create_x_y_polygon_cut(std::vector<double> region, unsigned int
 
 void cut_x_y_poly(std::vector<double> region, bool drawn, std::string _name)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	FunctionWrapper *picker = create_x_y_polygon_cut(region, 0);
 	if (NULL == picker) {
 		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
@@ -2098,10 +1888,7 @@ void cut_x_y_right(std::vector<double> region, bool drawn, std::string _name)
 
 void cut_x_y_poly_select(std::vector<double> region, bool drawn, std::string _name)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	FunctionWrapper *picker = create_x_y_polygon_cut(region, XY_cut_type::Inclusive);
 	if (NULL == picker) {
 		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
@@ -2223,10 +2010,7 @@ void cut_x_y_right_select(std::vector<double> region, bool drawn, std::string _n
 
 void remcut_A_S_fast_PMT(int channel, std::string _name)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	if (-1 == channel) {
 		if (post_processor->isMultichannel(post_processor->current_type)) {
 			std::cout << "Can't use -1 channel for this cut and multichannel type" << std::endl;
@@ -2258,10 +2042,7 @@ FunctionWrapper* create_run_selection_cut(int max_index) //do not call from the 
 
 void cut_runs(int max_index, std::string _name)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	FunctionWrapper *picker = create_run_selection_cut(max_index);
 	if (NULL == picker) {
 		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
@@ -2284,10 +2065,7 @@ void cut_runs(int max_index, std::string _name)
 
 double get_mean(void)
 {
-	if (NULL == g_data) {
-		status();
-		return -DBL_MAX;
-	}
+	QUIT_IF_NULL(g_data, -DBL_MAX);
 	HistogramSetups *setups = post_processor->get_hist_setups();
 	if (NULL==setups) {
 		std::cout<<"get_mean: Error: NULL setups"<<std::endl;
@@ -2301,10 +2079,7 @@ double get_mean(void)
 
 void view_event(int event_index, int Nbins, double x_min, double x_max)
 {
-	if (NULL == g_data) {
-		status();
-		return;
-	}
+	QUIT_IF_NULL(g_data);
 	post_processor->view_event(event_index, Nbins, x_min, x_max);
 }
 

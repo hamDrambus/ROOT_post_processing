@@ -5,22 +5,18 @@
 
 namespace SignalOperations
 {
+	void signal_from_lecroy_file(std::vector<double> &xs, std::vector<double> &ys, std::string fname, double x_scale = 1.0, double y_scale = 1.0);
 	void signal_from_file(std::vector<double> &xs, std::vector<double> &ys, std::string fname);
 	void signal_to_file(const std::vector<double> &xs, const std::vector<double> &ys, std::string fname);
 
 	void invert_y(std::vector<double> &x_in_out, std::vector<double> &y_in_out);
-	double find_baseline_by_median(double approx, const std::vector<double> &xs, std::vector<double> &ys, std::deque<peak> &peaks);
-	double find_baseline_by_integral(double approx, const std::vector<double> &xs, std::vector<double> &ys);
-	double find_baseline_by_integral(double approx, const std::vector<double> &xs, std::vector<double> &ys, std::deque<peak> &peaks);
+	double find_baseline_by_median(double approx, const std::vector<double> &xs, const std::vector<double> &ys, std::deque<peak> &peaks);
+	double find_baseline_by_median(const std::vector<double> &xs, const std::vector<double> &ys, double x_left, double x_right);
+	double find_baseline_by_integral(double approx, const std::vector<double> &xs, const std::vector<double> &ys);
+	double find_baseline_by_integral(const std::vector<double> &xs, const std::vector<double> &ys, double x_left, double x_right);
+	double find_baseline_by_integral(double approx, const std::vector<double> &xs, const std::vector<double> &ys, std::deque<peak> &peaks);
 	void find_baseline_by_ROOT(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out);
 	void find_baseline_by_ROOT_advanced(std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out);
-	void find_baseline_by_ROOT_v2(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out);
-	void find_baseline_by_ROOT_v3(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out);
-	void find_baseline_by_ROOT_v4(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out);
-	void find_baseline_by_ROOT_v5(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out);
-	void find_baseline_by_ROOT_v6(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out);
-	void find_baseline_by_ROOT_v7(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out);
-	void find_baseline_by_ROOT_v8(const std::vector<double> &xs, const std::vector<double> &ys, std::vector<double> &ys_out);
 	const char *find_background_v_raw(double *spectrum, int ssize,
 		int numberIterations,
 		int direction, int filterOrder,

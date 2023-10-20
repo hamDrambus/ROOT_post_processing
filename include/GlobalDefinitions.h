@@ -355,9 +355,9 @@ public:
 	TestSignalGenerator(std::string prefix);
 };
 
-
-#define GET_MACRO(_1,_2, NAME,...) NAME
-#define INVOKE_GNUPLOT(...) GET_MACRO(__VA_ARGS__, INVOKE_GNUPLOT2, INVOKE_GNUPLOT1)(__VA_ARGS__)
+//https://stackoverflow.com/questions/3046889/optional-parameters-with-c-macros
+#define GET_MACRO_2(_1,_2, NAME,...) NAME
+#define INVOKE_GNUPLOT(...) GET_MACRO_2(__VA_ARGS__, INVOKE_GNUPLOT2, INVOKE_GNUPLOT1)(__VA_ARGS__)
 
 #if defined(__WIN32__)
 #define INVOKE_GNUPLOT1(a) system(("start \"\" \"%GNUPLOT%\\gnuplot.exe\" --persist \"" + a + "\"").c_str())
