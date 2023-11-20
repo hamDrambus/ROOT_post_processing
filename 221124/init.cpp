@@ -59,6 +59,15 @@
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_46V_850V_46V_14mm_coll_filt3");
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_0V_850V_46V_14mm_coll_filt3");
 
+  // For calibration only:
+  exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_92V_850V_46V_14mm_coll_filt3");
+  exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_46V_850V_46V_14mm_coll_filt3");
+  exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_0V_850V_46V_14mm_coll_filt3");
+  exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_462V_850V_46V_14mm_coll_filt3");
+  exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_554V_850V_46V_14mm_coll_filt3");
+  exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_646V_850V_46V_14mm_coll_filt3");
+  exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_785V_850V_46V_14mm_coll_filt3");
+
   PMT_V.clear();
   MPPC_V.clear();
   channel_info<dB_info> atten0;
@@ -75,7 +84,7 @@
   }
 
   experiment_fields.clear();
-  experiment_fields["221124_X-ray_S2_LAr_20kV_785V_850V_46V_14mm_coll_filt3_2"] = 785;
+  experiment_fields["221124_X-ray_S2_LAr_20kV_785V_850V_46V_14mm_coll_filt3_2"] = 785.1;
   experiment_fields["221124_X-ray_S2_LAr_20kV_831V_850V_46V_14mm_coll_filt3"] = 831;
   experiment_fields["221124_X-ray_S2_LAr_20kV_785V_850V_46V_14mm_coll_filt3"] = 785;
   experiment_fields["221124_X-ray_S2_LAr_20kV_739V_850V_46V_14mm_coll_filt3"] = 739;

@@ -1,3 +1,4 @@
+#include <boost/algorithm/string.hpp>
 #include "SignalOperations.h"
 #include "Math/Functor.h"
 #include "Math/BrentMinimizer1D.h"
@@ -19,7 +20,8 @@ namespace SignalOperations {
 		}
 		std::string line;
 		const std::size_t header_size = 5;
-		const std::string delimiter = ",";
+		const std::string delimiter = ",\t";
+		std::vector<std::string> words;
 		std::size_t lines_read = 0;
 		while (std::getline(str, line)) {
 			++lines_read;
@@ -27,19 +29,16 @@ namespace SignalOperations {
 				continue;
 			if (line.back() == '\r')
 				line.pop_back();
-			std::size_t delim_pos;
-			delim_pos = line.find(delimiter);
-			if (delim_pos != std::string::npos) {
-				std::string word1 = line.substr(0, delim_pos);
-				line.erase(0, delim_pos + delimiter.size());
-				try {
-					double valx = std::stod(word1);
-					double valy = std::stod(line);
-					xs.push_back(valx * x_scale);
-					ys.push_back(valy * y_scale);
-				} catch (const std::exception & e) {
-					continue;
-				}
+			boost::split(words, line, boost::is_any_of(delimiter));
+			if (words.size() < 2)
+				continue;
+			try {
+				double valx = std::stod(words[0]);
+				double valy = std::stod(words[1]);
+				xs.push_back(valx * x_scale);
+				ys.push_back(valy * y_scale);
+			} catch (const std::exception & e) {
+				continue;
 			}
 		}
 		str.close();
