@@ -289,7 +289,7 @@ int compare_forms2 (void) {
 	bool contribution_by_fit = true;
 	bool min_baseline = 1;
 	bool avg_baseline = true;
-	double add_sigma = -1; //0, +-1
+	double add_sigma = 0; //0, +-1
 	int Nbins = 300;
 	bool linear = 0;
 	bool PMTs = true;
@@ -528,8 +528,8 @@ copy = &PMT4_11_7kV_85K_peak;
 
 	//std::vector<pulse_shape> pulses = {SiPM_10_4kV_85K_peak, SiPM_10_4kV_85K_slope};
 	//std::vector<pulse_shape> pulses = {PMT4_10_4kV_85K_peak, PMT4_10_4kV_85K_slope};
-	//std::vector<pulse_shape> pulses = {SiPM_11_7kV_85K_peak, SiPM_11_7kV_85K_slope};
-	std::vector<pulse_shape> pulses = {PMT4_11_7kV_85K_peak, PMT4_11_7kV_85K_slope};
+	std::vector<pulse_shape> pulses = {SiPM_11_7kV_85K_peak, SiPM_11_7kV_85K_slope};
+	//std::vector<pulse_shape> pulses = {PMT4_11_7kV_85K_peak, PMT4_11_7kV_85K_slope};
 
 	std::vector<Color_t> palette_major = {kBlack, kRed, kBlue, kGreen, kYellow + 2, kMagenta, kOrange + 7};
 	std::vector<Color_t> palette_minor = {kGray + 1, kRed-3, kAzure + 6, kGreen -2, kMagenta+3, kOrange - 7, kOrange + 6};

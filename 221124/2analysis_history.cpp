@@ -240,317 +240,317 @@ void save_forms (std::string path, bool N_only, int PMT_condition, int SiPM_cond
 //plotting PMT signal forms themselves. Without this function changing cut parameters would have to take place in several places
 //which is very error-prone. Besides, it is easier to re-use this file for other analyzes.
 void noise_cut(int channel, int aggressiveness, int device_condition, bool display) {
-	//aggresiveness:
-	//	PMT: 0 - cut only noise, 1 - remove peaks with too large A or S
-	//	SiPM: 0 - cut only noise, 1 - select only single phe peaks (including merged peaks - same A but double S)
-	//		2 - select only single phe peaks without merged ones.
-	//device_condition: (if out of range 0 is used)
-	//	PMT: 0 - 850V, 12dB
-	//	SiPM: 0 - 46V, 1 - 48V
-	if (0 == device_condition) {
-		if (channel==1) {
-			//cut_A_S_upper(0.005, 0.0, 0.0132, 0.0, display, channel, "rem_smallA_largeS_1");
-			cut_A_S_lower(0.020, 0.0019, 0.06, 0.0054, display, channel, "rem_smallA_smallS");
-			cut_A_S_lower(0.06, 0.0054, 1.4, 0.25, display, channel, "rem_largeA_smallS");
-		}
-		if (channel==2) {
-			cut_A_S_upper(0.005, 0.0, 0.018, 0.0, display, channel, "rem_smallA_largeS_1");
-			cut_A_S_lower(0.0122, 0.0014, 0.055, 0.0036, display, channel, "rem_smallA_smallS");
-			cut_A_S_lower(0.055, 0.0036, 1.6, 0.27, display, channel, "rem_largeA_smallS");
-		}
-		if (channel==3) {
-			//cut_A_S_upper(0.005, 0.0, 0.0139, 0.0, display, channel, "rem_smallA_largeS");
-			cut_A_S_lower(0.01, 0.0021, 0.030, 0.0029, display, channel, "rem_smallA_smallS");
-			cut_A_S_lower(0.030, 0.0029, 1.2, 0.14, display, channel, "rem_largeA_smallS");
-		}
-		if (channel==4) {
-			//cut_A_S_upper(0.01, 0.0, 0.0171, 0.0, display, channel, "rem_smallA_largeS_1");
-			cut_A_S_lower(0.01, 0.0016, 0.055, 0.0037, display, channel, "rem_smallA_smallS");
-			cut_A_S_lower(0.055, 0.0037, 1.6, 0.16, display, channel, "rem_largeA_smallS");
-		}
-		if (channel==5) {
-			cut_A_S_upper(0.001, 0.0, 0.0084, 0.0, display, channel, "rem_smallA-S");
-			if (aggressiveness == 1) {
-				cut_A_S_upper(0.65, 0, 5, 0, display, channel, "rem_A>0.65");
-				cut_A_S_upper(0.0, 0.030, 1.6, 0.030, display, channel, "rem_S>0.030");
-			}
-		}
-		if (channel==6) {
-			cut_A_S_upper(0.001, 0.0, 0.0062, 0.0, display, channel, "rem_smallA-S");
-			if (aggressiveness == 1) {
-				cut_A_S_upper(0.50, 0, 5, 0, display, channel, "rem_A>0.50");
-				cut_A_S_upper(0.0, 0.020, 1.6, 0.020, display, channel, "rem_S>0.020");
-			}
-		}
-		if (channel==7) {
-			cut_A_S_upper(0.001, 0.0, 0.0060, 0.0, display, channel, "rem_smallA-S");
-			if (aggressiveness == 1) {
-				cut_A_S_upper(0.54, 0, 2, 0, display, channel, "rem_A>0.54");
-				cut_A_S_upper(0.0, 0.020, 1.6, 0.020, display, channel, "rem_S>0.020");
-			}
-		}
-		if (channel==8) {
-			if (aggressiveness == 1) {
-				cut_A_S_upper(0.9, 0, 2, 0, display, channel, "rem_A>0.9");
-				cut_A_S_upper(0.0, 0.020, 1.6, 0.020, display, channel, "rem_S>0.020");
-			}
-		}
-	}
-	//qewr
-	//The following are set by hand for 20kV individually, there is no other way.
-	if (channel==32) {
-		cut_A_S_lower(0.0062, 0.00121, 0.02, 0.00121, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0062, 0.0062, 0.00061, 0.05, 0.0090, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0152, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0062, 0.00163, 0.0152, 0.00342, display, channel, "2pe_merged");
-	}
-	if (channel==33) {
-		cut_A_S_lower(0.0056, 0.00101, 0.02, 0.00101, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0056, 0.0056, 0.00072, 0.05, 0.0092, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0127, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0056, 0.00155, 0.0127, 0.00290, display, channel, "2pe_merged");
-	}
-	if (channel==34) {
-		cut_A_S_lower(0.0055, 0.00100, 0.02, 0.00100, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0055, 0.0055, 0.00064, 0.05, 0.0090, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0125, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0055, 0.00152, 0.0125, 0.00280, display, channel, "2pe_merged");
-	}
-	if (channel==35) {
-		cut_A_S_lower(0.0069, 0.00115, 0.02, 0.00115, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0069, 0.0069, 0.00083, 0.05, 0.0092, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0159, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0069, 0.00181, 0.0159, 0.00356, display, channel, "2pe_merged");
-	}
-	if (channel==36) {
-		cut_A_S_lower(0.0074, 0.00132, 0.02, 0.00132, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0074, 0.0074, 0.00084, 0.05, 0.0092, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0162, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0074, 0.00191, 0.0162, 0.00366, display, channel, "2pe_merged");
-	}
-	if (channel==37) {
-		cut_A_S_lower(0.0059, 0.00102, 0.02, 0.00102, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0059, 0.0059, 0.00076, 0.05, 0.0094, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0141, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0059, 0.00162, 0.0141, 0.00311, display, channel, "2pe_merged");
-	}
-	if (channel==38) {
-		cut_A_S_lower(0.0064, 0.00116, 0.02, 0.00116, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0064, 0.0064, 0.00074, 0.05, 0.0088, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0141, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0064, 0.00161, 0.0141, 0.00316, display, channel, "2pe_merged");
-	}
-	if (channel==39) {
-		cut_A_S_lower(0.0062, 0.00100, 0.02, 0.00100, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0062, 0.0066, 0.00060, 0.05, 0.0091, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0150, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0062, 0.00179, 0.0150, 0.00333, display, channel, "2pe_merged");
-	}
-	if (channel==40) {
-		cut_A_S_lower(0.0066, 0.00107, 0.02, 0.00107, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0066, 0.0066, 0.00052, 0.05, 0.0089, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0154, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0066, 0.00191, 0.0154, 0.00358, display, channel, "2pe_merged");
-	}
-	if (channel==41) {
-		cut_A_S_lower(0.0064, 0.00089, 0.02, 0.00089, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0064, 0.0064, 0.00055, 0.05, 0.0089, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0153, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0064, 0.00191, 0.0153, 0.00337, display, channel, "2pe_merged");
-	}
-	if (channel==42) {
-		cut_A_S_lower(0.0064, 0.00108, 0.02, 0.00108, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0064, 0.0064, 0.00060, 0.05, 0.0090, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0152, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0064, 0.00191, 0.0152, 0.00340, display, channel, "2pe_merged");
-	}
-	if (channel==43) {
-		cut_A_S_lower(0.0064, 0.00106, 0.02, 0.00106, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0064, 0.0064, 0.00060, 0.05, 0.0090, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0155, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0064, 0.00191, 0.0155, 0.00353, display, channel, "2pe_merged");
-	}
-	/*if (channel==44) {
-		cut_A_S_lower(0.0055, 0.00102, 0.02, 0.00102, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0055, 0.0055, 0.00058, 0.05, 0.0083, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0140, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0055, 0.00165, 0.0140, 0.00303, display, channel, "2pe_merged");
-		//if (post_processor->isMultichannel(post_processor->current_type)) {
-		//	off_ch(channel);
-		//}
-	}*/
-	if (channel==48) {
-		cut_A_S_lower(0.0067, 0.00123, 0.02, 0.00123, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0067, 0.0067, 0.00084, 0.05, 0.0089, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0145, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0067, 0.00163, 0.0145, 0.00308, display, channel, "2pe_merged");
-	}
-	if (channel==49) {
-		cut_A_S_lower(0.0055, 0.00097, 0.02, 0.00097, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0055, 0.0055, 0.00058, 0.05, 0.0090, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0121, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0055, 0.00146, 0.0121, 0.00275, display, channel, "2pe_merged");
-	}
-	if (channel==50) {
-		cut_A_S_lower(0.0072, 0.00128, 0.02, 0.00128, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0072, 0.0072, 0.00095, 0.05, 0.0089, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0159, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0072, 0.00181, 0.0159, 0.00343, display, channel, "2pe_merged");
-	}
-	if (channel==51) {
-		cut_A_S_lower(0.0060, 0.00100, 0.02, 0.00100, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0060, 0.0060, 0.00050, 0.05, 0.0090, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0149, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0060, 0.00162, 0.0149, 0.00335, display, channel, "2pe_merged");
-	}
-	if (channel==52) {
-		cut_A_S_lower(0.0071, 0.00121, 0.02, 0.00121, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0071, 0.0071, 0.00081, 0.05, 0.0090, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0164, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0071, 0.00186, 0.0164, 0.00371, display, channel, "2pe_merged");
-	}
-	if (channel==53) {
-		cut_A_S_lower(0.0072, 0.00118, 0.02, 0.00118, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0072, 0.0072, 0.00058, 0.05, 0.0081, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0172, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0072, 0.00194, 0.0172, 0.00372, display, channel, "2pe_merged");
-	}
-	if (channel==54) {
-		cut_A_S_lower(0.0078, 0.00131, 0.02, 0.00131, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0078, 0.0078, 0.00100, 0.05, 0.0090, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0168, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0078, 0.00200, 0.0168, 0.00371, display, channel, "2pe_merged");
-	}
-	if (channel==55) {
-		cut_A_S_lower(0.0061, 0.00108, 0.02, 0.00108, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0061, 0.0061, 0.00066, 0.05, 0.0090, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0145, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0061, 0.00164, 0.0145, 0.00320, display, channel, "2pe_merged");
-	}
-	if (channel==56) {
-		cut_A_S_lower(0.0065, 0.00107, 0.02, 0.00107, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0065, 0.0065, 0.00047, 0.05, 0.0088, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0153, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0065, 0.00181, 0.0153, 0.00342, display, channel, "2pe_merged");
-	}
-	if (channel==57) {
-		cut_A_S_lower(0.0069, 0.00120, 0.02, 0.00120, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0069, 0.0069, 0.00066, 0.05, 0.0090, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0159, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0069, 0.00183, 0.0159, 0.00348, display, channel, "2pe_merged");
-	}
-	if (channel==58) {
-		cut_A_S_lower(0.0066, 0.00108, 0.02, 0.00108, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0066, 0.0066, 0.00058, 0.05, 0.0090, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0153, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0066, 0.00180, 0.0153, 0.00333, display, channel, "2pe_merged");
-	}
-	if (channel==59) {
-		cut_A_S_lower(0.0067, 0.00118, 0.02, 0.00118, display, channel, "small_A-S_noise");
-		x_y_regions = {0.0067, 0.0067, 0.00057, 0.05, 0.0090, 1e3};
-		cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
-		cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
-		if (aggressiveness>=1)//select only 1 photoelectron for calibration
-			cut_A_S_upper(0.0157, 0.0001, 1, 0.0001, display, channel, "2pe");
-		if (aggressiveness>=2)//remove afterimpulses
-			cut_A_S_upper(0.0067, 0.00180, 0.0157, 0.00340, display, channel, "2pe_merged");
-	}
+    //aggresiveness:
+    //	PMT: 0 - cut only noise, 1 - remove peaks with too large A or S
+    //	SiPM: 0 - cut only noise, 1 - select only single phe peaks (including merged peaks - same A but double S)
+    //		2 - select only single phe peaks without merged ones.
+    //device_condition: (if out of range 0 is used)
+    //	PMT: 0 - 850V, 12dB
+    //	SiPM: 0 - 46V, 1 - 48V
+    if (0 == device_condition) {
+        if (channel==1) {
+            cut_A_S_upper(0.005, 0.0, 0.0230, 0.0, display, channel, "rem_smallA_largeS_1");
+            cut_A_S_lower(0.020, 0.0039, 0.06, 0.0069, display, channel, "rem_smallA_smallS");
+            cut_A_S_lower(0.06, 0.0069, 1.4, 0.31, display, channel, "rem_largeA_smallS");
+        }
+        if (channel==2) {
+            cut_A_S_upper(0.005, 0.0, 0.018, 0.0, display, channel, "rem_smallA_largeS_1");
+            cut_A_S_lower(0.0122, 0.00226, 0.055, 0.0044, display, channel, "rem_smallA_smallS");
+            cut_A_S_lower(0.055, 0.0044, 1.6, 0.27, display, channel, "rem_largeA_smallS");
+        }
+        if (channel==3) {
+            //cut_A_S_upper(0.005, 0.0, 0.0139, 0.0, display, channel, "rem_smallA_largeS");
+            cut_A_S_lower(0.01, 0.0028, 0.050, 0.0040, display, channel, "rem_smallA_smallS");
+            cut_A_S_lower(0.050, 0.0040, 1.2, 0.22, display, channel, "rem_largeA_smallS");
+        }
+        if (channel==4) {
+            //cut_A_S_upper(0.01, 0.0, 0.0171, 0.0, display, channel, "rem_smallA_largeS_1");
+            cut_A_S_lower(0.01, 0.0021, 0.055, 0.0044, display, channel, "rem_smallA_smallS");
+            cut_A_S_lower(0.055, 0.0044, 1.6, 0.26, display, channel, "rem_largeA_smallS");
+        }
+        if (channel==5) {
+            cut_A_S_upper(0.001, 0.0, 0.0084, 0.0, display, channel, "rem_smallA-S");
+            if (aggressiveness == 1) {
+                cut_A_S_upper(0.65, 0, 5, 0, display, channel, "rem_A>0.65");
+                cut_A_S_upper(0.0, 0.030, 1.6, 0.030, display, channel, "rem_S>0.030");
+            }
+        }
+        if (channel==6) {
+            cut_A_S_upper(0.001, 0.0, 0.0062, 0.0, display, channel, "rem_smallA-S");
+            if (aggressiveness == 1) {
+                cut_A_S_upper(0.50, 0, 5, 0, display, channel, "rem_A>0.50");
+                cut_A_S_upper(0.0, 0.020, 1.6, 0.020, display, channel, "rem_S>0.020");
+            }
+        }
+        if (channel==7) {
+            cut_A_S_upper(0.001, 0.0, 0.0060, 0.0, display, channel, "rem_smallA-S");
+            if (aggressiveness == 1) {
+                cut_A_S_upper(0.54, 0, 2, 0, display, channel, "rem_A>0.54");
+                cut_A_S_upper(0.0, 0.020, 1.6, 0.020, display, channel, "rem_S>0.020");
+            }
+        }
+        if (channel==8) {
+            if (aggressiveness == 1) {
+                cut_A_S_upper(0.9, 0, 2, 0, display, channel, "rem_A>0.9");
+                cut_A_S_upper(0.0, 0.020, 1.6, 0.020, display, channel, "rem_S>0.020");
+            }
+        }
+    }
+    //qewr
+    //The following are set by hand for 20kV individually, there is no other way.
+    if (channel==32) {
+        cut_A_S_lower(0.0062, 0.00121, 0.02, 0.00121, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0062, 0.0062, 0.00061, 0.05, 0.0090, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0152, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0062, 0.00163, 0.0152, 0.00342, display, channel, "2pe_merged");
+    }
+    if (channel==33) {
+        cut_A_S_lower(0.0056, 0.00101, 0.02, 0.00101, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0056, 0.0056, 0.00072, 0.05, 0.0092, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0127, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0056, 0.00155, 0.0127, 0.00290, display, channel, "2pe_merged");
+    }
+    if (channel==34) {
+        cut_A_S_lower(0.0055, 0.00100, 0.02, 0.00100, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0055, 0.0055, 0.00064, 0.05, 0.0090, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0125, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0055, 0.00152, 0.0125, 0.00280, display, channel, "2pe_merged");
+    }
+    if (channel==35) {
+        cut_A_S_lower(0.0069, 0.00115, 0.02, 0.00115, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0069, 0.0069, 0.00083, 0.05, 0.0092, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0159, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0069, 0.00181, 0.0159, 0.00356, display, channel, "2pe_merged");
+    }
+    if (channel==36) {
+        cut_A_S_lower(0.0074, 0.00132, 0.02, 0.00132, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0074, 0.0074, 0.00084, 0.05, 0.0092, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0162, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0074, 0.00191, 0.0162, 0.00366, display, channel, "2pe_merged");
+    }
+    if (channel==37) {
+        cut_A_S_lower(0.0059, 0.00102, 0.02, 0.00102, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0059, 0.0059, 0.00076, 0.05, 0.0094, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0141, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0059, 0.00162, 0.0141, 0.00311, display, channel, "2pe_merged");
+    }
+    if (channel==38) {
+        cut_A_S_lower(0.0064, 0.00116, 0.02, 0.00116, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0064, 0.0064, 0.00074, 0.05, 0.0088, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0141, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0064, 0.00161, 0.0141, 0.00316, display, channel, "2pe_merged");
+    }
+    if (channel==39) {
+        cut_A_S_lower(0.0062, 0.00100, 0.02, 0.00100, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0062, 0.0066, 0.00060, 0.05, 0.0091, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0150, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0062, 0.00179, 0.0150, 0.00333, display, channel, "2pe_merged");
+    }
+    if (channel==40) {
+        cut_A_S_lower(0.0066, 0.00107, 0.02, 0.00107, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0066, 0.0066, 0.00052, 0.05, 0.0089, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0154, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0066, 0.00191, 0.0154, 0.00358, display, channel, "2pe_merged");
+    }
+    if (channel==41) {
+        cut_A_S_lower(0.0064, 0.00089, 0.02, 0.00089, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0064, 0.0064, 0.00055, 0.05, 0.0089, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0153, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0064, 0.00191, 0.0153, 0.00337, display, channel, "2pe_merged");
+    }
+    if (channel==42) {
+        cut_A_S_lower(0.0064, 0.00108, 0.02, 0.00108, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0064, 0.0064, 0.00060, 0.05, 0.0090, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0152, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0064, 0.00191, 0.0152, 0.00340, display, channel, "2pe_merged");
+    }
+    if (channel==43) {
+        cut_A_S_lower(0.0064, 0.00106, 0.02, 0.00106, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0064, 0.0064, 0.00060, 0.05, 0.0090, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0155, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0064, 0.00191, 0.0155, 0.00353, display, channel, "2pe_merged");
+    }
+    /*if (channel==44) {
+        cut_A_S_lower(0.0055, 0.00102, 0.02, 0.00102, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0055, 0.0055, 0.00058, 0.05, 0.0083, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0140, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0055, 0.00165, 0.0140, 0.00303, display, channel, "2pe_merged");
+        //if (post_processor->isMultichannel(post_processor->current_type)) {
+        //	off_ch(channel);
+        //}
+    }*/
+    if (channel==48) {
+        cut_A_S_lower(0.0067, 0.00123, 0.02, 0.00123, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0067, 0.0067, 0.00084, 0.05, 0.0089, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0145, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0067, 0.00163, 0.0145, 0.00308, display, channel, "2pe_merged");
+    }
+    if (channel==49) {
+        cut_A_S_lower(0.0055, 0.00097, 0.02, 0.00097, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0055, 0.0055, 0.00058, 0.05, 0.0090, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0121, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0055, 0.00146, 0.0121, 0.00275, display, channel, "2pe_merged");
+    }
+    if (channel==50) {
+        cut_A_S_lower(0.0072, 0.00128, 0.02, 0.00128, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0072, 0.0072, 0.00095, 0.05, 0.0089, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0159, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0072, 0.00181, 0.0159, 0.00343, display, channel, "2pe_merged");
+    }
+    if (channel==51) {
+        cut_A_S_lower(0.0060, 0.00100, 0.02, 0.00100, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0060, 0.0060, 0.00050, 0.05, 0.0090, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0149, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0060, 0.00162, 0.0149, 0.00335, display, channel, "2pe_merged");
+    }
+    if (channel==52) {
+        cut_A_S_lower(0.0071, 0.00121, 0.02, 0.00121, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0071, 0.0071, 0.00081, 0.05, 0.0090, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0164, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0071, 0.00186, 0.0164, 0.00371, display, channel, "2pe_merged");
+    }
+    if (channel==53) {
+        cut_A_S_lower(0.0072, 0.00118, 0.02, 0.00118, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0072, 0.0072, 0.00058, 0.05, 0.0081, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0172, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0072, 0.00194, 0.0172, 0.00372, display, channel, "2pe_merged");
+    }
+    if (channel==54) {
+        cut_A_S_lower(0.0078, 0.00131, 0.02, 0.00131, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0078, 0.0078, 0.00100, 0.05, 0.0090, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0168, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0078, 0.00200, 0.0168, 0.00371, display, channel, "2pe_merged");
+    }
+    if (channel==55) {
+        cut_A_S_lower(0.0061, 0.00108, 0.02, 0.00108, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0061, 0.0061, 0.00066, 0.05, 0.0090, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0145, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0061, 0.00164, 0.0145, 0.00320, display, channel, "2pe_merged");
+    }
+    if (channel==56) {
+        cut_A_S_lower(0.0065, 0.00107, 0.02, 0.00107, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0065, 0.0065, 0.00047, 0.05, 0.0088, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0153, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0065, 0.00181, 0.0153, 0.00342, display, channel, "2pe_merged");
+    }
+    if (channel==57) {
+        cut_A_S_lower(0.0069, 0.00120, 0.02, 0.00120, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0069, 0.0069, 0.00066, 0.05, 0.0090, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0159, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0069, 0.00183, 0.0159, 0.00348, display, channel, "2pe_merged");
+    }
+    if (channel==58) {
+        cut_A_S_lower(0.0066, 0.00108, 0.02, 0.00108, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0066, 0.0066, 0.00058, 0.05, 0.0090, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0153, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0066, 0.00180, 0.0153, 0.00333, display, channel, "2pe_merged");
+    }
+    if (channel==59) {
+        cut_A_S_lower(0.0067, 0.00118, 0.02, 0.00118, display, channel, "small_A-S_noise");
+        x_y_regions = {0.0067, 0.0067, 0.00057, 0.05, 0.0090, 1e3};
+        cut_A_S_fast_PMT(x_y_regions, display, channel, "small_A-S_noise2");
+        cut_A_S_upper(0, 0.04, 1, 0.04, display, channel, "rem_S>0.04");
+        if (aggressiveness>=1)//select only 1 photoelectron for calibration
+            cut_A_S_upper(0.0157, 0.0001, 1, 0.0001, display, channel, "2pe");
+        if (aggressiveness>=2)//remove afterimpulses
+            cut_A_S_upper(0.0067, 0.00180, 0.0157, 0.00340, display, channel, "2pe_merged");
+    }
 
 }
 

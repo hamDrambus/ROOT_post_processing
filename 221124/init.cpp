@@ -18,8 +18,8 @@
   trigger_version = TriggerVersion::trigger_v2;
   //From global parameters:
   calibration_file = "221124/results_v1/221124_calibration.dat";
-  data_prefix_path = "../Data/221124/results_v1/";
-  data_output_path = "221124/results_v1/";
+  data_prefix_path = "../hdda/Data/221124/results_v1/";
+  data_output_path = "221124/results_v2/";
   DATA_MPPC_VERSION = "SiPM";
   DATA_PMT_VERSION = "PMT";
   std::cout<<"data_prefix_path: \""<<data_prefix_path<<"\""<<std::endl;
@@ -38,7 +38,7 @@
 	str.close();
 
   exp_area.experiments.clear();
-  //exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_785V_850V_46V_14mm_coll_filt3_2");
+  exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_785V_850V_46V_14mm_coll_filt3_2");
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_831V_850V_46V_14mm_coll_filt3");
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_785V_850V_46V_14mm_coll_filt3");
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_739V_850V_46V_14mm_coll_filt3");
@@ -60,13 +60,14 @@
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_0V_850V_46V_14mm_coll_filt3");
 
   // For calibration only:
+  /*
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_92V_850V_46V_14mm_coll_filt3");
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_46V_850V_46V_14mm_coll_filt3");
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_0V_850V_46V_14mm_coll_filt3");
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_462V_850V_46V_14mm_coll_filt3");
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_554V_850V_46V_14mm_coll_filt3");
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_646V_850V_46V_14mm_coll_filt3");
-  exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_785V_850V_46V_14mm_coll_filt3");
+  exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_785V_850V_46V_14mm_coll_filt3");*/
 
   PMT_V.clear();
   MPPC_V.clear();
