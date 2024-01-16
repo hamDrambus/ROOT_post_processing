@@ -47,7 +47,7 @@
   experiment_fields.clear();
   experiment_fields["201015_Xray_0kV_850V_46V_12dB_wo_coll"] = 0;
 
-  std::map<std::string, int> experiment_runs; //required for printing accpeted/rejected events
+  std::map<std::string, int> experiment_runs; //required for printing accepted/rejected events
   experiment_runs["201015_Xray_0kV_850V_46V_12dB_wo_coll"] = 141;
 
   if (areas_to_draw.empty())

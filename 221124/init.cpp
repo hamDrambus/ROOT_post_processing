@@ -38,6 +38,7 @@
 	str.close();
 
   exp_area.experiments.clear();
+  /*
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_785V_850V_46V_14mm_coll_filt3_2");
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_831V_850V_46V_14mm_coll_filt3");
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_785V_850V_46V_14mm_coll_filt3");
@@ -58,6 +59,14 @@
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_92V_850V_46V_14mm_coll_filt3");
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_46V_850V_46V_14mm_coll_filt3");
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_0V_850V_46V_14mm_coll_filt3");
+  */
+  exp_area.experiments.push_back("221124_X-ray_Q_20kV_850V_46V_14mm_coll_filt3");
+  exp_area.experiments.push_back("221124_X-ray_Q_18kV_850V_46V_14mm_coll_filt3");
+  exp_area.experiments.push_back("221124_X-ray_Q_16kV_850V_46V_14mm_coll_filt3");
+  exp_area.experiments.push_back("221124_X-ray_Q_14kV_850V_46V_14mm_coll_filt3");
+  exp_area.experiments.push_back("221124_X-ray_Q_12kV_850V_46V_14mm_coll_filt3");
+  exp_area.experiments.push_back("221124_X-ray_Q_10kV_850V_46V_14mm_coll_filt3");
+  exp_area.experiments.push_back("221124_X-ray_Q_8kV_800V_46V_14mm_coll_filt3");
 
   // For calibration only:
   /*
@@ -67,7 +76,9 @@
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_462V_850V_46V_14mm_coll_filt3");
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_554V_850V_46V_14mm_coll_filt3");
   exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_646V_850V_46V_14mm_coll_filt3");
-  exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_785V_850V_46V_14mm_coll_filt3");*/
+  exp_area.experiments.push_back("221124_X-ray_S2_LAr_20kV_785V_850V_46V_14mm_coll_filt3");
+  */
+  //exp_area.experiments.push_back("221124_X-ray_Q_8kV_800V_46V_14mm_coll_filt3");
 
   PMT_V.clear();
   MPPC_V.clear();
@@ -83,6 +94,7 @@
 	  dBs[*i] = atten0;
 	  MPPC_V[*i] = 46;
   }
+  PMT_V["221124_X-ray_Q_8kV_800V_46V_14mm_coll_filt3"] = 800;
 
   experiment_fields.clear();
   experiment_fields["221124_X-ray_S2_LAr_20kV_785V_850V_46V_14mm_coll_filt3_2"] = 785.1;
@@ -106,6 +118,14 @@
   experiment_fields["221124_X-ray_S2_LAr_20kV_46V_850V_46V_14mm_coll_filt3"] = 46;
   experiment_fields["221124_X-ray_S2_LAr_20kV_0V_850V_46V_14mm_coll_filt3"] = 0;
 
+  experiment_fields["221124_X-ray_Q_20kV_850V_46V_14mm_coll_filt3"] = 20;
+  experiment_fields["221124_X-ray_Q_18kV_850V_46V_14mm_coll_filt3"] = 18;
+  experiment_fields["221124_X-ray_Q_16kV_850V_46V_14mm_coll_filt3"] = 16;
+  experiment_fields["221124_X-ray_Q_14kV_850V_46V_14mm_coll_filt3"] = 14;
+  experiment_fields["221124_X-ray_Q_12kV_850V_46V_14mm_coll_filt3"] = 12;
+  experiment_fields["221124_X-ray_Q_10kV_850V_46V_14mm_coll_filt3"] = 10;
+  experiment_fields["221124_X-ray_Q_8kV_800V_46V_14mm_coll_filt3"] = 8;
+
   std::map<std::string, int> experiment_runs; //required for printing accpeted/rejected events
   experiment_runs["221124_X-ray_S2_LAr_20kV_785V_850V_46V_14mm_coll_filt3_2"] = 357;
   experiment_runs["221124_X-ray_S2_LAr_20kV_831V_850V_46V_14mm_coll_filt3"] = 355;
@@ -127,6 +147,14 @@
   experiment_runs["221124_X-ray_S2_LAr_20kV_92V_850V_46V_14mm_coll_filt3"] = 111;
   experiment_runs["221124_X-ray_S2_LAr_20kV_46V_850V_46V_14mm_coll_filt3"] = 88;
   experiment_runs["221124_X-ray_S2_LAr_20kV_0V_850V_46V_14mm_coll_filt3"] = 52;
+
+  experiment_runs["221124_X-ray_Q_20kV_850V_46V_14mm_coll_filt3"] = 46;
+  experiment_runs["221124_X-ray_Q_18kV_850V_46V_14mm_coll_filt3"] = 40;
+  experiment_runs["221124_X-ray_Q_16kV_850V_46V_14mm_coll_filt3"] = 34;
+  experiment_runs["221124_X-ray_Q_14kV_850V_46V_14mm_coll_filt3"] = 28;
+  experiment_runs["221124_X-ray_Q_12kV_850V_46V_14mm_coll_filt3"] = 22;
+  experiment_runs["221124_X-ray_Q_10kV_850V_46V_14mm_coll_filt3"] = 11;
+  experiment_runs["221124_X-ray_Q_8kV_800V_46V_14mm_coll_filt3"] = 1;
 
   if (areas_to_draw.empty())
     areas_to_draw.push_back(experiment_area());

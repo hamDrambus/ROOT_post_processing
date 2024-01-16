@@ -493,7 +493,7 @@ void noise_cut(int channel, int aggressiveness, int device_condition, bool displ
 void analysis_history(bool calibrate, unsigned int method = 0) {
 //Created on 2021.04.11
 //Analysis to calculate S1 signal PE for SiPM-matrix, for Vlad.
-//Same as 1analysis_history.cpp but do not select 1 pe for SiPM calibration (should be corect after-impulses correction)
+//Same as 1analysis_history.cpp but do not select 1 pe for SiPM calibration (should be correct after-impulses correction)
 data_output_path = "201015_Xray/results_v2/";
 calibration_file = data_output_path + "201015_Xray_calibration.dat";
 post_processor->calibr_info.Load(calibration_file);
