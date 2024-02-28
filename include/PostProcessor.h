@@ -14,13 +14,13 @@
 //In addition, methods in main can be rewritten using AnalysisStates::is... methods.
 
 //for adding new types of analysis - dependence on AnalysisStates::Type
-//1) AnalysisStates::AnalysisStates (first/last state)
-//2) AnalysisStates::isMultichannel(Type type) const;
-//3) AnalysisStates::isPerRun(Type type) const;
-//4) AnalysisStates::isPMTtype(Type::type) const;
-//5) AnalysisStates::isComposite(Type::type) const;
-//6) AnalysisStates::isTH1Dhist(Type::type) const;
-//7) AnalysisStates::isVirtual(Type::type) const;
+//1) AStates::AStates (first/last state)
+//2) AStates::isMultichannel(Type type) const;
+//3) AStates::isPerRun(Type type) const;
+//4) AStates::isPMTtype(Type::type) const;
+//5) AStates::isComposite(Type::type) const;
+//6) AStates::isTH1Dhist(Type::type) const;
+//7) AStates::isVirtual(Type::type) const;
 //8) std::string AnalysisStates::type_name(Type type) const;
 
 //9) Corresponding StateData.h if necessary (initialized in PostProcessor::default_hist_setups(HistogramSetups*))
@@ -94,6 +94,7 @@ protected:
 public:
 	virtual bool Invalidate(unsigned int label);
 	std::size_t numOfFills(bool consider_displayed_cuts = false);
+	std::size_t events_number(void) const;
 	bool update(void); //mandates:	0)Calculate and store all relevant parameters for current state (x/y limits, number of entries to histogram, etc.)
 	//								1)update current picture. (only displayed histogram but not a png, as well as TF1)
 	//								2)update physical parameters obtained from the current hist
@@ -138,6 +139,9 @@ public:
 	void set_draw_option(std::string option);
 	bool set_X_title(std::string text);
 	bool set_Y_title(std::string text);
+	void set_hist_stats(const std::string& location);
+	void set_hist_stats(double x, double y);
+	void set_hist_stats(bool on);
 
 	void view_event(int event_index, int N_bins, double x_min, double x_max); //If N_bins =0 draw graph
 

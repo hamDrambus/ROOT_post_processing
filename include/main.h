@@ -86,6 +86,12 @@ void print_accepted_events (std::string file, int run_offset, int sub_runs = 100
 void print_rejected_events (std::string file, int run_offset, int sub_runs = 1000);
 void clear(void);	//clear cuts for current histogram. Run cuts derived from it are not touched
 void clearAll(void); //clear everything, return to initial state (leaves all existing histograms empty)
+// Show histogram stats in one of the corners.
+// Available positions are "tl", "tr", "bl", "br". 
+void set_hist_stats_pos(const std::string& location);
+void set_hist_stats_pos(double x, double y);
+void set_hist_stats(bool on = true);
+void unset_hist_stats(void);
 
 //Calibration methods:
 //TODO: add erasing calibration. (When want to update calibration in existing file with, for example, changed cuts)

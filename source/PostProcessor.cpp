@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "PostProcessor.h"
 #include "StateData.h"
 
@@ -194,6 +195,7 @@ void PostProcessor::print_hist(std::string path, bool png_only)
 	case PMT_T_sum:
 	case MPPC_shape_fit:
 	case PMT_shape_fit:
+	case EventNumber:
 	{
 		writer_to_file->SetFunction([](std::vector<double>& pars, int run, void* data) {
 			((temp_data*)data)->str->write((char*)&pars[0], sizeof(double));
@@ -310,16 +312,11 @@ void PostProcessor::save(int channel)
 
 /* PARAMETERS PASSED TO FUNCTION WRAPPER (*operation) AS WELL AS CUTTER
 type			[0]			[1]			[2]			[3]			[4]			[5]
-MPPC_Double_I	Double_I	------		------		------		------		------
-MPPC_S2_S		S2_S		------		------		------		------		------
 MPPC_Ss			peak.S		peak.A		peak.left	peak.right	peak.t		Npe
 MPPC_t_S		peak.S		peak.A		peak.left	peak.right	peak.t 		Npe		=== MPPC_Ss
 MPPC_A_S		peak.S		peak.A		peak.left	peak.right	peak.t 		Npe		=== MPPC_Ss
 MPPC_tbS		peak.S		peak.A		peak.left	peak.right	peak.t		Npe		=== MPPC_Ss
 MPPC_tbN		peak.S		peak.A		peak.left	peak.right	peak.t		Npe		=== MPPC_Ss
-MPPC_t_start	time		------		------		------		------		------
-MPPC_t_both		time		------		------		------		------		------
-MPPC_t_final	time		------		------		------		------		------
 MPPC_tbS_sum	peak.S		peak.A		peak.left	peak.right	peak.t		Npe
 MPPC_tbNpe_sum	peak.S		peak.A		peak.left	peak.right	peak.t		Npe
 MPPC_tbN_sum	peak.S		peak.A		peak.left	peak.right	peak.t		Npe
@@ -327,24 +324,24 @@ MPPC_S2																					//composite: cuts for peaks and then derived paramet
 	1st level:	peak.S		peak.A		peak.left	peak.right	peak.t		Npe			//cuts with corresponding channel, no need to check ==-2
 	2nd level:	SUM(peak.S)	-2			-2			-2			-2						//cuts with channel -1 called.
 MPPC_coord===MPPC_coord_x===MPPC_coord_y==MPPC_coord_disp								//composite: cuts for peaks and then derived parameters. Data is derived within loop.
-	1st level:	peak.S		peak.A		peak.left	peak.right	peak.t		Npe					//per channel, cuts with corresponding channel called.
+	1st level:	peak.S		peak.A		peak.left	peak.right	peak.t		Npe			//per channel, cuts with corresponding channel called.
 	2nd level:	Npe[0]	Npe[1]	...	Npe[MPPC_channels.size()-1]		X derived		Y derived	2D_Dispersion	//cuts with channel -1 called.
 MPPC_Npe_sum
-	1st level:	peak.S		peak.A		peak.left	peak.right	peak.t		Npe					//per channel, cuts with corresponding channel called.
-	2nd level:	Npe[0]	Npe[1]	...	Npe[MPPC_channels.size()-1]		NpeSum						//cuts with channel -1 called.
+	1st level:	peak.S		peak.A		peak.left	peak.right	peak.t		Npe			//per channel, cuts with corresponding channel called.
+	2nd level:	Npe[0]	Npe[1]	...	Npe[MPPC_channels.size()-1]		NpeSum				//cuts with channel -1 called.
 PMT_S2_S																				//composite: cuts for peaks and then derived parameter. Data is derived within loop.
 	1st level:	peak.S		peak.A		peak.left	peak.right	peak.t		Npe			//cuts with corresponding channel, no need to check ==-2
 	2nd level:	SUM(peak.S)	-2			-2			-2			-2						//cuts with channel -1 called.
-PMT_S2_int		S2_int		------		------		------		------		------
 PMT_Ss			peak.S		peak.A		peak.left	peak.right	peak.t		Npe
 PMT_tbS			peak.S		peak.A		peak.left	peak.right	peak.t		Npe		=== PMT_Ss
 PMT_tbN			peak.S		peak.A		peak.left	peak.right	peak.t		Npe		===	PMT_Ss
 PMT_sum_N
-	1st level:	peak.S		peak.A		peak.left	peak.right	peak.t		Npe					//per channel, cuts with corresponding channel called.
-	2nd level:	Npeaks[0]	Np[1]	...	Np[PMT_channels.size()-1]		NpSum					//cuts with channel -1 called.
-MPPC_Npe_profile	X	Y	Npe	S_total	Npeaks	channel
-MPPC_Npe_profile_x	X	Y	Npe	S_total	Npeaks	channel
-MPPC_Npe_profile_y	X	Y	Npe	S_total	Npeaks	channel
+	1st level:	peak.S		peak.A		peak.left	peak.right	peak.t		Npe			//per channel, cuts with corresponding channel called.
+	2nd level:	Npeaks[0]	Np[1]	...	Np[PMT_channels.size()-1]		NpSum			//cuts with channel -1 called.
+MPPC_Npe_profile	X		Y			Npe			S_total		Npeaks		channel
+MPPC_Npe_profile_x	X		Y			Npe			S_total		Npeaks		channel
+MPPC_Npe_profile_y	X		Y			Npe			S_total		Npeaks		channel
+EventNumber		event#		------		------		------		------		------
 */
 void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int channel, Type type)
 {
@@ -1655,6 +1652,84 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 		}
 		break;
 	}
+	case Type::EventNumber:
+	{
+		bool ignore_no_run_cut = true;
+		for (std::size_t o = 0, o_end_ = operations.size(); o != o_end_; ++o) {
+			if (!operations[o].apply_run_cuts) {
+				ignore_no_run_cut = false;
+				break;
+			}
+		}
+		struct event_result {
+			bool failed_run_cut = false;
+			bool failed_hist_phys = false;
+			bool failed_hist = false;
+			bool failed_phys = false;
+			std::vector<double> number;
+			int event_number = -1;
+		};
+		std::size_t run_size = events_number();
+		event_result def_res;
+		def_res.number = std::vector<double>(1, 0);
+		std::deque<event_result> results(run_size, def_res);
+		std::vector<std::pair<std::size_t, std::size_t>> thread_indices = split_range(std::size_t(0), run_size, threads_number);
+		std::size_t thread_n = thread_indices.size();
+		std::vector<std::thread> threads;
+		for (std::size_t n_th = 0u; n_th < thread_n; ++n_th) {
+			threads.push_back(std::thread([&](std::size_t n_th) {
+				for (std::size_t run = thread_indices[n_th].first; run != thread_indices[n_th].second; ++run) {
+					std::vector<double> cut_data(6);
+					results[run].number[0] = run;
+					results[run].event_number = run;
+					for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
+						if (kFALSE == cut->GetAccept(run)) {
+							results[run].failed_run_cut = true;
+							break;
+						}
+
+					if (results[run].failed_run_cut && ignore_no_run_cut)
+						continue;
+
+					for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut)
+						if (-1 == cut->GetChannel()) {
+							if (!results[run].failed_hist_phys)
+								if (kFALSE == (*cut)(results[run].number, run))
+									results[run].failed_hist_phys = true;
+							if (!results[run].failed_hist && cut->GetAffectingHistogram())
+								if (kFALSE == (*cut)(results[run].number, run))
+									results[run].failed_hist = true;
+							if (!results[run].failed_phys && !cut->GetAffectingHistogram())
+								if (kFALSE == (*cut)(results[run].number, run))
+									results[run].failed_phys = true;
+						}
+				} //event loop
+			}, n_th));
+		}
+		for (std::size_t n_th = 0u; n_th < thread_n; ++n_th) {
+			threads[n_th].join();
+		}
+		for (std::size_t run = 0; run != run_size; ++run) {
+			for (std::size_t o = 0, o_end_ = operations.size(); o!=o_end_; ++o) {
+				if (operations[o].apply_run_cuts && results[run].failed_run_cut)
+					continue;
+				if (operations[o].apply_hist_cuts && !operations[o].apply_phys_cuts) {
+					if (!results[run].failed_hist) (*operations[o].operation)(results[run].number, run);
+					continue;
+				}
+				if (!operations[o].apply_hist_cuts && operations[o].apply_phys_cuts) {
+					if (!results[run].failed_phys) (*operations[o].operation)(results[run].number, run);
+					continue;
+				}
+				if (operations[o].apply_hist_cuts && operations[o].apply_phys_cuts) {
+					if (!results[run].failed_hist_phys) (*operations[o].operation)(results[run].number, run);
+					continue;
+				}
+				(*operations[o].operation)(results[run].number, run);
+			}
+		}
+		break;
+	}
 	case Type::Correlation: //it has its own cuts.
 	{
 		int ch_x_ind = channel_to_index(_x_corr_ch, _x_corr);
@@ -2077,6 +2152,7 @@ bool PostProcessor::set_correlation_filler(FunctionWrapper* operation, Type type
 	case Type::PMT_T_sum:
 	case Type::MPPC_shape_fit:
 	case Type::PMT_shape_fit:
+	case Type::EventNumber:
 	{
 		operation->SetFunction([](std::vector<double>& pars, int run, void* data) {
 			(*((correlation_data*)data)->vals)[run] = pars[0];
@@ -2211,6 +2287,7 @@ bool PostProcessor::update(void)
 	case Type::PMT_T_sum:
 	case Type::MPPC_shape_fit:
 	case Type::PMT_shape_fit:
+	case Type::EventNumber:
 	{
 		drawn_mean_taker.SetFunction(
 		mean_taker.SetFunction([](std::vector<double>& pars, int run, void* data) {
@@ -2887,6 +2964,20 @@ bool PostProcessor::update(void)
 			}
 		}
 		canvas->Update(); //required for updates axes which are used in drawing cuts
+		TH1* hist = isTH1Dhist(current_type) ? (TH1*)get_current_hist1() : (TH1*)get_current_hist2();
+		hist->SetStats(setups->draw_stats);
+		TPaveStats* st = hist ? (TPaveStats*)hist->FindObject("stats") : nullptr;
+		if (!st) {
+			hist->Draw(setups->draw_option.c_str());
+			canvas->Update();
+			st = hist ? (TPaveStats*)hist->FindObject("stats") : nullptr;
+		}
+		if (st) {
+			st->SetX1NDC(setups->stats_xs.first);
+			st->SetX2NDC(setups->stats_xs.second);
+			st->SetY1NDC(setups->stats_ys.first);
+			st->SetY2NDC(setups->stats_ys.second);
+		}
 		TF1* ff = get_current_fit_function();
 		if (ff && setups->fitted)
 			ff->Draw("same");
@@ -2925,8 +3016,14 @@ std::size_t PostProcessor::numOfFills(bool consider_displayed_cuts)
 	return ret;
 }
 
+std::size_t PostProcessor::events_number(void) const
+{
+	return MPPC_channels.empty() ? data->pmt_peaks[current_exp_index][0].size() :
+				data->mppc_peaks[current_exp_index][0].size();
+}
+
 //Run cuts are applied!
-std::size_t PostProcessor::numOfRuns (void)
+std::size_t PostProcessor::numOfRuns(void)
 {
 	std::size_t run_n = 0;
 	int ch_ind = channel_to_index(current_channel, current_type);
@@ -3105,7 +3202,7 @@ void PostProcessor::post_fill_transform(void)
 {
 	HistogramSetups *setups = get_hist_setups();
 	if (NULL==setups) {
-		std::cout<<"PostProcessor::update_physical: Error: NULL setups"<<std::endl;
+		std::cout<<"PostProcessor::post_fill_transform: Error: NULL setups"<<std::endl;
 	}
 	std::string exp_str = experiments[current_exp_index];
 	switch (current_type) {
@@ -3175,7 +3272,7 @@ void PostProcessor::update_physical(void)
 	}
 	std::string exp_str = experiments[current_exp_index];
 	switch (current_type) {
-	case Type::MPPC_S2:	//TODO: Warning!: these two types (MPPC_S2 and MPPC_S2_S) overwrite each other
+	case Type::MPPC_S2:	//TODO: Warning!: these two types (MPPC_S2) overwrite each other
 	{
 		if (!(setups->N_gauss>0 && setups->fitted)) {
 			if (0==setups->N_gauss) { //Use mean then
@@ -3762,7 +3859,7 @@ void PostProcessor::set_zoom (double xl, double xr)
 void PostProcessor::set_zoom_y (double yl, double yr)
 {
 	if (isTH1Dhist(current_type)){
-		std::cout<<"can't set y zoom for TH1D histogram"<<std::endl;
+		std::cout<<"Can't set y zoom for TH1D histogram"<<std::endl;
 		return;
 	}
 	std::pair<double, double> y_zoom, x_zoom = std::pair<double, double>(-DBL_MAX, DBL_MAX);
@@ -3808,6 +3905,24 @@ bool PostProcessor::set_Y_title(std::string text)
 	curr_hist->y_axis_title = text;
 	update();
 	return true;
+}
+
+void PostProcessor::set_hist_stats(const std::string& location)
+{
+	CanvasSetups::set_hist_stats(location);
+	update();
+}
+
+void PostProcessor::set_hist_stats(double x, double y)
+{
+	CanvasSetups::set_hist_stats(x, y);
+	update();
+}
+
+void PostProcessor::set_hist_stats(bool on)
+{
+	CanvasSetups::set_hist_stats(on);
+	update();
 }
 
 void PostProcessor::set_log_x(bool is_log)

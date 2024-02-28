@@ -107,8 +107,33 @@ std::string dbl_to_str (double val, int precision=0);
 std::vector<double>::iterator iter_add(std::vector<double>::iterator& to, int what, std::vector<double>::iterator& end);
 std::string strtoken(std::string &in, std::string break_symbs);
 double fast_pown(double val, unsigned int n);
-//For threading. Splits [min, max) range into n parts as equal as possible.
-std::vector<std::pair<int, int>> split_range(int min, int max, int number);
+
+/// For threading. Splits [\p min, \p max) integer range into \p number parts as equally as possible.
+template<typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>
+std::vector<std::pair<T, T>> split_range(T min, T max, std::size_t number)
+{
+	std::vector<std::pair<T, T>> result;
+	if (min == max)
+		return result;
+	if (min > max)
+		std::swap(min, max);
+	std::size_t n_effective = std::min(number, std::size_t(max - min));
+	n_effective = std::max(n_effective, std::size_t(1));
+	result.reserve(n_effective);
+	T N_extra = (max - min) % n_effective;
+	T current_min = min;
+	for (std::size_t n = 0; n < n_effective; ++n) { //distribute events among the processes as evenly as possible
+		T N_in_n = (max - min) / n_effective;
+		if (N_extra > 0) {
+			N_in_n += T(1);
+			--N_extra;
+		}
+		result.push_back(std::make_pair(current_min, current_min + N_in_n));
+		current_min += N_in_n;
+	}		
+	return result;
+}
+
 TLatex* CreateStatBoxLine (std::string name, double val);
 TLatex* CreateStatBoxLine (std::string name, int val);
 TLatex* CreateStatBoxLine (std::string name);

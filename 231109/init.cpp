@@ -1,5 +1,5 @@
 {
-  struct SiPM_Npe_data {
+  struct Npe_in_ranges_data {
     std::pair<double, double> t_pre_trigger;
     std::pair<double, double> t_S1;
     std::pair<double, double> t_S2;
@@ -37,42 +37,58 @@
 
   exp_area.experiments.clear();
   // For full analysis
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_filt3_20kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_filt3_18kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_filt3_16kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_filt3_14kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_filt3_12kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_filt3_10kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_filt3_8kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_filt3_0kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_20kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_18kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_16kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_14kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_12kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_10kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_8kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_0kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_20kV_850V_46V_1");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_20kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_18kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_16kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_14kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_12kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_10kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_8kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_0kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_filt3_20kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_filt3_18kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_filt3_16kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_filt3_14kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_filt3_12kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_filt3_10kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_filt3_8kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_filt3_0kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_20kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_18kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_16kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_14kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_12kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_10kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_8kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_0kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_20kV_850V_46V_1");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_20kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_18kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_16kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_14kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_12kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_10kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_8kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_0kV_850V_46V");
+  exp_area.experiments.push_back("231109_2ph_LArN2_X-ray_14mm_coll_filt3_0kV_850V_46V");
+  exp_area.experiments.push_back("231109_2ph_LArN2_X-ray_14mm_coll_filt3_8kV_850V_46V");
+  exp_area.experiments.push_back("231109_2ph_LArN2_X-ray_14mm_coll_filt3_10kV_850V_46V");
+  exp_area.experiments.push_back("231109_2ph_LArN2_X-ray_14mm_coll_filt3_12kV_850V_46V");
+  exp_area.experiments.push_back("231109_2ph_LArN2_X-ray_14mm_coll_filt3_14kV_850V_46V");
+  exp_area.experiments.push_back("231109_2ph_LArN2_X-ray_14mm_coll_filt3_16kV_850V_46V");
+  exp_area.experiments.push_back("231109_2ph_LArN2_X-ray_14mm_coll_filt3_18kV_850V_46V");
+  exp_area.experiments.push_back("231109_2ph_LArN2_X-ray_14mm_coll_filt3_20kV_850V_46V");
+  // exp_area.experiments.push_back("231109_2ph_LArN2_X-ray_6mm_coll_20kV_850V_46V");
+  // exp_area.experiments.push_back("231109_2ph_LArN2_X-ray_6mm_coll_18kV_850V_46V");
+  // exp_area.experiments.push_back("231109_2ph_LArN2_X-ray_6mm_coll_16kV_850V_46V");
+  // exp_area.experiments.push_back("231109_2ph_LArN2_X-ray_6mm_coll_14kV_850V_46V");
+  // exp_area.experiments.push_back("231109_2ph_LArN2_X-ray_6mm_coll_12kV_850V_46V");
+  // exp_area.experiments.push_back("231109_2ph_LArN2_X-ray_6mm_coll_10kV_850V_46V");
+  // exp_area.experiments.push_back("231109_2ph_LArN2_X-ray_6mm_coll_8kV_850V_46V");
+  // exp_area.experiments.push_back("231109_2ph_LArN2_X-ray_6mm_coll_0kV_850V_46V");
 
   // For calibration only
-  /*exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_filt3_20kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_filt3_0kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_20kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_8kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_0kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_16kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_10kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_8kV_850V_46V");
-  exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_0kV_850V_46V");*/
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_filt3_20kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_filt3_0kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_20kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_8kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_14mm_coll_0kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_16kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_10kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_8kV_850V_46V");
+  // exp_area.experiments.push_back("231109_1ph_LArN2_X-ray_6mm_coll_0kV_850V_46V");
 
   PMT_V.clear();
   MPPC_V.clear();
@@ -115,6 +131,22 @@
   experiment_fields["231109_1ph_LArN2_X-ray_6mm_coll_10kV_850V_46V"] = 10;
   experiment_fields["231109_1ph_LArN2_X-ray_6mm_coll_8kV_850V_46V"] = 8;
   experiment_fields["231109_1ph_LArN2_X-ray_6mm_coll_0kV_850V_46V"] = 0;
+  experiment_fields["231109_2ph_LArN2_X-ray_14mm_coll_filt3_0kV_850V_46V"] = 0;
+  experiment_fields["231109_2ph_LArN2_X-ray_14mm_coll_filt3_8kV_850V_46V"] = 8;
+  experiment_fields["231109_2ph_LArN2_X-ray_14mm_coll_filt3_10kV_850V_46V"] = 10;
+  experiment_fields["231109_2ph_LArN2_X-ray_14mm_coll_filt3_12kV_850V_46V"] = 12;
+  experiment_fields["231109_2ph_LArN2_X-ray_14mm_coll_filt3_14kV_850V_46V"] = 14;
+  experiment_fields["231109_2ph_LArN2_X-ray_14mm_coll_filt3_16kV_850V_46V"] = 16;
+  experiment_fields["231109_2ph_LArN2_X-ray_14mm_coll_filt3_18kV_850V_46V"] = 18;
+  experiment_fields["231109_2ph_LArN2_X-ray_14mm_coll_filt3_20kV_850V_46V"] = 20;
+  experiment_fields["231109_2ph_LArN2_X-ray_6mm_coll_20kV_850V_46V"] = 20;
+  experiment_fields["231109_2ph_LArN2_X-ray_6mm_coll_18kV_850V_46V"] = 18;
+  experiment_fields["231109_2ph_LArN2_X-ray_6mm_coll_16kV_850V_46V"] = 16;
+  experiment_fields["231109_2ph_LArN2_X-ray_6mm_coll_14kV_850V_46V"] = 14;
+  experiment_fields["231109_2ph_LArN2_X-ray_6mm_coll_12kV_850V_46V"] = 12;
+  experiment_fields["231109_2ph_LArN2_X-ray_6mm_coll_10kV_850V_46V"] = 10;
+  experiment_fields["231109_2ph_LArN2_X-ray_6mm_coll_8kV_850V_46V"] = 8;
+  experiment_fields["231109_2ph_LArN2_X-ray_6mm_coll_0kV_850V_46V"] = 0;
 
   std::map<std::string, int> experiment_runs; //required for printing accepted/rejected events
   experiment_runs["231109_1ph_LArN2_X-ray_14mm_coll_filt3_20kV_850V_46V"] = 471;
@@ -142,6 +174,22 @@
   experiment_runs["231109_1ph_LArN2_X-ray_6mm_coll_10kV_850V_46V"] = 214;
   experiment_runs["231109_1ph_LArN2_X-ray_6mm_coll_8kV_850V_46V"] = 202;
   experiment_runs["231109_1ph_LArN2_X-ray_6mm_coll_0kV_850V_46V"] = 186;
+  experiment_runs["231109_2ph_LArN2_X-ray_14mm_coll_filt3_0kV_850V_46V"] = 1;
+  experiment_runs["231109_2ph_LArN2_X-ray_14mm_coll_filt3_8kV_850V_46V"] = 12;
+  experiment_runs["231109_2ph_LArN2_X-ray_14mm_coll_filt3_10kV_850V_46V"] = 24;
+  experiment_runs["231109_2ph_LArN2_X-ray_14mm_coll_filt3_12kV_850V_46V"] = 35;
+  experiment_runs["231109_2ph_LArN2_X-ray_14mm_coll_filt3_14kV_850V_46V"] = 47;
+  experiment_runs["231109_2ph_LArN2_X-ray_14mm_coll_filt3_16kV_850V_46V"] = 58;
+  experiment_runs["231109_2ph_LArN2_X-ray_14mm_coll_filt3_18kV_850V_46V"] = 69;
+  experiment_runs["231109_2ph_LArN2_X-ray_14mm_coll_filt3_20kV_850V_46V"] = 84;
+  experiment_runs["231109_2ph_LArN2_X-ray_6mm_coll_20kV_850V_46V"] = 95;
+  experiment_runs["231109_2ph_LArN2_X-ray_6mm_coll_18kV_850V_46V"] = 106;
+  experiment_runs["231109_2ph_LArN2_X-ray_6mm_coll_16kV_850V_46V"] = 118;
+  experiment_runs["231109_2ph_LArN2_X-ray_6mm_coll_14kV_850V_46V"] = 129;
+  experiment_runs["231109_2ph_LArN2_X-ray_6mm_coll_12kV_850V_46V"] = 141;
+  experiment_runs["231109_2ph_LArN2_X-ray_6mm_coll_10kV_850V_46V"] = 152;
+  experiment_runs["231109_2ph_LArN2_X-ray_6mm_coll_8kV_850V_46V"] = 163;
+  experiment_runs["231109_2ph_LArN2_X-ray_6mm_coll_0kV_850V_46V"] = 174;
 
   if (areas_to_draw.empty())
     areas_to_draw.push_back(experiment_area());
@@ -169,12 +217,15 @@
     calib_channels.push_back(ch);
   }
 
-  channel_info<std::vector<SiPM_Npe_data>> gSiPM_Npe_data; // channel->experiment
-  for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
-		int chan = post_processor->MPPC_channels[ich];
-    std::vector<SiPM_Npe_data> vec;
+  channel_info<std::vector<Npe_in_ranges_data>> g_Npe_data; // channel->experiment
+  std::deque<int> chs_for_Npe = post_processor->MPPC_channels;
+  for (int i = 1; i != 9; ++i)
+    chs_for_Npe.push_back(i);
+  for (std::size_t ich = 0; ich != chs_for_Npe.size(); ++ich) {
+		int chan = chs_for_Npe[ich];
+    std::vector<Npe_in_ranges_data> vec;
     for (auto i = exp_area.experiments.begin(), i_end_ = exp_area.experiments.end(); i != i_end_; ++i) {
-      SiPM_Npe_data data;
+      Npe_in_ranges_data data;
       data.t_pre_trigger = std::pair<double, double> (0,0);
       data.t_S1 = std::pair<double, double> (0,0);
       data.t_S2 = std::pair<double, double> (0,0);
@@ -183,6 +234,6 @@
       data.Npe_S2 = 0;
       vec.push_back(data);
     }
-    gSiPM_Npe_data.push(chan, vec);
+    g_Npe_data.push(chan, vec);
 	}
 }

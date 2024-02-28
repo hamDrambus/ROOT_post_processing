@@ -1,3 +1,4 @@
+#include <utility>
 #include "AllExperimentsResults.h"
 
 AllExperimentsResults::AllExperimentsResults(/*ParameterPile::*/experiment_area area)
@@ -54,8 +55,8 @@ void AllExperimentsResults::processAllExperiments(std::deque<AllRunsResults> &al
 			continue;
 		}
 		exp_area.experiments.push_back(i->_exp.experiments.back());
-		mppc_peaks.push_back(i->mppc_peaks);
-		pmt_peaks.push_back(i->pmt_peaks);
+		mppc_peaks.push_back(std::move(i->mppc_peaks));
+		pmt_peaks.push_back(std::move(i->pmt_peaks));
 		auto j = /*ParameterPile::*/experiment_fields.find(i->_exp.experiments.back());
 		if (/*ParameterPile::*/experiment_fields.end() != j)
 			Fields.push_back(j->second);

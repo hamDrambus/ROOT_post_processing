@@ -1,7 +1,7 @@
 #include "AnalysisStates.h"
 
 AStates::AStates(std::deque<int> &mppc_channels_, std::deque<int> &pmt_channels_, std::deque<std::string>& experiments_):
-_first_state(MPPC_Ss), _last_state(PMT_trigger_bS),_x_corr(MPPC_Npe_sum),_y_corr(PMT_S2_S), ch_ind_loop(0), type_loop(_first_state)
+_first_state(MPPC_Ss), _last_state(EventNumber),_x_corr(MPPC_Npe_sum),_y_corr(PMT_S2_S), ch_ind_loop(0), type_loop(_first_state)
 {
 	MPPC_channels = mppc_channels_;
 	PMT_channels = pmt_channels_;
@@ -307,7 +307,7 @@ Bool_t AStates::isPerRun(Type type) const
 			type== PMT_S2_S ||type==PMT_Npe_sum ||type==PMT_S_sum ||type==PMT_sum_N || type==PMT_trigger_bNpe ||
 			type==PMT_trigger_fit || type==PMT_trigger_bNpeaks || type==PMT_trigger_bS || type == PMT_trigger_fit_chi2 ||
 			type == MPPC_trigger_fit || type == MPPC_trigger_fit_chi2 || type == MPPC_trigger_avg || type == PMT_T_sum ||
-			type == MPPC_shape_fit || type == PMT_shape_fit || type==MPPC_coord_disp;
+			type == MPPC_shape_fit || type == PMT_shape_fit || type==MPPC_coord_disp || type == EventNumber;
 }
 
 Bool_t AStates::isMultichannel(Type type) const
@@ -320,7 +320,7 @@ Bool_t AStates::isMultichannel(Type type) const
 			|| type==MPPC_N_sum || type==MPPC_S_sum || type == MPPC_trigger_avg || type == MPPC_shape_fit || type == PMT_shape_fit
 			|| type==Correlation || type==CorrelationAll || type==PMT_sum_N || type==PMT_Npe_sum || type==PMT_S_sum || type==PMT_trigger_bNpe || type==PMT_trigger_bNpeaks
 			|| type==PMT_trigger_fit || type==PMT_trigger_bS || type == PMT_trigger_fit_chi2 || type == MPPC_trigger_fit || type == MPPC_trigger_fit_chi2 || type == PMT_T_sum
-			|| type==MPPC_Npe_profile || type==MPPC_Npe_profile_x ||type==MPPC_Npe_profile_y || type==MPPC_coord_disp;
+			|| type==MPPC_Npe_profile || type==MPPC_Npe_profile_x ||type==MPPC_Npe_profile_y || type==MPPC_coord_disp || type == EventNumber;
 }
 
 Bool_t AStates::isTH1Dhist(Type type) const
@@ -702,6 +702,10 @@ std::string AStates::type_name(Type type) const
 	}
 	case Type::MPPC_coord_disp: {
 		name += "coordinate_dispersion";
+		break;
+	}
+	case Type::EventNumber: {
+		name += "event_number";
 		break;
 	}
 	}

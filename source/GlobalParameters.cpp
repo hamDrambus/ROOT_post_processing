@@ -135,28 +135,6 @@ double fast_pown(double val, unsigned int n)
 	return result;
 }
 
-//For threading. Splits [min, max) range into n parts as equal as possible.
-std::vector<std::pair<int, int>> split_range(int min, int max, int number)
-{
-	std::vector<std::pair<int, int>> result;
-	if (min == max)
-		return result;
-	unsigned int n_effective = (number > (max - min) ? (max - min) : number);
-	n_effective = (n_effective <= 0 ? 1 : n_effective);
-	int N_extra = (max - min) % n_effective;
-	std::vector<int> Ns(n_effective, 0);
-	for (unsigned int n = 0u; n < n_effective; ++n) { //distribute events among the processes as evenly as possible
-		Ns[n] = (max - min) / n_effective + ((N_extra>0) ? 1 : 0);
-		--N_extra;
-	}
-	int current_min = min;
-	for (unsigned int n = 0u; n < n_effective; ++n) {
-		result.push_back(std::pair<int, int>(current_min, current_min + Ns[n]));
-		current_min = current_min + Ns[n];
-	}
-	return result;
-}
-
 TLatex* CreateStatBoxLine (std::string name, double v)
 {
 	std::string val = Form("%g", v);

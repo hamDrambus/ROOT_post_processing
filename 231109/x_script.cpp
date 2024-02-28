@@ -36,9 +36,9 @@ if (true) {
         analysis_history(0);
         nex();
     }
-    save_SiPM_Npe_tables(data_output_path + "SiPM_Bkg_Npes.txt",
-            data_output_path + "SiPM_S1_Npes.txt",
-            data_output_path + "SiPM_S2_Npes.txt",
-            data_output_path + "SiPM_S2_wo_S1_tail_Npes.txt");
+    save_Npe_tables(data_output_path + "Npes_14mm_filt3_Bkg.txt",
+            data_output_path + "Npes_14mm_filt3_S1.txt",
+            data_output_path + "Npes_14mm_filt3_S2.txt",
+            data_output_path + "Npes_14mm_filt3_S2_wo_S1_tail.txt");
 }
 }

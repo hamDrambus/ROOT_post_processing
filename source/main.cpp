@@ -357,6 +357,30 @@ void clearAll(void) //clear everything, return to initial state (leaves all exis
 	post_processor->clearAll();
 }
 
+void set_hist_stats_pos(const std::string& location)
+{
+	QUIT_IF_NULL(g_data);
+	post_processor->set_hist_stats(location);
+}
+
+void set_hist_stats_pos(double x, double y)
+{
+	QUIT_IF_NULL(g_data);
+	post_processor->set_hist_stats(x, y);
+}
+
+void set_hist_stats(bool on)
+{
+	QUIT_IF_NULL(g_data);
+	post_processor->set_hist_stats(on);
+}
+
+void unset_hist_stats(void)
+{
+	QUIT_IF_NULL(g_data);
+	post_processor->set_hist_stats(false);
+}
+
 //Calibration methods:
 void draw_Npe(void)
 {
@@ -607,6 +631,7 @@ FunctionWrapper* create_vertical_lines_cut(double left, double right) //do not c
 	case AStates::PMT_T_sum:
 	case AStates::MPPC_shape_fit:
 	case AStates::PMT_shape_fit:
+	case AStates::EventNumber:
 	{
 		picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
 			return ((vals[0] <=((temp_data*)data)->mm.second) && (vals[0] >= ((temp_data*)data)->mm.first));
@@ -808,6 +833,7 @@ FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do no
 	}
 	case AStates::Correlation:
 	case AStates::CorrelationAll:
+	case AStates::EventNumber:
 	{
 		delete picker;
 		return NULL;
@@ -966,6 +992,7 @@ FunctionWrapper* create_S_t_rect_select_cut(std::vector<double> region) //do not
 	}
 	case AStates::Correlation:
 	case AStates::CorrelationAll:
+	case AStates::EventNumber:
 	{
 		delete picker;
 		return NULL;
@@ -1143,6 +1170,7 @@ FunctionWrapper* create_A_S_rect_exclude_cut(std::vector<double> region) //do no
 	}
 	case AStates::Correlation:
 	case AStates::CorrelationAll:
+	case AStates::EventNumber:
 	{
 		delete picker;
 		return NULL;
@@ -1385,6 +1413,7 @@ FunctionWrapper* create_A_S_fastPMT_cut(std::vector<double> region) //do not cal
 	}
 	case AStates::Correlation:
 	case AStates::CorrelationAll:
+	case AStates::EventNumber:
 	{
 		delete picker;
 		return NULL;
@@ -1509,6 +1538,7 @@ FunctionWrapper* create_A_S_polygon_cut(std::vector<double> region, unsigned int
 	}
 	case AStates::Correlation:
 	case AStates::CorrelationAll:
+	case AStates::EventNumber:
 	{
 		delete picker;
 		return NULL;

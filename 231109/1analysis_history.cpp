@@ -234,7 +234,7 @@ void save_forms (std::string path, bool N_only, int PMT_condition, int SiPM_cond
     }
 }
 
-//Even it is hard to read the whole analysis because of it, it is better to move all A-S cuts for PMT in one
+//Even it is harder to read the whole analysis, it is better to move all A-S cuts for PMT in one
 //place. These cuts are used multiple times: during calibration - for A-S histogram and for Ss, the parameters are
 //selected at that stage at 20kV; during Npe plots (for Cd peak selection, which is required during signal forms) and during
 //plotting PMT signal forms themselves. Without this function changing cut parameters would have to take place in several places
@@ -556,14 +556,14 @@ void noise_cut(int channel, int aggressiveness, int device_condition, bool displ
 }
 
 // Call from x_script.cpp after analysis is finished
-void save_SiPM_Npe_table(std::string fname) {
+void save_Npe_table(std::string fname) {
     std::ofstream str;
     str.open(fname, std::ios_base::trunc);
     if (!str.is_open())
         return;
     str<<"V\t";
-    for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
-        int chan = post_processor->MPPC_channels[ich];
+    for (std::size_t ich = 0; ich != chs_for_Npe.size(); ++ich) {
+        int chan = chs_for_Npe[ich];
         str<<chan<<"\t";
     }
     str<<std::endl;
@@ -572,7 +572,7 @@ void save_SiPM_Npe_table(std::string fname) {
         if (i->second == 0)
             ref_candidates.push_back(i->first);
     if (ref_candidates.empty()) {
-        std::cerr<<"Error:save_SiPM_Npe_table: Could not find reference experiment (0 field). Aborting."<<std::endl;
+        std::cerr<<"Error:save_Npe_table: Could not find reference experiment (0 field). Aborting."<<std::endl;
         return;
     }
     std::vector<std::size_t> ref_indices;
@@ -598,10 +598,10 @@ void save_SiPM_Npe_table(std::string fname) {
         double ref_S2;
     };
     channel_info<reference_data> ref_data;
-    for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
-        int chan = post_processor->MPPC_channels[ich];
+    for (std::size_t ich = 0; ich != chs_for_Npe.size(); ++ich) {
+        int chan = chs_for_Npe[ich];
         reference_data refernce;
-        SiPM_Npe_data data = (*gSiPM_Npe_data.info(chan))[ref_ind];
+        Npe_in_ranges_data data = (*g_Npe_data.info(chan))[ref_ind];
         refernce.ref_S1 = data.Npe_S1 - data.Npe_pre_trigger * (data.t_S1.second - data.t_S1.first) / (data.t_pre_trigger.second - data.t_pre_trigger.first);
         refernce.ref_S2 = data.Npe_S2 - data.Npe_pre_trigger * (data.t_S2.second - data.t_S2.first) / (data.t_pre_trigger.second - data.t_pre_trigger.first);
         ref_data.push(chan, refernce);
@@ -610,10 +610,10 @@ void save_SiPM_Npe_table(std::string fname) {
     for (std::size_t i = 0, i_end_ = exp_area.experiments.size(); i != i_end_; ++i) {
         double V = experiment_fields[exp_area.experiments[i]];
         str<<V<<"\t";
-        for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
-            int chan = post_processor->MPPC_channels[ich];
+        for (std::size_t ich = 0; ich != chs_for_Npe.size(); ++ich) {
+            int chan = chs_for_Npe[ich];
             reference_data ref = *ref_data.info(chan);
-            SiPM_Npe_data data = (*gSiPM_Npe_data.info(chan))[i];
+            Npe_in_ranges_data data = (*g_Npe_data.info(chan))[i];
             double S1_no_noise = data.Npe_S1 - data.Npe_pre_trigger * (data.t_S1.second - data.t_S1.first) / (data.t_pre_trigger.second - data.t_pre_trigger.first);
             double S2_no_noise = data.Npe_S2 - data.Npe_pre_trigger * (data.t_S2.second - data.t_S2.first) / (data.t_pre_trigger.second - data.t_pre_trigger.first);
             double S2_only = S2_no_noise - ref.ref_S2 * S1_no_noise / ref.ref_S1;
@@ -624,13 +624,13 @@ void save_SiPM_Npe_table(std::string fname) {
 }
 
 // Call from x_script.cpp after analysis is finished
-void save_SiPM_Npe_tables(std::string fname_bkg, std::string fname_S1, std::string fname_S2, std::string fname_S2_wo_S1_tail) {
+void save_Npe_tables(std::string fname_bkg, std::string fname_S1, std::string fname_S2, std::string fname_S2_wo_S1_tail) {
     std::ofstream str;
     // returns whether saving was successful
     auto save_header = [] (std::ofstream &str) {
         str<<"V\t";
-        for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
-            int chan = post_processor->MPPC_channels[ich];
+        for (std::size_t ich = 0; ich != chs_for_Npe.size(); ++ich) {
+        	int chan = chs_for_Npe[ich];
             str<<chan<<"\t";
         }
         str<<std::endl;
@@ -641,9 +641,9 @@ void save_SiPM_Npe_tables(std::string fname_bkg, std::string fname_S1, std::stri
         for (std::size_t i = 0, i_end_ = exp_area.experiments.size(); i != i_end_; ++i) {
             double V = experiment_fields[exp_area.experiments[i]];
             str<<V<<"\t";
-            for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
-                int chan = post_processor->MPPC_channels[ich];
-                SiPM_Npe_data data = (*gSiPM_Npe_data.info(chan))[i];
+            for (std::size_t ich = 0; ich != chs_for_Npe.size(); ++ich) {
+        		int chan = chs_for_Npe[ich];
+                Npe_in_ranges_data data = (*g_Npe_data.info(chan))[i];
                 str<<data.Npe_pre_trigger<<"\t";
             }
             str<<std::endl;
@@ -655,9 +655,9 @@ void save_SiPM_Npe_tables(std::string fname_bkg, std::string fname_S1, std::stri
         for (std::size_t i = 0, i_end_ = exp_area.experiments.size(); i != i_end_; ++i) {
             double V = experiment_fields[exp_area.experiments[i]];
             str<<V<<"\t";
-            for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
-                int chan = post_processor->MPPC_channels[ich];
-                SiPM_Npe_data data = (*gSiPM_Npe_data.info(chan))[i];
+            for (std::size_t ich = 0; ich != chs_for_Npe.size(); ++ich) {
+        		int chan = chs_for_Npe[ich];
+                Npe_in_ranges_data data = (*g_Npe_data.info(chan))[i];
                 double S1_only = data.Npe_S1 - data.Npe_pre_trigger * (data.t_S1.second - data.t_S1.first) / (data.t_pre_trigger.second - data.t_pre_trigger.first);
                 str<<S1_only<<"\t";
             }
@@ -670,9 +670,9 @@ void save_SiPM_Npe_tables(std::string fname_bkg, std::string fname_S1, std::stri
         for (std::size_t i = 0, i_end_ = exp_area.experiments.size(); i != i_end_; ++i) {
             double V = experiment_fields[exp_area.experiments[i]];
             str<<V<<"\t";
-            for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
-                int chan = post_processor->MPPC_channels[ich];
-                SiPM_Npe_data data = (*gSiPM_Npe_data.info(chan))[i];
+            for (std::size_t ich = 0; ich != chs_for_Npe.size(); ++ich) {
+        		int chan = chs_for_Npe[ich];
+                Npe_in_ranges_data data = (*g_Npe_data.info(chan))[i];
                 double S2_only = data.Npe_S2 - data.Npe_pre_trigger * (data.t_S2.second - data.t_S2.first) / (data.t_pre_trigger.second - data.t_pre_trigger.first);
                 str<<S2_only<<"\t";
             }
@@ -707,10 +707,10 @@ void save_SiPM_Npe_tables(std::string fname_bkg, std::string fname_S1, std::stri
             double ref_S2;
         };
         channel_info<reference_data> ref_data;
-        for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
-            int chan = post_processor->MPPC_channels[ich];
+        for (std::size_t ich = 0; ich != chs_for_Npe.size(); ++ich) {
+			int chan = chs_for_Npe[ich];
             reference_data refernce;
-            SiPM_Npe_data data = (*gSiPM_Npe_data.info(chan))[ref_ind];
+            Npe_in_ranges_data data = (*g_Npe_data.info(chan))[ref_ind];
             refernce.ref_S1 = data.Npe_S1 - data.Npe_pre_trigger * (data.t_S1.second - data.t_S1.first) / (data.t_pre_trigger.second - data.t_pre_trigger.first);
             refernce.ref_S2 = data.Npe_S2 - data.Npe_pre_trigger * (data.t_S2.second - data.t_S2.first) / (data.t_pre_trigger.second - data.t_pre_trigger.first);
             ref_data.push(chan, refernce);
@@ -719,10 +719,10 @@ void save_SiPM_Npe_tables(std::string fname_bkg, std::string fname_S1, std::stri
         for (std::size_t i = 0, i_end_ = exp_area.experiments.size(); i != i_end_; ++i) {
             double V = experiment_fields[exp_area.experiments[i]];
             str<<V<<"\t";
-            for (int ich =0; ich!= post_processor->MPPC_channels.size(); ++ich) {
-                int chan = post_processor->MPPC_channels[ich];
+            for (std::size_t ich = 0; ich != chs_for_Npe.size(); ++ich) {
+				int chan = chs_for_Npe[ich];
                 reference_data ref = *ref_data.info(chan);
-                SiPM_Npe_data data = (*gSiPM_Npe_data.info(chan))[i];
+                Npe_in_ranges_data data = (*g_Npe_data.info(chan))[i];
                 double S1_no_noise = data.Npe_S1 - data.Npe_pre_trigger * (data.t_S1.second - data.t_S1.first) / (data.t_pre_trigger.second - data.t_pre_trigger.first);
                 double S2_no_noise = data.Npe_S2 - data.Npe_pre_trigger * (data.t_S2.second - data.t_S2.first) / (data.t_pre_trigger.second - data.t_pre_trigger.first);
                 double S2_only = S2_no_noise - ref.ref_S2 * S1_no_noise / ref.ref_S1;
@@ -828,51 +828,20 @@ for (int e = 0; e != exp_area.experiments.size(); ++e) {
 bool forms = !calibrate;
 //CALIBRATION (slow PMT and SiPMs)
 for (std::size_t exp_ind = 0; calibrate && (exp_ind!= exp_area.experiments.size()); ++exp_ind) {
-std::string folder, S2_start, S2_finish, S1_start, S1_finish;
-double d_S2_start, d_S2_finish;
-double d_S1_start, d_S1_finish;
-double d_S_max;
 std::string exp = post_processor->experiments[post_processor->current_exp_index];
+double d_S2_start = S2_times.at(exp).first, d_S2_finish = S2_times.at(exp).second;
+double d_S1_start = S1_times.at(exp).first, d_S1_finish = S1_times.at(exp).second;
+double d_Bkg_start = Bkg_times.at(exp).first, d_Bkg_finish = Bkg_times.at(exp).second;
+double d_S_max = pre_trigger_max_S.at(exp);
+std::string folder = exp_folders.at(exp),
+			S2_start = dbl_to_str(d_S2_start, 1),
+			S2_finish = dbl_to_str(d_S2_finish, 1),
+			S1_start = dbl_to_str(d_S1_start, 1),
+			S1_finish = dbl_to_str(d_S1_finish, 1),
+			Bkg_start = dbl_to_str(d_Bkg_start, 1),
+			Bkg_finish = dbl_to_str(d_Bkg_finish, 1);
 int PMT_state = 0; //850V, 12 dB
-int SiPM_state = 0; //46V
-auto folder_entry = exp_folders.find(exp);
-if (folder_entry != exp_folders.end())
-    folder = folder_entry->second;
-else {
-    std::cout<<"Could not find output folder for '"<<exp<<"'! Skipping calibration of this experiment"<<std::endl;
-    nex();
-    continue;
-}
-auto S2_times_entry = S2_times.find(exp);
-if (S2_times_entry != S2_times.end()) {
-    d_S2_start = S2_times_entry->second.first; d_S2_finish = S2_times_entry->second.second;
-        S2_start = dbl_to_str(d_S2_start, 1); S2_finish = dbl_to_str(d_S2_finish, 1);
-} else {
-    std::cout<<"Could not find S2 time limits for '"<<exp<<"'! Skipping calibration of this experiment"<<std::endl;
-    nex(); continue;
-}
-auto S1_times_entry = S1_times.find(exp);
-if (S1_times_entry != S1_times.end()) {
-    d_S1_start = S1_times_entry->second.first; d_S1_finish = S1_times_entry->second.second;
-        S1_start = dbl_to_str(d_S1_start, 1); S1_finish = dbl_to_str(d_S1_finish, 1);
-} else {
-    std::cout<<"Could not find S1 time limits for '"<<exp<<"'! Skipping calibration of this experiment"<<std::endl;
-    nex(); continue;
-}
-auto S_max_entry = pre_trigger_max_S.find(exp);
-if (S_max_entry != pre_trigger_max_S.end()) {
-    d_S_max = S_max_entry->second;
-} else {
-    std::cout<<"Could not find pre-trigger S limits for '"<<exp<<"'! Skipping calibration of this experiment"<<std::endl;
-    nex();
-    continue;
-}
-// Do not use these folders for calibration (have discharges)
-if (exp == "231012_X-ray_S2_LArN2_10kV_923V_850V_46V_no_coll"
-    || exp == "231012_X-ray_S2_LArN2_10kV_739V_850V_46V_no_coll") {
-    nex();
-    continue;
-}
+int SiPM_state = 0; //46 V
 
 ty(AStates::MPPC_S_sum); //nex();
 time_zoom_SiPMs(0, d_S1_start);
@@ -1127,50 +1096,24 @@ if (calibrate) {
 //SIGNAL FORMS
 if (!forms)
     return;
-std::string folder, S2_start, S2_finish, S1_start, S1_finish, Bkg_start, Bkg_finish;
-double d_Bkg_start, d_Bkg_finish;
-int first_run = 0;
 std::string exp = post_processor->experiments[post_processor->current_exp_index];
+double d_S2_start = S2_times.at(exp).first, d_S2_finish = S2_times.at(exp).second;
+double d_S1_start = S1_times.at(exp).first, d_S1_finish = S1_times.at(exp).second;
+double d_Bkg_start = Bkg_times.at(exp).first, d_Bkg_finish = Bkg_times.at(exp).second;
+std::string folder = exp_folders.at(exp),
+			S2_start = dbl_to_str(d_S2_start, 1),
+			S2_finish = dbl_to_str(d_S2_finish, 1),
+			S1_start = dbl_to_str(d_S1_start, 1),
+			S1_finish = dbl_to_str(d_S1_finish, 1),
+			Bkg_start = dbl_to_str(d_Bkg_start, 1),
+			Bkg_finish = dbl_to_str(d_Bkg_finish, 1);
+int first_run = experiment_runs.at(exp);
 int PMT_state = 0; //850V, 12 dB
 int SiPM_state = 0; //46 V
-auto folder_entry = exp_folders.find(exp);
-if (folder_entry != exp_folders.end())
-    folder = folder_entry->second;
-else {
-    std::cout<<"Could not find output folder for '"<<exp<<"'! Skipping building signal forms"<<std::endl;
-    return;
-}
-auto S2_times_entry = S2_times.find(exp);
-if (S2_times_entry != S2_times.end()) {
-    d_S2_start = S2_times_entry->second.first; d_S2_finish = S2_times_entry->second.second;
-        S2_start = dbl_to_str(d_S2_start, 1); S2_finish = dbl_to_str(d_S2_finish, 1);
-} else {
-    std::cout<<"Could not find S2 time limits for '"<<exp<<"'! Skipping this experiment"<<std::endl;
-    return;
-}
-auto S1_times_entry = S1_times.find(exp);
-if (S1_times_entry != S1_times.end()) {
-    d_S1_start = S1_times_entry->second.first; d_S1_finish = S1_times_entry->second.second;
-        S1_start = dbl_to_str(d_S1_start, 1); S1_finish = dbl_to_str(d_S1_finish, 1);
-} else {
-    std::cout<<"Could not find S1 time limits for '"<<exp<<"'! Skipping this experiment"<<std::endl;
-    return;
-}
-auto Bkg_times_entry = Bkg_times.find(exp);
-if (Bkg_times_entry != Bkg_times.end()) {
-    d_Bkg_start = Bkg_times_entry->second.first; d_Bkg_finish = Bkg_times_entry->second.second;
-        Bkg_start = dbl_to_str(d_Bkg_start, 1); Bkg_finish = dbl_to_str(d_Bkg_finish, 1);
-} else {
-    std::cout<<"Could not find Background time limits for '"<<exp<<"'! Skipping this experiment"<<std::endl;
-  return;
-}
-auto first_run_entry = experiment_runs.find(exp);
-if (first_run_entry != experiment_runs.end())
-    first_run = first_run_entry->second;
-else {
-    std::cout<<"Could not find starting run index for '"<<exp<<"'! Will print invalid event indexes."<<std::endl;
-    first_run = -10000;
-}
+std::vector<std::string> cuts; // List of cuts in terms of figure numbers where cut is shown
+int no = 0; // Figure number
+std::string Num = int_to_str(++no, 2); // = "01" // Figure number as string
+std::string FOLDER = data_output_path + folder + "/";
 //zcxv
 if (exp == "231109_1ph_LArN2_X-ray_14mm_coll_filt3_20kV_850V_46V"
     || exp == "231109_1ph_LArN2_X-ray_14mm_coll_filt3_18kV_850V_46V"
@@ -1319,16 +1262,33 @@ ty(AStates::PMT_Npe_sum);
         ch(chan);
         cut_t(d_Bkg_start, d_Bkg_finish, false, chan);
         update();
-        (*gSiPM_Npe_data.info(chan))[post_processor->current_exp_index].t_pre_trigger = std::pair<double, double>(d_Bkg_start, d_Bkg_finish);
-        (*gSiPM_Npe_data.info(chan))[post_processor->current_exp_index].Npe_pre_trigger = get_mean();
+        (*g_Npe_data.info(chan))[post_processor->current_exp_index].t_pre_trigger = std::pair<double, double>(d_Bkg_start, d_Bkg_finish);
+        (*g_Npe_data.info(chan))[post_processor->current_exp_index].Npe_pre_trigger = get_mean();
         cut_t(d_S1_start, d_S1_finish, false, chan);
         update();
-        (*gSiPM_Npe_data.info(chan))[post_processor->current_exp_index].t_S1 = std::pair<double, double>(d_S1_start, d_S1_finish);
-        (*gSiPM_Npe_data.info(chan))[post_processor->current_exp_index].Npe_S1 = get_mean();
+        (*g_Npe_data.info(chan))[post_processor->current_exp_index].t_S1 = std::pair<double, double>(d_S1_start, d_S1_finish);
+        (*g_Npe_data.info(chan))[post_processor->current_exp_index].Npe_S1 = get_mean();
         cut_t(d_S2_start, d_S2_finish, false, chan);
         update();
-        (*gSiPM_Npe_data.info(chan))[post_processor->current_exp_index].t_S2 = std::pair<double, double>(d_S2_start, d_S2_finish);
-        (*gSiPM_Npe_data.info(chan))[post_processor->current_exp_index].Npe_S2 = get_mean();
+        (*g_Npe_data.info(chan))[post_processor->current_exp_index].t_S2 = std::pair<double, double>(d_S2_start, d_S2_finish);
+        (*g_Npe_data.info(chan))[post_processor->current_exp_index].Npe_S2 = get_mean();
+    }
+
+    ty(AStates::PMT_Npe_sum);
+    for (int chan = 1; chan != 9; ++chan) {
+        ch(chan);
+        cut_t(d_Bkg_start, d_Bkg_finish, false, chan);
+        update();
+        (*g_Npe_data.info(chan))[post_processor->current_exp_index].t_pre_trigger = std::make_pair(d_Bkg_start, d_Bkg_finish);
+        (*g_Npe_data.info(chan))[post_processor->current_exp_index].Npe_pre_trigger = get_mean();
+        cut_t(d_S1_start, d_S1_finish, false, chan);
+        update();
+        (*g_Npe_data.info(chan))[post_processor->current_exp_index].t_S1 = std::make_pair(d_S1_start, d_S1_finish);
+        (*g_Npe_data.info(chan))[post_processor->current_exp_index].Npe_S1 = get_mean();
+        cut_t(d_S2_start, d_S2_finish, false, chan);
+        update();
+        (*g_Npe_data.info(chan))[post_processor->current_exp_index].t_S2 = std::make_pair(d_S2_start, d_S2_finish);
+        (*g_Npe_data.info(chan))[post_processor->current_exp_index].Npe_S2 = get_mean();
     }
 }
 //END OF FORMS

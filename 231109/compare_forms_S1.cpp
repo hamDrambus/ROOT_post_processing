@@ -284,7 +284,7 @@ int compare_forms_S1(void) {
   bool Cd_peak = true;
   int Nbins = 300;
   bool linear = 0;
-  bool PMTs = true;
+  bool PMTs = false;
 
   bool fast_PMTs = true;
 	unsigned int PMT_used = 0x1 | 0x2 | 0x4 | 0x8;
@@ -710,6 +710,9 @@ define->slow_tau_bound = PAIR(20, 200);
   //std::vector<pulse_shape> pulses = {SiPM_N2_20kV_no_trigger, SiPM_N2_14kV_no_trigger, SiPM_N2_08kV_no_trigger};
   //std::vector<pulse_shape> pulses = {PMT4_N2_20kV_no_trigger, PMT4_N2_14kV_no_trigger, PMT4_N2_08kV_no_trigger};
   //std::vector<pulse_shape> pulses = {PMT4_Ar_20kV_no_trigger, PMT4_Ar_14kV_no_trigger, PMT4_Ar_08kV_no_trigger};
+  // std::vector<pulse_shape> pulses = {SiPM_Ar_20kV_no_trigger, PMT4_Ar_20kV_no_trigger, SiPM_N2_20kV_no_trigger, PMT4_N2_20kV_no_trigger};
+  // std::vector<pulse_shape> pulses = {PMT4_Ar_20kV_no_trigger, PMT4_N2_20kV_no_trigger};
+  std::vector<pulse_shape> pulses = {SiPM_Ar_20kV_no_trigger, SiPM_N2_20kV_no_trigger};
   //for paper:
 
   std::vector<Color_t> palette_major = {kBlack, kRed, kBlue, kGreen, kYellow + 2, kMagenta, kOrange + 7};

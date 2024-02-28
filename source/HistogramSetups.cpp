@@ -14,7 +14,10 @@ HistogramSetups::HistogramSetups(const std::deque<int>& channels) :
 	y_drawn_mean(boost::none), x_variance(boost::none), x_drawn_variance(boost::none),
 	y_variance(boost::none), y_drawn_variance(boost::none), is_valid_fit_function(false),
 	use_default_setups(true), N_bins(0), N_bins_y(0),  N_gauss(0), use_fit(false), extra_data(NULL),
-	logscale_x(false), logscale_y(false), logscale_z(false), draw_option("hist")
+	logscale_x(false), logscale_y(false), logscale_z(false), draw_option("hist"),
+	stats_xs(gStyle->GetStatX() - gStyle->GetStatW(), gStyle->GetStatX()),
+	stats_ys(gStyle->GetStatY() - gStyle->GetStatH(), gStyle->GetStatY()),
+	draw_stats(true)
 {
 	for (std::size_t ind = 0, ind_end_ = channels.size(); ind != ind_end_; ++ind)
 		active_channels.push(channels[ind], true);
@@ -46,6 +49,9 @@ HistogramSetups::HistogramSetups(const HistogramSetups& setups)
 	logscale_y = setups.logscale_y;
 	logscale_z = setups.logscale_z;
 	draw_option = setups.draw_option;
+	stats_xs = setups.stats_xs;
+	stats_ys = setups.stats_ys;
+	draw_stats = setups.draw_stats;
 
 	//1st tier parameters of distribution: (stored in order to minimize calls of LoopThroughData to recalculate them)
 	num_of_runs = setups.num_of_runs;
@@ -545,6 +551,70 @@ void CanvasSetups::set_draw_option(std::string option)
 		return;
 	bool invalidate = curr_hist->draw_option!=option;
 	curr_hist->draw_option=option;
+}
+
+void CanvasSetups::set_hist_stats(const std::string& location)
+{
+	double x1, x2, y1, y2;
+	std::string loc = location;
+	std::transform(loc.begin(), loc.end(), loc.begin(),
+    		[](unsigned char c){ return std::tolower(c); });
+	HistogramSetups* curr_hist = get_hist_setups();
+	if (NULL == curr_hist) {
+		std::cerr << "CanvasSetups::set_hist_stats:Error: NULL histogram setups" << std::endl;
+		return;
+	}
+	if (loc == "tl" || loc == "lt") {
+		x1 = 0.1;
+		x2 = x1 + curr_hist->stats_xs.second - curr_hist->stats_xs.first;
+		y2 = 0.9;
+		y1 = y2 - curr_hist->stats_ys.second + curr_hist->stats_ys.first;
+	} else if (loc == "tr" || loc == "rt") {
+		x2 = 0.9;
+		x1 = x2 - curr_hist->stats_xs.second + curr_hist->stats_xs.first;
+		y2 = 0.9;
+		y1 = y2 - curr_hist->stats_ys.second + curr_hist->stats_ys.first;
+	} else if (loc == "br" || loc == "rb") {
+		x2 = 0.9;
+		x1 = x2 - curr_hist->stats_xs.second + curr_hist->stats_xs.first;
+		y1 = 0.1;
+		y2 = y1 + curr_hist->stats_ys.second - curr_hist->stats_ys.first;
+	} else if (loc == "bl" || loc == "lb") {
+		x1 = 0.1;
+		x2 = x1 + curr_hist->stats_xs.second - curr_hist->stats_xs.first;
+		y1 = 0.1;
+		y2 = y1 + curr_hist->stats_ys.second - curr_hist->stats_ys.first;
+	} else {
+		std::cout << __PRETTY_FUNCTION__ <<": option \"" << location << "\" is not suppoted.\n";
+		std::cout << "Available options are \"tl\", \"tr\", \"br\" and \"bl\"." << std::endl;
+		return;
+	}
+	curr_hist->stats_xs = std::make_pair(x1, x2);
+	curr_hist->stats_ys = std::make_pair(y1, y2);
+}
+
+void CanvasSetups::set_hist_stats(double x, double y)
+{
+	double x1 = x, x2, y1 = y, y2;
+	HistogramSetups * setups = get_hist_setups();
+	if (NULL == setups) {
+		std::cerr << "CanvasSetups::set_hist_stats:Error: NULL histogram setups" << std::endl;
+		return;
+	}
+	x2 = x1 + setups->stats_xs.second - setups->stats_xs.first;
+	y2 = y1 + setups->stats_ys.second - setups->stats_ys.first;
+	setups->stats_xs = std::make_pair(x1, x2);
+	setups->stats_ys = std::make_pair(y1, y2);
+}
+
+void CanvasSetups::set_hist_stats(bool on)
+{
+	HistogramSetups * setups = get_hist_setups();
+	if (NULL == setups) {
+		std::cerr << "CanvasSetups::set_hist_stats:Error: NULL histogram setups" << std::endl;
+		return;
+	}
+	setups->draw_stats = on;
 }
 
 //public (interfaces)

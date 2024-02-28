@@ -1,33 +1,61 @@
 {
+  struct Npe_in_ranges_data {
+    std::pair<double, double> t_pre_trigger;
+    std::pair<double, double> t_S1;
+    std::pair<double, double> t_S2;
+    double Npe_pre_trigger;
+    double Npe_S1;
+    double Npe_S2;
+  };
+
   gStyle->SetCanvasDefH(800);
-	gStyle->SetCanvasDefW(1000);
+  gStyle->SetCanvasDefW(1000);
   gErrorIgnoreLevel = 1001; //To shut up minuit output during failed(?) fitting
   threads_number = 10;
   name_scheme_version = name_scheme_v2;
   trigger_version = TriggerVersion::trigger_v2;
   //From global parameters:
-  calibration_file = "201015_Xray/results_v1/201015_Xray_calibration.dat";
-  data_prefix_path = "../Data/201015/results_v1/";
+  calibration_file = "201015_Xray/results_v1/201015_calibration.dat";
+  data_prefix_path = "../hdda/Data/201015/results_v1/";
   data_output_path = "201015_Xray/results_v1/";
   DATA_MPPC_VERSION = "SiPM";
   DATA_PMT_VERSION = "PMT";
   std::cout<<"data_prefix_path: \""<<data_prefix_path<<"\""<<std::endl;
   //Initialize data for utility functions:
-	std::ifstream str;
-	str.open(Vdrift_data_fname);
-	if (!str.is_open()) {
-	  std::cerr << "Error: Failed to open file with e drift velocity data \"" << Vdrift_data_fname << "\"!" << std::endl;
-	} else {
+  std::ifstream str;
+  str.open(Vdrift_data_fname);
+  if (!str.is_open()) {
+    std::cerr << "Error: Failed to open file with e drift velocity data \"" << Vdrift_data_fname << "\"!" << std::endl;
+  } else {
     Vdrift.read(str);
     Vdrift.setOrder(1);
     Vdrift.setNused(2);
     Vdrift.use_leftmost(true); //how to behave if Td is outside of data Tds range
     Vdrift.use_rightmost(true);
   }
-	str.close();
+  str.close();
 
   exp_area.experiments.clear();
+  // For full analysis
+  exp_area.experiments.push_back("201015_X-ray_6mm_coll_20kV_850V_46V");
+  exp_area.experiments.push_back("201015_X-ray_6mm_coll_18kV_850V_46V");
+  exp_area.experiments.push_back("201015_X-ray_6mm_coll_16kV_850V_46V");
+  exp_area.experiments.push_back("201015_X-ray_6mm_coll_14kV_850V_46V");
+  exp_area.experiments.push_back("201015_X-ray_6mm_coll_12kV_850V_46V");
+  exp_area.experiments.push_back("201015_X-ray_6mm_coll_10kV_850V_46V");
+  exp_area.experiments.push_back("201015_X-ray_6mm_coll_8kV_850V_46V");
+  exp_area.experiments.push_back("201015_X-ray_6mm_coll_6kV_850V_46V");
+  exp_area.experiments.push_back("201015_X-ray_6mm_coll_4kV_850V_46V");
+  exp_area.experiments.push_back("201015_X-ray_6mm_coll_2kV_850V_46V");
+  exp_area.experiments.push_back("201015_X-ray_6mm_coll_0kV_850V_46V");
   exp_area.experiments.push_back("201015_Xray_0kV_850V_46V_12dB_wo_coll");
+
+  // Folders for calibration:
+  // exp_area.experiments.push_back("201015_X-ray_6mm_coll_20kV_850V_46V");
+  // exp_area.experiments.push_back("201015_X-ray_6mm_coll_14kV_850V_46V");
+  // exp_area.experiments.push_back("201015_X-ray_6mm_coll_8kV_850V_46V");
+  // exp_area.experiments.push_back("201015_X-ray_6mm_coll_0kV_850V_46V");
+  // exp_area.experiments.push_back("201015_Xray_0kV_850V_46V_12dB_wo_coll");
 
   PMT_V.clear();
   MPPC_V.clear();
@@ -39,19 +67,41 @@
   atten0.push(4, dB_info(12));
   dBs.clear();
   for (auto i = exp_area.experiments.begin(), i_end_ = exp_area.experiments.end(); i != i_end_; ++i) {
-	  PMT_V[*i] = 850;
-	  dBs[*i] = atten0;
-	  MPPC_V[*i] = 46;
+    PMT_V[*i] = 850;
+    dBs[*i] = atten0;
+    MPPC_V[*i] = 46;
   }
 
   experiment_fields.clear();
-  experiment_fields["201015_Xray_0kV_850V_46V_12dB_wo_coll"] = 0;
+  experiment_fields["201015_X-ray_6mm_coll_20kV_850V_46V"] = 20;
+  experiment_fields["201015_X-ray_6mm_coll_18kV_850V_46V"] = 18;
+  experiment_fields["201015_X-ray_6mm_coll_16kV_850V_46V"] = 16;
+  experiment_fields["201015_X-ray_6mm_coll_14kV_850V_46V"] = 14;
+  experiment_fields["201015_X-ray_6mm_coll_12kV_850V_46V"] = 12;
+  experiment_fields["201015_X-ray_6mm_coll_10kV_850V_46V"] = 10;
+  experiment_fields["201015_X-ray_6mm_coll_8kV_850V_46V"] = 8;
+  experiment_fields["201015_X-ray_6mm_coll_6kV_850V_46V"] = 6;
+  experiment_fields["201015_X-ray_6mm_coll_4kV_850V_46V"] = 4;
+  experiment_fields["201015_X-ray_6mm_coll_2kV_850V_46V"] = 2;
+  experiment_fields["201015_X-ray_6mm_coll_0kV_850V_46V"] = 0;
+  experiment_fields["201015_Xray_0kV_850V_46V_12dB_wo_coll"] = 0.01;
 
   std::map<std::string, int> experiment_runs; //required for printing accepted/rejected events
+  experiment_runs["201015_X-ray_6mm_coll_20kV_850V_46V"] = 1;
+  experiment_runs["201015_X-ray_6mm_coll_18kV_850V_46V"] = 12;
+  experiment_runs["201015_X-ray_6mm_coll_16kV_850V_46V"] = 21;
+  experiment_runs["201015_X-ray_6mm_coll_14kV_850V_46V"] = 30;
+  experiment_runs["201015_X-ray_6mm_coll_12kV_850V_46V"] = 39;
+  experiment_runs["201015_X-ray_6mm_coll_10kV_850V_46V"] = 48;
+  experiment_runs["201015_X-ray_6mm_coll_8kV_850V_46V"] = 57;
+  experiment_runs["201015_X-ray_6mm_coll_6kV_850V_46V"] = 66;
+  experiment_runs["201015_X-ray_6mm_coll_4kV_850V_46V"] = 77;
+  experiment_runs["201015_X-ray_6mm_coll_2kV_850V_46V"] = 86;
+  experiment_runs["201015_X-ray_6mm_coll_0kV_850V_46V"] = 95;
   experiment_runs["201015_Xray_0kV_850V_46V_12dB_wo_coll"] = 141;
 
   if (areas_to_draw.empty())
-	areas_to_draw.push_back(experiment_area());
+    areas_to_draw.push_back(experiment_area());
   areas_to_draw.back().channels.erase();
   areas_to_draw.back().runs.erase();
   areas_to_draw.back().sub_runs.erase();
@@ -68,11 +118,31 @@
   exp_area.channels.push_pair(32, 62);//will load only present channels
   exp_area.runs.push_pair(0, 0);
   exp_area.sub_runs.push_pair(0, 0);
-  //end of global parameters
+  // End of global parameters
   Initialize();
-  //Following variables are required for analysis_history.cpp
+  // Following variables are required for analysis_history.cpp
   std::vector<int> calib_channels = {1, 2, 3, 4, 5, 6, 7, 8};
   for (int ch=32; ch!=64; ++ch) {
     calib_channels.push_back(ch);
   }
+
+  channel_info<std::vector<Npe_in_ranges_data>> g_Npe_data; // channel->experiment
+  std::deque<int> chs_for_Npe = post_processor->MPPC_channels;
+  for (int i = 1; i != 9; ++i)
+    chs_for_Npe.push_back(i);
+  for (std::size_t ich = 0; ich != chs_for_Npe.size(); ++ich) {
+		int chan = chs_for_Npe[ich];
+    std::vector<Npe_in_ranges_data> vec;
+    for (auto i = exp_area.experiments.begin(), i_end_ = exp_area.experiments.end(); i != i_end_; ++i) {
+      Npe_in_ranges_data data;
+      data.t_pre_trigger = std::pair<double, double> (0,0);
+      data.t_S1 = std::pair<double, double> (0,0);
+      data.t_S2 = std::pair<double, double> (0,0);
+      data.Npe_pre_trigger = 0;
+      data.Npe_S1 = 0;
+      data.Npe_S2 = 0;
+      vec.push_back(data);
+    }
+    g_Npe_data.push(chan, vec);
+	}
 }
