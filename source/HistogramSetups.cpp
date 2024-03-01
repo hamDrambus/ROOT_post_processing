@@ -875,6 +875,9 @@ bool CanvasSetups::prepare_histogram(void)
 					(is_zoomed().first ? get_current_x_zoom().second : x_lims.second),
 					setups->bins_logscale_x);
 			SetHistogramBins(hist, bins);
+			// hist->SetBins(setups->N_bins,
+			// 			(is_zoomed().first ? get_current_x_zoom().first : x_lims.first),
+			// 			(is_zoomed().first ? get_current_x_zoom().second : x_lims.second));
 		} else {
 			std::pair<double, double> y_lims = hist_y_limits();
 			TH2D* hist = get_current_hist2();
@@ -894,6 +897,11 @@ bool CanvasSetups::prepare_histogram(void)
 					setups->bins_logscale_x);
 			bins_t bins = std::make_pair(bins_x, bins_y);
 			SetHistogramBins(hist, bins);
+			// hist->SetBins(setups->N_bins,
+			// 			(is_zoomed().first ? get_current_x_zoom().first : x_lims.first),
+			// 			(is_zoomed().first ? get_current_x_zoom().second : x_lims.second), setups->N_bins_y,
+			// 			(is_zoomed().second ? get_current_y_zoom().first : y_lims.first),
+			// 			(is_zoomed().second ? get_current_y_zoom().second : y_lims.second));
 		}
 	}
 	return true;
@@ -1102,8 +1110,8 @@ void CanvasSetups::set_N_bins(int from, int to)
 			setups->N_bins_y = std::max(to, 1);
 			Invalidate(invHistogram);
 		}
-		update();
 	}
+	update();
 }
 
 void CanvasSetups::set_zoom (double xl, double xr)

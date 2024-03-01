@@ -106,6 +106,8 @@ public:
 	void save_all(void);
 	//TODO: save_calibration(void)
 	void saveAs(std::string path, bool png_only);
+	// Prints histogram results (either 1D or 2D) for each event (run) number
+	void save_raw_per_event(std::string fname);
 	
 	void clear(void);	//clear cuts for current histogram. Run cuts derived from it are not touched
 	void clearAll(void); //clear everything, return to initial state (leaves all existing histograms empty)

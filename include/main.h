@@ -41,6 +41,7 @@ void pch(void); 	//previous channel;
 void update(void);
 void saveas(std::string path = "");	//"" - use default path: "Data/results/{PMT_v1|MPPC_v1}/experiment/{PMT_|MPPC_}ch/{pic&data}
 void saveaspng(std::string path = "");	//"" - use default path: "Data/results/{PMT_v1|MPPC_v1}/experiment/{PMT_|MPPC_}ch/{pic&data}
+void save_per_event(std::string fname);
 void status(void);	//displays current state
 void set_fit_gauss(int N);
 void set_parameter_val(int index, double val);

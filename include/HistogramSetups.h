@@ -100,7 +100,8 @@ protected:
 		void operator()(bins_t_1d& bins) {
 			if (histogram) {
 				SetAxisBins(histogram->GetXaxis(), bins);
-				histogram->SetBinsLength(); // Must inform histogram that binning has changed
+				histogram->Rebuild(); // Must inform histogram that binning has changed
+				histogram->Reset("M");
 			}
 		}
 		// For 2D
@@ -108,7 +109,8 @@ protected:
 			if (histogram) {
 				SetAxisBins(histogram->GetXaxis(), bins_xy.first);
 				SetAxisBins(histogram->GetYaxis(), bins_xy.second);
-				histogram->SetBinsLength(); // Must inform histogram that binning has changed
+				histogram->Rebuild(); // Must inform histogram that binning has changed
+				histogram->Reset("M");
 			}
 		}
 	};

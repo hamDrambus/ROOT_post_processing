@@ -224,6 +224,120 @@ void PostProcessor::print_hist(std::string path, bool png_only)
 	}
 }
 
+void PostProcessor::save_raw_per_event(std::string fname)
+{
+	int ch = current_channel;
+	Type type = current_type;
+	if (type == Correlation_x)
+		type = _x_corr;
+	if (type == Correlation_y)
+		type = _y_corr;
+	int exp_ind = current_exp_index;
+	
+	if (!isPerRun(type)) {
+		std::cout<<__PRETTY_FUNCTION__<<": Error: current type (" << type_name(type) <<") has no defined value for each event."<<std::endl;
+		return;
+	}
+
+	std::ofstream str;
+	open_output_file(fname, str, std::ios_base::trunc);
+	if (!str.is_open())
+		return;
+	struct temp_data {
+		std::ofstream* str;
+		int ch_size;
+	} st_data;
+	st_data.str = &str;
+	st_data.ch_size = isPMTtype(type) ? PMT_channels.size() : MPPC_channels.size();
+	FunctionWrapper* writer_to_file = new FunctionWrapper(&st_data);
+	switch (type)
+	{
+	case MPPC_coord: {
+		writer_to_file->SetFunction([](std::vector<double> &pars, int run, void* data) {
+			(*((temp_data*)data)->str) << run << "\t";
+			(*((temp_data*)data)->str) << pars[((temp_data*)data)->ch_size] << "\t";
+			(*((temp_data*)data)->str) << pars[((temp_data*)data)->ch_size + 1] << "\n";
+			return true;
+		});
+		break;
+	}
+	case MPPC_coord_x:
+	case MPPC_Npe_sum:
+	case MPPC_N_sum:
+	case MPPC_S_sum:
+	case PMT_Npe_sum:
+	case PMT_S_sum:
+	case PMT_sum_N: {
+		writer_to_file->SetFunction([](std::vector<double> &pars, int run, void* data) {
+			(*((temp_data*)data)->str) << run << "\t";
+			(*((temp_data*)data)->str) << pars[((temp_data*)data)->ch_size] << "\n";
+			return true;
+		});
+		break;
+	}
+	case MPPC_coord_y: {
+		writer_to_file->SetFunction([](std::vector<double> &pars, int run, void* data) {
+			(*((temp_data*)data)->str) << run << "\t";
+			(*((temp_data*)data)->str) << pars[((temp_data*)data)->ch_size+1] << "\n";
+			return true;
+		});
+		break;
+	}
+	case MPPC_coord_disp: {
+		writer_to_file->SetFunction([](std::vector<double> &pars, int run, void* data) {
+			(*((temp_data*)data)->str) << run << "\t";
+			(*((temp_data*)data)->str) << pars[((temp_data*)data)->ch_size+2] << "\n";
+			return true;
+		});
+		break;
+	}
+	case PMT_S2_S:
+	case MPPC_S2:
+	case PMT_trigger_bNpe:
+	case PMT_trigger_bNpeaks:
+	case PMT_trigger_bS:
+	case PMT_trigger_fit:
+	case PMT_trigger_fit_chi2:
+	case MPPC_trigger_fit:
+	case MPPC_trigger_fit_chi2:
+	case MPPC_trigger_avg:
+	case PMT_T_sum:
+	case MPPC_shape_fit:
+	case PMT_shape_fit:
+	case EventNumber: {
+		writer_to_file->SetFunction([](std::vector<double>& pars, int run, void* data) {
+			(*((temp_data*)data)->str) << run << "\t";
+			(*((temp_data*)data)->str) << pars[0] << "\n";
+			return true;
+		});
+		break;
+	}
+	case Correlation: {
+		writer_to_file->SetFunction([](std::vector<double>& pars, int run, void* data) {
+			(*((temp_data*)data)->str) << run << "\t";
+			(*((temp_data*)data)->str) << pars[0] << "\t";
+			(*((temp_data*)data)->str) << pars[1] << "\n";
+			return true;
+		});
+		break;
+	}
+	default: {
+		std::cout<<__PRETTY_FUNCTION__<<": Error: type \"" << type_name(type) <<"\" was not implemented for writing to file."<<std::endl;
+		delete writer_to_file;
+		return;
+	}
+	}
+	Operation op;
+	op.operation = writer_to_file;
+	op.apply_run_cuts = true;
+	op.apply_hist_cuts = true;
+	op.apply_phys_cuts = false;
+	std::vector<Operation> vec(1, op);
+	LoopThroughData(vec, ch, current_type);
+	delete writer_to_file;
+	str.close();
+}
+
 Bool_t PostProcessor::StateChange(int to_ch, int to_exp, Type to_type, std::size_t to_canvas, int from_ch, int from_exp, Type from_type, std::size_t from_canvas)
 {
 	if (!CanvasSetups::StateChange(to_ch, to_exp, to_type, to_canvas, from_ch, from_exp, from_type, from_canvas)) {
@@ -462,6 +576,7 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 						continue;
 				}
 				double s1pe = calibr_info.get_S1pe((*channels)[chan_ind], current_exp_index);
+
 				for (int pk = 0, pk_end = (*peaks)[chan_ind][run].size(); pk != pk_end; ++pk) {
 					bool failed_hist_cut = false; //normal cuts
 					cut_data[0] = (*peaks)[chan_ind][run][pk].S;
@@ -1087,22 +1202,22 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 		bool use_Npe = !(type == Type::MPPC_tbN_sum);
 		int run_size = data->mppc_peaks[current_exp_index][0].size();
 		std::vector<double> cut_data(6);
-		for (auto run = 0; run != run_size; ++run) {
-			bool failed_run_cut = false;
-			for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
-				if (kFALSE == cut->GetAccept(run)) {
-					failed_run_cut = true;
-					break;
-				}
-			for (int chan_ind=0,_ch_ind_end_= MPPC_channels.size(); chan_ind!=_ch_ind_end_;++chan_ind) {
-				if (NULL != setups) {
-					bool *active = setups->active_channels.info(MPPC_channels[chan_ind]);
-					if (NULL == active)
-						continue;
-					if (!(*active))
-						continue;
-				}
-				double s1pe = calibr_info.get_S1pe(MPPC_channels[chan_ind], current_exp_index);
+		for (int chan_ind=0,_ch_ind_end_= MPPC_channels.size(); chan_ind!=_ch_ind_end_;++chan_ind) {
+			if (NULL != setups) {
+				bool *active = setups->active_channels.info(MPPC_channels[chan_ind]);
+				if (NULL == active)
+					continue;
+				if (!(*active))
+					continue;
+			}
+			double s1pe = calibr_info.get_S1pe(MPPC_channels[chan_ind], current_exp_index);
+			for (auto run = 0; run != run_size; ++run) {
+				bool failed_run_cut = false;
+				for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
+					if (kFALSE == cut->GetAccept(run)) {
+						failed_run_cut = true;
+						break;
+					}
 				for (int pk = 0, pk_end = data->mppc_peaks[current_exp_index][chan_ind][run].size(); pk != pk_end; ++pk) {
 					bool failed_hist_cut = false; //normal cuts
 					bool failed_phys_cut = false; //drawn (displayed) cuts only
@@ -1548,41 +1663,42 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 		std::vector<std::thread> threads;
 		for (unsigned int n_th = 0u; n_th < thread_n; ++n_th) {
 			threads.push_back(std::thread([&](int n_th) {
-				for (int run = thread_indices[n_th].first; run != thread_indices[n_th].second; ++run) {
-					std::vector<double> cut_data(6);
-					results[run].event_number = run;
-					for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
-						if (kFALSE == cut->GetAccept(run)) {
-							results[run].failed_run_cut = true;
-							break;
-						}
+				std::vector<double> cut_data(6, 0.0);
+				for (int chan_ind=0,_ch_ind_end_= channels->size(); chan_ind<_ch_ind_end_; ++chan_ind) {
+					if (NULL != setups) {
+						bool *active = setups->active_channels.info((*channels)[chan_ind]);
+						if (NULL == active)
+							continue;
+						if (!(*active))
+							continue;
+					}
+					const double s1pe = calibr_info.get_S1pe((*channels)[chan_ind], current_exp_index);
+					const double inv_s1pe = 1.0 / s1pe;
 
-					if (results[run].failed_run_cut && ignore_no_run_cut)
-						continue;
+					for (int run = thread_indices[n_th].first; run != thread_indices[n_th].second; ++run) {
+						for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)
+							if (kFALSE == cut->GetAccept(run)) {
+								results[run].failed_run_cut = true;
+								break;
+							}
+						if (results[run].failed_run_cut && ignore_no_run_cut)
+							continue;
 
-					for (int chan_ind=0,_ch_ind_end_= channels->size(); chan_ind<_ch_ind_end_;++chan_ind) {
-						if (NULL != setups) {
-							bool *active = setups->active_channels.info((*channels)[chan_ind]);
-							if (NULL == active)
-								continue;
-							if (!(*active))
-								continue;
-						}
-						double s1pe = calibr_info.get_S1pe((*channels)[chan_ind], current_exp_index);
+						const double trigger_off = data->trigger_offset[current_exp_index][run];
 						double S2 = 0;
 						for (int pk = 0, pk_end = (*peaks)[chan_ind][run].size(); pk != pk_end; ++pk) {
 							bool failed_hist_cut = false; //normal cuts
 							cut_data[0] = (*peaks)[chan_ind][run][pk].S;
 							cut_data[1] = (*peaks)[chan_ind][run][pk].A;
-							cut_data[2] = (*peaks)[chan_ind][run][pk].left + data->trigger_offset[current_exp_index][run];
-							cut_data[3] = (*peaks)[chan_ind][run][pk].right + data->trigger_offset[current_exp_index][run];
+							cut_data[2] = (*peaks)[chan_ind][run][pk].left + trigger_off;
+							cut_data[3] = (*peaks)[chan_ind][run][pk].right + trigger_off;
 							cut_data[4] =
 		#ifdef PEAK_AVR_TIME
-									(*peaks)[chan_ind][run][pk].t + data->trigger_offset[current_exp_index][run];
+									(*peaks)[chan_ind][run][pk].t + trigger_off;
 		#else
 									0.5*(cut_data[3]+cut_data[2]);
 		#endif
-							cut_data[5] = s1pe > 0 ? std::round(cut_data[0]/s1pe) : -1;
+							cut_data[5] = s1pe > 0 ? std::round(cut_data[0] * inv_s1pe) : -1;
 							for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut) {
 								if (cut->GetChannel()==(*channels)[chan_ind] && cut->GetAffectingHistogram() && !failed_hist_cut)
 									if (kFALSE == (*cut)(cut_data, run)) { //more expensive than GetAffectingHistogram
@@ -1592,12 +1708,15 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 							}
 							if (!failed_hist_cut)
 								S2 += use_Npeaks ? 1.0 : cut_data[0];
-
 						}
-						S2 = (use_Npe ? (s1pe > 0 ? S2/s1pe : 0) : S2);
+						S2 = (use_Npe ? (s1pe > 0 ? S2 * inv_s1pe : 0) : S2);
 						results[run].Npes[chan_ind] = ((use_Npe || use_Npeaks ) ? std::round(S2) : S2);
 						results[run].Npes[channels->size()] += results[run].Npes[chan_ind];
 					}
+				} // event loop. Inverted to first loop over channels, then over runs.
+
+				for (int run = thread_indices[n_th].first; run != thread_indices[n_th].second; ++run) {
+					results[run].event_number = run;
 					for (auto cut = hist_cuts->begin(), c_end_ = hist_cuts->end(); (cut != c_end_); ++cut)
 						if (-1 == cut->GetChannel()) {
 							if (!results[run].failed_hist_phys)
@@ -1610,7 +1729,7 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 								if (kFALSE == (*cut)(results[run].Npes, run))
 									results[run].failed_phys = true;
 						}
-				} //event loop
+				} // event loop
 			}, n_th));
 		}
 		for (unsigned int n_th = 0u; n_th < thread_n; ++n_th) {
@@ -1663,8 +1782,8 @@ void PostProcessor::LoopThroughData(std::vector<Operation> &operations, int chan
 		std::vector<std::thread> threads;
 		for (std::size_t n_th = 0u; n_th < thread_n; ++n_th) {
 			threads.push_back(std::thread([&](std::size_t n_th) {
+				std::vector<double> cut_data(6, 0.0);
 				for (std::size_t run = thread_indices[n_th].first; run != thread_indices[n_th].second; ++run) {
-					std::vector<double> cut_data(6);
 					results[run].number[0] = run;
 					results[run].event_number = run;
 					for (auto cut = run_cuts->begin(), c_end_ = run_cuts->end(); cut != c_end_; ++cut)

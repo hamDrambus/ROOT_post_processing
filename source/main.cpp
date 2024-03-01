@@ -119,6 +119,12 @@ void saveaspng(std::string path)
 	post_processor->saveAs(path, true);
 }
 
+void save_per_event(std::string fname)
+{
+	QUIT_IF_NULL(g_data);
+	post_processor->save_raw_per_event(fname);
+}
+
 void calib_status(Bool_t uncalibrated_only)
 {
 	QUIT_IF_NULL(g_data);
