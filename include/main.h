@@ -123,6 +123,13 @@ void unset_log_x(void);
 void unset_log_y(void);
 void unset_log_z(void);
 
+void set_log_bins_x(bool is_log = true, bool do_update = true);
+void unset_log_bins_x(bool do_update = true);
+void set_log_bins_y(bool is_log = true, bool do_update = true);
+void unset_log_bins_y(bool do_update = true);
+void set_log_bins_xy(bool is_log = true, bool do_update = true);
+void unset_log_bins_xy(bool do_update = true);
+
 void cut_S_t_rect_exclude(double t_min, double t_max, double S_min, double S_max, bool drawn, int channel = -1, std::string name = "");
 void cut_S_t_rect_exclude(std::vector<double> region, bool drawn, int channel = -1, std::string name = ""); //region is {t_min0, t_max0, S_min0, S_max0, t_min1, t_max1 ...}
 //remcut is for remove_cut

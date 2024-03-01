@@ -760,6 +760,37 @@ void set_draw_option(std::string option)
 	post_processor->set_draw_option(option);
 }
 
+void set_log_bins_x(bool is_log, bool do_update)
+{
+	QUIT_IF_NULL(g_data);
+	post_processor->set_log_bins_x(is_log, do_update);
+}
+void unset_log_bins_x(bool do_update)
+{
+	QUIT_IF_NULL(g_data);
+	post_processor->unset_log_bins_x(do_update);
+}
+void set_log_bins_y(bool is_log, bool do_update)
+{
+	QUIT_IF_NULL(g_data);
+	post_processor->set_log_bins_y(is_log, do_update);
+}
+void unset_log_bins_y(bool do_update)
+{
+	QUIT_IF_NULL(g_data);
+	post_processor->unset_log_bins_y(do_update);
+}
+void set_log_bins_xy(bool is_log, bool do_update)
+{
+	QUIT_IF_NULL(g_data);
+	post_processor->set_log_bins_xy(is_log, do_update);
+}
+void unset_log_bins_xy(bool do_update)
+{
+	QUIT_IF_NULL(g_data);
+	post_processor->unset_log_bins_xy(do_update);
+}
+
 //region is {t_min0, t_max0, S_min0, S_max0, t_min1, t_max1 ...}
 FunctionWrapper* create_S_t_rect_exclude_cut(std::vector<double> region) //do not call from the CINT
 {	
