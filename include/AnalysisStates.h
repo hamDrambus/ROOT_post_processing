@@ -33,8 +33,8 @@ protected:
 	void loop_channels_reset(void);
 	int ch_ind_loop;
 	Type type_loop;
-	std::deque<int> channel_list(Type type) const;
 public:
+	std::deque<int> channel_list(Type type) const;
 	bool loop_channels (Type type, int &ch, int &ch_ind);
 	Type _x_corr;
 	Type _y_corr;

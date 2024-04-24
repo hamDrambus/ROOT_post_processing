@@ -2120,7 +2120,45 @@ void cut_runs(int max_index, std::string _name)
 		post_processor->add_hist_cut(picker, name, -1, true);
 	else {
 		if (post_processor->isMultichannel(post_processor->current_type)) {
-			for (int chi=0, ch=0; post_processor->loop_channels(post_processor->current_type, ch, chi);)
+			for (const int& ch : post_processor->channel_list(post_processor->current_type))
+				post_processor->add_hist_cut(picker, name, ch, true);
+		} else {
+			post_processor->add_hist_cut(picker, name, true);
+		}
+	}
+	if (!post_processor->isMultichannel(post_processor->current_type))
+		update();
+}
+
+FunctionWrapper* create_event_selection_cut(int event_index) //do not call from the CINT
+{
+	struct temp_data {
+		int event_index;
+	};
+	temp_data * st_data = new temp_data;
+	st_data->event_index = event_index;
+	FunctionWrapper *picker = new FunctionWrapper(st_data);
+	picker->SetFunction([](std::vector<double> &vals, int run, void* data) {
+		temp_data* d = ((temp_data*)data);
+		return run == d->event_index;
+	});
+	return picker;
+}
+
+void select_event(int event_index, std::string _name)
+{
+	QUIT_IF_NULL(g_data);
+	FunctionWrapper *picker = create_event_selection_cut(event_index);
+	if (NULL == picker) {
+		std::cout << "This cut is impossible for current type (" << post_processor->type_name(post_processor->current_type) << ")" << std::endl;
+		return;
+	}
+	std::string name = ((_name == "") ? "_event_selection_" : _name);
+	if (post_processor->isComposite(post_processor->current_type))
+		post_processor->add_hist_cut(picker, name, -1, true);
+	else {
+		if (post_processor->isMultichannel(post_processor->current_type)) {
+			for (const int& ch : post_processor->channel_list(post_processor->current_type))
 				post_processor->add_hist_cut(picker, name, ch, true);
 		} else {
 			post_processor->add_hist_cut(picker, name, true);
